@@ -1,0 +1,3 @@
+FFCAS中为OpenModelica类文件，使用时加载package.mo文件，编译后进行模拟
+需要安装OpenModelica软件
+pySimulation为仿真测试脚本，运行后csv结果文件生成于temp文件夹中
