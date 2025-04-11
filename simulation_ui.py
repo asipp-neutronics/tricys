@@ -9,7 +9,6 @@ class SimulationUI:
         self.root = root
         self.root.title("Fusion Simulation Parameter Sweep")
         self.root.geometry("400x350")
-
         self.create_widgets()
 
     def create_widgets(self):
