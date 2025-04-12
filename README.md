@@ -1,4 +1,4 @@
-```markdown
+
 # FFCAS - Fusion Fuel Cycle Analysis System
 
 ## 项目简介
