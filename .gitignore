@@ -1,4 +1,5 @@
 __pycache__/
 temp/
 sds_I_vs_time.png
+sds_I_first_minus_min.png
 *.pyc
