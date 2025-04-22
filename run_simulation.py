@@ -5,6 +5,29 @@ from OMPython import ModelicaSystem
 import pandas as pd
 import numpy as np
 
+def get_unique_filename(base_path, filename):
+    """
+    检查文件是否存在，如果存在则生成一个新的文件名（通过添加编号）。
+    
+    参数:
+    - base_path: 文件保存目录
+    - filename: 原始文件名（包含扩展名）
+    
+    返回:
+    - 唯一文件名路径
+    """
+    base_name, ext = os.path.splitext(filename)
+    counter = 0
+    new_filename = filename
+    new_filepath = os.path.join(base_path, new_filename)
+    
+    while os.path.exists(new_filepath):
+        counter += 1
+        new_filename = f"{base_name}_{counter}{ext}"
+        new_filepath = os.path.join(base_path, new_filename)
+    
+    return new_filepath
+
 def run_parameter_sweep(package_path, model_name, param_sweep, stop_time, step_size, temp_dir):
     """
     运行单参数扫描的仿真。
@@ -21,9 +44,7 @@ def run_parameter_sweep(package_path, model_name, param_sweep, stop_time, step_s
     if len(param_sweep) != 1:
         raise ValueError("Only one parameter should be provided for simulation.")
 
-    # 清理并创建临时目录
-    if os.path.exists(temp_dir):
-        shutil.rmtree(temp_dir)
+    # 创建临时目录（如果不存在）
     os.makedirs(temp_dir, exist_ok=True)
     os.chdir(temp_dir)
 
@@ -53,8 +74,9 @@ def run_parameter_sweep(package_path, model_name, param_sweep, stop_time, step_s
             f"stepSize={step_size}"
         ])
 
-        # 运行仿真
-        output_csv = os.path.join(temp_dir, f"simulation_results_{i}.csv")
+        # 运行仿真并保存到唯一文件名
+        base_filename = f"simulation_results_{i}.csv"
+        output_csv = get_unique_filename(temp_dir, base_filename)
         mod.simulate(resultfile=output_csv)
 
     # 整合结果
@@ -72,8 +94,9 @@ def run_parameter_sweep(package_path, model_name, param_sweep, stop_time, step_s
         else:
             print(f"Warning: CSV file {csv_file} not found.")
 
-    # 保存整合结果
-    combined_csv_path = os.path.join(temp_dir, "combined_simulation_results.csv")
+    # 保存整合结果到唯一文件名
+    base_combined_filename = "combined_simulation_results.csv"
+    combined_csv_path = get_unique_filename(temp_dir, base_combined_filename)
     combined_df.to_csv(combined_csv_path, index=False)
     print(f"Combined CSV file saved to: {combined_csv_path}")
 

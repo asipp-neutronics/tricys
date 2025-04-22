@@ -64,8 +64,9 @@ class SimulationUI:
 
             package_path = "D:/FusionSimulationProgram/FFCAS_v0_FusionFuelCycleAnalysisSystem/FFCAS/package.mo"
             temp_dir = "D:/FusionSimulationProgram/FFCAS_v0_FusionFuelCycleAnalysisSystem/temp"
-            run_parameter_sweep(package_path, model_name, param_sweep, stop_time, step_size, temp_dir)
-            messagebox.showinfo("Success", "Simulation completed successfully!")
+            # 运行仿真并获取保存路径
+            result_path = run_parameter_sweep(package_path, model_name, param_sweep, stop_time, step_size, temp_dir)
+            messagebox.showinfo("Success", f"Simulation completed successfully!\nResults saved!")
         except Exception as e:
             messagebox.showerror("Error", f"Simulation failed: {str(e)}")
 
