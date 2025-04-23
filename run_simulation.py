@@ -1,5 +1,4 @@
 import os
-import shutil
 from OMPython import OMCSessionZMQ
 from OMPython import ModelicaSystem
 import pandas as pd
