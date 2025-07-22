@@ -2,7 +2,7 @@ within CFEDR;
 model TEP
 
   // 输入端口：来自Pump_System的输入（5维）
-  Modelica.Blocks.Interfaces.RealInput from_pump[5] "来自Pump_System的输入" annotation(
+  Modelica.Blocks.Interfaces.RealInput from_Pump[5] "来自Pump_System的输入" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}),
               iconTransformation(origin = {-114, 0}, extent = {{-10, 10}, {10, -10}}, rotation = -0)));
 
@@ -21,20 +21,19 @@ model TEP
   Real outflow[5] "总输出流";
 
   // 参数定义
-  parameter Real T = 0.7 "平均滞留时间 (mean residence time)";
+  parameter Real T = 2 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
-  //DIR比例，逻辑不对，因为DT不一定一样多，需要改
-  parameter Real to_SDS_Fraction[5] = {0.5, 0.5, 0, 0, 0} "输出到SDS的比例";
+  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0.0001, 0.0001, 0.0001} "非放射性损失";
+  parameter Real to_SDS_Fraction = 0.5 "输出到SDS的比例";
 
 equation
   // 计算每个维度流体的动态变化
   for i in 1:5 loop
-    der(I[i]) = from_pump[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = from_Pump[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
     outflow[i] = I[i]/T;
-    // 输出流分配到SDS和TEP_IP
-    to_SDS[i] = outflow[i] * to_SDS_Fraction[i];
-    to_I_ISS[i] = outflow[i] * (1 - to_SDS_Fraction[i]);
+    // 输出流分配到SDS和I-ISS
+    to_SDS[i] = outflow[i] * (if i == 1 or i == 2 then to_SDS_Fraction else 0);
+    to_I_ISS[i] = outflow[i] * (if i == 1 or i == 2 then 1 - to_SDS_Fraction else 1);
   end for;
 
 annotation(

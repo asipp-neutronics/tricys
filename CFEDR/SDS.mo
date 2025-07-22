@@ -18,17 +18,15 @@ model SDS
     Placement(transformation(origin = {120, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
 
   // 状态变量：SDS 内部的氚存储量
-  Real I[5](start = {3000, 3000, 0, 0, 0}) "SDS 内的氚存储量";
+  Real I[5](start = {3000, 3000, 3000, 0, 0}) "SDS 内的氚存储量";
 
   // 参数定义
-  // parameter Real T = 0.5 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0, 0, 0, 0, 0} "非放射性损失";
 
 equation
   for i in 1:5 loop
     // 只对 T, D, H 进行计算
-    der(I[i]) = from_I_ISS[i] + from_O_ISS[i] + from_TEP[i] - (1 + nonradio_loss[i]) * to_FS[i]  - decay_loss[i] * I[i];
+    der(I[i]) = from_I_ISS[i] + from_O_ISS[i] + from_TEP[i] - to_FS[i]  - decay_loss[i] * I[i];
   end for;
 
 annotation(

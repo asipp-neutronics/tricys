@@ -36,7 +36,7 @@ model Coolant_Pipe
   // 参数定义
   parameter Real T = 24 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
+  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0.0001, 0.0001, 0.0001} "非放射性损失";
   parameter Real to_WDS_Fraction = 1e-4;
   parameter Real to_CPS_Fraction = 1e-2;
   parameter Real to_FW_Fraction = 0.6;

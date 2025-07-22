@@ -4,7 +4,7 @@ block pulseFusion "Generate two identical pulse signals of type Real"
   // 参数定义
   parameter Real amplitude = 9.60984 "脉冲幅度";
   parameter Real width(final min = 1e-10, final max = 100) = 100 "脉冲宽度，占周期的百分比";
-  parameter Real period(final min = 1e-10, start = 500) "一个周期的时间（秒）";
+  parameter Real period(final min = 1e-10, start = 480) = 240"一个周期的时间（小时）";
   parameter Integer nperiod = -1 "周期数（< 0 表示无限周期）";
   parameter Real startTime = 0 "第一个脉冲的开始时间（秒）";
   parameter Real offset = 0 "输出信号的偏移量";

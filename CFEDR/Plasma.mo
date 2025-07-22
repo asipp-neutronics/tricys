@@ -22,33 +22,28 @@ model Plasma
     Placement(transformation(origin = {114, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, -114}, extent = {{10, -10}, {-10, 10}}, rotation = 90)));
 
 // 参数部分
-  //Real I[5](start = {0.0, 0.0, 0.0, 0.0, 0.0}) "物质滞留量 (1 = T, 2 = D, 3 = H, 4 = He, 5 = Imp)，单位: g";
-  //Real burned[5] "聚变燃烧消耗的物质，单位: g/h";
   Real He_generated "聚变反应生成的氦，单位: g/h";
-  //Real unburned[5] "未燃烧的物质，单位: g/h";
+  Real H_injection "氕的背景注入速率，单位: g/h";
   parameter Real fb = 0.06 "燃烧分数 (氚和氘的燃烧比例，仅在脉冲开启时有效，无单位)";
   parameter Real nf = 0.5 "燃料效率 (氚和氘进入等离子体的比例，无单位)";
-  parameter Real H_injection = 0.01 "氕的背景注入速率，单位: g/h";
-  //parameter Real Imp_injection = 0.001 "杂质的背景注入速率，单位: g/h";
   parameter Real to_Div_fraction[5] = {1e-4, 1e-4, 1e-4, 1e-1, 1e-2} "流向偏滤器的比例，无单位";
   parameter Real to_FW_fraction[5] = {1e-4, 1e-4, 1e-4, 1e-1, 1e-2} "流向第一壁的比例，无单位";
-  parameter Real He_yield = 0.8 "氦产额 (每单位质量氚+氘生成的氦质量，考虑了氦的损失或简化假设，无单位)";
-  //parameter Real T = 1.0 "滞留物质的输运时间常数，单位: h";
-equation
-// 计算氦生成（仅在脉冲开启时生成）
-  He_generated = if pulseInput > 0 then He_yield * pulseInput * 2 else 0;
 
-// 使用 for 循环定义每种物质的计算逻辑
-for i in 1:5 loop
-// 燃料注入逻辑（氕和杂质的注入与脉冲信号绑定）
-    from_Fueling_System[i] = if i == 1 then pulseInput /(fb * nf) // 氚的注入
-                            else if i == 2 then pulseInput /(fb * nf) // 氘的注入
-                            else if i == 3 then pulseInput * (if pulseInput > 0 then H_injection else 0) // 氕的背景注入（脉冲关闭时不注入）
-                            else 0; // 氦无外部注入
-// 流出逻辑（包括未燃烧物质和滞留物质的输运）
-    to_FW[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * to_FW_fraction[i];
-    to_Div[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * to_Div_fraction[i];
-    to_Pump[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * (1 - to_Div_fraction[i] - to_FW_fraction[i] - fb * nf);
+equation
+  // 计算氦生成（仅在脉冲开启时生成）
+  He_generated = pulseInput * (4.002602 / 3.01693);
+  H_injection = (pulseInput * (1.00784 / 3.01693))/(fb * nf) * 2 / 99;
+  // 使用 for 循环定义每种物质的计算逻辑
+  for i in 1:5 loop
+  // 燃料注入逻辑（氕和杂质的注入与脉冲信号绑定）
+    from_Fueling_System[i] = if i == 1 then pulseInput / (fb * nf) // 氚的注入
+                             else if i == 2 then (pulseInput / (fb * nf)) * (2.01409 / 3.01693) // 氘的注入
+                             else if i == 3 then H_injection // 氕的背景注入,1%
+                             else 0; 
+  // 流出逻辑（包括未燃烧物质和滞留物质的输运）
+    to_FW[i] = (from_Fueling_System[i] * (if i == 1 or i == 2 then (1 - (fb * nf)) else 1) + (if i == 4 then He_generated else 0)) * to_FW_fraction[i];
+    to_Div[i] = (from_Fueling_System[i] * (if i == 1 or i == 2 then (1 - (fb * nf)) else 1) + (if i == 4 then He_generated else 0)) * to_Div_fraction[i];
+    to_Pump[i] = (from_Fueling_System[i] * (if i == 1 or i == 2 then (1 - (fb * nf)) else 1) + (if i == 4 then He_generated else 0)) * (1 - to_Div_fraction[i] - to_FW_fraction[i]);
   end for;
 
 annotation(

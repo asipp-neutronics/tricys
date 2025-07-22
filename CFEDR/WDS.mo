@@ -21,10 +21,10 @@ model WDS
   Real outflow[5] "总输出流";
 
   // 参数定义
-  parameter Real T = 24 "平均滞留时间 (mean residence time)";
+  parameter Real T = 48 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
-  parameter Real threshold = 1 "铺底量";
+  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0.0001, 0.0001, 0.0001} "非放射性损失";
+  parameter Real threshold = 1000 "铺底量";
 
   // 辅助变量：计算I的总和
   Real I_total "I的5个分量之和";
@@ -36,8 +36,8 @@ equation
   for i in 1:5 loop
     // 根据储存量是否超过阈值，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_I_ISS[i] + from_CP[i] - (1 + nonradio_loss[i]) * (I[i] - threshold) / T  - decay_loss[i] * I[i];
-      outflow[i] = (I[i] - threshold)/T;
+      der(I[i]) = from_I_ISS[i] + from_CP[i] - (1 + nonradio_loss[i]) * (I[i] - threshold * I[i] / I_total) / T  - decay_loss[i] * I[i];
+      outflow[i] = (I[i] - threshold * I[i] / I_total)/T;
     else
       der(I[i]) = from_I_ISS[i] + from_CP[i] -  nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
       outflow[i] = 0;

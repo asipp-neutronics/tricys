@@ -28,12 +28,12 @@ model DIV
   // 参数定义
   parameter Real T = 0.28 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0, 0, 0, 0, 0} "非放射性损失";
+  //parameter Real nonradio_loss[5] (each unit="1") = {0, 0, 0, 0, 0} "非放射性损失";
 
 equation
   // 计算每种物质的动态变化和输出
   for i in 1:5 loop
-    der(I[i]) = from_plasma[i] + from_CP[i] + from_CPS[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = from_plasma[i] + from_CP[i] + from_CPS[i] - I[i] / T  - decay_loss[i] * I[i];
     outflow[i] = I[i] / T;
     to_CP[i] = outflow[i];
   end for;
