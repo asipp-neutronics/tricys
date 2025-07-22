@@ -1,8 +1,8 @@
-within FFCAS;
+within CFEDR;
 model I_ISS
 
   // 输入端口：来自TEP_FCU的输入
-  Modelica.Blocks.Interfaces.RealInput from_TEP_FCU[5] "来自TEP_FCU的输入" annotation(
+  Modelica.Blocks.Interfaces.RealInput from_TEP[5] "来自TEP的输入" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}),
               iconTransformation(origin = {0, -114}, extent = {{10, 10}, {-10, -10}}, rotation = -90)));
 
@@ -21,9 +21,9 @@ model I_ISS
   Real outflow[5] "总输出流";
 
   // 参数定义
-  parameter Real T = 4 "平均滞留时间 (mean residence time)";
+  parameter Real T = 6 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
+  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0.0001, 0.0001, 0.0001} "非放射性损失";
   parameter Real threshold = 300 "铺底量";
   parameter Real to_WDS_Fraction = 1e-8 "输出到WDS的比例";
   parameter Real to_SDS_Fraction = 1 - to_WDS_Fraction "输出到SDS的比例";
@@ -38,10 +38,10 @@ equation
   for i in 1:5 loop
     // 根据储存量是否超过阈值，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_TEP_FCU[i] - (1 + nonradio_loss[i]) * (I[i] - threshold) / T  - decay_loss[i] * I[i];
-      outflow[i] = (I[i] - threshold)/T;
+      der(I[i]) = from_TEP[i] - (1 + nonradio_loss[i]) * (I[i] - threshold * I[i] / I_total) / T  - decay_loss[i] * I[i];
+      outflow[i] = (I[i] - threshold * I[i] / I_total)/T;
     else
-      der(I[i]) = from_TEP_FCU[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
+      der(I[i]) = from_TEP[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
       outflow[i] = 0;
     end if;
     // 输出流分配到SDS和WDS

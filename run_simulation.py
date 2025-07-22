@@ -47,7 +47,7 @@ def run_parameter_sweep(package_path, model_name, param_A_values, param_B_sweep,
     omc.sendExpression(f'loadFile("{package_path}")')
 
     # 创建并编译模型
-    mod = ModelicaSystem(fileName=package_path, modelName=model_name)
+    mod = ModelicaSystem(fileName=package_path, modelName=model_name, variableFilter="time|sds\\.I\\[1\\]")
     mod.buildModel()
 
     # 获取参数 A 和参数 B 的名称和值
@@ -62,13 +62,11 @@ def run_parameter_sweep(package_path, model_name, param_A_values, param_B_sweep,
         for param_B_val in param_B_vals:
             # 设置参数 A 和参数 B
             mod.setParameters([f"{param_A_name}={param_A_val}", f"{param_B_name}={param_B_val}"])
-
             # 设置仿真选项
             mod.setSimulationOptions([
                 f"stopTime={stop_time}",
                 "tolerance=1e-6",
                 "outputFormat=csv",
-                "variableFilter=time|sds\\.I\\[1\\]",
                 f"stepSize={step_size}"
             ])
 
@@ -118,5 +116,5 @@ if __name__ == "__main__":
     model_name = "FFCAS.Cycle"
     param_A_values = {"blanket.T": [1.0, 1.1, 1.2]}  # 示例参数 A（变化较少）
     param_B_sweep = {"blanket.TBR": np.linspace(1.05, 1.15, 5)}  # 示例参数 B（变化较多）
-    result_path = run_parameter_sweep(package_path, model_name, param_A_values, param_B_sweep, 5000.0, 1.0, "D:/FusionSimulationProgram/FFCAS_v0_FusionFuelCycleAnalysisSystem/temp")
+    result_path = run_parameter_sweep(package_path, model_name, param_A_values, param_B_sweep, 5000.0, 0.1, "D:/FusionSimulationProgram/FFCAS_v0_FusionFuelCycleAnalysisSystem/temp")
     print(f"Result path: {result_path}")

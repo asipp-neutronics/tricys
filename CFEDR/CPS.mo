@@ -1,13 +1,13 @@
-within FFCAS;
+within CFEDR;
 model CPS
 
   // 输入端口：来自Coolant_Loop的输入（5维）
-  Modelica.Blocks.Interfaces.RealInput from_CL[5] "来自Coolant_Loop的输入" annotation(
+  Modelica.Blocks.Interfaces.RealInput from_CP[5] "来自Coolant_Loop的输入" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}),
               iconTransformation(origin = {0, 114}, extent = {{10, -10}, {-10, 10}}, rotation = 90)));
 
   // 输出端口：输出到ISS_O系统（5维）
-  Modelica.Blocks.Interfaces.RealOutput to_ISS_O[5] "输出到ISS_O系统" annotation(
+  Modelica.Blocks.Interfaces.RealOutput to_O_ISS[5] "输出到ISS_O系统" annotation(
     Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}),
               iconTransformation(origin = {114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
 
@@ -28,9 +28,9 @@ model CPS
   // 参数定义
   parameter Real T = 48 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
-  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
+  parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0.0001, 0.0001, 0.0001} "非放射性损失";
   parameter Real threshold = 200 "铺底量";
-  parameter Real to_ISS_O_Fraction = 0.99 "0.95Abdou 输出到ISS_O的比例";
+  parameter Real to_O_ISS_Fraction = 0.99 "0.95Abdou 输出到ISS_O的比例";
   parameter Real to_FW_Fraction = 0.06 "输出到FW的比例";
 
   // 辅助变量：计算I的总和
@@ -43,17 +43,17 @@ equation
   for i in 1:5 loop
     // 根据储存量是否超过铺底量，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_CL[i] - (1 + nonradio_loss[i]) * (I[i] - threshold) / T  - decay_loss[i] * I[i];
-      outflow[i] = (I[i] - threshold) / T;
+      der(I[i]) = from_CP[i] - (1 + nonradio_loss[i]) * (I[i] - threshold * I[i] / I_total) / T  - decay_loss[i] * I[i];
+      outflow[i] = (I[i] - threshold * I[i] / I_total) / T;
     else
-      der(I[i]) = from_CL[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
+      der(I[i]) = from_CP[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
       outflow[i] = 0;
     end if;
 
     // 输出流分配到ISS_O、FW、DIV
-    to_ISS_O[i] = to_ISS_O_Fraction * outflow[i];
-    to_FW[i] = to_FW_Fraction * (1 - to_ISS_O_Fraction) * outflow[i];
-    to_DIV[i] = (1 - to_FW_Fraction) * (1 - to_ISS_O_Fraction) * outflow[i];
+    to_O_ISS[i] = to_O_ISS_Fraction * outflow[i];
+    to_FW[i] = to_FW_Fraction * (1 - to_O_ISS_Fraction) * outflow[i];
+    to_DIV[i] = (1 - to_FW_Fraction) * (1 - to_O_ISS_Fraction) * outflow[i];
   end for;
 
 annotation(
