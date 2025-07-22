@@ -29,7 +29,7 @@ model CPS
   parameter Real T = 48 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
   parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
-  parameter Real threshold = 1 "铺底量";
+  parameter Real threshold = 200 "铺底量";
   parameter Real to_ISS_O_Fraction = 0.99 "0.95Abdou 输出到ISS_O的比例";
   parameter Real to_FW_Fraction = 0.06 "输出到FW的比例";
 

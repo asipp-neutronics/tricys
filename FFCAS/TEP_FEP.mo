@@ -25,7 +25,7 @@ model TEP_FEP
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
   parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
   //DIR比例，逻辑不对，因为DT不一定一样多，需要改
-  parameter Real to_SDS_Fraction[5] = {0.85, 0.85, 0, 0, 0} "输出到SDS的比例";
+  parameter Real to_SDS_Fraction[5] = {0.5, 0.5, 0, 0, 0} "输出到SDS的比例";
 
 equation
   // 计算每个维度流体的动态变化

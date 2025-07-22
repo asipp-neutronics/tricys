@@ -24,7 +24,7 @@ model WDS
   parameter Real T = 24 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
   parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
-  parameter Real threshold = 1 "铺底量";
+  parameter Real threshold = 1000 "铺底量";
 
   // 辅助变量：计算I的总和
   Real I_total "I的5个分量之和";

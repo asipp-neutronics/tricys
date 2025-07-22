@@ -24,7 +24,7 @@ model TES
   parameter Real T = 12 "平均滞留时间 (mean residence time)";
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
   parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
-  parameter Real threshold = 1 "铺底量";
+  parameter Real threshold = 200 "铺底量";
   parameter Real to_O_ISS_Fraction = 0.95;
   parameter Real to_BZ_Fraction = 1 - to_O_ISS_Fraction;
 
