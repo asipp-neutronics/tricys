@@ -10,16 +10,17 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
+
 class ModelicaParameterParser:
     """
     A class to parse parameters from a Modelica model using OMPython.
 
     Attributes:
         package_path (str): Path to the Modelica package file (e.g., 'path/to/package.mo').
-        model_name (str): Name of the model (e.g., 'FFCAS.Cycle').
+        model_name (str): Name of the model (e.g., 'example.Cycle').
         default_params (List[str]): Default parameters to return if parsing fails.
     """
-    
+
     def __init__(self, package_path: str, model_name: str, default_params: Optional[List[str]] = None):
         """
         Initialize the parser with package path, model name, and optional default parameters.
@@ -31,7 +32,8 @@ class ModelicaParameterParser:
         """
         self.package_path = package_path
         self.model_name = model_name
-        self.default_params = default_params if default_params is not None else ['i_iss.T']
+        self.default_params = default_params if default_params is not None else [
+            'i_iss.T']
         self._validate_inputs()
 
     def _validate_inputs(self) -> None:
@@ -43,7 +45,8 @@ class ModelicaParameterParser:
             logger.error("Model name must be a non-empty string.")
             raise ValueError("Model name must be a non-empty string.")
         if not self.package_path.endswith('.mo'):
-            logger.warning(f"Package path '{self.package_path}' does not end with '.mo'. Ensure it is a valid Modelica file.")
+            logger.warning(
+                f"Package path '{self.package_path}' does not end with '.mo'. Ensure it is a valid Modelica file.")
 
     def get_available_parameters(self) -> List[str]:
         """
@@ -59,34 +62,43 @@ class ModelicaParameterParser:
         try:
             with OMCSessionZMQ() as omc:
                 logger.info(f"Loading package: {self.package_path}")
-                load_result = omc.sendExpression(f'loadFile("{self.package_path}")')
+                load_result = omc.sendExpression(
+                    f'loadFile("{self.package_path}")')
                 if not load_result:
-                    logger.error(f"Failed to load package: {self.package_path}")
-                    raise RuntimeError(f"Failed to load package: {self.package_path}")
+                    logger.error(
+                        f"Failed to load package: {self.package_path}")
+                    raise RuntimeError(
+                        f"Failed to load package: {self.package_path}")
 
                 logger.info(f"Checking model: {self.model_name}")
                 if not omc.sendExpression(f"isModel({self.model_name})"):
-                    logger.warning(f"Model '{self.model_name}' not found in package.")
+                    logger.warning(
+                        f"Model '{self.model_name}' not found in package.")
                     return available_params
 
                 logger.info(f"Parsing components for {self.model_name}")
-                components = omc.sendExpression(f"getComponents({self.model_name})")
+                components = omc.sendExpression(
+                    f"getComponents({self.model_name})")
                 if not components:
-                    logger.warning(f"No components found for {self.model_name}")
+                    logger.warning(
+                        f"No components found for {self.model_name}")
                     return available_params
 
                 for comp in components:
                     comp_type = comp[0]
                     comp_name = comp[1]
-                    if comp_type.startswith("FFCAS."):
-                        logger.debug(f"Processing component: {comp_name} ({comp_type})")
-                        params = omc.sendExpression(f"getParameterNames({comp_type})")
+                    if comp_type.startswith("example."):
+                        logger.debug(
+                            f"Processing component: {comp_name} ({comp_type})")
+                        params = omc.sendExpression(
+                            f"getParameterNames({comp_type})")
                         for param in params:
                             full_param = f"{comp_name}.{param}"
                             if full_param not in available_params:
                                 available_params.append(full_param)
 
-                logger.info(f"Available parameters for {self.model_name}: {available_params}")
+                logger.info(
+                    f"Available parameters for {self.model_name}: {available_params}")
                 return available_params
 
         except Exception as e:

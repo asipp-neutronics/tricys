@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model I_ISS
 
   // 输入端口：来自TEP_FCU的输入

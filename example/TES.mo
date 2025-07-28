@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model TES
 
   // 输入端口：来自BZ的输入（5维）

@@ -11,6 +11,7 @@ CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 with open(CONFIG_PATH, 'r') as f:
     CONFIG = json.load(f)
 
+
 def get_parameters_from_db(db_path: str) -> dict:
     """从数据库读取参数"""
     with sqlite3.connect(db_path) as conn:
@@ -24,18 +25,20 @@ def get_parameters_from_db(db_path: str) -> dict:
             }
     return params
 
+
 def format_parameter_value(name: str, value: str) -> str:
     """格式化参数值为 OpenModelica 格式"""
     return f"{name}={value}"
 
+
 def run_simulation(
-    package_path: str,
-    model_name: str,
-    db_path: str,
-    stop_time: float,
-    step_size: float,
-    temp_dir: str,
-    param_values: dict = None) -> str:
+        package_path: str,
+        model_name: str,
+        db_path: str,
+        stop_time: float,
+        step_size: float,
+        temp_dir: str,
+        param_values: dict = None) -> str:
     """运行单次仿真，使用数据库默认参数或指定参数"""
     os.makedirs(temp_dir, exist_ok=True)
     os.chdir(temp_dir)
@@ -49,11 +52,12 @@ def run_simulation(
     if param_values is None:
         param_vals = [params[name]['default_value'] for name in param_names]
     else:
-        param_vals = [param_values.get(name, params[name]['default_value']) for name in param_names]
+        param_vals = [param_values.get(
+            name, params[name]['default_value']) for name in param_names]
     # 初始化 OpenModelica
     omc = OMCSessionZMQ()
     omc.sendExpression(f'loadFile("{package_path}")')
-    mod = ModelicaSystem(fileName=package_path,modelName=model_name)
+    mod = ModelicaSystem(fileName=package_path, modelName=model_name)
     mod.buildModel()
 
     # 设置仿真选项
@@ -68,7 +72,8 @@ def run_simulation(
     try:
         # 设置参数
         param_settings = [
-            format_parameter_value(param_names[j], param_vals[j], param_types[j])
+            format_parameter_value(
+                param_names[j], param_vals[j], param_types[j])
             for j in range(len(param_names))
         ]
         mod.setParameters(param_settings)
@@ -85,7 +90,8 @@ def run_simulation(
             df = df[['time', 'sds.I[1]']]
             df.to_csv(output_csv, index=False)
         else:
-            raise ValueError(f"Expected columns 'time' and 'sds.I[1]', got {columns}")
+            raise ValueError(
+                f"Expected columns 'time' and 'sds.I[1]', got {columns}")
 
     except Exception as e:
         raise
@@ -96,9 +102,11 @@ def run_simulation(
 
     return output_csv
 
+
 if __name__ == "__main__":
     # 测试用例
-    package_path = "D:/FusionSimulationProgram/FFCAS_v0_FusionFuelCycleAnalysisSystem/FFCAS/package.mo"
-    model_name = "FFCAS.Cycle"
-    result_path = run_simulation(package_path, model_name, 500.0, 0.1, "D:/FusionSimulationProgram/FFCAS_v0_FusionFuelCycleAnalysisSystem/temp")
+    package_path = "./example/package.mo"
+    model_name = "example.Cycle"
+    result_path = run_simulation(
+        package_path, model_name, 500.0, 0.1, "./temp")
     print(f"Result path: {result_path}")

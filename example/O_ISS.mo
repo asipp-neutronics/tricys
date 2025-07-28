@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model O_ISS
 
   // 输入端口：来自CPS的输入（5维）

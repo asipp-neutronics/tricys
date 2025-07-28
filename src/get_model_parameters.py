@@ -19,6 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger('get_parameters')
 logger.setLevel(logging.DEBUG)
 
+
 def create_parameters_table(db_path: str):
     """创建参数表"""
     conn = sqlite3.connect(db_path)
@@ -35,6 +36,7 @@ def create_parameters_table(db_path: str):
     conn.commit()
     conn.close()
     logger.info("Parameters table created")
+
 
 def get_model_parameters(package_path: str, model_name: str, db_path: str):
     """从 OpenModelica 获取模型参数并存储到数据库"""
@@ -65,7 +67,8 @@ def get_model_parameters(package_path: str, model_name: str, db_path: str):
                 INSERT OR REPLACE INTO parameters (name, type, default_value, sweep_values, description)
                 VALUES (?, ?, ?, ?, ?)
             ''', (name, type_info, default_value, None, f"Parameter {name} from {model_name}"))
-            logger.debug(f"Stored parameter: {name}, type: {type_info}, default: {default_value}")
+            logger.debug(
+                f"Stored parameter: {name}, type: {type_info}, default: {default_value}")
 
         conn.commit()
         logger.info("Parameters stored in database")
@@ -76,10 +79,11 @@ def get_model_parameters(package_path: str, model_name: str, db_path: str):
         conn.close()
         del omc
 
+
 if __name__ == "__main__":
     package_path = CONFIG['package_path']
-    model_name = "FFCAS.Cycle"
+    model_name = "example.Cycle"
     db_path = os.path.join(CONFIG['output_dir'], "parameters.db")
-    
+
     create_parameters_table(db_path)
     get_model_parameters(package_path, model_name, db_path)
