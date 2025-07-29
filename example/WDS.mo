@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model WDS
 
   // 输入端口：来自I_ISS的输入（5维）

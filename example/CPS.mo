@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model CPS
 
   // 输入端口：来自Coolant_Loop的输入（5维）

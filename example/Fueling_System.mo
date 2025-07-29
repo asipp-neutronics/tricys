@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model Fueling_System
 
   // 输入端口：输出到plasma（5维）

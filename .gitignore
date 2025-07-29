@@ -3,4 +3,3 @@ data/
 temp/
 .vscode/
 *.pyc
-*.order

@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model Plasma
 
   // 定义输入端口

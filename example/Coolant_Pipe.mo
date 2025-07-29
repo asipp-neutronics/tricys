@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model Coolant_Pipe
 
   // 输入端口：来自FW的输入（5维）

@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model TEP_FEP
 
   // 输入端口：来自Pump_System的输入（5维）

@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model FW
 
   // 输入端口：来自plasma（5维）

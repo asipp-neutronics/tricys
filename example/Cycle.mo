@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model Cycle
   // 实例化脉冲信号模块
   Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 500, width = 100) annotation(

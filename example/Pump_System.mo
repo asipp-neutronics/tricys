@@ -1,4 +1,4 @@
-within FFCAS;
+within example;
 model Pump_System
 
   // 输入端口：来自Plasma的输入（5维）
