@@ -1,5 +1,30 @@
+# Python
 __pycache__/
-data/
-temp/
-.vscode/
 *.pyc
+*.pyo
+*.pyd
+.ruff_cache/
+.pytest_cache/
+
+# Virtual Environments
+.venv
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# IDE and Editor files
+.vscode/
+.idea/
+
+# Configured output and data directories
+data/
+log/
+results/
+temp/
+
+# Log files
+*.log

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  openmodelica-gui:
+    build: .
+    
+    # 从运行 docker-compose 的 shell 中获取 DISPLAY 变量的值
+    environment:
+      - DISPLAY=${DISPLAY}
+      - PATH=/home/appuser/.local/bin:${PATH}
+
+    # 用于挂载 X11 的 socket，让GUI可以通信
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${CUSTOM_MODEL_PATH}:/tricys/model
+
+    # 保持容器在前台交互运行
+    #stdin_open: true
+    #tty: true
+
+    # 定义容器启动后要执行的命令
+    command:  |
+      sh -c '
+        echo "--- Running pre-start setup ---" && \
+        mkdir -p /tricys/temp && \
+        echo "installPackage(Modelica); quit();" > /tricys/temp/install.mos && \
+        omc /tricys/temp/install.mos && \
+        rm /tricys/temp/install.mos && \
+        echo "--- Setup complete, starting OMEdit ---" && \
+        OMEdit
+      '
