@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   openmodelica-gui:
-    build: 
-      context: .
-      dockerfile: ./docker/tricys_om_gui.dockerfile
+    #build: 
+    #  context: .
+    #  dockerfile: ./docker/tricys_om_gui.dockerfile
 
-    #image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:develop
-    image: tricys_openmodelica_gui
+    image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:develop
+    #image: tricys_openmodelica_gui
 
     # 从运行 docker-compose 的 shell 中获取 DISPLAY 变量的值
     environment:
