@@ -6,16 +6,16 @@ from typing import Any, Dict
 
 from OMPython import ModelicaSystem
 
-from manager.config_manager import config_manager
-from manager.logger_manager import logger_manager
+from tricys.manager.config_manager import config_manager
+from tricys.manager.logger_manager import logger_manager
 
-from utils.db_utils import (
+from tricys.utils.db_utils import (
     create_parameters_table,
     get_parameters_from_db,
     store_parameters_in_db,
 )
-from utils.file_utils import get_unique_filename
-from utils.om_utils import (
+from tricys.utils.file_utils import get_unique_filename
+from tricys.utils.om_utils import (
     format_parameter_value,
     get_all_parameters_details,
     get_om_session,

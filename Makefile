@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Makefile for Python Project
 #
-.PHONY: help clean install dev-install lint format check
+.PHONY: help clean install dev-install lint format check test
 
 # 默认目标：当只输入 `make` 时，会执行此命令，显示帮助信息。
 help:
@@ -11,6 +11,10 @@ help:
 	@echo "  install       Install the project in editable mode for regular use."
 	@echo "  dev-install   Install the project with all development dependencies."
 	@echo "  clean         Remove all build artifacts, cache files, and logs."
+	@echo "  lint          Check code style and potential errors (report only, do not modify)."
+	@echo "  format        Automatically format and repair code."
+	@echo "  check         Combine commands: format first, then check to make sure the codebase is clean."
+	@echo "  test          Perform one-click tests."
 	@echo "  help          Show this help message."
 
 # 安装项目的核心依赖，用于常规使用或部署。
@@ -18,6 +22,7 @@ help:
 install:
 	@echo "--> Installing project in editable mode..."
 	pip install -e .
+	omc /tricys/script/install.mos 
 	@echo "--> Installation complete."
 
 # 安装项目的所有依赖，包括开发和测试工具。
@@ -25,7 +30,9 @@ install:
 dev-install:
 	@echo "--> Installing project with development dependencies..."
 	pip install -e ".[dev]"
+	omc /tricys/script/install.mos 
 	@echo "--> Development installation complete."
+
 
 # 清理项目，删除所有自动生成的文件和目录。
 clean:
@@ -38,10 +45,13 @@ clean:
 	rm -rf .pytest_cache
 	rm -rf build/
 	rm -rf dist/
-	rm -rf  src/*.egg-info/
+	rm -rf *.egg-info/
+	rm -rf tricys/*.egg-info/
 	rm -f .coverage
 	rm -rf temp/
 	rm -rf log/
+	rm -rf results/
+	rm -rf data/
 	@echo "--> Cleanup complete."
 
 # 检查代码风格和潜在错误（只报告，不修改）
@@ -60,3 +70,8 @@ format:
 # 组合命令：先格式化，再检查，确保代码库是干净的
 check: format lint
 	@echo "--> All checks passed!"
+
+# 执行一键测试
+test:
+	@echo "--> Pytest Project..."
+	pytest test/.

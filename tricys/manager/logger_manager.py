@@ -7,7 +7,7 @@ from threading import Lock
 from typing import Any, Dict
 
 from .config_manager import config_manager
-from utils.file_utils import delete_old_logs
+from tricys.utils.file_utils import delete_old_logs
 
 class SingletonMeta(type):
     """

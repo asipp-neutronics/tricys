@@ -9,11 +9,11 @@ from tkinter import messagebox, ttk
 
 import numpy as np
 
-from manager.config_manager import config_manager
-from manager.logger_manager import logger_manager
+from tricys.manager.config_manager import config_manager
+from tricys.manager.logger_manager import logger_manager
 
-from simulation.sweep_simulation import run_parameter_sweep
-from utils.plot_utils import plot_startup_inventory
+from tricys.simulation.sweep_simulation import run_parameter_sweep
+from tricys.utils.plot_utils import plot_startup_inventory
 
 # Add project root to sys.path to allow absolute imports from src
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

@@ -38,3 +38,5 @@ USER appuser
 # 7. 更新pip
 RUN pip install --upgrade pip setuptools wheel
 
+# 8. 安装项目依赖
+RUN make dev-install

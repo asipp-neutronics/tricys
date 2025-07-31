@@ -2,8 +2,13 @@ version: '3.8'
 
 services:
   openmodelica-gui:
-    build: .
-    
+    build: 
+      context: .
+      dockerfile: ./docker/tricys_om_gui.dockerfile
+
+    #image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:develop
+    image: tricys_openmodelica_gui
+
     # 从运行 docker-compose 的 shell 中获取 DISPLAY 变量的值
     environment:
       - DISPLAY=${DISPLAY}
@@ -19,13 +24,4 @@ services:
     #tty: true
 
     # 定义容器启动后要执行的命令
-    command:  |
-      sh -c '
-        echo "--- Running pre-start setup ---" && \
-        mkdir -p /tricys/temp && \
-        echo "installPackage(Modelica); quit();" > /tricys/temp/install.mos && \
-        omc /tricys/temp/install.mos && \
-        rm /tricys/temp/install.mos && \
-        echo "--- Setup complete, starting OMEdit ---" && \
-        OMEdit
-      '
+    command: OMEdit

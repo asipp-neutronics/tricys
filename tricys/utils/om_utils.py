@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 from OMPython import OMCSessionZMQ
 
-from manager.logger_manager import logger_manager
+from tricys.manager.logger_manager import logger_manager
 logger = logging.getLogger(__name__)
 
 
@@ -153,6 +153,6 @@ def format_parameter_value(name: str, value: Any) -> str:
         return f"{name}={{{','.join(map(str, value))}}}"
     elif isinstance(value, str):
         # Format strings as "value"
-        return f'{name}=""{value}""'
+        return f'{name}="{value}"'
     # For numbers and booleans, direct string conversion is fine
     return f"{name}={value}"

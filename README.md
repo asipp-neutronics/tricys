@@ -29,6 +29,7 @@ tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料
 ### 环境要求
 - **Docker**: 最新版本（从 [Docker 官网](https://www.docker.com/) 下载）。
 - **Docker Compose**: 最新版本（通常随 Docker Desktop 一起安装）。
+- **VSCode**: 最新版本（安装Dev Containers插件）。
 - **Windows 11**: 最新版本（安装 WSL2 并默认启用 WSLg 功能）。
 - **Ubuntu 24.04**: 运行 `xhost +local:` 命令。
 - [ ] **CentOS**
@@ -41,24 +42,18 @@ tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料
     cd tricys
     ```
 
-2.  **构建 Docker 镜像**：
-    在项目根目录下，运行以下命令构建镜像：
-    ```bash
-    docker compose build
-    ```
-
-3.  **启动开发容器**：此命令将在后台启动一个服务容器，默认加载并打开`OMEdit`
+2.  **启动开发容器**：此命令将在后台启动一个服务容器，默认加载并打开`OMEdit`
     ```bash
     docker compose up -d
     ```
 
-4.  **在容器内执行命令**：
+3.  **在容器内执行命令**：
     通过以下命令进入正在运行的容器，以执行代码或运行测试：
     ```bash
     docker compose exec openmodelica-gui bash
     ```
 
-5.  **停止和清理**：
+4.  **停止和清理**：
     完成开发后，使用以下命令停止并移除容器：
     ```bash
     docker compose down -v
@@ -67,10 +62,11 @@ tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料
 ### 文件结构
 ```
 tricys/
-├── .vscode/                # VS Code 编辑器配置
 ├── docs/                   # 项目文档
 ├── example/                # 示例模型
-├── src/                    # Python 源代码
+├── docker/                 # docker镜像构建
+├── script/                 # 辅助脚本
+├── tricys/                 # Python 源代码
 │   ├── analysis/           # 数据分析模块
 │   ├── manager/            # 管理器模块（配置、日志等）
 │   ├── simulation/         # 仿真运行模块
@@ -80,7 +76,6 @@ tricys/
 ├── .env                    # .env文件配置
 ├── config.json             # 项目配置文件
 ├── docker-compose.yml      # Docker Compose 配置文件
-├── Dockerfile              # Docker 镜像配置文件
 ├── pyproject.toml          # Python 项目配置文件
 └── README.md               # 项目开发说明
 ```
@@ -88,13 +83,13 @@ tricys/
 1. `.env`：该配置文件中需要设置`CUSTOM_MODEL_PATH=****`来指定宿主机中用户的OpenModelica模型所在目录
 2. `config.json`:该配置文件中表示默认参数值，如paths为路径参数，logging为日志参数，simulation为仿真运行参数, sweep_parameter为扫描参数，overrides_parameter为模型覆盖参数。
 
-## 使用方法
+## 使用方法（默认进入容器中执行以下命令，未测试本地环境）
 1. 安装项目：`make dev-install` or `make install`
 2. 执行测试：
-    - 单次运行仿真：`python3 -m simulation.single_simulation`
-    - 扫描运行仿真：`python3 -m simulation.sweep_simulation`
-    - 图形运行仿真：`python3 -m simulation.visual_simualtion`
-3. 清理数据：`make clear`
+    - 单次运行仿真：`python3 -m tricys.simulation.single_simulation`
+    - 扫描运行仿真：`python3 -m tricys.simulation.sweep_simulation`
+    - 图形运行仿真：`python3 -m tricys.simulation.visual_simualtion`
+3. 清理数据：`make clean`
 4. 规范代码：`make check`
 
 ## 开发与贡献

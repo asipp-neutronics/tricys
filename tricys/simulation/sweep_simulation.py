@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 from OMPython import ModelicaSystem, OMCSessionZMQ
 
-from src.manager.config_manager import config_manager
-from manager.logger_manager import logger_manager
+from tricys.manager.config_manager import config_manager
+from tricys.manager.logger_manager import logger_manager
 
-from utils.file_utils import get_unique_filename
+from tricys.utils.file_utils import get_unique_filename
 
 # Add project root to sys.path to allow absolute imports from src
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

@@ -8,8 +8,8 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-from manager.config_manager import config_manager
-from manager.logger_manager import logger_manager
+from tricys.manager.config_manager import config_manager
+from tricys.manager.logger_manager import logger_manager
 
 
 logger = logging.getLogger(__name__)
