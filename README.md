@@ -93,7 +93,7 @@ tricys/
 2. 执行测试：
     - 单次运行仿真：`python3 -m simulation.single_simulation`
     - 扫描运行仿真：`python3 -m simulation.sweep_simulation`
-    - 图形运行仿真：`python3 -m simualtion.visual_simualtion`
+    - 图形运行仿真：`python3 -m simulation.visual_simualtion`
 3. 清理数据：`make clear`
 4. 规范代码：`make check`
 

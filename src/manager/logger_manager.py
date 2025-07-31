@@ -7,7 +7,7 @@ from threading import Lock
 from typing import Any, Dict
 
 from .config_manager import config_manager
-
+from uitls.file_utils import delete_old_logs
 
 class SingletonMeta(type):
     """
@@ -52,6 +52,7 @@ class LoggerManager(metaclass=SingletonMeta):
         log_level_str = config_manager.get("logging.log_level", default="INFO").upper()
         log_level = getattr(logging, log_level_str, logging.INFO)
         log_to_console = config_manager.get("logging.log_to_console", default=True)
+        log_count = config_manager.get("logging.log_count", default=5)
 
         project_root = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "..", "..")
@@ -60,6 +61,9 @@ class LoggerManager(metaclass=SingletonMeta):
             project_root, config_manager.get("paths.log_dir", default="log")
         )
         os.makedirs(log_dir, exist_ok=True)
+        
+        # 删除旧日志文件，确保日志目录中不会超过指定数量的日志文件
+        delete_old_logs(log_dir, log_count)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         log_file_name = f"simulation_{timestamp}.log"
