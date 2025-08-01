@@ -3,15 +3,12 @@
 import logging
 import math
 import os
-import sys
 import tkinter as tk
 from tkinter import messagebox, ttk
 
 import numpy as np
 
 from tricys.manager.config_manager import config_manager
-from tricys.manager.logger_manager import logger_manager
-
 from tricys.simulation.sweep_simulation import run_parameter_sweep
 from tricys.utils.plot_utils import plot_startup_inventory
 
@@ -212,7 +209,9 @@ class SimulationUI:
             results_dir = os.path.join(
                 self.project_root, self.config.get("paths.results_dir")
             )
-            variableFilter = self.config.get("simulation.variableFilter", "time|sds\\.I\\[1\\]")
+            variableFilter = self.config.get(
+                "simulation.variableFilter", "time|sds\\.I\\[1\\]"
+            )
 
             os.makedirs(temp_dir, exist_ok=True)
             os.makedirs(results_dir, exist_ok=True)
@@ -226,7 +225,7 @@ class SimulationUI:
                 sim_step_size,
                 temp_dir,
                 results_dir,
-                variableFilter
+                variableFilter,
             )
 
             # Plot startup tritium inventory
@@ -246,9 +245,9 @@ class SimulationUI:
             messagebox.showerror("Error", f"Simulation failed: {str(e)}")
 
 
-if __name__ == "__main__":
-    """Main function to initialize and run the GUI for parameter configuration."""
-    root = tk.Tk()
-    app = SimulationUI(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: [root.destroy(), sys.exit(0)])
-    root.mainloop()
+# if __name__ == "__main__":
+#    """Main function to initialize and run the GUI for parameter configuration."""
+#    root = tk.Tk()
+#    app = SimulationUI(root)
+#    root.protocol("WM_DELETE_WINDOW", lambda: [root.destroy(), sys.exit(0)])
+#    root.mainloop()

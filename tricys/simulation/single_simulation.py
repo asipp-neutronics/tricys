@@ -6,9 +6,6 @@ from typing import Any, Dict
 
 from OMPython import ModelicaSystem
 
-from tricys.manager.config_manager import config_manager
-from tricys.manager.logger_manager import logger_manager
-
 from tricys.utils.db_utils import (
     create_parameters_table,
     get_parameters_from_db,
@@ -33,8 +30,8 @@ def simulation(
     stop_time: float,
     step_size: float,
     results_dir: str,
-    param_values: Dict[str, Any] ,
-    variableFilter: str
+    param_values: Dict[str, Any],
+    variableFilter: str,
 ) -> str:
     """
     运行单次模拟，将模型参数与数据库同步。
@@ -76,7 +73,9 @@ def simulation(
             )
 
         logger.info(f"Instantiating model: {model_name}")
-        mod = ModelicaSystem(fileName=package_path, modelName=model_name,variableFilter=variableFilter)
+        mod = ModelicaSystem(
+            fileName=package_path, modelName=model_name, variableFilter=variableFilter
+        )
 
         param_settings = []
         if param_values:
@@ -120,28 +119,28 @@ def simulation(
     return output_csv
 
 
-if __name__ == "__main__":
-    package_path = os.path.join(PROJECT_ROOT, config_manager.get("paths.package_path"))
-    results_dir = os.path.join(PROJECT_ROOT, config_manager.get("paths.results_dir"))
-    model_name = config_manager.get("simulation.model_name", "example.Cycle")
-    stop_time = config_manager.get("simulation.stop_time", 5000.0)
-    step_size = config_manager.get("simulation.step_size", 1)
-    param_overrides = config_manager.get("overrides_parameter")
-    variableFilter = config_manager.get("simulation.variableFilter", "time|sds.I[1]")
-
-    logger.info(f"Starting simulation for model: {model_name}")
-    try:
-        result_path = simulation(
-            package_path=package_path,
-            model_name=model_name,
-            stop_time=stop_time,
-            step_size=step_size,
-            results_dir=results_dir,
-            param_values=param_overrides,
-            variableFilter=variableFilter
-        )
-        logger.info(
-            f"Simulation run completed successfully. Result path: {result_path}"
-        )
-    except Exception:
-        logger.critical("Simulation failed to complete.")
+# if __name__ == "__main__":
+#    package_path = os.path.join(PROJECT_ROOT, config_manager.get("paths.package_path"))
+#    results_dir = os.path.join(PROJECT_ROOT, config_manager.get("paths.results_dir"))
+#    model_name = config_manager.get("simulation.model_name", "example.Cycle")
+#    stop_time = config_manager.get("simulation.stop_time", 5000.0)
+#    step_size = config_manager.get("simulation.step_size", 1)
+#    param_overrides = config_manager.get("overrides_parameter")
+#    variableFilter = config_manager.get("simulation.variableFilter", "time|sds.I[1]")
+#
+#    logger.info(f"Starting simulation for model: {model_name}")
+#    try:
+#        result_path = simulation(
+#            package_path=package_path,
+#            model_name=model_name,
+#            stop_time=stop_time,
+#            step_size=step_size,
+#            results_dir=results_dir,
+#            param_values=param_overrides,
+#            variableFilter=variableFilter
+#        )
+#        logger.info(
+#            f"Simulation run completed successfully. Result path: {result_path}"
+#        )
+#    except Exception:
+#        logger.critical("Simulation failed to complete.")

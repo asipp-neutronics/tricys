@@ -43,6 +43,7 @@ clean:
 	find . -type f -name "*.pyc" -delete
 	# 删除其他常见的缓存、构建和日志目录/文件
 	rm -rf .pytest_cache
+	rm -rf .ruff_cache
 	rm -rf build/
 	rm -rf dist/
 	rm -rf *.egg-info/
@@ -52,6 +53,7 @@ clean:
 	rm -rf log/
 	rm -rf results/
 	rm -rf data/
+	rm -rf test/test_*/
 	@echo "--> Cleanup complete."
 
 # 检查代码风格和潜在错误（只报告，不修改）
@@ -74,4 +76,4 @@ check: format lint
 # 执行一键测试
 test:
 	@echo "--> Pytest Project..."
-	pytest test/.
+	pytest -v test/.

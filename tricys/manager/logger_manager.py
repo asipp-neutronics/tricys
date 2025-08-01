@@ -6,8 +6,10 @@ from datetime import datetime
 from threading import Lock
 from typing import Any, Dict
 
-from .config_manager import config_manager
 from tricys.utils.file_utils import delete_old_logs
+
+from .config_manager import config_manager
+
 
 class SingletonMeta(type):
     """
@@ -61,13 +63,20 @@ class LoggerManager(metaclass=SingletonMeta):
             project_root, config_manager.get("paths.log_dir", default="log")
         )
         os.makedirs(log_dir, exist_ok=True)
-        
+
         # 删除旧日志文件，确保日志目录中不会超过指定数量的日志文件
         delete_old_logs(log_dir, log_count)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         log_file_name = f"simulation_{timestamp}.log"
         log_file_path = os.path.join(log_dir, log_file_name)
+
+        # 清除所有现有的处理器，以避免重复记录
+        root_logger = logging.getLogger()
+        if root_logger.hasHandlers():
+            root_logger.handlers.clear()
+
+        root_logger.setLevel(log_level)
 
         handlers = []
         file_handler = logging.FileHandler(log_file_path)
@@ -77,11 +86,12 @@ class LoggerManager(metaclass=SingletonMeta):
             stream_handler = logging.StreamHandler()
             handlers.append(stream_handler)
 
-        logging.basicConfig(
-            level=log_level,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=handlers,
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
+        for handler in handlers:
+            handler.setFormatter(formatter)
+            root_logger.addHandler(handler)
 
         logger = logging.getLogger(__name__)
         logger.info(

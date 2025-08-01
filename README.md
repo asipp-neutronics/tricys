@@ -37,26 +37,22 @@ tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料
 
 ### 安装步骤
 1.  **克隆本仓库**:
+    > **注意事项:** Windows 11系统请在WSL2控制台克隆本仓库
     ```
     git clone https://github.com/asipp-neutronics/tricys.git
     cd tricys
     ```
 
-2.  **启动开发容器**：此命令将在后台启动一个服务容器，默认加载并打开`OMEdit`
+2.  **Open VSCode**：
+    > **注意事项:** Windows 11系统请在WSL2控制台打开VSCode
     ```bash
-    docker compose up -d
+    code .
     ```
 
-3.  **在容器内执行命令**：
-    通过以下命令进入正在运行的容器，以执行代码或运行测试：
+3.  **Reopen in Container**：
+    > **注意事项:** 初次创建devcontainer需要下载镜像
     ```bash
-    docker compose exec openmodelica-gui bash
-    ```
-
-4.  **停止和清理**：
-    完成开发后，使用以下命令停止并移除容器：
-    ```bash
-    docker compose down -v
+    > Dev Conainters: Reopen in Container
     ```
 ## 项目说明
 ### 文件结构
@@ -70,6 +66,9 @@ tricys/
 │   ├── analysis/           # 数据分析模块
 │   ├── manager/            # 管理器模块（配置、日志等）
 │   ├── simulation/         # 仿真运行模块
+    │   ├── single_simulation.py         # 单次模拟仿真
+    │   ├── sweep_simulation.py          # 扫描参数仿真
+    │   ├── visual_simulation.py         # 界面扫描仿真
 │   └── utils/              # 通用工具模块
 ├── test/                   # 测试代码
 ├── .gitignore              # Git 忽略文件配置
@@ -84,11 +83,8 @@ tricys/
 2. `config.json`:该配置文件中表示默认参数值，如paths为路径参数，logging为日志参数，simulation为仿真运行参数, sweep_parameter为扫描参数，overrides_parameter为模型覆盖参数。
 
 ## 使用方法（默认进入容器中执行以下命令，未测试本地环境）
-1. 安装项目：`make dev-install` or `make install`
-2. 执行测试：
-    - 单次运行仿真：`python3 -m tricys.simulation.single_simulation`
-    - 扫描运行仿真：`python3 -m tricys.simulation.sweep_simulation`
-    - 图形运行仿真：`python3 -m tricys.simulation.visual_simualtion`
+1. 安装项目：`make dev-install`
+2. 执行测试：`make test`
 3. 清理数据：`make clean`
 4. 规范代码：`make check`
 
@@ -123,22 +119,17 @@ tricys/
 - **内容**: 清晰地描述其功能、参数、返回值以及可能引发的异常。
 - **示例**:
   ```python
-  def calculate_tbr(breeding_ratio: float, neutron_multiplier: float) -> float:
-      """计算氚增殖比 (Tritium Breeding Ratio)。
+      def get_unique_filename(base_path: str, filename: str) -> str:
+          """
+          如果文件已存在，则通过附加计数器来生成唯一的文件名。
 
-      Args:
-          breeding_ratio: 基础增殖比。
-          neutron_multiplier: 中子倍增因子。
+          参数:
+              base_path (str): 将保存文件的目录路径。
+              filename (str): 所需的文件名（包括扩展名）。
 
-      Returns:
-          计算得出的总 TBR 值。
-
-      Raises:
-          ValueError: 如果任一参数为负数。
-      """
-      if breeding_ratio < 0 or neutron_multiplier < 0:
-          raise ValueError("参数不能为负数")
-      return breeding_ratio * neutron_multiplier
+          返回:
+              str: 一个不存在的唯一文件路径。
+          """
   ```
 
 #### 4. 测试 (Testing)
@@ -149,7 +140,7 @@ tricys/
 - **覆盖率**: 鼓励为所有新功能和错误修复编写单元测试，以保持较高的测试覆盖率。
 - **执行**:
   ```bash
-  pytest test/
+  pytest -v test/
   ```
 
 #### 5. Git 提交规范

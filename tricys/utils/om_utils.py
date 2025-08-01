@@ -5,7 +5,6 @@ from typing import Any, Dict, List
 
 from OMPython import OMCSessionZMQ
 
-from tricys.manager.logger_manager import logger_manager
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +58,7 @@ def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
 
         for comp in components:
             comp_type, comp_name = comp[0], comp[1]
-            if comp_type.startswith(model_name.split('.')[0]):
+            if comp_type.startswith(model_name.split(".")[0]):
                 params = omc.sendExpression(f"getParameterNames({comp_type})")
                 for param in params:
                     full_param = f"{comp_name}.{param}"
@@ -109,10 +108,12 @@ def _recursive_get_parameters(
         elif comp_variability != "parameter" and omc.sendExpression(
             f"isModel({comp_type})"
         ):
-            if comp_type.startswith(class_name.split('.')[0]):
+            if comp_type.startswith(class_name.split(".")[0]):
                 _recursive_get_parameters(omc, comp_type, full_name, params_list)
             else:
-                logger.debug(f"Skipping non-example component: {full_name} ({comp_type})")
+                logger.debug(
+                    f"Skipping non-example component: {full_name} ({comp_type})"
+                )
 
 
 def get_all_parameters_details(
