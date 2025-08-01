@@ -40,3 +40,6 @@ RUN pip install --upgrade pip setuptools wheel
 
 # 8. 安装项目依赖
 RUN make dev-install
+
+# 9. 设置环境变量
+ENV PATH="/home/appuser/.local/bin:${PATH}"

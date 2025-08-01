@@ -6,13 +6,13 @@ services:
     #  context: .
     #  dockerfile: ./docker/tricys_om_gui.dockerfile
 
-    image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:develop
+    image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
     #image: tricys_openmodelica_gui
 
     # 从运行 docker-compose 的 shell 中获取 DISPLAY 变量的值
     environment:
       - DISPLAY=${DISPLAY}
-      - PATH=/home/appuser/.local/bin:${PATH}
+      #- PATH=/home/appuser/.local/bin:${PATH}
 
     # 用于挂载 X11 的 socket，让GUI可以通信
     volumes:
@@ -24,4 +24,4 @@ services:
     #tty: true
 
     # 定义容器启动后要执行的命令
-    command: OMEdit
+    command: ["/bin/sh", "-c", "while sleep 1000; do :; done"]
