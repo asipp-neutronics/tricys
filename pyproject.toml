@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tricys"
+version = "0.1.0"
+authors = [
+  { name="asipp-neutronics", email="guilong@ie.ah.cn" },
+]
+description = "TRitium Integrated CYcle Simulation"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "seaborn"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/asipp-neutronics/tricys"
+"Bug Tracker" = "https://github.com/asipp-neutronics/tricys"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",  # 用于测试
+    "ruff",    # 用于代码检查和格式化
+    "black",   
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["test*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.ruff]
+target-version = "py38"
+line-length = 88
+select = ["E", "F", "W", "I"]
+ignore = ["E501","E722"]
+
+[tool.ruff.isort]
+known-first-party = ["src"]

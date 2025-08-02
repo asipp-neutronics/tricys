@@ -1,0 +1,73 @@
+name: Parallel Build, Test, and Push Docker Images
+
+on:
+  push:
+    branches: [ docker_dev ]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME_BASE: ghcr.io/asipp-neutronics/tricys_openmodelica
+  TEST_TAG: test-candidate
+
+jobs:
+  build_test_and_push:
+    name: Build, Test, and Push for ${{ matrix.service }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [ompython, gui]
+        include:
+          - service: ompython
+            dockerfile: ./docker/tricys_om_ompython_buildtest.dockerfile
+          - service: gui
+            dockerfile: ./docker/tricys_om_gui_buildtest.dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.MY_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME_BASE }}_${{ matrix.service }}
+
+      - name: Build Docker image for ${{ matrix.service }}
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          load: true
+          push: false
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}_${{ matrix.service }}:${{ env.TEST_TAG }}
+            ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Run tests for ${{ matrix.service }}
+        run: |
+          echo "Starting tests in container for ${{ matrix.service }}..."
+          docker run --rm ${{ env.IMAGE_NAME_BASE }}_${{ matrix.service }}:${{ env.TEST_TAG }} make test
+
+      - name: Push the image for ${{ matrix.service }}
+        run: |
+          echo "Tests passed for ${{ matrix.service }}. Pushing image with all tags..."
+          docker push --all-tags ${{ env.IMAGE_NAME_BASE }}_${{ matrix.service }}
+
+      - name: Debug with tmate on failure
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
