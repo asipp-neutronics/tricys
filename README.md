@@ -24,16 +24,30 @@ tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料
   - 基于 Python 和 OpenModelica，支持 Windows、Linux 和 macOS。
 
 ## 安装与依赖
-为了简化开发环境的配置，本项目提供了  `docker-compose.yml` 文件，用于在容器化环境中运行和测试代码。
+为了简化开发环境的配置，本项目维护了两个容器镜像, 支持 **VSCode & Dev Containers** 在容器化环境中运行和测试代码，：
+1. [ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_ompython/476218036?tag=docker_dev)：带有OMEdit可视化应用
+2. [ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_gui/476218102?tag=docker_dev)：不带有OMEdit可视化应用
+
+**如需切换dev container请删除原容器并修改docker-compose.yml**
+```
+image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
+```
 
 ### 环境要求
 - **Docker**: 最新版本（从 [Docker 官网](https://www.docker.com/) 下载）。
 - **Docker Compose**: 最新版本（通常随 Docker Desktop 一起安装）。
 - **VSCode**: 最新版本（安装Dev Containers插件）。
 - **Windows 11**: 最新版本（安装 WSL2 并默认启用 WSLg 功能）。
-- **Ubuntu 24.04**: 运行 `xhost +local:` 命令。
-- [ ] **CentOS**
-- [ ] **Rocky**
+- **Linux**: 需要运行 **`xhost +local:`** 命令。
+
+| 系统测试| tricys_openmodelica_ompython | tricys_openmodelica_gui（OMEdit） |
+| :--- | :--- | :--- |
+| Windows11 (WSL2) | ✅ | ✅ |
+| Ubuntu 24.04 | ✅ | ✅ |
+| Rocky 10 | ✅ | ✅ |
+| CentOS 7 | ✅ | ❌|
+
+**注意事项**：经测试，CentOS7考虑到版本较旧，无法在tricys_openmodelica_gui容器中运行`OMEdit`可视化应用
 
 ### 安装步骤
 1.  **克隆本仓库**:
@@ -50,7 +64,7 @@ tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料
     ```
 
 3.  **Reopen in Container**：
-    > **注意事项:** 初次创建devcontainer需要下载镜像
+    > **注意事项:** 初次创建devcontainer需要登录ghcr.io并下载镜像
     ```bash
     > Dev Conainters: Reopen in Container
     ```
@@ -66,9 +80,9 @@ tricys/
 │   ├── analysis/           # 数据分析模块
 │   ├── manager/            # 管理器模块（配置、日志等）
 │   ├── simulation/         # 仿真运行模块
-    │   ├── single_simulation.py         # 单次模拟仿真
-    │   ├── sweep_simulation.py          # 扫描参数仿真
-    │   ├── visual_simulation.py         # 界面扫描仿真
+│   │   ├── single_simulation.py         # 单次模拟仿真
+│   │   ├── sweep_simulation.py          # 扫描参数仿真
+│   │   └── visual_simulation.py         # 界面扫描仿真
 │   └── utils/              # 通用工具模块
 ├── test/                   # 测试代码
 ├── .gitignore              # Git 忽略文件配置
@@ -119,17 +133,17 @@ tricys/
 - **内容**: 清晰地描述其功能、参数、返回值以及可能引发的异常。
 - **示例**:
   ```python
-      def get_unique_filename(base_path: str, filename: str) -> str:
-          """
-          如果文件已存在，则通过附加计数器来生成唯一的文件名。
+  def get_unique_filename(base_path: str, filename: str) -> str:
+      """
+      如果文件已存在，则通过附加计数器来生成唯一的文件名。
 
-          参数:
-              base_path (str): 将保存文件的目录路径。
-              filename (str): 所需的文件名（包括扩展名）。
+      参数:
+          base_path (str): 将保存文件的目录路径。
+          filename (str): 所需的文件名（包括扩展名）。
 
-          返回:
-              str: 一个不存在的唯一文件路径。
-          """
+      返回:
+          str: 一个不存在的唯一文件路径。
+      """
   ```
 
 #### 4. 测试 (Testing)
