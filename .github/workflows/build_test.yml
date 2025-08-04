@@ -2,7 +2,10 @@ name: Parallel Build, Test, and Push Docker Images
 
 on:
   push:
-    branches: [ docker_dev ]
+    branches: [ develop, main ]
+    
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 env:
