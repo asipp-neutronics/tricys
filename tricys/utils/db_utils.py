@@ -1,4 +1,8 @@
-"""本模块提供与SQLite数据库交互的实用功能。"""
+"""Utilities for interacting with the simulation parameter SQLite database.
+
+This module provides functions to create, store, update, and retrieve simulation
+parameter data from a SQLite database file.
+"""
 
 import json
 import logging
@@ -8,23 +12,18 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-from tricys.manager.config_manager import config_manager
-
 logger = logging.getLogger(__name__)
 
 
-def get_db_path() -> str:
-    """从配置中构建数据库的绝对路径。"""
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    db_relative_path = config_manager.get("paths.db_path")
-    if not db_relative_path:
-        raise ValueError("Database path is not defined in the configuration.")
-    return os.path.join(project_root, db_relative_path)
+def create_parameters_table(db_path: str) -> None:
+    """Creates the parameters table in the database if it does not exist.
 
+    Args:
+        db_path (str): The path to the SQLite database file.
 
-def create_parameters_table() -> None:
-    """如果数据库中不存在参数表，则创建它。"""
-    db_path = get_db_path()
+    Raises:
+        sqlite3.Error: If a database error occurs during table creation.
+    """
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     logger.debug(f"Ensuring 'parameters' table exists in {db_path}")
     try:
@@ -48,14 +47,17 @@ def create_parameters_table() -> None:
         raise
 
 
-def store_parameters_in_db(params_data: List[Dict[str, Any]]) -> None:
-    """
-    在数据库中存储或替换参数详细信息列表。
+def store_parameters_in_db(db_path: str, params_data: List[Dict[str, Any]]) -> None:
+    """Stores or replaces a list of parameter details in the database.
 
-    参数:
-        params_data (List[Dict[str, Any]]): 参数详细信息字典的列表（由om_utils.get_all_parameters_details返回）。
+    Args:
+        db_path (str): The path to the SQLite database file.
+        params_data (List[Dict[str, Any]]): A list of dictionaries, where each
+            dictionary contains details for a single parameter.
+
+    Raises:
+        sqlite3.Error: If a database error occurs during insertion.
     """
-    db_path = get_db_path()
     logger.info(f"Storing {len(params_data)} parameters into '{db_path}'")
     if not params_data:
         logger.warning("Parameter data is empty, nothing to store.")
@@ -95,14 +97,17 @@ def store_parameters_in_db(params_data: List[Dict[str, Any]]) -> None:
         raise
 
 
-def update_sweep_values_in_db(param_sweep: Dict[str, Any]) -> None:
-    """
-    更新数据库中指定参数的“sweep_values”。
+def update_sweep_values_in_db(db_path: str, param_sweep: Dict[str, Any]) -> None:
+    """Updates the 'sweep_values' for specified parameters in the database.
 
-    参数:
-        param_sweep (Dict[str, Any]): 一个字典，其中键是参数名称，值是扫描值列表。
+    Args:
+        db_path (str): The path to the SQLite database file.
+        param_sweep (Dict[str, Any]): A dictionary where keys are parameter names
+            and values are the corresponding sweep values (e.g., a list).
+
+    Raises:
+        sqlite3.Error: If a database error occurs during the update.
     """
-    db_path = get_db_path()
     logger.info(f"Updating sweep values in '{db_path}'")
     if not param_sweep:
         logger.warning("param_sweep dictionary is empty. No values to update.")
@@ -135,13 +140,29 @@ def update_sweep_values_in_db(param_sweep: Dict[str, Any]) -> None:
         raise
 
 
-def get_parameters_from_db() -> dict:
-    """从数据库中读取参数。"""
-    db_path = get_db_path()
+def get_parameters_from_db(db_path: str) -> List[Dict[str, Any]]:
+    """Retrieves parameter details from the database.
+
+    Args:
+        db_path (str): The path to the SQLite database file.
+
+    Returns:
+        List[Dict[str, Any]]: A list of parameter dictionaries, each containing
+        the name, default_value, description, and sweep_values.
+    """
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT name, default_value FROM parameters")
-        params = {}
-        for name, default_value in cursor.fetchall():
-            params[name] = {"default_value": json.loads(default_value)}
+        cursor.execute(
+            "SELECT name, default_value, description, sweep_values FROM parameters"
+        )
+        params = []
+        for name, default_value, description, sweep_values in cursor.fetchall():
+            params.append(
+                {
+                    "name": name,
+                    "default_value": json.loads(default_value),
+                    "description": description,
+                    "sweep_values": json.loads(sweep_values) if sweep_values else "",
+                }
+            )
     return params

@@ -3,25 +3,13 @@
 
 ## 项目简介
 
-tricys（TRitium Integrated CYcle Simulation）是一个用于分析聚变燃料循环的仿真系统，基于 OpenModelica 平台开发。该项目旨在通过建模和仿真，研究聚变反应堆燃料循环的动态行为，特别关注参数（如 `blanket.TBR`）对系统性能的影响。
+**tricys (TRitium Integrated CYcle Simulation)** 是一个用于分析聚变燃料循环的仿真系统，基于 OpenModelica 平台开发。该项目旨在通过建模和仿真，研究聚变反应堆燃料循环的动态行为，特别关注参数（如 `blanket.TBR`）对系统性能的影响。是一个用于分析聚变燃料循环的仿真系统，基于 OpenModelica 平台开发。该项目旨在通过建模和仿真，研究聚变反应堆燃料循环的动态行为，特别关注参数（如 `blanket.TBR`）对系统性能的影响。
 
-当前版本提供了一个图形用户界面（GUI）和模块化的参数扫描功能，方便用户配置仿真参数、运行多次仿真并分析结果。
+为满足不同用户的需求，`tricys` 提供了两种操作模式：
 
-## 功能特点
+*   **图形用户界面 (GUI)**: 提供一个直观的交互界面，用户可以方便地加载模型、设置仿真参数、定义参数扫描范围并启动仿真。
+*   **命令行界面 (CLI)**: 通过配置文件驱动，支持复杂的参数扫描和批量仿真任务，适合进行大规模的自动化计算和集成到其他工作流程中。
 
-- **图形用户界面**：
-  - 通过 Tkinter 提供直观的交互界面，支持输入模型名称、参数范围（如 `blanket.TBR`）、仿真时间和步长。
-  - 显示仿真成功或错误提示，适合初学者和专业用户。
-- **参数扫描仿真**：
-  - 支持单参数扫描，自动运行多组仿真，整合结果为单一 CSV 文件（`temp/combined_simulation_results.csv`）。
-  - 输出限制为关键变量（如 `time` 和 `sds.I[1]`），提高效率。
-- **OpenModelica 集成**：
-  - 使用 `OMPython` 加载和运行 Modelica 模型（如 `example.Cycle`）。
-- **文件管理**：
-  - 动态创建和清理 `temp/` 目录中的临时文件，优化磁盘使用。
-  - 通过 `.gitignore` 忽略 `temp/`、`__pycache__/` 和 `*.pyc`，保持仓库整洁。
-- **跨平台支持**：
-  - 基于 Python 和 OpenModelica，支持 Windows、Linux 和 macOS。
 
 ## 安装与依赖
 为了简化开发环境的配置，本项目维护了两个容器镜像, 支持 **VSCode & Dev Containers** 在容器化环境中运行和测试代码，：
@@ -49,52 +37,58 @@ image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
 
 **注意事项**：经测试，CentOS7考虑到版本较旧，无法在tricys_openmodelica_gui容器中运行`OMEdit`可视化应用
 
+
 ### 安装步骤
-1.  **克隆本仓库**:
-    > **注意事项:** Windows 11系统请在WSL2控制台克隆本仓库
-    ```
+
+1.  **克隆仓库**: 打开终端，克隆本项目到本地。
+    ```bash
     git clone https://github.com/asipp-neutronics/tricys.git
     cd tricys
     ```
 
-2.  **Open VSCode**：
-    > **注意事项:** Windows 11系统请在WSL2控制台打开VSCode
+2.  **在 VSCode 中打开**:
     ```bash
     code .
     ```
 
-3.  **Reopen in Container**：
-    > **注意事项:** 初次创建devcontainer需要登录ghcr.io并下载镜像
-    ```bash
-    > Dev Conainters: Reopen in Container
+3.  **在容器中重新打开**: VSCode 会检测到 `.devcontainer` 目录并提示“在容器中重新打开 (Reopen in Container)”，点击该按钮。
     ```
+    注意: 首次构建容器时，需要下载指定的 Docker 镜像，可能需要一些时间。
+    ```
+
+4.  **安装项目依赖**: 容器成功启动后进入容器的终端，在终端中执行以下命令来安装项目所需的 Python 库。
+    ```bash
+    make dev-install
+    ```
+
+完成以上步骤后，您的开发环境便已准备就绪。
+
 ## 项目说明
 ### 文件结构
 ```
 tricys/
-├── docs/                   # 项目文档
-├── example/                # 示例模型
-├── docker/                 # docker镜像构建
-├── script/                 # 辅助脚本
-├── tricys/                 # Python 源代码
-│   ├── analysis/           # 数据分析模块
-│   ├── manager/            # 管理器模块（配置、日志等）
-│   ├── simulation/         # 仿真运行模块
-│   │   ├── single_simulation.py         # 单次模拟仿真
-│   │   ├── sweep_simulation.py          # 扫描参数仿真
-│   │   └── visual_simulation.py         # 界面扫描仿真
-│   └── utils/              # 通用工具模块
-├── test/                   # 测试代码
-├── .gitignore              # Git 忽略文件配置
-├── .env                    # .env文件配置
-├── config.json             # 项目配置文件
-├── docker-compose.yml      # Docker Compose 配置文件
-├── pyproject.toml          # Python 项目配置文件
-└── README.md               # 项目开发说明
+├── docs/                        # 项目文档
+│   └── TricysUsersGuide.md      # Tricys用户手册
+├── example/                     # 示范案例
+│   ├── example_model/           # Openmodelica示例模型
+│   └── example_config.json      # 示例配置文件
+├── docker/                      # docker镜像构建
+├── script/                      # 辅助脚本
+├── tricys/                      # Python 源代码
+│   ├── simulation.py            # 仿真模拟命令
+│   ├── simulation_gui.py        # 界面仿真模拟命令
+│   └── utils/                   # 通用工具模块
+├── tests/                       # 测试代码
+├── .gitignore                   # Git 忽略文件配置
+├── .env                         # .env文件配置
+├── config.json                  # 项目配置文件
+├── docker-compose.yml           # Docker Compose 配置文件
+├── pyproject.toml               # Python 项目配置文件
+└── README.md                    # 项目开发说明
 ```
 ### 用户配置
 1. `.env`：该配置文件中需要设置`CUSTOM_MODEL_PATH=****`来指定宿主机中用户的OpenModelica模型所在目录
-2. `config.json`:该配置文件中表示默认参数值，如paths为路径参数，logging为日志参数，simulation为仿真运行参数, sweep_parameter为扫描参数，overrides_parameter为模型覆盖参数。
+2. `example/example_config.json`:该配置文件中表示默认参数值，如paths为路径参数，logging为日志参数，simulation为仿真运行参数, simulation_parameter为模型扫描参数。
 
 ## 使用方法（默认进入容器中执行以下命令，未测试本地环境）
 1. 安装项目：`make dev-install`
@@ -133,17 +127,17 @@ tricys/
 - **内容**: 清晰地描述其功能、参数、返回值以及可能引发的异常。
 - **示例**:
   ```python
-  def get_unique_filename(base_path: str, filename: str) -> str:
-      """
-      如果文件已存在，则通过附加计数器来生成唯一的文件名。
+      def get_unique_filename(base_path: str, filename: str) -> str:
+          """
+          如果文件已存在，则通过附加计数器来生成唯一的文件名。
 
-      参数:
-          base_path (str): 将保存文件的目录路径。
-          filename (str): 所需的文件名（包括扩展名）。
+          参数:
+              base_path (str): 将保存文件的目录路径。
+              filename (str): 所需的文件名（包括扩展名）。
 
-      返回:
-          str: 一个不存在的唯一文件路径。
-      """
+          返回:
+              str: 一个不存在的唯一文件路径。
+          """
   ```
 
 #### 4. 测试 (Testing)

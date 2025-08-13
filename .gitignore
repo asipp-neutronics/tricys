@@ -31,3 +31,8 @@ temp/
 
 # Privarte Paths
 model/
+
+# Example specific files
+example/log/
+example/results/
+example/temp/

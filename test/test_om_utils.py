@@ -13,9 +13,11 @@ def test_get_om_session():
     """Tests the get_om_session function to ensure it returns a valid OpenModelica session."""
     omc = get_om_session()
 
-    loaded = load_modelica_package(omc, "/tricys/example/package.mo")
+    loaded = load_modelica_package(omc, "/tricys/example/example_model/package.mo")
     if not loaded:
-        pytest.fail("Failed to load Modelica package at /tyicys/example/package.mo")
+        pytest.fail(
+            "Failed to load Modelica package at /tricys/example/example_model/package.mo"
+        )
 
     # Teardown: close the session after all tests in the module have run
     omc.sendExpression("quit()")
@@ -34,8 +36,8 @@ def test_format_parameter_value():
 def test_get_model_parameter_names():
     """Tests retrieving model parameter names"""
     omc_session = get_om_session()
-    load_modelica_package(omc_session, "/tricys/example/package.mo")
-    model_name = "example.Cycle"
+    load_modelica_package(omc_session, "/tricys/example/example_model/package.mo")
+    model_name = "example_model.Cycle"
     names = get_model_parameter_names(omc_session, model_name)
 
     # Check that the result is a list of strings and is not empty
@@ -50,8 +52,8 @@ def test_get_model_parameter_names():
 def test_get_all_parameters_details():
     """Tests retrieving detailed model parameters using a real session."""
     omc_session = get_om_session()
-    load_modelica_package(omc_session, "/tricys/example/package.mo")
-    model_name = "example.Cycle"
+    load_modelica_package(omc_session, "/tricys/example/example_model/package.mo")
+    model_name = "example_model.Cycle"
     details = get_all_parameters_details(omc_session, model_name)
     # Check that the result is a list of dicts and is not empty
     assert isinstance(details, list)

@@ -1,4 +1,9 @@
-"""本模块提供与OpenModelica交互的实用功能。"""
+"""Utilities for interacting with OpenModelica via OMPython.
+
+This module provides a set of functions to manage an OpenModelica session,
+load models, retrieve parameter details, and format parameter values for
+simulation.
+"""
 
 import logging
 from typing import Any, Dict, List
@@ -9,21 +14,24 @@ logger = logging.getLogger(__name__)
 
 
 def get_om_session() -> OMCSessionZMQ:
-    """初始化并返回一个新的OMCSessionZMQ会话。"""
+    """Initializes and returns a new OMCSessionZMQ session.
+
+    Returns:
+        OMCSessionZMQ: An active OpenModelica session object.
+    """
     logger.debug("Initializing new OMCSessionZMQ session.")
     return OMCSessionZMQ()
 
 
-def load_modelica_package(omc: OMCSessionZMQ, package_path) -> bool:
-    """
-    加载全局配置中指定的Modelica包。
+def load_modelica_package(omc: OMCSessionZMQ, package_path: str) -> bool:
+    """Loads a Modelica package into the OpenModelica session.
 
-    参数:
-        omc (OMCSessionZMQ): OpenModelica会话对象。
-        package_path (str): Modelica包的路径。
+    Args:
+        omc (OMCSessionZMQ): The active OpenModelica session object.
+        package_path (str): The file path to the Modelica package (`package.mo`).
 
-    返回:
-        bool: 如果包加载成功，则为True，否则为False。
+    Returns:
+        bool: True if the package was loaded successfully, False otherwise.
     """
     logger.info(f"Loading package: {package_path}")
     load_result = omc.sendExpression(f'loadFile("{package_path}")')
@@ -34,15 +42,14 @@ def load_modelica_package(omc: OMCSessionZMQ, package_path) -> bool:
 
 
 def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
-    """
-    解析并返回给定模型的所有子组件参数名称。
+    """Parses and returns all subcomponent parameter names for a given model.
 
-    参数:
-        omc (OMCSessionZMQ): OpenModelica会话对象。
-        model_name (str): 模型的全名（例如，'example.Cycle'）。
+    Args:
+        omc (OMCSessionZMQ): The active OpenModelica session object.
+        model_name (str): The full name of the model (e.g., 'example.Cycle').
 
-    返回:
-        List[str]: 所有可用参数名称的列表（例如，['blanket.TBR']）。
+    Returns:
+        List[str]: A list of all available parameter names (e.g., ['blanket.TBR']).
     """
     logger.info(f"Getting parameter names for model '{model_name}'")
     all_params = []
@@ -76,8 +83,13 @@ def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
 def _recursive_get_parameters(
     omc: OMCSessionZMQ, class_name: str, path_prefix: str, params_list: list
 ):
-    """
-    一个私有辅助函数，用于递归遍历模型并收集参数详细信息。
+    """A private helper function to recursively traverse a model and collect parameters.
+
+    Args:
+        omc (OMCSessionZMQ): The active OpenModelica session object.
+        class_name (str): The name of the class/model to inspect.
+        path_prefix (str): The hierarchical path prefix for the current component.
+        params_list (list): The list to which parameter details are appended.
     """
     logger.debug(f"Recursively exploring: {class_name} with prefix: '{path_prefix}'")
     components = omc.sendExpression(f"getComponents({class_name})")
@@ -119,15 +131,15 @@ def _recursive_get_parameters(
 def get_all_parameters_details(
     omc: OMCSessionZMQ, model_name: str
 ) -> List[Dict[str, Any]]:
-    """
-    使用递归获取给定模型中所有参数的详细信息。
+    """Recursively retrieves detailed information for all parameters in a given model.
 
-    参数:
-        omc (OMCSessionZMQ): OpenModelica会话对象。
-        model_name (str): 模型的全名。
+    Args:
+        omc (OMCSessionZMQ): The active OpenModelica session object.
+        model_name (str): The full name of the model.
 
-    返回:
-        List[Dict[str, Any]]: 一个字典列表，每个字典包含一个参数的详细信息。
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries, where each dictionary
+            contains the detailed information of a single parameter.
     """
     logger.info(f"Getting detailed parameters for model '{model_name}' via recursion.")
     all_params_details = []
@@ -148,7 +160,15 @@ def get_all_parameters_details(
 
 
 def format_parameter_value(name: str, value: Any) -> str:
-    """将参数值格式化为OpenModelica可识别的字符串。"""
+    """Formats a parameter value into a string recognized by OpenModelica.
+
+    Args:
+        name (str): The name of the parameter.
+        value (Any): The value of the parameter.
+
+    Returns:
+        str: A formatted string for use in simulation overrides (e.g., "p=1.0").
+    """
     if isinstance(value, list):
         # Format lists as {v1,v2,...}
         return f"{name}={{{','.join(map(str, value))}}}"
