@@ -5,6 +5,7 @@ import sys
 import threading
 import tkinter as tk
 from datetime import datetime
+from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from tricys.simulation import run_simulation
@@ -51,7 +52,7 @@ class InteractiveSimulationUI:
         """Resolves a path against the workspace directory if it's not absolute."""
         if os.path.isabs(path):
             return path
-        return os.path.join(self.workspace_path_var.get(), path)
+        return os.path.join(Path(self.workspace_path_var.get()).as_posix(), path)
 
     def create_settings_vars(self):
         """Initializes all Tkinter StringVars for configuration settings with default values."""
@@ -98,7 +99,7 @@ class InteractiveSimulationUI:
         workspace_frame.pack(fill=tk.X, pady=5, padx=5)
         ttk.Label(workspace_frame, text="Workspace:").pack(side=tk.LEFT, padx=(0, 5))
         workspace_entry = ttk.Entry(
-            workspace_frame, textvariable=self.workspace_path_var, justify='center' 
+            workspace_frame, textvariable=self.workspace_path_var, justify="center"
         )
         workspace_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(
@@ -333,7 +334,8 @@ class InteractiveSimulationUI:
                 )
                 return
             omc = get_om_session()
-            if not load_modelica_package(omc, package_path):
+            # Ensure path is in POSIX format for OMPython
+            if not load_modelica_package(omc, Path(package_path).as_posix()):
                 raise RuntimeError(f"Failed to load Modelica package: {package_path}")
             params_details = get_all_parameters_details(omc, model_name)
             if not params_details:
@@ -400,7 +402,9 @@ class InteractiveSimulationUI:
         self.db_path = self._get_abs_path(self.db_path_var.get())
         if os.path.exists(self.db_path):
             try:
-                update_sweep_values_in_db(self._get_abs_path(self.db_path_var.get()), params_to_save)
+                update_sweep_values_in_db(
+                    self._get_abs_path(self.db_path_var.get()), params_to_save
+                )
                 messagebox.showinfo(
                     "Success", "Sweep values saved successfully to the database."
                 )
@@ -409,9 +413,7 @@ class InteractiveSimulationUI:
                 logger.error(f"Failed to save sweep values: {e}", exc_info=True)
         else:
             messagebox.showerror("Error", f"Database not found at {self.db_path}.")
-            logger.info(
-                f"Database not found at {self.db_path}."
-            )
+            logger.info(f"Database not found at {self.db_path}.")
 
     def run_simulation_thread(self):
         threading.Thread(target=self.execute_simulation, daemon=True).start()
@@ -434,15 +436,18 @@ class InteractiveSimulationUI:
                 if not value_str:
                     continue
                 # Try parsing as a list
-                if value_str.startswith('[') and value_str.endswith(']'):
+                if value_str.startswith("[") and value_str.endswith("]"):
                     try:
                         sim_params[name] = json.loads(value_str)
                         continue
                     except json.JSONDecodeError:
-                        messagebox.showerror("Invalid Parameter", f"Invalid list format for parameter '{name}':\n{value_str}")
+                        messagebox.showerror(
+                            "Invalid Parameter",
+                            f"Invalid list format for parameter '{name}':\n{value_str}",
+                        )
                         return
                 # Try parsing as a range string 'start:stop:step'
-                if value_str.count(':') == 2:
+                if value_str.count(":") == 2:
                     sim_params[name] = value_str
                     continue
                 # Try parsing as a number
@@ -454,11 +459,11 @@ class InteractiveSimulationUI:
                         sim_params[name] = float(value_str)
                         continue
                     except ValueError:
-                        pass # Not a number, fall through to the final error
+                        pass  # Not a number, fall through to the final error
                 messagebox.showerror(
                     "Invalid Parameter",
                     f"Invalid format for parameter '{name}':\n{value_str}\n\n"
-                    "Must be a number, a list like [1, 2], or a range like '1:10:1'."
+                    "Must be a number, a list like [1, 2], or a range like '1:10:1'.",
                 )
                 return
 
@@ -477,7 +482,6 @@ class InteractiveSimulationUI:
         except Exception as e:
             messagebox.showerror("Error", f"Simulation failed: {e}")
             logger.error(f"Simulation run failed: {e}", exc_info=True)
-
 
 
 def main():

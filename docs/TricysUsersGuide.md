@@ -9,19 +9,35 @@
 *   **图形用户界面 (GUI)**: 提供一个直观的交互界面，用户可以方便地加载模型、设置仿真参数、定义参数扫描范围并启动仿真。
 *   **命令行界面 (CLI)**: 通过配置文件驱动，支持复杂的参数扫描和批量仿真任务，适合进行大规模的自动化计算和集成到其他工作流程中。
 
+## 2. 安装与使用
+###  2.1 Docker环境 安装与使用
+为了简化开发环境的配置，本项目维护了两个容器镜像, 支持 **VSCode & Dev Containers** 在容器化环境中运行和测试代码，：
+1. [ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_ompython/476218036?tag=docker_dev)：带有OMEdit可视化应用
+2. [ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_gui/476218102?tag=docker_dev)：不带有OMEdit可视化应用
 
-## 2. 环境搭建
+**如需切换dev container请删除原容器并修改docker-compose.yml**
+```
+image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
+```
 
-本项目利用 Docker 容器技术，封装了所有必需的依赖（包括 OpenModelica），确保了开发和运行环境的一致性，极大地简化了环境搭建流程。
+#### 环境要求
+- **Docker**: 最新版本（从 [Docker 官网](https://www.docker.com/) 下载）。
+- **Docker Compose**: 最新版本（通常随 Docker Desktop 一起安装）。
+- **VSCode**: 最新版本（安装Dev Containers插件）。
+- **Windows 11**: 最新版本（安装 WSL2 并默认启用 WSLg 功能）。
+- **Linux**: 需要运行 **`xhost +local:`** 命令。
 
-### 2.1. 系统要求
+| 系统测试| tricys_openmodelica_ompython | tricys_openmodelica_gui（OMEdit） |
+| :--- | :--- | :--- |
+| Windows11 (WSL2) | ✅ | ✅ |
+| Ubuntu 24.04 | ✅ | ✅ |
+| Rocky 10 | ✅ | ✅ |
+| CentOS 7 | ✅ | ❌|
 
-*   **Docker**: 最新版本。
-*   **VSCode**: 最新版本，并已安装 **Dev Containers** 插件。
-*   **Git**: 用于克隆项目仓库。
-*   **(Linux 用户)**: 在启动 GUI 之前，可能需要在终端执行 `xhost +local:` 命令，以允许容器访问主机的图形界面。
+**注意事项**：经测试，CentOS7考虑到版本较旧，无法在tricys_openmodelica_gui容器中运行`OMEdit`可视化应用
 
-### 2.2. 安装步骤
+
+#### 安装步骤
 
 1.  **克隆仓库**: 打开终端，克隆本项目到本地。
     ```bash
@@ -43,8 +59,66 @@
     ```bash
     make dev-install
     ```
+#### 使用方法
 
-完成以上步骤后，您的开发环境便已准备就绪。
+安装完成后，在容器终端中，您可以使用以下命令：
+
+*   **运行图形用户界面 (GUI)**:
+    ```shell
+    tricys-gui
+    ```
+
+*   **运行命令行 (CLI) 仿真**:
+    ```shell
+    tricys -c example_config.json
+    ```
+
+### 2.2 Windows环境 安装与使用
+
+#### 环境要求
+
+1.  **Python**: 安装 Python 3.8 或更高版本。您可以从 [Python 官网](https://www.python.org/downloads/) 下载或通过 Microsoft Store 安装。**重要提示**：在安装过程中，请务必勾选“Add Python to PATH”选项。
+2.  **Git**: 从 [Git 官网](https://git-scm.com/download/win) 下载并安装 Git for Windows。
+3.  **OpenModelica**: 需要安装 OpenModelica。请确保其命令行工具（如 `omc.exe`）已添加到系统的 `PATH` 环境变量中。
+
+#### 安装步骤
+
+1.  **克隆仓库**:
+    ```shell
+    git clone https://github.com/asipp-neutronics/tricys.git
+    cd tricys
+    ```
+
+2.  **创建并激活虚拟环境**:
+    ```shell
+    py -m venv venv
+    .\venv\Scripts\activate
+    ```
+
+3.  **安装项目依赖**: 以可编辑模式安装项目及所有开发工具，请运行：
+    ```shell
+    pip install -e ".[dev]"
+    ```
+
+#### 使用方法
+
+安装完成后，在激活虚拟环境的终端中，您可以使用以下命令：
+
+*   **运行图形用户界面 (GUI)**:
+    ```shell
+    tricys-gui
+    ```
+
+*   **运行命令行 (CLI) 仿真**:
+    ```shell
+    tricys -c example_config.json
+    ```
+
+*   **开发任务 (便捷脚本)**: 项目提供了 `Makefile.bat` 脚本，方便在 Windows 上执行常见的开发任务：
+    *   运行测试: `Makefile.bat test`
+    *   检查代码格式与风格: `Makefile.bat check`
+    *   清理生成的文件: `Makefile.bat clean`
+
 
 ## 3. 图像仿真 (GUI)
 

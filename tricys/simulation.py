@@ -14,6 +14,7 @@ import os
 import sys
 from datetime import datetime
 from functools import partial
+from pathlib import Path
 from typing import Any, Dict, List
 
 import numpy as np
@@ -174,10 +175,14 @@ def _run_single_job(
     mod = None
     try:
         omc = get_om_session()
-        if not load_modelica_package(omc, package_path):
+        # Ensure all paths passed to OMPython are in POSIX format
+        if not load_modelica_package(omc, Path(package_path).as_posix()):
             raise RuntimeError(f"Job {job_id}: Failed to load Modelica package.")
+
         mod = ModelicaSystem(
-            fileName=package_path, modelName=model_name, variableFilter=variable_filter
+            fileName=Path(package_path).as_posix(),
+            modelName=model_name,
+            variableFilter=variable_filter,
         )
         param_settings = [
             format_parameter_value(name, value) for name, value in job_params.items()
@@ -195,7 +200,7 @@ def _run_single_job(
         mod.buildModel()
         result_filename = f"{timestamp}_simulation_results_{job_id}.csv"
         result_file_path = os.path.join(output_dir, result_filename)
-        mod.simulate(resultfile=result_file_path)
+        mod.simulate(resultfile=Path(result_file_path).as_posix())
         logger.info(f"Job {job_id} finished. Results saved to {result_file_path}")
         return result_file_path
     except Exception as e:
@@ -317,7 +322,7 @@ def run_simulation(
                     rises = False
 
                 info = job_params.copy()
-                info['rises'] = rises
+                info["rises"] = rises
                 rises_info.append(info)
 
         if rises_info:

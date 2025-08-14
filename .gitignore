@@ -36,3 +36,6 @@ model/
 example/log/
 example/results/
 example/temp/
+
+# Normalize all line endings to LF
+* text=auto eol=lf

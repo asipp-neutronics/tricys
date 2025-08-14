@@ -11,7 +11,7 @@
 *   **命令行界面 (CLI)**: 通过配置文件驱动，支持复杂的参数扫描和批量仿真任务，适合进行大规模的自动化计算和集成到其他工作流程中。
 
 
-## 安装与依赖
+## Docker环境 安装与使用
 为了简化开发环境的配置，本项目维护了两个容器镜像, 支持 **VSCode & Dev Containers** 在容器化环境中运行和测试代码，：
 1. [ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_ompython/476218036?tag=docker_dev)：带有OMEdit可视化应用
 2. [ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_gui/476218102?tag=docker_dev)：不带有OMEdit可视化应用
@@ -60,8 +60,65 @@ image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
     ```bash
     make dev-install
     ```
+### 使用方法
 
-完成以上步骤后，您的开发环境便已准备就绪。
+安装完成后，在容器终端中，您可以使用以下命令：
+
+*   **运行图形用户界面 (GUI)**:
+    ```shell
+    tricys-gui
+    ```
+
+*   **运行命令行 (CLI) 仿真**:
+    ```shell
+    tricys -c example_config.json
+    ```
+
+## Windows环境 安装与使用
+
+### 环境要求
+
+1.  **Python**: 安装 Python 3.8 或更高版本。您可以从 [Python 官网](https://www.python.org/downloads/) 下载或通过 Microsoft Store 安装。**重要提示**：在安装过程中，请务必勾选“Add Python to PATH”选项。
+2.  **Git**: 从 [Git 官网](https://git-scm.com/download/win) 下载并安装 Git for Windows。
+3.  **OpenModelica**: 需要安装 OpenModelica。请确保其命令行工具（如 `omc.exe`）已添加到系统的 `PATH` 环境变量中。
+
+### 安装步骤
+
+1.  **克隆仓库**:
+    ```shell
+    git clone https://github.com/asipp-neutronics/tricys.git
+    cd tricys
+    ```
+
+2.  **创建并激活虚拟环境**:
+    ```shell
+    py -m venv venv
+    .\venv\Scripts\activate
+    ```
+
+3.  **安装项目依赖**: 以可编辑模式安装项目及所有开发工具，请运行：
+    ```shell
+    pip install -e ".[dev]"
+    ```
+
+### 使用方法
+
+安装完成后，在激活虚拟环境的终端中，您可以使用以下命令：
+
+*   **运行图形用户界面 (GUI)**:
+    ```shell
+    tricys-gui
+    ```
+
+*   **运行命令行 (CLI) 仿真**:
+    ```shell
+    tricys -c example_config.json
+    ```
+
+*   **开发任务 (便捷脚本)**: 项目提供了 `Makefile.bat` 脚本，方便在 Windows 上执行常见的开发任务：
+    *   运行测试: `Makefile.bat test`
+    *   检查代码格式与风格: `Makefile.bat check`
+    *   清理生成的文件: `Makefile.bat clean`
 
 ## 项目说明
 ### 文件结构
@@ -87,14 +144,14 @@ tricys/
 └── README.md                    # 项目开发说明
 ```
 ### 用户配置
-1. `.env`：该配置文件中需要设置`CUSTOM_MODEL_PATH=****`来指定宿主机中用户的OpenModelica模型所在目录
+1. `.env`：该配置文件中用于`docker环境开发`需要设置`CUSTOM_MODEL_PATH=****`来指定宿主机中用户的OpenModelica模型所在目录
 2. `example/example_config.json`:该配置文件中表示默认参数值，如paths为路径参数，logging为日志参数，simulation为仿真运行参数, simulation_parameter为模型扫描参数。
 
-## 使用方法（默认进入容器中执行以下命令，未测试本地环境）
-1. 安装项目：`make dev-install`
-2. 执行测试：`make test`
-3. 清理数据：`make clean`
-4. 规范代码：`make check`
+## 使用方法
+1. 安装项目：`make dev-install` or `Makefile.bat dev-install`
+2. 执行测试：`make test` or `Makefile.bat test`
+3. 清理数据：`make clean` or `Makefile.bat clean`
+4. 规范代码：`make check` or `Makefile.bat check`
 
 ## 开发与贡献
 

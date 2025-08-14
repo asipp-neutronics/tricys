@@ -1,4 +1,6 @@
+import os
 import pytest
+from pathlib import Path
 
 from tricys.utils.om_utils import (
     format_parameter_value,
@@ -8,16 +10,21 @@ from tricys.utils.om_utils import (
     load_modelica_package,
 )
 
+# Determine the correct path to the example modelica package
+# This makes the test independent of the current working directory
+# and platform (Windows/Linux)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, ".."))
+MODEL_PATH = os.path.join(project_root, "example", "example_model", "package.mo")
+
 
 def test_get_om_session():
     """Tests the get_om_session function to ensure it returns a valid OpenModelica session."""
     omc = get_om_session()
 
-    loaded = load_modelica_package(omc, "/tricys/example/example_model/package.mo")
+    loaded = load_modelica_package(omc, Path(MODEL_PATH).as_posix())
     if not loaded:
-        pytest.fail(
-            "Failed to load Modelica package at /tricys/example/example_model/package.mo"
-        )
+        pytest.fail(f"Failed to load Modelica package at {MODEL_PATH}")
 
     # Teardown: close the session after all tests in the module have run
     omc.sendExpression("quit()")
@@ -36,7 +43,7 @@ def test_format_parameter_value():
 def test_get_model_parameter_names():
     """Tests retrieving model parameter names"""
     omc_session = get_om_session()
-    load_modelica_package(omc_session, "/tricys/example/example_model/package.mo")
+    load_modelica_package(omc_session, Path(MODEL_PATH).as_posix())
     model_name = "example_model.Cycle"
     names = get_model_parameter_names(omc_session, model_name)
 
@@ -52,7 +59,7 @@ def test_get_model_parameter_names():
 def test_get_all_parameters_details():
     """Tests retrieving detailed model parameters using a real session."""
     omc_session = get_om_session()
-    load_modelica_package(omc_session, "/tricys/example/example_model/package.mo")
+    load_modelica_package(omc_session, Path(MODEL_PATH).as_posix())
     model_name = "example_model.Cycle"
     details = get_all_parameters_details(omc_session, model_name)
     # Check that the result is a list of dicts and is not empty
