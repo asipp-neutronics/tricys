@@ -4,18 +4,12 @@ import sqlite3
 
 import pytest
 
-from tricys.manager.config_manager import config_manager
 from tricys.utils.db_utils import (
     create_parameters_table,
-    get_db_path,
     get_parameters_from_db,
     store_parameters_in_db,
     update_sweep_values_in_db,
 )
-
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-log_dir = os.path.join(PROJECT_ROOT, config_manager.get("paths.log_dir"))
-db_path = os.path.join(PROJECT_ROOT, config_manager.get("paths.db_path"))
 
 # Sample data for testing
 SAMPLE_PARAMS = [
@@ -23,7 +17,6 @@ SAMPLE_PARAMS = [
         "name": "coolant_pipe.to_CPS_Fraction",
         "type": "Real",
         "defaultValue": "1e-2",
-        "sweep_values": "",
         "comment": "",
         "dimensions": "()",
     },
@@ -31,28 +24,24 @@ SAMPLE_PARAMS = [
         "name": "coolant_pipe.to_FW_Fraction",
         "type": "Real",
         "defaultValue": "0.6",
-        "sweep_values": "",
         "comment": "",
         "dimensions": "()",
     },
 ]
 
 
-def test_get_db_path():
-    assert get_db_path() == "/tricys/data/parameters.db"
+@pytest.fixture
+def db_path(tmp_path):
+    """Provides a temporary path for the test database."""
+    return tmp_path / "test.db"
 
 
-def test_create_parameters_table():
-    """Tests the creation of the parameters table in a real database file."""
+def test_create_parameters_table(db_path):
+    """Tests the creation of the parameters table."""
     try:
-        (
-            os.remove("/tricys/data/parameters.db")
-            if os.path.exists("/tricys/data/parameters.db")
-            else None
-        )
-        create_parameters_table()
-        assert os.path.exists("/tricys/data/parameters.db")
-        with sqlite3.connect("/tricys/data/parameters.db") as conn:
+        create_parameters_table(db_path)
+        assert os.path.exists(db_path)
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT name FROM sqlite_master WHERE type='table' AND name='parameters'"
@@ -60,55 +49,41 @@ def test_create_parameters_table():
             assert (
                 cursor.fetchone() is not None
             ), "The 'parameters' table was not created."
-            (
-                os.remove("/tricys/data/parameters.db")
-                if os.path.exists("/tricys/data/parameters.db")
-                else None
-            )
-            os.system(f"rm -rf {log_dir}")
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")
 
 
-def test_store_and_get_parameters():
-    """Tests storing and retrieving parameters from a real database file."""
+def test_store_and_get_parameters(db_path):
+    """Tests storing and retrieving parameters."""
     try:
-        (
-            os.remove("/tricys/data/parameters.db")
-            if os.path.exists("/tricys/data/parameters.db")
-            else None
-        )
-        create_parameters_table()
-        store_parameters_in_db(SAMPLE_PARAMS)
-        params = get_parameters_from_db()
+        create_parameters_table(db_path)
+        store_parameters_in_db(db_path, SAMPLE_PARAMS)
+
+        # Assuming get_parameters_from_db returns a list of dicts
+        params = get_parameters_from_db(db_path)
         assert len(params) == 2
-        assert params["coolant_pipe.to_CPS_Fraction"]["default_value"] == "1e-2"
-        assert params["coolant_pipe.to_FW_Fraction"]["default_value"] == "0.6"
-        (
-            os.remove("/tricys/data/parameters.db")
-            if os.path.exists("/tricys/data/parameters.db")
-            else None
-        )
-        os.system(f"rm -rf {log_dir}")
+
+        # Convert list to dict for easier assertion, matching old test logic
+        params_dict = {p["name"]: p for p in params}
+
+        assert params_dict["coolant_pipe.to_CPS_Fraction"]["default_value"] == "1e-2"
+        assert params_dict["coolant_pipe.to_FW_Fraction"]["default_value"] == "0.6"
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")
 
 
-def test_update_sweep_values():
-    """Tests updating sweep values for a parameter in a real database file."""
+def test_update_sweep_values(db_path):
+    """Tests updating sweep values for a parameter."""
     try:
-        (
-            os.remove("/tricys/data/parameters.db")
-            if os.path.exists("/tricys/data/parameters.db")
-            else None
-        )
-        create_parameters_table()
-        store_parameters_in_db(SAMPLE_PARAMS)
+        create_parameters_table(db_path)
+        store_parameters_in_db(db_path, SAMPLE_PARAMS)
 
         sweep_values = [1.0, 2.0, 3.0]
-        update_sweep_values_in_db({"coolant_pipe.to_CPS_Fraction": sweep_values})
+        update_sweep_values_in_db(
+            db_path, {"coolant_pipe.to_CPS_Fraction": sweep_values}
+        )
 
-        with sqlite3.connect("/tricys/data/parameters.db") as conn:
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT sweep_values FROM parameters WHERE name=?",
@@ -117,11 +92,5 @@ def test_update_sweep_values():
             result = cursor.fetchone()
             assert result is not None
             assert json.loads(result[0]) == sweep_values
-        (
-            os.remove("/tricys/data/parameters.db")
-            if os.path.exists("/tricys/data/parameters.db")
-            else None
-        )
-        os.system(f"rm -rf {log_dir}")
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")

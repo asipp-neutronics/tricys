@@ -1,18 +1,21 @@
-"""本模块提供文件操作的实用功能。"""
+"""Utility functions for file and directory management.
+
+This module provides helper functions for creating unique filenames and managing log
+file rotation.
+"""
 
 import os
 
 
 def get_unique_filename(base_path: str, filename: str) -> str:
-    """
-    如果文件已存在，则通过附加计数器来生成唯一的文件名。
+    """Generates a unique filename by appending a counter if the file already exists.
 
-    参数:
-        base_path (str): 将保存文件的目录路径。
-        filename (str): 所需的文件名（包括扩展名）。
+    Args:
+        base_path (str): The directory path where the file will be saved.
+        filename (str): The desired filename, including the extension.
 
-    返回:
-        str: 一个不存在的唯一文件路径。
+    Returns:
+        str: A unique, non-existing file path.
     """
     base_name, ext = os.path.splitext(filename)
     counter = 0
@@ -28,24 +31,27 @@ def get_unique_filename(base_path: str, filename: str) -> str:
 
 
 def delete_old_logs(log_path: str, max_files: int):
-    """
-    检查日志目录中的.log文件数量，并删除最旧的文件，直到文件数量达到指定的限制。
+    """Deletes the oldest log files in a directory to meet a specified limit.
 
-    参数:
-        log_path (str): 日志文件的目录路径。
-        max_files (int): 要保留的最大.log文件数量。
+    Checks the number of `.log` files in the given directory and removes the
+    oldest ones based on modification time until the file count matches the
+    `max_files` limit.
+
+    Args:
+        log_path (str): The path to the directory containing log files.
+        max_files (int): The maximum number of `.log` files to retain.
     """
     log_files = [
         os.path.join(log_path, f) for f in os.listdir(log_path) if f.endswith(".log")
     ]
 
     if len(log_files) > max_files:
-        # 按修改时间排序，最旧的在前
+        # Sort by modification time, oldest first
         log_files.sort(key=os.path.getmtime)
 
-        # 计算要删除的文件数量
+        # Calculate how many files to delete
         files_to_delete_count = len(log_files) - max_files
 
-        # 删除最旧的文件
+        # Delete the oldest files
         for i in range(files_to_delete_count):
             os.remove(log_files[i])

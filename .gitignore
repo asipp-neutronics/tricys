@@ -31,3 +31,11 @@ temp/
 
 # Privarte Paths
 model/
+
+# Example specific files
+example/log/
+example/results/
+example/temp/
+
+# Normalize all line endings to LF
+* text=auto eol=lf

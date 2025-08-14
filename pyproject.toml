@@ -20,12 +20,18 @@ dependencies = [
     "pandas",
     "numpy",
     "matplotlib",
-    "seaborn"
+    "seaborn",
+    "pathlib",
+    "OMPython"
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/asipp-neutronics/tricys"
 "Bug Tracker" = "https://github.com/asipp-neutronics/tricys"
+
+[project.scripts]
+tricys-gui = "tricys.simulation_gui:main"
+tricys = "tricys.simulation:main"
 
 [project.optional-dependencies]
 dev = [
@@ -34,9 +40,8 @@ dev = [
     "black",   
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-exclude = ["test*"]
+[tool.setuptools]
+packages = ["tricys","tricys.utils"]
 
 [tool.black]
 line-length = 88

@@ -1,1 +1,5 @@
-"""聚变燃料循环分析系统的主程序包。"""
+"""Tricys - TRitium Integrated CYcle Simulation.
+
+This package contains the core modules for the Tricys simulation tool, including
+the command-line entry point, the GUI, and utility modules.
+"""
