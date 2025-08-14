@@ -67,6 +67,7 @@ jobs:
           docker run --rm ${{ env.IMAGE_NAME_BASE }}_${{ matrix.service }}:${{ env.TEST_TAG }} make test
 
       - name: Push the image for ${{ matrix.service }}
+        if: github.event_name == 'push'
         run: |
           echo "Tests passed for ${{ matrix.service }}. Pushing image with all tags..."
           docker push --all-tags ${{ env.IMAGE_NAME_BASE }}_${{ matrix.service }}
