@@ -68,6 +68,7 @@ class InteractiveSimulationUI:
         self.step_size_var = tk.DoubleVar(value=1.0)
         self.max_workers_var = tk.IntVar(value=4)
         self.keep_temp_files_var = tk.BooleanVar(value=False)
+        self.concurrent_var = tk.BooleanVar(value=True)
 
         # Logging Settings
         self.log_dir_var = tk.StringVar(value="log")
@@ -166,6 +167,9 @@ class InteractiveSimulationUI:
         ttk.Checkbutton(
             path_sim_frame, text="Keep Temp Files", variable=self.keep_temp_files_var
         ).grid(row=5, column=0, sticky="w", padx=5, pady=2)
+        ttk.Checkbutton(
+            path_sim_frame, text="Concurrent Execution", variable=self.concurrent_var
+        ).grid(row=5, column=2, sticky="w", padx=15, pady=2)
 
         # Logging Settings
         log_frame = ttk.LabelFrame(settings_frame, text="Logging", padding="10")
@@ -422,6 +426,7 @@ class InteractiveSimulationUI:
                 "step_size": self.step_size_var.get(),
                 "max_workers": self.max_workers_var.get(),
                 "keep_temp_files": self.keep_temp_files_var.get(),
+                "concurrent": self.concurrent_var.get(),
             }
             sim_params = {}
             for name, widgets in self.params_widgets.items():

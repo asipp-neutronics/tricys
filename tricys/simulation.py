@@ -231,6 +231,7 @@ def run_simulation(
     step_size = sim_config["step_size"]
     variable_filter = sim_config["variableFilter"]
     max_workers = sim_config.get("max_workers", os.cpu_count())
+    concurrent_execution = sim_config.get("concurrent", True)
     keep_temp_files = sim_config.get("keep_temp_files", False)
     simulation_params = config.get("simulation_parameters", {})
     jobs = _generate_simulation_jobs(simulation_params)
@@ -239,9 +240,12 @@ def run_simulation(
 
     logger.info(f"Starting simulation run: {num_jobs} job(s) to execute.")
     if is_sweep:
-        logger.info(
-            f"Parameter sweep mode enabled. Using up to {max_workers} parallel workers."
-        )
+        if concurrent_execution:
+            logger.info(
+                f"Parameter sweep mode enabled. Using up to {max_workers} parallel workers."
+            )
+        else:
+            logger.info("Parameter sweep mode enabled. Running jobs sequentially.")
 
     os.makedirs(results_dir, exist_ok=True)
     os.makedirs(temp_dir, exist_ok=True)
@@ -264,20 +268,30 @@ def run_simulation(
             os.rename(output_path, final_path)
             logger.info(f"Single simulation finished. Result at {final_path}")
     else:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            run_job_partial = partial(
-                _run_single_job,
-                model_name=model_name,
-                package_path=package_path,
-                variable_filter=variable_filter,
-                stop_time=stop_time,
-                step_size=step_size,
-                output_dir=temp_dir,
-            )
-            simulation_results_paths = list(
-                executor.map(run_job_partial, enumerate(jobs))
-            )
-        logger.info("All parallel jobs completed. Combining sweep results.")
+        run_job_partial = partial(
+            _run_single_job,
+            model_name=model_name,
+            package_path=package_path,
+            variable_filter=variable_filter,
+            stop_time=stop_time,
+            step_size=step_size,
+            output_dir=temp_dir,
+        )
+
+        if concurrent_execution:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers
+            ) as executor:
+                simulation_results_paths = list(
+                    executor.map(run_job_partial, enumerate(jobs))
+                )
+        else:
+            simulation_results_paths = []
+            for i, job_params in enumerate(jobs):
+                result_path = run_job_partial((i, job_params))
+                simulation_results_paths.append(result_path)
+
+        logger.info("All sweep jobs completed. Combining results.")
         combined_df = None
         rises_info = []  # Initialize list to store rise info
         for i, result_path in enumerate(simulation_results_paths):

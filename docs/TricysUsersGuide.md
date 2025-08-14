@@ -138,7 +138,8 @@ cd /tricys/example && tricys -c example_config.json
         "stop_time": 5000.0,
         "step_size": 1.0,
         "max_workers": 4，
-        "keep_temp_files": false
+        "keep_temp_files": false,
+        "concurrent": true
     },
     "simulation_parameters": {
         "blanket.T": [6, 12, 18],

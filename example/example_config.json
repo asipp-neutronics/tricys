@@ -19,7 +19,8 @@
         "num_steps": 5000,
         "step_size": 1.0,
         "max_workers": 4,
-        "keep_temp_files": false
+        "keep_temp_files": false,
+        "concurrent": true
     },
     "simulation_parameters": {
         "blanket.T": [6, 12, 18],
