@@ -23,9 +23,9 @@ jobs:
   BaseBuild:
     runs-on: ubuntu-latest
 
-    #permissions:
-    #  contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-    #  packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     strategy:
       matrix:
@@ -44,7 +44,7 @@ jobs:
           password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
       
       - name: Tag images with latest if on the main repo's develop branch
-        if: github.repository_owner == 'asipp-neutronics' && github.ref_name == 'main'
+        if: github.repository_owner == 'asipp-neutronics' 
         run: echo "USE_LATEST_TAG=true" >> $GITHUB_ENV
 
       # build base python using multistage docker build action
@@ -71,9 +71,9 @@ jobs:
     needs: [BaseBuild]
     runs-on: ubuntu-latest
     
-    #permissions:
-    #  contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-    #  packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     strategy:
       matrix: 
@@ -93,7 +93,7 @@ jobs:
           password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
       
       - name: Tag images with latest if on the main repo's develop branch
-        if: github.repository_owner == 'asipp-neutronics' && github.ref_name == 'main'
+        if: github.repository_owner == 'asipp-neutronics' 
         run: echo "USE_LATEST_TAG=true" >> $GITHUB_ENV
 
       # build test stage and tricys-dev stage using multistage docker build action
@@ -118,7 +118,7 @@ jobs:
   # can be copied from the ghcr where they are saved using :ci_testing tags to
   # :latest and :stable tags.
   pushing_test_stable_img:
-    if: github.repository_owner == 'asipp-neutronics' && github.ref_name == 'main'
+    if: github.repository_owner == 'asipp-neutronics' 
     needs: [BuildTest]
     runs-on: ubuntu-latest
     strategy:
@@ -128,9 +128,9 @@ jobs:
 
     name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
 
-    #permissions:
-    #  contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-    #  packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     steps:
       - name: Log in to the Container registry
