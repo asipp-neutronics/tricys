@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix: 
         tricys_test_base: [tricys]
-        version: ['gui', 'ompython']
+        version: ['ompython']
       fail-fast: false
 
     steps:
@@ -124,7 +124,7 @@ jobs:
     strategy:
       matrix:
         stage: [base_om,tricys]
-        version: ['gui', 'ompython']
+        version: ['ompython']
 
     name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
 
