@@ -29,7 +29,7 @@ jobs:
 
     strategy:
       matrix:
-        version: ['ompython']
+        version: ['ompython','gui']
       fail-fast: false
 
     steps:
@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix: 
         tricys_test_base: [tricys]
-        version: ['ompython']
+        version: ['ompython','gui']
       fail-fast: false
 
     steps:
@@ -117,36 +117,36 @@ jobs:
   # if the previous step that tests the docker images passes then the images
   # can be copied from the ghcr where they are saved using :ci_testing tags to
   # :latest and :stable tags.
-  pushing_test_stable_img:
-    if: github.repository_owner == 'asipp-neutronics' 
-    needs: [BuildTest]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        stage: [base_om,tricys]
-        version: ['ompython']
-
-    name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
-
-    permissions:
-      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
-
-    steps:
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
-
-      - name: Push Image to stable img
-        uses: akhilerm/tag-push-action@v2.2.0
-        with:
-          src: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:latest
-          dst: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:stable
-          
-      # This step runs only if a previous step has failed
-      - name: Debug with tmate on failure
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
+  #pushing_test_stable_img:
+  #  if: github.repository_owner == 'asipp-neutronics' 
+  #  needs: [BuildTest]
+  #  runs-on: ubuntu-latest
+  #  strategy:
+  #    matrix:
+  #      stage: [base_om,tricys]
+  #      version: ['ompython']
+  #
+  #  name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
+  #
+  #  permissions:
+  #    contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+  #    packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+  #
+  #  steps:
+  #    - name: Log in to the Container registry
+  #      uses: docker/login-action@v3
+  #      with:
+  #        registry: ghcr.io
+  #        username: ${{ github.repository_owner }}
+  #        password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
+  #
+  #    - name: Push Image to stable img
+  #      uses: akhilerm/tag-push-action@v2.2.0
+  #      with:
+  #        src: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:latest
+  #        dst: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:stable
+  #         
+  #    # This step runs only if a previous step has failed
+  #    - name: Debug with tmate on failure
+  #      if: failure()
+  #      uses: mxschmitt/action-tmate@v3
