@@ -36,7 +36,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
       
       - name: Tag images with latest if on the main repo's develop branch
         if: github.repository_owner == 'asipp-neutronics' && github.ref_name == 'main'
@@ -81,7 +81,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
       
       - name: Tag images with latest if on the main repo's develop branch
         if: github.repository_owner == 'asipp-neutronics' && github.ref_name == 'main'
@@ -125,7 +125,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
 
       - name: Push Image to stable img
         uses: akhilerm/tag-push-action@v2.2.0
