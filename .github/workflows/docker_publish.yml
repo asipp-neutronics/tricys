@@ -22,6 +22,11 @@ jobs:
   # to be built upon by the subsequent stage.
   BaseBuild:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+
     strategy:
       matrix:
         version: ['gui', 'ompython']
