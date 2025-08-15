@@ -23,9 +23,9 @@ jobs:
   BaseBuild:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+    #permissions:
+    #  contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+    #  packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     strategy:
       matrix:
@@ -71,9 +71,9 @@ jobs:
     needs: [BaseBuild]
     runs-on: ubuntu-latest
     
-    permissions:
-      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+    #permissions:
+    #  contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+    #  packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     strategy:
       matrix: 
@@ -128,9 +128,9 @@ jobs:
 
     name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
 
-    permissions:
-      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
-      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+    #permissions:
+    #  contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+    #  packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     steps:
       - name: Log in to the Container registry
