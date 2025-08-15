@@ -55,6 +55,11 @@ jobs:
           dockerfile: docker/tricys_om_${{matrix.version}}.dockerfile
           build-args: tricys_test_base=base_om
 
+      # This step runs only if a previous step has failed
+      - name: Debug with tmate on failure
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
+
   # Downloads the images uploaded to ghcr in previous stages and runs tricys
   # tests to check that they work.
   BuildTest:
@@ -95,6 +100,11 @@ jobs:
           dockerfile: docker/tricys_om_${{matrix.version}}.dockerfile
           build-args: tricys_test_base=${{ matrix.tricys_test_base }}
 
+      # This step runs only if a previous step has failed
+      - name: Debug with tmate on failure
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
+
   # if the previous step that tests the docker images passes then the images
   # can be copied from the ghcr where they are saved using :ci_testing tags to
   # :latest and :stable tags.
@@ -122,3 +132,8 @@ jobs:
         with:
           src: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:latest
           dst: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:stable
+          
+      # This step runs only if a previous step has failed
+      - name: Debug with tmate on failure
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
