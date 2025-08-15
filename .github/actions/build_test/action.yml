@@ -1,0 +1,33 @@
+name: 'Build and Test'
+description: 'Checks out code and runs the test suite inside the current container.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies and run tests
+      run: |
+        echo "Uninstalling previous versions..."
+        pip uninstall -y tricys || echo "tricys not found, continuing..."
+
+        echo "Setting up virtual environment..."
+        cd $GITHUB_WORKSPACE
+        python -m venv venv
+        source ./venv/bin/activate
+        
+        echo "Installing development dependencies..."
+        make dev-install
+        
+        echo "Running utils tests..."
+        make test
+
+        echo "Running tricys tests..."
+        cd ./example
+        tricys -c example_config.json
+      shell: bash
+
+    - name: Debug with tmate on failure
+      if: failure()
+      uses: mxschmitt/action-tmate@v3
