@@ -1,10 +1,10 @@
 name: Parallel Build and Test
 
 on:
-#  push:
-#    branches: [ main, develop ]
-#  pull_request:
-#    types: [opened, reopened, synchronize]
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - service: gui
-            image: ghcr.io/${{ github.repository_owner }}/tricys_om_gui/base_om
+            image: ghcr.io/${{ github.repository_owner }}/tricys_om_gui/base_om:c72d8c4019223790c68065b1330de2338c9a8df2
           - service: ompython
-            image: ghcr.io/${{ github.repository_owner }}/tricys_om_ompython/base_om
+            image: ghcr.io/${{ github.repository_owner }}/tricys_om_ompython/base_om:c72d8c4019223790c68065b1330de2338c9a8df2
 
     container:
       image: ${{ matrix.image }}
