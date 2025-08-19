@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - service: gui
-            image: ghcr.io/${{ github.repository_owner }}/tricys_om_gui/base_om:c72d8c4019223790c68065b1330de2338c9a8df2
+            image: ghcr.io/${{ github.repository_owner }}/tricys_om_gui/tricys:4f6c5feb5e30aa4e2f7399cf97f9c24f7b19f038
           - service: ompython
-            image: ghcr.io/${{ github.repository_owner }}/tricys_om_ompython/base_om:c72d8c4019223790c68065b1330de2338c9a8df2
+            image: ghcr.io/${{ github.repository_owner }}/tricys_om_ompython/tricys:4f6c5feb5e30aa4e2f7399cf97f9c24f7b19f038
 
     container:
       image: ${{ matrix.image }}
