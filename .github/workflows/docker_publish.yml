@@ -27,6 +27,10 @@ jobs:
         version: ['gui', 'ompython']
       fail-fast: false
 
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -71,6 +75,10 @@ jobs:
         version: ['gui', 'ompython']
       fail-fast: false
 
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -114,6 +122,10 @@ jobs:
       matrix:
         stage: [base_om,tricys]
         version: ['gui', 'ompython']
+
+    permissions:
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
 
     name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
 
