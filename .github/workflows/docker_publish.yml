@@ -1,7 +1,6 @@
 name: Build & Publish docker image for TRICYS
 
 on:
-  # 允许我们手动运行工作流
   workflow_dispatch:
   push:
     paths:
@@ -12,18 +11,15 @@ env:
   DOCKER_IMAGE_BASENAME: ghcr.io/${{ github.repository_owner }}/tricys_om
 
 jobs:
-  # 构建并推送各个阶段的 Docker 镜像到 ghcr.io
   BaseBuild:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     strategy:
       matrix:
         version: ['ompython', 'gui']
       fail-fast: false
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -42,10 +38,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.DOCKOKER_IMAGE_BASENAME }}_${{ matrix.version }}/base_om
+          # === 修正笔误 ===
+          images: ${{ env.DOCKER_IMAGE_BASENAME }}_${{ matrix.version }}/base_om
           tags: |
             type=sha,prefix=
-            # 如果是 asipp-neutronics 仓库，则添加 latest 标签
             type=raw,value=latest,enable=${{ github.repository_owner == 'asipp-neutronics' }}
 
       - name: Build and push base_om stage
@@ -53,13 +49,11 @@ jobs:
         with:
           context: .
           file: ./docker/tricys_om_${{ matrix.version }}.dockerfile
-          # 指定只构建 base_om 阶段
           target: base_om
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: tricys_test_base=base_om
-          # 启用 GitHub Actions 的构建缓存
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -67,21 +61,17 @@ jobs:
         if: failure()
         uses: mxschmitt/action-tmate@v3
 
-  # 下载之前上传的镜像并运行 tricys 测试
   BuildTest:
     needs: [BaseBuild]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     strategy:
       matrix:
         version: ['ompython', 'gui']
-        # 为了清晰，我们将要构建的阶段也放入 matrix
         stage: [tricys]
       fail-fast: false
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -100,6 +90,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
+          # === 修正笔误 ===
           images: ${{ env.DOCKER_IMAGE_BASENAME }}_${{ matrix.version }}/${{ matrix.stage }}
           tags: |
             type=sha,prefix=
@@ -110,7 +101,6 @@ jobs:
         with:
           context: .
           file: ./docker/tricys_om_${{ matrix.version }}.dockerfile
-          # 指定构建测试阶段
           target: ${{ matrix.stage }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -123,7 +113,6 @@ jobs:
         if: failure()
         uses: mxschmitt/action-tmate@v3
 
-  # 如果测试通过，将 latest 镜像标记为 stable
   pushing_test_stable_img:
     if: github.repository_owner == 'asipp-neutronics'
     needs: [BuildTest]
