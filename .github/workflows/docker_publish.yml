@@ -124,7 +124,7 @@ jobs:
     strategy:
       matrix:
         stage: [base_om,tricys]
-        version: ['ompython']
+        version: ['ompython','gui']
   
     name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
   
