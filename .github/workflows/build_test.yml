@@ -27,4 +27,9 @@ jobs:
     steps:
       - name: Run Build and Test Steps
         uses: ./.github/actions/build_test
+      
+      # This step runs only if a previous step has failed
+      - name: Debug with tmate on failure
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
 
