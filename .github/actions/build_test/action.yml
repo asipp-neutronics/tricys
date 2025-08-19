@@ -4,9 +4,6 @@ description: 'Checks out code and runs the test suite inside the current contain
 runs:
   using: "composite"
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
     - name: Install dependencies and run tests
       run: |
         echo "Uninstalling previous versions..."

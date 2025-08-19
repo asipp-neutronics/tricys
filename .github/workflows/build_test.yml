@@ -25,6 +25,9 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Run Build and Test Steps
         uses: ./.github/actions/build_test
       
