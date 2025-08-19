@@ -1,7 +1,12 @@
 name: Build & Publish docker image for TRICYS
 
 on:
+  # allows us to run workflows manually
   workflow_dispatch:
+  #pull_request:
+  #  paths:
+  #    - 'docker/*'
+  #    - '.github/workflows/docker_publish.yml'
   push:
     paths:
       - 'docker/*'
@@ -9,69 +14,73 @@ on:
 
 env:
   DOCKER_IMAGE_BASENAME: ghcr.io/${{ github.repository_owner }}/tricys_om
+  USE_LATEST_TAG: false
 
 jobs:
+  # builds and pushes docker images of various stages to ghcr.
+  # These docker images are also stored in ghcr and can be pulled
+  # to be built upon by the subsequent stage.
   BaseBuild:
     runs-on: ubuntu-latest
+
     permissions:
-      contents: read
-      packages: write
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+
     strategy:
       matrix:
-        version: ['ompython', 'gui']
+        version: ['ompython','gui']
       fail-fast: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
+      
+      - name: Tag images with latest if on the main repo's develop branch
+        if: github.repository_owner == 'asipp-neutronics' 
+        run: echo "USE_LATEST_TAG=true" >> $GITHUB_ENV
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
+      # build base python using multistage docker build action
+      - uses: firehed/multistage-docker-build-action@v1
+        id: build_all_stages
         with:
-          # === 修正笔误 ===
-          images: ${{ env.DOCKER_IMAGE_BASENAME }}_${{ matrix.version }}/base_om
-          tags: |
-            type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.repository_owner == 'asipp-neutronics' }}
-
-      - name: Build and push base_om stage
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./docker/tricys_om_${{ matrix.version }}.dockerfile
-          target: base_om
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          repository: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}
+          stages: base_om
+          server-stage: base_om
+          quiet: false
+          parallel: true
+          tag-latest-on-default: ${{ env.USE_LATEST_TAG }}
+          dockerfile: docker/tricys_om_${{matrix.version}}.dockerfile
           build-args: tricys_test_base=base_om
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
+      # This step runs only if a previous step has failed
       - name: Debug with tmate on failure
         if: failure()
         uses: mxschmitt/action-tmate@v3
 
+  # Downloads the images uploaded to ghcr in previous stages and runs tricys
+  # tests to check that they work.
   BuildTest:
     needs: [BaseBuild]
     runs-on: ubuntu-latest
+    
     permissions:
-      contents: read
-      packages: write
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
+
     strategy:
-      matrix:
-        version: ['ompython', 'gui']
-        stage: [tricys]
+      matrix: 
+        tricys_test_base: [tricys]
+        version: ['ompython','gui']
       fail-fast: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -83,50 +92,45 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Tag images with latest if on the main repo's develop branch
+        if: github.repository_owner == 'asipp-neutronics' 
+        run: echo "USE_LATEST_TAG=true" >> $GITHUB_ENV
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
+      # build test stage and tricys-dev stage using multistage docker build action
+      - uses: firehed/multistage-docker-build-action@v1
+        id: multistage_build_and_test
         with:
-          # === 修正笔误 ===
-          images: ${{ env.DOCKER_IMAGE_BASENAME }}_${{ matrix.version }}/${{ matrix.stage }}
-          tags: |
-            type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.repository_owner == 'asipp-neutronics' }}
+          repository: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}
+          stages: ${{ matrix.tricys_test_base }}
+          server-stage: tricys
+          quiet: false
+          parallel: true
+          tag-latest-on-default: ${{ env.USE_LATEST_TAG }}
+          dockerfile: docker/tricys_om_${{matrix.version}}.dockerfile
+          build-args: tricys_test_base=${{ matrix.tricys_test_base }}
 
-      - name: Build and push test stage
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./docker/tricys_om_${{ matrix.version }}.dockerfile
-          target: ${{ matrix.stage }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: tricys_test_base=${{ matrix.stage }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
+      # This step runs only if a previous step has failed
       - name: Debug with tmate on failure
         if: failure()
         uses: mxschmitt/action-tmate@v3
 
+  # if the previous step that tests the docker images passes then the images
+  # can be copied from the ghcr where they are saved using :ci_testing tags to
+  # :latest and :stable tags.
   pushing_test_stable_img:
-    if: github.repository_owner == 'asipp-neutronics'
+    if: github.repository_owner == 'asipp-neutronics' 
     needs: [BuildTest]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        stage: [base_om, tricys]
+        stage: [base_om,tricys]
         version: ['ompython']
   
-    name: "Tag ${{ matrix.stage }} as stable"
+    name: "ghcr.io/${{ github.repository_owner }}/tricys_om_${{ matrix.version }}/${{ matrix.stage }}: latest -> stable"
   
     permissions:
-      contents: read
-      packages: write
+      contents: read      # 授予读取仓库内容的权限 (例如 actions/checkout)
+      packages: write     # 授予写入包的权限 (例如推送到 ghcr.io)
   
     steps:
       - name: Log in to the Container registry
@@ -134,22 +138,15 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Pull latest image, re-tag as stable, and push
-        run: |
-          SRC_IMAGE="${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:latest"
-          DST_IMAGE="${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:stable"
-          
-          echo "Pulling ${SRC_IMAGE}"
-          docker pull ${SRC_IMAGE}
-          
-          echo "Tagging ${SRC_IMAGE} as ${DST_IMAGE}"
-          docker tag ${SRC_IMAGE} ${DST_IMAGE}
-          
-          echo "Pushing ${DST_IMAGE}"
-          docker push ${DST_IMAGE}
-      
+          password: ${{ github.repository_owner == 'asipp-neutronics' && secrets.GITHUB_TOKEN || secrets.MY_TOKEN }}
+  
+      - name: Push Image to stable img
+        uses: akhilerm/tag-push-action@v2.2.0
+        with:
+          src: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:latest
+          dst: ${{ env.DOCKER_IMAGE_BASENAME }}_${{matrix.version}}/${{ matrix.stage }}:stable
+           
+      # This step runs only if a previous step has failed
       - name: Debug with tmate on failure
         if: failure()
         uses: mxschmitt/action-tmate@v3
