@@ -16,7 +16,6 @@ on:
   #  paths:
   #    - 'docker/*'
   #    - '.github/workflows/build_publish.yml'
-  workflow_dispatch:
 
 # Environment variables available to all jobs in this workflow.
 env:
