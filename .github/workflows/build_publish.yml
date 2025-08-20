@@ -22,7 +22,7 @@ env:
   # The name of the Docker image you are building.
   IMAGE_NAME: ${{ github.repository_owner }}/tricys
   # The path to the Dockerfile.
-  DOCKERFILE_PATH: ./docker/tricys_om_ompython.dockerfile
+  DOCKERFILE_PATH: ./docker/tricys_om_gui.dockerfile
 
 jobs:
   build-and-push:
