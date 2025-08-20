@@ -1,10 +1,10 @@
 name: Parallel Build and Test
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    types: [opened, reopened, synchronize]
+  #push:
+  #  branches: [ main, develop ]
+  #pull_request:
+  #  types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
