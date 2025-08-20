@@ -1,0 +1,38 @@
+name: 'Build and Test'
+description: 'Checks out code and runs the test suite inside the current container.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies and run tests
+      run: |
+        # First, as root, set the correct ownership of the code
+        echo "Setting workspace ownership..."
+        chown -R appuser:appuser $GITHUB_WORKSPACE
+
+        echo "Setting up virtual environment..."
+        pip install --upgrade pip setuptools wheel
+
+        # Now, execute all subsequent commands as the 'appuser'
+        # The -E flag preserves the environment (like $GITHUB_WORKSPACE)
+        # The bash -c '...' block ensures all commands run in the same shell session
+        sudo -E -u appuser bash -c '
+          echo "Running as $(whoami) from $(pwd)..."
+          cd "$GITHUB_WORKSPACE"
+          echo "Switched to $(pwd)..."
+
+          echo "Installing development dependencies..."
+          sudo pip install -e ".[dev]"
+          
+          echo "Running utils tests..."
+          make test
+
+        '
+      shell: bash
+
+    - name: Debug with tmate on failure
+      if: failure()
+      uses: mxschmitt/action-tmate@v3
