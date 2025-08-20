@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - service: gui
-            image: ghcr.io/couuas/tricys_om_gui/base_om:latest
+            image: ghcr.io/${{ github.repository_owner }}/tricys_om_gui/base_om:latest
           - service: ompython
-            image: ghcr.io/couuas/tricys_om_ompython/base_om:latest
+            image: ghcr.io/${{ github.repository_owner }}/tricys_om_ompython/base_om:latest
 
     container:
       image: ${{ matrix.image }}
