@@ -20,7 +20,7 @@ on:
 # Environment variables available to all jobs in this workflow.
 env:
   # The name of the Docker image you are building.
-  IMAGE_NAME_BASE: ${{ github.repository_owner }}/tricys
+  IMAGE_NAME_BASE: ${{ github.repository_owner }}/tricys_om_gui
   # The path to the Dockerfile.
   DOCKERFILE_PATH: ./docker/tricys_om_gui.dockerfile
 
@@ -61,7 +61,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ env.IMAGE_NAME_BASE }}-${{ matrix.stage }}
+          images: ghcr.io/${{ env.IMAGE_NAME_BASE }}/${{ matrix.stage }}
           flavor: |
             latest=true
 
