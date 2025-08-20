@@ -20,7 +20,7 @@ on:
 # Environment variables available to all jobs in this workflow.
 env:
   # The name of the Docker image you are building.
-  IMAGE_NAME: ${{ github.repository_owner }}/tricys
+  IMAGE_NAME_BASE: ${{ github.repository_owner }}/tricys
   # The path to the Dockerfile.
   DOCKERFILE_PATH: ./docker/tricys_om_gui.dockerfile
 
