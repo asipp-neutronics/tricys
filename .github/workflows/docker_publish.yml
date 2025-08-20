@@ -1,18 +1,20 @@
 name: Build & Publish docker image for TRICYS
 
-permissions: write-all
+permissions:
+  contents: read      
+  packages: write 
 
 on:
   # allows us to run workflows manually
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'docker/*'
-      - '.github/workflows/docker_publish.yml'
-  push:
-    paths:
-      - 'docker/*'
-      - '.github/workflows/docker_publish.yml'
+#  pull_request:
+#    paths:
+#      - 'docker/*'
+#      - '.github/workflows/docker_publish.yml'
+#  push:
+#    paths:
+#      - 'docker/*'
+#      - '.github/workflows/docker_publish.yml'
 
 env:
   DOCKER_IMAGE_BASENAME: ghcr.io/${{ github.repository_owner }}/tricys_om
