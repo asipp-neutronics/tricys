@@ -1,5 +1,9 @@
 name: Build & Publish docker image for TRICYS
 
+permissions:
+  contents: read      
+  packages: write 
+
 on:
   # allows us to run workflows manually
   workflow_dispatch:
