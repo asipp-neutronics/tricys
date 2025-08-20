@@ -1,5 +1,3 @@
-# .github/workflows/docker-publish.yml
-
 name: Build and Push Docker Image
 
 permissions:
@@ -18,7 +16,6 @@ on:
     paths:
       - 'docker/*'
       - '.github/workflows/build_publish.yml'
-  workflow_dispatch:
 
 # Environment variables available to all jobs in this workflow.
 env:
