@@ -27,6 +27,11 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    # Use a strategy matrix to run a job for each Docker stage.
+    strategy:
+      matrix:
+        stage: [base_om, tricys] # Define the stages you want to build and push.
+
     # Sets the permissions for the GITHUB_TOKEN for this job.
     permissions:
       contents: read   # Needed to check out the repository.
@@ -38,8 +43,7 @@ jobs:
         uses: actions/checkout@v4
 
       # 2. Set up Docker Buildx.
-      # This step is required to enable the GHA cache backend. It sets up a
-      # more advanced builder instance that supports cache export.
+      # This step is required to enable the GHA cache backend.
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -52,27 +56,25 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # 4. Extract metadata (like tags and labels) for the Docker image.
-      # This action automatically creates useful tags based on the Git ref.
-      # For example, on the 'main' branch, it will create the 'latest' tag.
-      - name: Extract Docker metadata
+      # The image name is now dynamic and includes the stage name.
+      - name: Extract Docker metadata for ${{ matrix.stage }}
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ env.IMAGE_NAME }}
-          # This flavor setting explicitly enables the 'latest' tag when
-          # the workflow runs on the default branch (e.g., 'main').
+          images: ghcr.io/${{ env.IMAGE_NAME_BASE }}/${{ matrix.stage }}
           flavor: |
             latest=true
 
-      # 5. Build the Docker image and push it to GHCR.
-      # This single step handles both building and pushing.
-      - name: Build and push Docker image
+      # 5. Build the Docker image for a specific stage and push it to GHCR.
+      - name: Build and push ${{ matrix.stage }} stage
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ env.DOCKERFILE_PATH }}
-          push: true # Actually push the image.
-          tags: ${{ steps.meta.outputs.tags }} # Use the tags generated in the previous step.
-          labels: ${{ steps.meta.outputs.labels }} # Add git information as labels.
+          push: true
+          # The 'target' parameter tells Docker which stage to build.
+          target: ${{ matrix.stage }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
