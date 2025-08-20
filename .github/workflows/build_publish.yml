@@ -16,6 +16,7 @@ on:
     paths:
       - 'docker/*'
       - '.github/workflows/build_publish.yml'
+  workflow_dispatch:
 
 # Environment variables available to all jobs in this workflow.
 env:
@@ -37,7 +38,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Log in to the GitHub Container Registry (GHCR).
+      # 2. Set up Docker Buildx.
+      # This step is required to enable the GHA cache backend. It sets up a
+      # more advanced builder instance that supports cache export.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Log in to the GitHub Container Registry (GHCR).
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -45,7 +52,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. Extract metadata (like tags and labels) for the Docker image.
+      # 4. Extract metadata (like tags and labels) for the Docker image.
       # This action automatically creates useful tags based on the Git ref.
       # For example, on the 'main' branch, it will create the 'latest' tag.
       - name: Extract Docker metadata
@@ -58,9 +65,19 @@ jobs:
           flavor: |
             latest=true
 
-      # 4. Build the Docker image and push it to GHCR.
+      # 5. Build the Docker image and push it to GHCR.
       # This single step handles both building and pushing.
       - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ env.DOCKERFILE_PATH }}
+          push: true # Actually push the image.
+          tags: ${{ steps.meta.outputs.tags }} # Use the tags generated in the previous step.
+          labels: ${{ steps.meta.outputs.labels }} # Add git information as labels.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
         uses: docker/build-push-action@v5
         with:
           context: .
