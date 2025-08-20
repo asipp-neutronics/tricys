@@ -9,23 +9,32 @@ runs:
 
     - name: Install dependencies and run tests
       run: |
-        echo "Uninstalling previous versions..."
-        pip uninstall -y tricys || echo "tricys not found, continuing..."
+        # First, as root, set the correct ownership of the code
+        echo "Setting workspace ownership..."
+        chown -R appuser:appuser $GITHUB_WORKSPACE
 
         echo "Setting up virtual environment..."
-        cd $GITHUB_WORKSPACE
-        python -m venv venv
-        source ./venv/bin/activate
-        
-        echo "Installing development dependencies..."
-        make dev-install
-        
-        echo "Running utils tests..."
-        make test
+        pip install --upgrade pip setuptools wheel
 
-        echo "Running tricys tests..."
-        cd ./example
-        tricys -c example_config.json
+        # Now, execute all subsequent commands as the 'appuser'
+        # The -E flag preserves the environment (like $GITHUB_WORKSPACE)
+        # The bash -c '...' block ensures all commands run in the same shell session
+        sudo -E -u appuser bash -c '
+          echo "Running as $(whoami) from $(pwd)..."
+          cd "$GITHUB_WORKSPACE"
+          echo "Switched to $(pwd)..."
+
+          echo "Installing development dependencies..."
+          sudo pip install -e ".[dev]"
+          omc ./script/install.mos
+          
+          echo "Running utils tests..."
+          make test
+
+          echo "Running tricys tests..."
+          cd ./example
+          tricys -c example_config.json
+        '
       shell: bash
 
     - name: Debug with tmate on failure

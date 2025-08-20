@@ -1,10 +1,10 @@
 name: Parallel Build and Test
 
 on:
-#  push:
-#    branches: [ main, develop ]
-#  pull_request:
-#    types: [opened, reopened, synchronize]
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
@@ -17,14 +17,21 @@ jobs:
       matrix:
         include:
           - service: gui
-            image: ghcr.io/${{ github.repository_owner }}/tricys_om_gui/base_om
+            image: ghcr.io/couuas/tricys_om_gui/base_om:latest
           - service: ompython
-            image: ghcr.io/${{ github.repository_owner }}/tricys_om_ompython/base_om
+            image: ghcr.io/couuas/tricys_om_ompython/base_om:latest
 
     container:
       image: ${{ matrix.image }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Run Build and Test Steps
         uses: ./.github/actions/build_test
+      
+      - name: Debug with tmate on failure
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
 
