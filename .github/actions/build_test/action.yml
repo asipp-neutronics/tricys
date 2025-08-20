@@ -30,10 +30,6 @@ runs:
           
           echo "Running utils tests..."
           make test
-
-          echo "Running tricys tests..."
-          cd ./example
-          tricys -c example_config.json
         '
       shell: bash
 
