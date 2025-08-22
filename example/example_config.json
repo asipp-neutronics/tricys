@@ -20,7 +20,7 @@
         "step_size": 1.0,
         "max_workers": 4,
         "keep_temp_files": false,
-        "concurrent": true
+        "concurrent": false
     },
     "simulation_parameters": {
         "blanket.T": [6, 12, 18],
