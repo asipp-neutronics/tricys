@@ -22,7 +22,7 @@ dependencies = [
     "matplotlib",
     "seaborn",
     "pathlib",
-    "OMPython"
+    "OMPython",
 ]
 
 [project.urls]
@@ -30,6 +30,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/asipp-neutronics/tricys"
 
 [project.scripts]
+tricys-plus = "tricys.simulation_plus:main"
 tricys-gui = "tricys.simulation_gui:main"
 tricys = "tricys.simulation:main"
 
@@ -38,6 +39,13 @@ dev = [
     "pytest",  # 用于测试
     "ruff",    # 用于代码检查和格式化
     "black",   
+]
+
+win = [
+    "pytest",  # 用于测试
+    "ruff",    # 用于代码检查和格式化
+    "black",
+    "pywin32"  
 ]
 
 [tool.setuptools]

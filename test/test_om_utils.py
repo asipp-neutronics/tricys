@@ -1,6 +1,7 @@
 import os
-import pytest
 from pathlib import Path
+
+import pytest
 
 from tricys.utils.om_utils import (
     format_parameter_value,
