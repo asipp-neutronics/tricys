@@ -21,12 +21,14 @@ import numpy as np
 import pandas as pd
 from OMPython import ModelicaSystem
 
+from tricys.utils.decorators_utils import record_time
 from tricys.utils.file_utils import delete_old_logs, get_unique_filename
 from tricys.utils.om_utils import (
     format_parameter_value,
     get_om_session,
     load_modelica_package,
 )
+
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
@@ -213,6 +215,92 @@ def _run_single_job(
             omc.sendExpression("quit()")
 
 
+def _run_sequential_sweep(
+    jobs: List[Dict[str, Any]],
+    model_name: str,
+    package_path: str,
+    variable_filter: str,
+    stop_time: float,
+    step_size: float,
+    output_dir: str,
+) -> List[str]:
+    """Executes a parameter sweep sequentially in a single process.
+
+    This function reuses the OpenModelica session and model object for
+    efficiency, which is ideal for non-concurrent sweeps.
+
+    Args:
+        jobs (List[Dict[str, Any]]): A list of jobs, where each job is a
+            dictionary of parameters.
+        model_name (str): The name of the Modelica model to simulate.
+        package_path (str): The path to the Modelica package file.
+        variable_filter (str): The regex filter for result variables.
+        stop_time (float): The simulation stop time.
+        step_size (float): The simulation step size.
+        output_dir (str): The directory to save result files.
+
+    Returns:
+        List[str]: A list of paths to the simulation result CSV files.
+    """
+    logger.info("Running sweep sequentially, reusing OM session and model object.")
+    omc = None
+    mod = None
+    result_paths = []
+    try:
+        omc = get_om_session()
+        if not load_modelica_package(omc, Path(package_path).as_posix()):
+            raise RuntimeError("Failed to load Modelica package for sequential sweep.")
+
+        mod = ModelicaSystem(
+            fileName=Path(package_path).as_posix(),
+            modelName=model_name,
+            variableFilter=variable_filter,
+        )
+        mod.setSimulationOptions(
+            [
+                f"stopTime={stop_time}",
+                "tolerance=1e-6",
+                "outputFormat=csv",
+                f"stepSize={step_size}",
+            ]
+        )
+        # Build the model once before the loop, as the model structure doesn't change.
+        mod.buildModel()
+
+        for i, job_params in enumerate(jobs):
+            try:
+                logger.info(f"Running sequential job {i} with parameters: {job_params}")
+                param_settings = [
+                    format_parameter_value(name, value)
+                    for name, value in job_params.items()
+                ]
+                if param_settings:
+                    mod.setParameters(param_settings)
+
+                result_filename = f"{timestamp}_simulation_results_{i}.csv"
+                result_file_path = os.path.join(output_dir, result_filename)
+                mod.simulate(resultfile=Path(result_file_path).as_posix())
+
+                logger.info(
+                    f"Sequential job {i} finished. Results saved to {result_file_path}"
+                )
+                result_paths.append(result_file_path)
+            except Exception as e:
+                logger.error(f"Sequential job {i} failed: {e}", exc_info=True)
+                result_paths.append("")  # Keep list length consistent
+
+        return result_paths
+    except Exception as e:
+        logger.error(f"Sequential sweep failed during setup: {e}", exc_info=True)
+        # Return a list of empty strings with the correct length
+        return [""] * len(jobs)
+    finally:
+        if mod is not None:
+            del mod
+        if omc is not None:
+            omc.sendExpression("quit()")
+
+@record_time
 def run_simulation(
     config: Dict[str, Any],
     package_path: str,
@@ -273,17 +361,16 @@ def run_simulation(
             os.rename(output_path, final_path)
             logger.info(f"Single simulation finished. Result at {final_path}")
     else:
-        run_job_partial = partial(
-            _run_single_job,
-            model_name=model_name,
-            package_path=package_path,
-            variable_filter=variable_filter,
-            stop_time=stop_time,
-            step_size=step_size,
-            output_dir=temp_dir,
-        )
-
         if concurrent_execution:
+            run_job_partial = partial(
+                _run_single_job,
+                model_name=model_name,
+                package_path=package_path,
+                variable_filter=variable_filter,
+                stop_time=stop_time,
+                step_size=step_size,
+                output_dir=temp_dir,
+            )
             with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers
             ) as executor:
@@ -291,10 +378,15 @@ def run_simulation(
                     executor.map(run_job_partial, enumerate(jobs))
                 )
         else:
-            simulation_results_paths = []
-            for i, job_params in enumerate(jobs):
-                result_path = run_job_partial((i, job_params))
-                simulation_results_paths.append(result_path)
+            simulation_results_paths = _run_sequential_sweep(
+                jobs=jobs,
+                model_name=model_name,
+                package_path=package_path,
+                variable_filter=variable_filter,
+                stop_time=stop_time,
+                step_size=step_size,
+                output_dir=temp_dir,
+            )
 
         logger.info("All sweep jobs completed. Combining results.")
         combined_df = None
