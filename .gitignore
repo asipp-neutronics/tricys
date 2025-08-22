@@ -39,3 +39,13 @@ example/temp/
 
 # Normalize all line endings to LF
 * text=auto eol=lf
+
+# Ignore all contents in the example_aspenbkp folder
+example/example_aspenbkp/*
+
+# However, do not ignore the .bkp files in the example_aspenbkp folder
+!example/example_aspenbkp/*.bkp
+
+# Ignore all Interceptor and Intercepted model files  in the example folder
+example/example_model/*_Interceptor.mo
+example/example_model/*_Intercepted.mo

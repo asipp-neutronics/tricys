@@ -214,7 +214,7 @@ class InteractiveSimulationUI:
         new_workspace = filedialog.askdirectory(
             initialdir=initial_dir, title="Select Workspace Directory"
         )
-        if new_workspace and new_workspace != initial_dir :
+        if new_workspace and new_workspace != initial_dir:
             self.workspace_path_var.set(new_workspace)
             self.db_path_updated()
             self.load_parameters()
@@ -494,4 +494,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
