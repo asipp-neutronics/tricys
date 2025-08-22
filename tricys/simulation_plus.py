@@ -1,0 +1,254 @@
+import argparse
+import importlib
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict
+
+from OMPython import ModelicaSystem
+
+from tricys.utils.file_utils import delete_old_logs, get_unique_filename
+from tricys.utils.om_utils import (
+    get_om_session,
+    integrate_interceptor_model,
+    load_modelica_package,
+)
+
+# Standard logger setup
+logger = logging.getLogger(__name__)
+
+
+def setup_logging(config: Dict[str, Any]):
+    """Configures the logging module based on the application configuration.
+
+    Sets up logging to both console and file, with log rotation based on the
+    settings provided in the configuration dictionary.
+
+    Args:
+        config (Dict[str, Any]): The application configuration dictionary,
+            expected to contain a 'logging' section.
+    """
+    log_config = config.get("logging", {})
+    log_level_str = log_config.get("log_level", "INFO").upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+    log_to_console = log_config.get("log_to_console", True)
+
+    log_dir_path = log_config.get("log_dir")
+    log_count = log_config.get("log_count", 5)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+
+    # Clear any existing handlers to prevent duplicate logs
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+        handler.close()
+
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+
+    # Add console handler
+    if log_to_console:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(formatter)
+        root_logger.addHandler(console_handler)
+
+    # Add file handler if a log directory is specified
+    if log_dir_path:
+        abs_log_dir = os.path.abspath(log_dir_path)
+        os.makedirs(abs_log_dir, exist_ok=True)
+        delete_old_logs(abs_log_dir, log_count)
+        global timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file_path = os.path.join(abs_log_dir, f"simulation_{timestamp}.log")
+
+        file_handler = logging.FileHandler(log_file_path, mode="a", encoding="utf-8")
+        file_handler.setFormatter(formatter)
+        root_logger.addHandler(file_handler)
+
+        logger.info(f"Logging to file: {log_file_path}")
+
+
+def run_co_simulation_workflow(config: dict):
+    """
+    Runs the full co-simulation workflow for a single set of parameters,
+    handling multiple submodel interceptions.
+    """
+    omc = None
+    try:
+        paths_config = config["paths"]
+        sim_config = config["simulation"]
+        co_sim_configs = config["co_simulation"]
+        if not isinstance(co_sim_configs, list):
+            co_sim_configs = [co_sim_configs]
+
+        package_path = os.path.abspath(paths_config["package_path"])
+        results_dir = os.path.abspath(paths_config["results_dir"])
+        temp_dir = os.path.abspath(paths_config["temp_dir"])
+        model_name = sim_config["model_name"]
+        stop_time = sim_config["stop_time"]
+        step_size = sim_config["step_size"]
+
+        os.makedirs(results_dir, exist_ok=True)
+        os.makedirs(temp_dir, exist_ok=True)
+
+        omc = get_om_session()
+        if not load_modelica_package(omc, Path(package_path).as_posix()):
+            raise RuntimeError(f"Failed to load Modelica package at {package_path}")
+
+        # --- Stage 1: Primary Simulation (for ALL submodels) ---
+        all_input_vars = []
+        for co_sim_config in co_sim_configs:
+            submodel_name = co_sim_config["submodel_name"]
+            instance_name = co_sim_config["instance_name"]
+            logger.info(f"Identifying input ports for submodel '{submodel_name}'...")
+            components = omc.sendExpression(f"getComponents({submodel_name})")
+            input_ports = [
+                {"name": c[1], "dim": int(c[11][0]) if c[11] else 1}
+                for c in components
+                if c[0] == "Modelica.Blocks.Interfaces.RealInput"
+            ]
+            if not input_ports:
+                logger.warning(f"No RealInput ports found in {submodel_name}.")
+                continue
+
+            logger.info(
+                f"Found input ports for {instance_name}: {[p['name'] for p in input_ports]}"
+            )
+            for port in input_ports:
+                full_name = f"{instance_name}.{port['name']}".replace(".", "\\.")
+                if port["dim"] > 1:
+                    full_name += f"\\[[1-{port['dim']}]\\]"
+                all_input_vars.append(full_name)
+
+        variable_filter = "time|" + "|".join(all_input_vars)
+        logger.info(
+            f"Using combined variable filter for primary sim: {variable_filter}"
+        )
+
+        mod = ModelicaSystem(
+            fileName=Path(package_path).as_posix(),
+            modelName=model_name,
+            variableFilter=variable_filter,
+        )
+        mod.setSimulationOptions(
+            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
+        )
+
+        primary_result_filename = get_unique_filename(temp_dir, "primary_inputs.csv")
+        mod.simulate(resultfile=Path(primary_result_filename).as_posix())
+        logger.info(
+            f"OM simulation finished. Input data for all co-sims at {primary_result_filename}"
+        )
+
+        # --- Stage 2: Dynamic Co-simulation (Loop) ---
+        interception_configs = []
+        for co_sim_config in co_sim_configs:
+            handler_module = importlib.import_module(co_sim_config["handler_module"])
+            handler_function = getattr(
+                handler_module, co_sim_config["handler_function"]
+            )
+            instance_name = co_sim_config["instance_name"]
+
+            co_sim_output_filename = get_unique_filename(
+                temp_dir, f"{instance_name}_outputs.csv"
+            )
+
+            output_placeholder = handler_function(
+                temp_input_csv=primary_result_filename,
+                temp_output_csv=co_sim_output_filename,
+                **co_sim_config.get("params", {}),
+            )
+
+            interception_configs.append(
+                {
+                    "submodel_name": co_sim_config["submodel_name"],
+                    "instance_name": co_sim_config["instance_name"],
+                    "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
+                    "output_placeholder": output_placeholder,
+                }
+            )
+
+        # --- Stage 3: Generate Multi-Interceptor Model ---
+
+        intercepted_model_paths = integrate_interceptor_model(
+            package_path=package_path,
+            model_name=model_name,
+            interception_configs=interception_configs,
+        )
+
+        # --- Stage 4: Final Simulation ---
+        verif_config = config["simulation"]["variableFilter"]
+        logger.info("Proceeding with Final simulation.")
+
+        for model_path in intercepted_model_paths["interceptor_model_paths"]:
+            omc.sendExpression(f'loadFile("{Path(model_path).as_posix()}")')
+        omc.sendExpression(
+            f'loadFile("{Path(intercepted_model_paths["system_model_path"]).as_posix()}")'
+        )
+
+        package_name, original_system_name = model_name.split(".")
+        intercepted_model_full_name = (
+            f"{package_name}.{original_system_name}_Intercepted"
+        )
+
+        verif_mod = ModelicaSystem(
+            fileName=Path(package_path).as_posix(),
+            modelName=intercepted_model_full_name,
+            variableFilter=verif_config,
+        )
+        verif_mod.setSimulationOptions(
+            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
+        )
+
+        verif_result_filename = get_unique_filename(
+            results_dir, "co_simulation_results.csv"
+        )
+        verif_mod.simulate(resultfile=Path(verif_result_filename).as_posix())
+
+    except Exception as e:
+        logger.info(f"Workflow  failed: {e}", exc_info=True)
+    finally:
+        if omc:
+            omc.sendExpression("quit()")
+            logger.info("Closed OMPython session .")
+
+
+def main():
+    """Main function to run the simulation from the command line.
+
+    Parses command-line arguments for the configuration file, loads it, sets up
+    logging, and starts the simulation run.
+    """
+    parser = argparse.ArgumentParser(
+        description="Run a unified simulation and co-simulation workflow."
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=str,
+        required=True,
+        help="Path to the JSON configuration file.",
+    )
+    args = parser.parse_args()
+
+    try:
+        config_path = os.path.abspath(args.config)
+        with open(config_path, "r") as f:
+            config = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logging.basicConfig()
+        logger.error(f"Failed to load or parse config file {args.config}: {e}")
+        sys.exit(1)
+
+    setup_logging(config)
+
+    run_co_simulation_workflow(config)
+
+
+if __name__ == "__main__":
+    main()
