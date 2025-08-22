@@ -1,0 +1,10 @@
+SLAVE:
+INPUT: _2346hiu.inm
+MODNAME: apmain
+RUNID: _2346hiu
+NEW_RUNID: _2346hiu
+OLD_RUNID: _2346hiu
+PDF: _2346hiu.appdf
+USERNAME: DELL
+XMOD: D:\Program Files\AspenTech\Aspen Plus V14.0\Engine\xeq\apmain
+DBCONN: _2346hiu.ads

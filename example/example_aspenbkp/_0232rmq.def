@@ -1,0 +1,10 @@
+SLAVE:
+INPUT: _0232rmq.inm
+MODNAME: apmain
+RUNID: _0232rmq
+NEW_RUNID: _0232rmq
+OLD_RUNID: _0232rmq
+PDF: _0232rmq.appdf
+USERNAME: DELL
+XMOD: D:\Program Files\AspenTech\Aspen Plus V14.0\Engine\xeq\apmain
+DBCONN: _0232rmq.ads

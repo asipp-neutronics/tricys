@@ -1,0 +1,3 @@
+ DSET RUN-STATUS OLDSTAT @STATUS ( 0 0 2 2 0 0 )                                
+ DSET RUN-STATUS STATUS @STATUS ( 8 * * * * * )                                 
+ DSET RUN-STATUS COMPSTAT @L_1 (0)                                              

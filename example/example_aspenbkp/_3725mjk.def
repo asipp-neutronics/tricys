@@ -1,0 +1,10 @@
+SLAVE:
+INPUT: _3725mjk.inm
+MODNAME: apmain
+RUNID: _3725mjk
+NEW_RUNID: _3725mjk
+OLD_RUNID: _3725mjk
+PDF: _3725mjk.appdf
+USERNAME: Administrator
+XMOD: C:\Program Files\AspenTech\Aspen Plus V14.0\Engine\xeq\apmain
+DBCONN: _3725mjk.ads

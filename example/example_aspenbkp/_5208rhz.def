@@ -1,0 +1,10 @@
+SLAVE:
+INPUT: _5208rhz.inm
+MODNAME: apmain
+RUNID: _5208rhz
+NEW_RUNID: _5208rhz
+OLD_RUNID: _5208rhz
+PDF: _5208rhz.appdf
+USERNAME: DELL
+XMOD: D:\Program Files\AspenTech\Aspen Plus V14.0\Engine\xeq\apmain
+DBCONN: _5208rhz.ads
