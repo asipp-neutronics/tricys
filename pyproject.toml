@@ -23,7 +23,6 @@ dependencies = [
     "seaborn",
     "pathlib",
     "OMPython",
-    "pywin32"
 ]
 
 [project.urls]
@@ -40,6 +39,13 @@ dev = [
     "pytest",  # 用于测试
     "ruff",    # 用于代码检查和格式化
     "black",   
+]
+
+win = [
+    "pytest",  # 用于测试
+    "ruff",    # 用于代码检查和格式化
+    "black",
+    "pywin32"  
 ]
 
 [tool.setuptools]
