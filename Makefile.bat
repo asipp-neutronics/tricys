@@ -55,6 +55,12 @@ call pip install -e ".[dev]"
 echo --^> Development installation complete.
 goto :eof
 
+:win-install
+echo --^> Installing project with development dependencies...
+call pip install -e ".[win]"
+echo --^> Development installation complete.
+goto :eof
+
 
 :clean
 echo --^> Cleaning up project...
