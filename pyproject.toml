@@ -63,3 +63,8 @@ ignore = ["E501","E722"]
 
 [tool.ruff.isort]
 known-first-party = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+    "build_test: marks tests for github action",
+]

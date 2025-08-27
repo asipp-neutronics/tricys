@@ -28,8 +28,7 @@ runs:
           sudo pip install -e ".[dev]"
           
           echo "Running utils tests..."
-          make test
-
+          pytest -v -m build_test
         '
       shell: bash
 
