@@ -4,14 +4,19 @@ import json
 import logging
 import os
 import sys
+import itertools
+import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
+import numpy as np
+import pandas as pd
 from OMPython import ModelicaSystem
 
 from tricys.utils.file_utils import delete_old_logs, get_unique_filename
 from tricys.utils.om_utils import (
+    format_parameter_value,
     get_om_session,
     integrate_interceptor_model,
     load_modelica_package,
@@ -19,6 +24,43 @@ from tricys.utils.om_utils import (
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
+
+def _parse_parameter_value(value: Any) -> List[Any]:
+    """Parses a parameter value which can be a single value, a list, or a range string."""
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str) and ":" in value:
+        try:
+            start, stop, step = map(float, value.split(":"))
+            return np.arange(start, stop + step / 2, step).tolist()
+        except ValueError:
+            logger.error(f"Invalid range format for parameter value: {value}")
+            return [value]
+    return [value]
+
+
+def _generate_simulation_jobs(
+    simulation_params: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    """Generates a list of simulation jobs from parameters, handling sweeps."""
+    sweep_params = {}
+    single_value_params = {}
+    for name, value in simulation_params.items():
+        parsed_values = _parse_parameter_value(value)
+        if len(parsed_values) > 1:
+            sweep_params[name] = parsed_values
+        else:
+            single_value_params[name] = parsed_values[0]
+    if not sweep_params:
+        return [single_value_params] if single_value_params else [{}]
+    sweep_names = list(sweep_params.keys())
+    sweep_values = list(sweep_params.values())
+    jobs = []
+    for combo in itertools.product(*sweep_values):
+        job = single_value_params.copy()
+        job.update(dict(zip(sweep_names, combo)))
+        jobs.append(job)
+    return jobs
 
 
 def setup_logging(config: Dict[str, Any]):
@@ -73,12 +115,14 @@ def setup_logging(config: Dict[str, Any]):
         logger.info(f"Logging to file: {log_file_path}")
 
 
-def run_co_simulation_workflow(config: dict):
+def run_co_simulation_workflow(config: dict, job_params: dict, job_id: int = 0) -> str:
     """
     Runs the full co-simulation workflow for a single set of parameters,
     handling multiple submodel interceptions.
     """
     omc = None
+    result_paths = []
+
     try:
         paths_config = config["paths"]
         sim_config = config["simulation"]
@@ -139,7 +183,12 @@ def run_co_simulation_workflow(config: dict):
             [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
         )
 
-        primary_result_filename = get_unique_filename(temp_dir, "primary_inputs.csv")
+        param_settings = [format_parameter_value(name, value) for name, value in job_params.items()]
+        if param_settings:
+            logger.info(f"Applying parameters for job {job_id}: {param_settings}")
+            mod.setParameters(param_settings)
+
+        primary_result_filename = get_unique_filename(temp_dir, f"primary_inputs.csv")
         mod.simulate(resultfile=Path(primary_result_filename).as_posix())
         logger.info(
             f"OM simulation finished. Input data for all co-sims at {primary_result_filename}"
@@ -204,12 +253,15 @@ def run_co_simulation_workflow(config: dict):
         verif_mod.setSimulationOptions(
             [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
         )
+        if param_settings:
+            verif_mod.setParameters(param_settings)
 
         verif_result_filename = get_unique_filename(
-            results_dir, "co_simulation_results.csv"
+            results_dir, f"co_simulation_results.csv"
         )
         verif_mod.simulate(resultfile=Path(verif_result_filename).as_posix())
 
+        return Path(verif_result_filename).as_posix()
     except Exception as e:
         logger.info(f"Workflow  failed: {e}", exc_info=True)
     finally:
@@ -247,8 +299,75 @@ def main():
 
     setup_logging(config)
 
-    run_co_simulation_workflow(config)
+    jobs = _generate_simulation_jobs(config.get("simulation_parameters", {}))
+    
+    simulation_results_paths = []
+    for i, job_params in enumerate(jobs):
+        logger.info(f"--- Starting Co-simulation Job {i+1}/{len(jobs)} ---")
+        result_path = run_co_simulation_workflow(config, job_params, job_id=i + 1)
+        simulation_results_paths.append(result_path)
+        logger.info(f"--- Finished Co-simulation Job {i+1}/{len(jobs)} ---")
+    
+    if len(jobs) > 1:
+        logger.info("All sweep jobs completed. Combining results.")
+        combined_df = None
+        rises_info = []  # Initialize list to store rise info
+        for i, result_path in enumerate(simulation_results_paths):
+            if not result_path:
+                logger.warning(f"Job {i} produced no result file. Skipping.")
+                continue
+            job_params = jobs[i]
+            df = pd.read_csv(result_path)
+            if combined_df is None:
+                combined_df = df[["time"]].copy()
+            col_name = "_".join([f"{k}={v}" for k, v in job_params.items()])
+            if len(df.columns) > 1:
+                combined_df[col_name] = df.iloc[:, 1]
+                # Check for turning point and upward trend
+                data = combined_df[col_name].to_numpy()
+                if len(data) > 2:
+                    diffs = np.diff(data)
+                    mid_index = len(diffs) // 2
+                    has_dip = np.any(diffs[:mid_index] < 0)
+                    has_rise = np.any(diffs[mid_index:] > 0)
+                    rises = has_dip and has_rise
+                else:
+                    rises = False
+
+                info = job_params.copy()
+                info["rises"] = rises
+                rises_info.append(info)
+
+        if rises_info:
+            rises_df = pd.DataFrame(rises_info)
+            rises_csv_path = get_unique_filename(config["paths"]['results_dir'], "rises_info.csv")
+            rises_df.to_csv(rises_csv_path, index=False)
+            logger.info(f"Rise information saved to: {rises_csv_path}")
+
+        if combined_df is not None:
+            combined_csv_path = get_unique_filename(config["paths"]['results_dir'], "sweep_results.csv")
+            combined_df.to_csv(combined_csv_path, index=False)
+            logger.info(f"Combined sweep results saved to: {combined_csv_path}")
+
+        if not config["simulation"].get("keep_temp_files", False):
+            shutil.rmtree(config["paths"].get("temp_dir", "temp"), ignore_errors=True)
+            os.makedirs(config["paths"].get("temp_dir", "temp"), exist_ok=True)
+            for p in simulation_results_paths:
+                if p and os.path.exists(p):
+                    try:
+                        os.remove(p)
+                    except OSError as e:
+                        logger.warning(f"Could not remove intermediate file {p}: {e}")
+        else:
+            temp_dir = os.path.abspath(config["paths"].get("temp_dir", "temp"))
+            for p in simulation_results_paths:
+               if p and os.path.exists(p):
+                   try:
+                    shutil.move(p, temp_dir)
+                   except OSError as e:
+                       logger.warning(f"Could not move intermediate file {p}: {e}")
 
 
+        logger.info("Cleaned up intermediate sweep files.")
 if __name__ == "__main__":
     main()

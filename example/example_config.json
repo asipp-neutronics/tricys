@@ -18,10 +18,12 @@
         "stop_time": 100.0,
         "step_size": 0.05,
         "max_workers": 4,
-        "keep_temp_files": false,
-        "concurrent": false
+        "keep_temp_files": true,
+        "concurrent": true
     },
     "simulation_parameters": {
+        "blanket.T": [6, 12, 18],
+        "i_iss.T": 18.0
     },
     "co_simulation": [
         {
@@ -41,7 +43,6 @@
             "handler_function": "run_aspen_simulation",
             "params": {
                 "bkp_path": "example_aspenbkp/T2-Threetowers4.bkp",
-                "aspen_results_csv":"results/aspen_results.csv",
                 "base": 20,
                 "retime": 60,
                 "time_step": 3
