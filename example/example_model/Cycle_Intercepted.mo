@@ -39,6 +39,7 @@ model Cycle_Intercepted
   Coolant_Pipe coolant_pipe annotation(
     Placement(transformation(origin = {-30, 130}, extent = {{-10, -10}, {10, 10}})));
   example_model.DIV_Interceptor div_interceptor;
+  example_model.I_ISS_Interceptor i_iss_interceptor;
 
 equation
 // 将脉冲信号的输出连接到 plasma 模型的输入端口
@@ -82,7 +83,8 @@ equation
     Line(points = {{-19, -50}, {17.4, -50}}, color = {0, 0, 127}, thickness = 0.5));
   connect(tep_fcu.to_I_ISS, i_iss.from_TEP_FCU) annotation(
     Line(points = {{41, -50}, {70, -50}, {70, -22}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
-  connect(i_iss.to_SDS, sds.from_I_ISS) annotation(
+  connect(i_iss.to_SDS, i_iss_interceptor.physical_to_SDS);
+    connect(i_iss_interceptor.final_to_SDS, sds.from_I_ISS) annotation(
     Line(points = {{58, -10}, {30, -10}, {30, 4}, {2, 4}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
   connect(tep_fep.to_SDS, sds.from_TEP_FEP) annotation(
     Line(points = {{-90, -38}, {-90, -20}, {-10, -20}, {-10, -2}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
@@ -97,7 +99,8 @@ equation
     Line(points = {{-124, 22}, {-124, 90}, {-102, 90}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
   connect(fw.from_plasma, plasma1.to_FW) annotation(
     Line(points = {{-102, 170}, {-136, 170}, {-136, 22}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
-  connect(i_iss.to_WDS, wds.from_I_ISS) annotation(
+  connect(i_iss.to_WDS, i_iss_interceptor.physical_to_WDS);
+    connect(i_iss_interceptor.final_to_WDS, wds.from_I_ISS) annotation(
     Line(points = {{82, -10}, {110, -10}, {110, 38}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
   connect(cps.to_DIV, div.from_CPS) annotation(
     Line(points = {{-42, 44}, {-90, 44}, {-90, 78}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));

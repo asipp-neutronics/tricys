@@ -39,3 +39,9 @@ example/temp/
 
 # Normalize all line endings to LF
 * text=auto eol=lf
+
+# Ignore all contents in the example_aspenbkp folder
+example/example_aspenbkp/*
+
+# However, do not ignore the .bkp files in the example_aspenbkp folder
+!example/example_aspenbkp/*.bkp
