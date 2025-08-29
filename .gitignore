@@ -37,9 +37,6 @@ example/log/
 example/results/
 example/temp/
 
-# Normalize all line endings to LF
-* text=auto eol=lf
-
 # Ignore all contents in the example_aspenbkp folder
 example/example_aspenbkp/*
 
