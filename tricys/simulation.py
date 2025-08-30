@@ -1,19 +1,12 @@
-"""Core module for running single or parameter sweep simulations.
-
-This module provides the main functionality for executing Modelica simulations
-based on a JSON configuration file. It supports running a single simulation or
-a parameter sweep using a thread pool for parallel execution.
-"""
-
 import argparse
 import concurrent.futures
-import itertools
+import importlib
 import json
 import logging
 import os
+import shutil
 import sys
 from datetime import datetime
-from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -21,255 +14,340 @@ import numpy as np
 import pandas as pd
 from OMPython import ModelicaSystem
 
-from tricys.utils.decorators_utils import record_time
-from tricys.utils.file_utils import delete_old_logs, get_unique_filename
+from tricys.utils.file_utils import get_unique_filename
+from tricys.utils.log_utils import setup_logging
 from tricys.utils.om_utils import (
     format_parameter_value,
     get_om_session,
+    integrate_interceptor_model,
     load_modelica_package,
 )
-
+from tricys.utils.sim_utils import generate_simulation_jobs
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
 
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-
-def setup_logging(config: Dict[str, Any]):
-    """Configures the logging module based on the application configuration.
-
-    Sets up logging to both console and file, with log rotation based on the
-    settings provided in the configuration dictionary.
-
-    Args:
-        config (Dict[str, Any]): The application configuration dictionary,
-            expected to contain a 'logging' section.
+def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
     """
-    log_config = config.get("logging", {})
-    log_level_str = log_config.get("log_level", "INFO").upper()
-    log_level = getattr(logging, log_level_str, logging.INFO)
-    log_to_console = log_config.get("log_to_console", True)
-
-    log_dir_path = log_config.get("log_dir")
-    log_count = log_config.get("log_count", 5)
-
-    root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
-
-    # Clear any existing handlers to prevent duplicate logs
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
-        handler.close()
-
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-
-    # Add console handler
-    if log_to_console:
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(formatter)
-        root_logger.addHandler(console_handler)
-
-    # Add file handler if a log directory is specified
-    if log_dir_path:
-        abs_log_dir = os.path.abspath(log_dir_path)
-        os.makedirs(abs_log_dir, exist_ok=True)
-        delete_old_logs(abs_log_dir, log_count)
-        global timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_file_path = os.path.join(abs_log_dir, f"simulation_{timestamp}.log")
-
-        file_handler = logging.FileHandler(log_file_path, mode="a", encoding="utf-8")
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
-
-        logger.info(f"Logging to file: {log_file_path}")
-
-
-def _parse_parameter_value(value: Any) -> List[Any]:
-    """Parses a parameter value which can be a single value, a list, or a range string.
-
-    Args:
-        value (Any): The parameter value to parse.
-
-    Returns:
-        List[Any]: A list of discrete values.
+    Runs the full co-simulation workflow in an isolated directory to ensure thread safety.
     """
-    if isinstance(value, list):
-        return value
-    if isinstance(value, str) and ":" in value:
-        try:
-            start, stop, step = map(float, value.split(":"))
-            return np.arange(start, stop + step / 2, step).tolist()
-        except ValueError:
-            logger.error(f"Invalid range format for parameter value: {value}")
-            return [value]
-    return [value]
+    paths_config = config["paths"]
+    sim_config = config["simulation"]
+    run_timestamp = config["run_timestamp"]  # Get the timestamp from config
+
+    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
+    run_temp_dir = os.path.join(
+        base_temp_dir, run_timestamp
+    )  # Create timestamped subdirectory
+    job_workspace = os.path.join(run_temp_dir, f"job_{job_id}")
+    os.makedirs(job_workspace, exist_ok=True)
+
+    omc = None
+
+    try:
+        original_package_path = os.path.abspath(paths_config["package_path"])
+        original_package_dir = os.path.dirname(original_package_path)
+        package_dir_name = os.path.basename(original_package_dir)
+
+        isolated_package_dir = os.path.join(job_workspace, package_dir_name)
+
+        if os.path.exists(isolated_package_dir):
+            shutil.rmtree(isolated_package_dir)
+        shutil.copytree(original_package_dir, isolated_package_dir)
+
+        isolated_package_path = os.path.join(
+            isolated_package_dir, os.path.basename(original_package_path)
+        )
+        isolated_temp_dir = job_workspace
+        results_dir = os.path.abspath(paths_config["results_dir"])
+        os.makedirs(results_dir, exist_ok=True)
+
+        co_sim_configs = config["co_simulation"]
+        if not isinstance(co_sim_configs, list):
+            co_sim_configs = [co_sim_configs]
+
+        model_name = sim_config["model_name"]
+        stop_time = sim_config["stop_time"]
+        step_size = sim_config["step_size"]
+
+        omc = get_om_session()
+        if not load_modelica_package(omc, Path(isolated_package_path).as_posix()):
+            raise RuntimeError(
+                f"Failed to load Modelica package at {isolated_package_path}"
+            )
+
+        # Handle copying of any additional asset directories specified with a '_path' suffix
+        for co_sim_config in co_sim_configs:
+            if "params" in co_sim_config:
+                # Iterate over a copy of items since we are modifying the dict
+                for param_key, param_value in list(co_sim_config["params"].items()):
+                    if isinstance(param_value, str) and param_key.endswith("_path"):
+                        original_asset_path_str = param_value
+
+                        # Paths in config are relative to project root. We need the absolute path.
+                        original_asset_path = Path(
+                            os.path.abspath(original_asset_path_str)
+                        )
+                        original_asset_dir = original_asset_path.parent
+
+                        if not original_asset_dir.exists():
+                            logger.warning(
+                                f"Asset directory '{original_asset_dir}' for parameter '{param_key}' not found. Skipping copy."
+                            )
+                            continue
+
+                        asset_dir_name = original_asset_dir.name
+                        dest_dir = Path(job_workspace) / asset_dir_name
+
+                        # Copy the directory only if it hasn't been copied already
+                        if not dest_dir.exists():
+                            shutil.copytree(original_asset_dir, dest_dir)
+                            logger.info(
+                                f"Copied asset directory '{original_asset_dir}' to '{dest_dir}' for job {job_id}"
+                            )
+
+                        # Update the path in the config to point to the new location
+                        new_asset_path = dest_dir / original_asset_path.name
+                        co_sim_config["params"][param_key] = new_asset_path.as_posix()
+                        logger.info(
+                            f"Updated parameter '{param_key}' for job {job_id} to '{co_sim_config['params'][param_key]}'"
+                        )
+
+        all_input_vars = []
+        for co_sim_config in co_sim_configs:
+            submodel_name = co_sim_config["submodel_name"]
+            instance_name = co_sim_config["instance_name"]
+            logger.info(f"Identifying input ports for submodel '{submodel_name}'...")
+            components = omc.sendExpression(f"getComponents({submodel_name})")
+            input_ports = [
+                {"name": c[1], "dim": int(c[11][0]) if c[11] else 1}
+                for c in components
+                if c[0] == "Modelica.Blocks.Interfaces.RealInput"
+            ]
+            if not input_ports:
+                logger.warning(f"No RealInput ports found in {submodel_name}.")
+                continue
+
+            logger.info(
+                f"Found input ports for {instance_name}: {[p['name'] for p in input_ports]}"
+            )
+            for port in input_ports:
+                full_name = f"{instance_name}.{port['name']}".replace(".", "\\.")
+                if port["dim"] > 1:
+                    full_name += f"\\[[1-{port['dim']}]\\]"
+                all_input_vars.append(full_name)
+
+        variable_filter = "time|" + "|".join(all_input_vars)
+
+        mod = ModelicaSystem(
+            fileName=Path(isolated_package_path).as_posix(),
+            modelName=model_name,
+            variableFilter=variable_filter,
+        )
+        mod.setSimulationOptions(
+            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
+        )
+
+        param_settings = [
+            format_parameter_value(name, value) for name, value in job_params.items()
+        ]
+        if param_settings:
+            logger.info(f"Applying parameters for job {job_id}: {param_settings}")
+            mod.setParameters(param_settings)
+
+        primary_result_filename = get_unique_filename(
+            isolated_temp_dir, "primary_inputs.csv"
+        )
+        mod.simulate(resultfile=Path(primary_result_filename).as_posix())
+
+        interception_configs = []
+        for co_sim_config in co_sim_configs:
+            handler_module = importlib.import_module(co_sim_config["handler_module"])
+            handler_function = getattr(
+                handler_module, co_sim_config["handler_function"]
+            )
+            instance_name = co_sim_config["instance_name"]
+
+            co_sim_output_filename = get_unique_filename(
+                isolated_temp_dir, f"{instance_name}_outputs.csv"
+            )
+
+            output_placeholder = handler_function(
+                temp_input_csv=primary_result_filename,
+                temp_output_csv=co_sim_output_filename,
+                **co_sim_config.get("params", {}),
+            )
+
+            interception_configs.append(
+                {
+                    "submodel_name": co_sim_config["submodel_name"],
+                    "instance_name": co_sim_config["instance_name"],
+                    "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
+                    "output_placeholder": output_placeholder,
+                }
+            )
+
+        intercepted_model_paths = integrate_interceptor_model(
+            package_path=isolated_package_path,
+            model_name=model_name,
+            interception_configs=interception_configs,
+        )
+
+        verif_config = config["simulation"]["variableFilter"]
+        logger.info("Proceeding with Final simulation.")
+
+        for model_path in intercepted_model_paths["interceptor_model_paths"]:
+            omc.sendExpression(f"""loadFile("{Path(model_path).as_posix()}")""")
+        omc.sendExpression(
+            f"""loadFile("{Path(intercepted_model_paths["system_model_path"]).as_posix()}")"""
+        )
+
+        package_name, original_system_name = model_name.split(".")
+        intercepted_model_full_name = (
+            f"{package_name}.{original_system_name}_Intercepted"
+        )
+
+        verif_mod = ModelicaSystem(
+            fileName=Path(isolated_package_path).as_posix(),
+            modelName=intercepted_model_full_name,
+            variableFilter=verif_config,
+        )
+        verif_mod.setSimulationOptions(
+            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
+        )
+        if param_settings:
+            verif_mod.setParameters(param_settings)
+
+        default_result_path = get_unique_filename(
+            job_workspace, "co_simulation_results.csv"
+        )
+        verif_mod.simulate(resultfile=Path(default_result_path).as_posix())
+
+        if not os.path.exists(default_result_path):
+            raise FileNotFoundError(
+                f"Simulation for job {job_id} failed to produce a result file at {default_result_path}"
+            )
+
+        # Return the path to the result file inside the temporary workspace
+        return Path(default_result_path).as_posix()
+    except Exception as e:
+        logger.error(f"Workflow for job {job_id} failed: {e}", exc_info=True)
+        return ""
+    finally:
+        if omc:
+            omc.sendExpression("quit()")
+            logger.info(f"Closed OMPython session for job {job_id}.")
+
+        if not sim_config.get("keep_temp_files", False):
+            if os.path.exists(job_workspace):
+                shutil.rmtree(job_workspace)
+                logger.info(f"Cleaned up workspace for job {job_id}: {job_workspace}")
 
 
-def _generate_simulation_jobs(
-    simulation_params: Dict[str, Any],
-) -> List[Dict[str, Any]]:
-    """Generates a list of simulation jobs from parameters, handling sweeps.
+def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
+    """Executes a single simulation job in an isolated workspace."""
+    paths_config = config["paths"]
+    sim_config = config["simulation"]
+    run_timestamp = config["run_timestamp"]
 
-    Takes a dictionary of simulation parameters and expands any parameter with multiple
-    values (from a list or range string) into a Cartesian product of all possible
-    parameter combinations.
+    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
+    run_temp_dir = os.path.join(base_temp_dir, run_timestamp)
+    job_workspace = os.path.join(run_temp_dir, f"job_{job_id}")
+    os.makedirs(job_workspace, exist_ok=True)
 
-    Args:
-        simulation_params (Dict[str, Any]): The dictionary of parameters from the config.
-
-    Returns:
-        List[Dict[str, Any]]: A list of jobs, where each job is a dictionary
-            representing a single simulation run with a unique parameter combination.
-    """
-    sweep_params = {}
-    single_value_params = {}
-    for name, value in simulation_params.items():
-        parsed_values = _parse_parameter_value(value)
-        if len(parsed_values) > 1:
-            sweep_params[name] = parsed_values
-        else:
-            single_value_params[name] = parsed_values[0]
-    if not sweep_params:
-        return [single_value_params]
-    sweep_names = list(sweep_params.keys())
-    sweep_values = list(sweep_params.values())
-    jobs = []
-    for combo in itertools.product(*sweep_values):
-        job = single_value_params.copy()
-        job.update(dict(zip(sweep_names, combo)))
-        jobs.append(job)
-    return jobs
-
-
-def _run_single_job(
-    job_info: tuple,
-    model_name: str,
-    package_path: str,
-    variable_filter: str,
-    stop_time: float,
-    step_size: float,
-    output_dir: str,
-) -> str:
-    """Executes a single simulation job in a thread-safe manner.
-
-    This function is designed to be called by a thread pool executor. It initializes
-    its own OpenModelica session to ensure thread safety.
-
-    Args:
-        job_info (tuple): A tuple containing the job ID and the parameter dictionary.
-        model_name (str): The name of the Modelica model to simulate.
-        package_path (str): The path to the Modelica package file.
-        variable_filter (str): The regex filter for result variables.
-        stop_time (float): The simulation stop time.
-        step_size (float): The simulation step size.
-        output_dir (str): The directory to save the result file.
-
-    Returns:
-        str: The path to the simulation result CSV file, or an empty string if failed.
-    """
-    job_id, job_params = job_info
     logger.info(f"Starting job {job_id} with parameters: {job_params}")
     omc = None
-    mod = None
     try:
         omc = get_om_session()
-        # Ensure all paths passed to OMPython are in POSIX format
+        package_path = os.path.abspath(paths_config["package_path"])
         if not load_modelica_package(omc, Path(package_path).as_posix()):
             raise RuntimeError(f"Job {job_id}: Failed to load Modelica package.")
 
         mod = ModelicaSystem(
             fileName=Path(package_path).as_posix(),
-            modelName=model_name,
-            variableFilter=variable_filter,
+            modelName=sim_config["model_name"],
+            variableFilter=sim_config["variableFilter"],
+        )
+        mod.setSimulationOptions(
+            [
+                f"stopTime={sim_config['stop_time']}",
+                "tolerance=1e-6",
+                "outputFormat=csv",
+                f"stepSize={sim_config['step_size']}",
+            ]
         )
         param_settings = [
             format_parameter_value(name, value) for name, value in job_params.items()
         ]
-        mod.setSimulationOptions(
-            [
-                f"stopTime={stop_time}",
-                "tolerance=1e-6",
-                "outputFormat=csv",
-                f"stepSize={step_size}",
-            ]
-        )
         if param_settings:
             mod.setParameters(param_settings)
-        mod.buildModel()
-        result_filename = f"{timestamp}_simulation_results_{job_id}.csv"
-        result_file_path = os.path.join(output_dir, result_filename)
-        mod.simulate(resultfile=Path(result_file_path).as_posix())
-        logger.info(f"Job {job_id} finished. Results saved to {result_file_path}")
-        return result_file_path
+
+        default_result_file = f"job_{job_id}_simulation_results.csv"
+        result_path = Path(job_workspace) / default_result_file
+
+        mod.simulate(resultfile=Path(result_path).as_posix())
+
+        if not result_path.is_file():
+            raise FileNotFoundError(
+                f"Simulation for job {job_id} failed to produce result file at {result_path}"
+            )
+
+        logger.info(f"Job {job_id} finished. Results at {result_path}")
+        return str(result_path)
     except Exception as e:
         logger.error(f"Job {job_id} failed: {e}", exc_info=True)
         return ""
     finally:
-        if mod is not None:
-            del mod
-        if omc is not None:
+        if omc:
             omc.sendExpression("quit()")
 
 
-def _run_sequential_sweep(
-    jobs: List[Dict[str, Any]],
-    model_name: str,
-    package_path: str,
-    variable_filter: str,
-    stop_time: float,
-    step_size: float,
-    output_dir: str,
-) -> List[str]:
-    """Executes a parameter sweep sequentially in a single process.
-
-    This function reuses the OpenModelica session and model object for
-    efficiency, which is ideal for non-concurrent sweeps.
-
-    Args:
-        jobs (List[Dict[str, Any]]): A list of jobs, where each job is a
-            dictionary of parameters.
-        model_name (str): The name of the Modelica model to simulate.
-        package_path (str): The path to the Modelica package file.
-        variable_filter (str): The regex filter for result variables.
-        stop_time (float): The simulation stop time.
-        step_size (float): The simulation step size.
-        output_dir (str): The directory to save result files.
-
-    Returns:
-        List[str]: A list of paths to the simulation result CSV files.
+def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
     """
-    logger.info("Running sweep sequentially, reusing OM session and model object.")
+    Executes a parameter sweep sequentially, reusing the OM session for efficiency.
+    Saves intermediate results to the timestamped temporary directory.
+    """
+    paths_config = config["paths"]
+    sim_config = config["simulation"]
+    run_timestamp = config["run_timestamp"]
+
+    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
+    run_temp_dir = os.path.join(base_temp_dir, run_timestamp)
+    os.makedirs(run_temp_dir, exist_ok=True)
+
+    logger.info(
+        f"Running sweep sequentially. Intermediate files will be in: {run_temp_dir}"
+    )
+
     omc = None
-    mod = None
     result_paths = []
     try:
         omc = get_om_session()
+        package_path = os.path.abspath(paths_config["package_path"])
         if not load_modelica_package(omc, Path(package_path).as_posix()):
             raise RuntimeError("Failed to load Modelica package for sequential sweep.")
 
         mod = ModelicaSystem(
             fileName=Path(package_path).as_posix(),
-            modelName=model_name,
-            variableFilter=variable_filter,
+            modelName=sim_config["model_name"],
+            variableFilter=sim_config["variableFilter"],
         )
         mod.setSimulationOptions(
             [
-                f"stopTime={stop_time}",
+                f"stopTime={sim_config['stop_time']}",
                 "tolerance=1e-6",
                 "outputFormat=csv",
-                f"stepSize={step_size}",
+                f"stepSize={sim_config['step_size']}",
             ]
         )
-        # Build the model once before the loop, as the model structure doesn't change.
         mod.buildModel()
 
         for i, job_params in enumerate(jobs):
             try:
-                logger.info(f"Running sequential job {i} with parameters: {job_params}")
+                logger.info(
+                    f"Running sequential job {i+1}/{len(jobs)} with parameters: {job_params}"
+                )
                 param_settings = [
                     format_parameter_value(name, value)
                     for name, value in job_params.items()
@@ -277,132 +355,179 @@ def _run_sequential_sweep(
                 if param_settings:
                     mod.setParameters(param_settings)
 
-                result_filename = f"{timestamp}_simulation_results_{i}.csv"
-                result_file_path = os.path.join(output_dir, result_filename)
+                job_workspace = os.path.join(run_temp_dir, f"job_{i+1}")
+                os.makedirs(job_workspace, exist_ok=True)
+                result_filename = f"job_{i+1}_simulation_results.csv"
+                result_file_path = os.path.join(job_workspace, result_filename)
+
                 mod.simulate(resultfile=Path(result_file_path).as_posix())
 
                 logger.info(
-                    f"Sequential job {i} finished. Results saved to {result_file_path}"
+                    f"Sequential job {i+1} finished. Results at {result_file_path}"
                 )
                 result_paths.append(result_file_path)
             except Exception as e:
-                logger.error(f"Sequential job {i} failed: {e}", exc_info=True)
-                result_paths.append("")  # Keep list length consistent
+                logger.error(f"Sequential job {i+1} failed: {e}", exc_info=True)
+                result_paths.append("")
 
         return result_paths
     except Exception as e:
         logger.error(f"Sequential sweep failed during setup: {e}", exc_info=True)
-        # Return a list of empty strings with the correct length
         return [""] * len(jobs)
     finally:
-        if mod is not None:
-            del mod
-        if omc is not None:
+        if omc:
             omc.sendExpression("quit()")
 
-@record_time
-def run_simulation(
-    config: Dict[str, Any],
-    package_path: str,
-    results_dir: str,
-    temp_dir: str,
-):
-    """Runs single or sweep simulations based on the provided configuration.
 
-    This function orchestrates the simulation process. It generates jobs, runs them
-    (in parallel for sweeps), and combines the results.
+def run_simulation(config: Dict[str, Any]):
+    """Orchestrates the simulation execution, result handling, and cleanup."""
+    run_timestamp = config["run_timestamp"]
+    jobs = generate_simulation_jobs(config.get("simulation_parameters", {}))
 
-    Args:
-        config (Dict[str, Any]): The full application configuration dictionary.
-        package_path (str): The absolute path to the Modelica package.
-        results_dir (str): The absolute path to the directory for final results.
-        temp_dir (str): The absolute path to the directory for intermediate files.
-    """
-    sim_config = config["simulation"]
-    model_name = sim_config["model_name"]
-    stop_time = sim_config["stop_time"]
-    step_size = sim_config["step_size"]
-    variable_filter = sim_config["variableFilter"]
-    max_workers = sim_config.get("max_workers", os.cpu_count())
-    concurrent_execution = sim_config.get("concurrent", True)
-    keep_temp_files = sim_config.get("keep_temp_files", False)
-    simulation_params = config.get("simulation_parameters", {})
-    jobs = _generate_simulation_jobs(simulation_params)
-    num_jobs = len(jobs)
-    is_sweep = num_jobs > 1
+    try:
+        results_dir = os.path.abspath(config["paths"]["results_dir"])
+    except KeyError as e:
+        logger.error(f"Missing required path key in configuration file: {e}")
+        sys.exit(1)
 
-    logger.info(f"Starting simulation run: {num_jobs} job(s) to execute.")
-    if is_sweep:
-        if concurrent_execution:
-            logger.info(
-                f"Parameter sweep mode enabled. Using up to {max_workers} parallel workers."
-            )
-        else:
-            logger.info("Parameter sweep mode enabled. Running jobs sequentially.")
+    simulation_results = {}
+    use_concurrent = config["simulation"].get("concurrent", True)
 
-    os.makedirs(results_dir, exist_ok=True)
-    os.makedirs(temp_dir, exist_ok=True)
-
-    if not is_sweep:
-        job_info = (0, jobs[0])
-        output_path = _run_single_job(
-            job_info,
-            model_name,
-            package_path,
-            variable_filter,
-            stop_time,
-            step_size,
-            results_dir,
-        )
-        if output_path:
-            final_path = os.path.join(results_dir, "simulation_results.csv")
-            if os.path.exists(final_path):
-                os.remove(final_path)
-            os.rename(output_path, final_path)
-            logger.info(f"Single simulation finished. Result at {final_path}")
-    else:
-        if concurrent_execution:
-            run_job_partial = partial(
-                _run_single_job,
-                model_name=model_name,
-                package_path=package_path,
-                variable_filter=variable_filter,
-                stop_time=stop_time,
-                step_size=step_size,
-                output_dir=temp_dir,
-            )
+    if config.get("co_simulation") is None:
+        if use_concurrent:
+            logger.info("Starting simulation in CONCURRENT mode.")
+            max_workers = config["simulation"].get("max_workers", os.cpu_count())
+            logger.info(f"Using up to {max_workers} parallel workers.")
             with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers
             ) as executor:
-                simulation_results_paths = list(
-                    executor.map(run_job_partial, enumerate(jobs))
-                )
+                future_to_job = {
+                    executor.submit(
+                        _run_single_job, config, job_params, i + 1
+                    ): job_params
+                    for i, job_params in enumerate(jobs)
+                }
+                for future in concurrent.futures.as_completed(future_to_job):
+                    job_params = future_to_job[future]
+                    try:
+                        result_path = future.result()
+                        if result_path:
+                            simulation_results[tuple(sorted(job_params.items()))] = (
+                                result_path
+                            )
+                    except Exception as exc:
+                        logger.error(
+                            f"Job for {job_params} generated an exception: {exc}",
+                            exc_info=True,
+                        )
         else:
-            simulation_results_paths = _run_sequential_sweep(
-                jobs=jobs,
-                model_name=model_name,
-                package_path=package_path,
-                variable_filter=variable_filter,
-                stop_time=stop_time,
-                step_size=step_size,
-                output_dir=temp_dir,
-            )
+            logger.info("Starting simulation in SEQUENTIAL mode.")
+            result_paths = _run_sequential_sweep(config, jobs)
+            for i, result_path in enumerate(result_paths):
+                if result_path:
+                    simulation_results[tuple(sorted(jobs[i].items()))] = result_path
+    else:
+        if use_concurrent:
+            logger.info("Starting co-simulation in CONCURRENT mode.")
+            max_workers = config["simulation"].get("max_workers", 4)
+            logger.info(f"Using up to {max_workers} parallel processes.")
 
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=max_workers
+            ) as executor:
+                future_to_job = {
+                    executor.submit(
+                        _run_co_simulation, config, job_params, job_id=i + 1
+                    ): job_params
+                    for i, job_params in enumerate(jobs)
+                }
+
+                for future in concurrent.futures.as_completed(future_to_job):
+                    job_params = future_to_job[future]
+                    try:
+                        result_path = future.result()
+                        if result_path:
+                            simulation_results[tuple(sorted(job_params.items()))] = (
+                                result_path
+                            )
+                            logger.info(
+                                f"Successfully finished job for params: {job_params}"
+                            )
+                        else:
+                            logger.warning(
+                                f"Job for params {job_params} did not return a result path."
+                            )
+                    except Exception as exc:
+                        logger.error(
+                            f"Job for params {job_params} generated an exception: {exc}",
+                            exc_info=True,
+                        )
+        else:
+            logger.info("Starting co-simulation in SEQUENTIAL mode.")
+            for i, job_params in enumerate(jobs):
+                job_id = i + 1
+                logger.info(f"--- Starting Sequential Job {job_id}/{len(jobs)} ---")
+                try:
+                    result_path = _run_co_simulation(config, job_params, job_id=job_id)
+                    if result_path:
+                        simulation_results[tuple(sorted(job_params.items()))] = (
+                            result_path
+                        )
+                        logger.info(
+                            f"Successfully finished job for params: {job_params}"
+                        )
+                    else:
+                        logger.warning(
+                            f"Job for params {job_params} did not return a result path."
+                        )
+                except Exception as exc:
+                    logger.error(
+                        f"Job for params {job_params} generated an exception: {exc}",
+                        exc_info=True,
+                    )
+                logger.info(f"--- Finished Sequential Job {job_id}/{len(jobs)} ---")
+
+    # --- Result Handling ---
+    # The simulation_results dictionary now contains paths to results inside temporary job workspaces.
+    # Create a timestamped directory for this run's final results.
+    run_results_dir = os.path.join(results_dir, run_timestamp)
+    os.makedirs(run_results_dir, exist_ok=True)
+
+    # Case 1: Single job run
+    if len(jobs) == 1:
+        logger.info("Single job finished. Copying result to final destination.")
+        if simulation_results:
+            temp_result_path = list(simulation_results.values())[0]
+            if temp_result_path and os.path.exists(temp_result_path):
+                final_path = get_unique_filename(
+                    run_results_dir, "simulation_result.csv"
+                )
+                shutil.copy2(temp_result_path, final_path)  # copy2 preserves metadata
+                logger.info(f"Result copied to {final_path}")
+            else:
+                logger.warning("Single job did not produce a valid result file.")
+
+    # Case 2: Multiple jobs (sweep)
+    elif len(jobs) > 1:
         logger.info("All sweep jobs completed. Combining results.")
         combined_df = None
-        rises_info = []  # Initialize list to store rise info
-        for i, result_path in enumerate(simulation_results_paths):
-            if not result_path:
-                logger.warning(f"Job {i} produced no result file. Skipping.")
+        rises_info = []
+
+        for job_params in jobs:
+            job_key = tuple(sorted(job_params.items()))
+            result_path = simulation_results.get(job_key)
+
+            if not result_path or not os.path.exists(result_path):
+                logger.warning(f"Job {job_params} produced no result file. Skipping.")
                 continue
-            job_params = jobs[i]
+
             df = pd.read_csv(result_path)
             if combined_df is None:
                 combined_df = df[["time"]].copy()
+
             col_name = "_".join([f"{k}={v}" for k, v in job_params.items()])
             if len(df.columns) > 1:
                 combined_df[col_name] = df.iloc[:, 1]
-                # Check for turning point and upward trend
                 data = combined_df[col_name].to_numpy()
                 if len(data) > 2:
                     diffs = np.diff(data)
@@ -419,40 +544,46 @@ def run_simulation(
 
         if rises_info:
             rises_df = pd.DataFrame(rises_info)
-            rises_csv_path = get_unique_filename(results_dir, "rises_info.csv")
+            rises_csv_path = get_unique_filename(run_results_dir, "rises_info.csv")
             rises_df.to_csv(rises_csv_path, index=False)
             logger.info(f"Rise information saved to: {rises_csv_path}")
 
         if combined_df is not None:
-            combined_csv_path = get_unique_filename(results_dir, "sweep_results.csv")
+            combined_csv_path = get_unique_filename(
+                run_results_dir, "sweep_results.csv"
+            )
             combined_df.to_csv(combined_csv_path, index=False)
             logger.info(f"Combined sweep results saved to: {combined_csv_path}")
-        if not keep_temp_files:
-            for p in simulation_results_paths:
-                if p and os.path.exists(p):
-                    try:
-                        os.remove(p)
-                    except OSError as e:
-                        logger.warning(f"Could not remove intermediate file {p}: {e}")
-        logger.info("Cleaned up intermediate sweep files.")
-    logger.info("Simulation run finished.")
+
+    # --- Final Cleanup ---
+    # The primary cleanup of job workspaces is handled by the `finally` block in `_run_co_simulation`.
+    # This is an additional safeguard.
+    if not config["simulation"].get("keep_temp_files", True):
+        logger.info("Cleaning up temporary directory...")
+        temp_dir_path = os.path.abspath(config["paths"].get("temp_dir", "temp"))
+        if os.path.exists(temp_dir_path):
+            try:
+                shutil.rmtree(temp_dir_path)
+                os.makedirs(temp_dir_path)  # Recreate for next run
+            except OSError as e:
+                logger.error(f"Error cleaning up temp directory: {e}")
 
 
-def main():
-    """Main function to run the simulation from the command line.
-
-    Parses command-line arguments for the configuration file, loads it, sets up
-    logging, and starts the simulation run.
+def initialize_run() -> Dict[str, Any]:
+    """
+    Parses command-line arguments, loads the config file, and generates a run timestamp.
+    Returns a fully prepared configuration dictionary.
     """
     parser = argparse.ArgumentParser(
-        description="Run a Tricys simulation from a configuration file."
+        description="Run a unified simulation and co-simulation workflow in parallel."
     )
     parser.add_argument(
         "-c",
         "--config",
         type=str,
+        required=True,
         default="config.json",
-        help="Path to the JSON configuration file. Defaults to 'config.json' in the current directory.",
+        help="Path to the JSON configuration file.",
     )
     args = parser.parse_args()
 
@@ -460,42 +591,26 @@ def main():
         config_path = os.path.abspath(args.config)
         with open(config_path, "r") as f:
             config = json.load(f)
-    except FileNotFoundError:
-        # Setup a basic logger to show the critical error and exit
-        logging.basicConfig(
-            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-        )
-        logger.error(f"Configuration file not found: {config_path}")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        logging.basicConfig(
-            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-        )
-        logger.error(
-            f"Error decoding JSON from the configuration file: {config_path} - {e}"
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        # Logger is not set up yet, so print directly to stderr
+        print(
+            f"ERROR: Failed to load or parse config file {args.config}: {e}",
+            file=sys.stderr,
         )
         sys.exit(1)
 
-    # Setup logging based on the loaded configuration
+    # Generate a single timestamp for the entire run and add it to the config
+    config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return config
+
+
+def main():
+    """Main function to run the simulation from the command line."""
+    config = initialize_run()
     setup_logging(config)
-
-    logger.info(f"Loading configuration from: {config_path}")
-
+    logger.info(f"Loading configuration from: {os.path.abspath(sys.argv[-1])}")
     try:
-        package_path = os.path.abspath(config["paths"]["package_path"])
-        results_dir = os.path.abspath(config["paths"]["results_dir"])
-        temp_dir = os.path.abspath(config["paths"]["temp_dir"])
-    except KeyError as e:
-        logger.error(f"Missing required path key in configuration file: {e}")
-        sys.exit(1)
-
-    try:
-        run_simulation(
-            config=config,
-            package_path=package_path,
-            results_dir=results_dir,
-            temp_dir=temp_dir,
-        )
+        run_simulation(config)
         logger.info("Main execution completed successfully.")
     except Exception as e:
         logger.error(f"Main execution failed: {e}", exc_info=True)
