@@ -213,15 +213,22 @@ class InteractiveSimulationUI:
                 f"The specified model package could not be found at:\n{package_path}",
             )
             return
-        self.db_path_updated()
+        # Delay database check and logging setup until after mainloop starts
+        self.root.after(100, self._delayed_initialization)
+
+    def _delayed_initialization(self):
+        """Perform initialization that requires the main loop to be running."""
         self.setup_logging()
+        self.db_path_updated()
         self.load_parameters()
 
     def _get_abs_path(self, path: str) -> str:
         """Resolves a path against the workspace directory if it's not absolute."""
         if os.path.isabs(path):
             return path
-        return os.path.join(Path(self.workspace_path_var.get()).as_posix(), path)
+        return Path(
+            os.path.join(Path(self.workspace_path_var.get()).as_posix(), path)
+        ).as_posix()
 
     def _convert_relative_paths_to_absolute(self, config_data):
         """Recursively convert relative paths ending with '*_path' in the configuration to absolute paths."""
@@ -648,7 +655,7 @@ class InteractiveSimulationUI:
             message = "Log settings have been applied"
             if log_dir_path:
                 log_file_path = Path(self._get_abs_path(log_file_path)).as_posix()
-                message += f",File save location：\n{log_file_path}"
+                message += f",File save location：\n\n{log_file_path}"
 
             messagebox.showinfo("Success", message)
         except Exception as e:
@@ -678,22 +685,35 @@ class InteractiveSimulationUI:
 
     def load_model_to_db_thread(self):
         """Load model parameters to database in a separate thread with UI feedback."""
+        # Get values from UI in main thread before starting background thread
+        package_path = self._get_abs_path(self.package_path_var.get())
+        model_name = self.model_name_var.get()
+        db_path = self._get_abs_path(self.db_path_var.get())
+
         # Lock UI and show status in title
         self._toggle_ui_lock(True)
         self.root.title(f"Loading model parameters... - {self.original_title}")
-        threading.Thread(target=self.execute_load_model_to_db, daemon=True).start()
 
-    def execute_load_model_to_db(self):
+        # Pass the values to the background thread
+        threading.Thread(
+            target=self.execute_load_model_to_db,
+            args=(package_path, model_name, db_path),
+            daemon=True,
+        ).start()
+
+    def execute_load_model_to_db(self, package_path, model_name, db_path):
+        """Execute model loading in background thread with pre-fetched parameters."""
         logger.info("=" * 50)
         logger.info("Starting to load model parameters into the database.")
         logger.info("=" * 50)
         omc = None
         try:
-            package_path = self._get_abs_path(self.package_path_var.get())
-            model_name = self.model_name_var.get()
             if not package_path or not model_name:
-                messagebox.showerror(
-                    "Error", "Package Path and Model Name must be set."
+                self.root.after(
+                    0,
+                    lambda: messagebox.showerror(
+                        "Error", "Package Path and Model Name must be set."
+                    ),
                 )
                 return
             omc = get_om_session()
@@ -703,7 +723,7 @@ class InteractiveSimulationUI:
             params_details = get_all_parameters_details(omc, model_name)
             if not params_details:
                 raise RuntimeError("No parameters found in the model.")
-            store_parameters_in_db(self.db_path, params_details)
+            store_parameters_in_db(db_path, params_details)
             logger.info("=" * 30)
             logger.info(
                 f"Successfully loaded {len(params_details)} parameters from model '{model_name}' into the database."
@@ -762,7 +782,8 @@ class InteractiveSimulationUI:
                 widget.destroy()
         self.params_widgets = {}
         try:
-            params = get_parameters_from_db(self._get_abs_path(self.db_path_var.get()))
+            db_path = self._get_abs_path(self.db_path_var.get())
+            params = get_parameters_from_db(db_path)
             for i, param in enumerate(params, start=1):
                 name_label = tk.Label(
                     self.scrollable_frame,
@@ -824,9 +845,7 @@ class InteractiveSimulationUI:
 
             self.scrollable_frame.update_idletasks()
 
-            logger.info(
-                f"Loaded {len(params)} parameters into the UI from {self.db_path}."
-            )
+            logger.info(f"Loaded {len(params)} parameters into the UI from {db_path}.")
 
             # Show success message if parameters were loaded
             if params:
@@ -870,23 +889,11 @@ class InteractiveSimulationUI:
 
     def run_simulation_thread(self):
         """Start simulation in a separate thread with UI feedback."""
-        # Show start message
-        threading.Thread(target=self.execute_simulation, daemon=True).start()
+        # Show log window when starting simulation
+        self.show_log_window()
 
-    def execute_simulation(self):
-        # Lock the UI from the main thread
-        self.root.after(0, self._toggle_ui_lock, True)
-        self.root.after(
-            0, lambda: self.root.title(f"Running simulation... - {self.original_title}")
-        )
+        # Get all values from UI in main thread before starting background thread
         try:
-            logger.info("=" * 50)
-            logger.info("Starting simulation from GUI.")
-            logger.info("=" * 50)
-            # Generate run timestamp
-            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-            # Build configuration structure matching simulation.py
             paths_config = {
                 "package_path": self._get_abs_path(self.package_path_var.get()),
                 "results_dir": self._get_abs_path(self.results_dir_var.get()),
@@ -911,6 +918,12 @@ class InteractiveSimulationUI:
                 if not value_str:
                     continue
 
+                # Remove surrounding quotes if present
+                if (value_str.startswith('"') and value_str.endswith('"')) or (
+                    value_str.startswith("'") and value_str.endswith("'")
+                ):
+                    value_str = value_str[1:-1]
+
                 # If it's a special format for sim_utils.py, pass it as a raw string.
                 if (":" in value_str) or (
                     value_str.startswith("{") and value_str.endswith("}")
@@ -921,8 +934,80 @@ class InteractiveSimulationUI:
                     try:
                         sim_params[name] = json.loads(value_str)
                     except json.JSONDecodeError:
-                        # If JSON fails, it's likely an unquoted string literal.
-                        sim_params[name] = value_str
+                        # If JSON fails, show error message and return
+                        messagebox.showerror(
+                            "Incorrect parameter format",
+                            f"The value '{value_str}' for parameter '{name}' is not in a valid format.\n\nPlease check if the parameter settings are correct.",
+                        )
+                        return
+
+            # Show parameter check dialog before proceeding
+            param_count = len(sim_params)
+            if param_count > 0:
+                param_list = "\n".join(
+                    [f"• {name}: {value}" for name, value in sim_params.items()]
+                )
+                check_message = (
+                    f"The simulation is about to run, please confirm the parameter settings:\n\n"
+                    f"Total {param_count} parameters:\n{param_list}\n\n"
+                    f"Continue the simulation?"
+                )
+            else:
+                check_message = "The simulation is about to run, and no scan parameters have been set.\n\nDo you want to continue running the simulation?"
+
+            # Ask user confirmation
+            result = messagebox.askyesno("Parameter confirmation", check_message)
+            if not result:
+                return  # User cancelled
+
+            # Co-simulation configuration
+            co_sim_config = None
+            if self.enable_co_simulation_var.get():
+                co_sim_config_path = self.co_sim_config_path_var.get().strip()
+                if co_sim_config_path:
+                    try:
+                        abs_co_sim_path = self._get_abs_path(co_sim_config_path)
+                        with open(abs_co_sim_path, "r") as f:
+                            co_sim_config = json.load(f)
+                        co_sim_config = self._convert_relative_paths_to_absolute(
+                            co_sim_config
+                        )
+                    except (FileNotFoundError, json.JSONDecodeError) as e:
+                        messagebox.showerror(
+                            "Co-simulation Config Error",
+                            f"Failed to load co-simulation configuration:\n{e}",
+                        )
+                        return
+                else:
+                    messagebox.showwarning(
+                        "Co-simulation Warning",
+                        "Co-simulation is enabled but no configuration file is specified.",
+                    )
+                    return
+
+            # Pass the values to the background thread
+            threading.Thread(
+                target=self.execute_simulation,
+                args=(paths_config, sim_config, sim_params, co_sim_config),
+                daemon=True,
+            ).start()
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to prepare simulation: {e}")
+
+    def execute_simulation(self, paths_config, sim_config, sim_params, co_sim_config):
+        """Execute simulation in background thread with pre-fetched parameters."""
+        # Lock the UI from the main thread
+        self.root.after(0, self._toggle_ui_lock, True)
+        self.root.after(
+            0, lambda: self.root.title(f"Running Simulation... - {self.original_title}")
+        )
+        try:
+            logger.info("=" * 50)
+            logger.info("Starting simulation from GUI.")
+            logger.info("=" * 50)
+            # Generate run timestamp
+            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             # Build complete config structure
             config = {
@@ -932,49 +1017,26 @@ class InteractiveSimulationUI:
                 "simulation_parameters": sim_params,
             }
 
-            # Add co-simulation configuration if enabled
-            if self.enable_co_simulation_var.get():
-                co_sim_config_path = self.co_sim_config_path_var.get().strip()
-                if co_sim_config_path:
-                    try:
-                        abs_co_sim_path = self._get_abs_path(co_sim_config_path)
-                        with open(abs_co_sim_path, "r") as f:
-                            co_sim_config = json.load(f)
-
-                        co_sim_config = self._convert_relative_paths_to_absolute(
-                            co_sim_config
-                        )
-
-                        config["co_simulation"] = co_sim_config
-                        logger.info(
-                            f"Loaded co-simulation config from: {abs_co_sim_path}"
-                        )
-                    except (FileNotFoundError, json.JSONDecodeError) as e:
-                        self.root.after(
-                            0,
-                            lambda e=e: messagebox.showerror(
-                                "Co-simulation Config Error",
-                                f"Failed to load co-simulation configuration:\n{e}",
-                            ),
-                        )
-                        return
-                else:
-                    self.root.after(
-                        0,
-                        lambda: messagebox.showwarning(
-                            "Co-simulation Warning",
-                            "Co-simulation is enabled but no configuration file is specified.",
-                        ),
-                    )
-                    return
+            # Add co-simulation configuration if provided
+            if co_sim_config:
+                config["co_simulation"] = co_sim_config
+                logger.info("Co-simulation configuration loaded")
 
             # Call run_simulation with the new structure
             run_simulation(config)
+
+            # Show success message with directory paths
+            results_dir = paths_config["results_dir"]
+            temp_dir = paths_config["temp_dir"]
+            success_message = (
+                "The simulation run was successfully completed!\n\n"
+                f"Output directory:\n{results_dir}\n\n"
+                f"Temporary file directory:\n{temp_dir}"
+            )
+
             self.root.after(
                 0,
-                lambda: messagebox.showinfo(
-                    "Success", "Simulation completed successfully!"
-                ),
+                lambda: messagebox.showinfo("Success", success_message),
             )
             logger.info("=" * 50)
             logger.info("Simulation run finished successfully.")
