@@ -34,7 +34,6 @@ model Plasma
 equation
   // 计算氦生成（仅在脉冲开启时生成）
   He_generated = if pulseInput > 0 then He_yield * pulseInput else 0;
-  
   H_injection = (pulseInput * (1.00784 / 3.01693))/(fb * nf) * 2 / 99;
 
   // 使用 for 循环定义每种物质的计算逻辑

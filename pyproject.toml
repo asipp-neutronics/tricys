@@ -31,7 +31,9 @@ dependencies = [
 
 [project.scripts]
 tricys-gui = "tricys.simulation_gui:main"
+tricys-ana = "tricys.simulation_analysis:main"
 tricys = "tricys.simulation:main"
+
 
 [project.optional-dependencies]
 dev = [
