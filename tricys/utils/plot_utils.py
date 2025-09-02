@@ -12,172 +12,383 @@ import pandas as pd
 import seaborn as sns
 
 
-def plot_startup_inventory(
-    csv_path: str, param_A_name: str, param_B_name: str, save_dir: str
-) -> str:
-    """Plots the startup tritium inventory based on simulation results.
-
-    This function reads a combined CSV file from a parameter sweep, calculates
-    the startup tritium inventory for each run, and plots it as a function of
-    two varied parameters.
+def generate_analysis_plots(
+    summary_df: pd.DataFrame, analysis_case: dict, save_dir: str
+) -> list:
+    """
+    Generates and saves plots based on the sensitivity analysis summary.
 
     Args:
-        csv_path (str): The path to the combined simulation results CSV file.
-        param_A_name (str): The name of the first parameter (used for grouping lines).
-        param_B_name (str): The name of the second parameter (used as the x-axis).
-        save_dir (str): The directory where the output plot image will be saved.
+        summary_df: DataFrame containing the summarized analysis results.
+        analysis_case: Configuration for the analysis cases, which can specify
+                        a 'plot_type' of 'line' or 'bar', and optionally
+                        'combine_plots' to merge all plots into subplots.
+        save_dir: Directory to save the plot images.
 
     Returns:
-        str: The path to the saved plot image file.
+        A list of paths to the saved plot images.
     """
-    # Set plotting style
-    sns.set(style="whitegrid")
+    if summary_df.empty:
+        return []
 
-    # Read only necessary columns
-    param_columns = pd.read_csv(csv_path, nrows=0).columns.tolist()
-    param_columns = [col for col in param_columns if col != "time"]
-    df = pd.read_csv(csv_path, usecols=param_columns)
+    analysis_cases = [analysis_case]
+    # Set enhanced plotting theme and style
+    sns.set_theme(style="whitegrid", palette="husl")
+    plt.style.use("seaborn-v0_8-darkgrid")
 
-    # Parse column names and calculate startup tritium inventory
-    param_A_values = {}
-    for col in param_columns:
-        parts = col.split("_")
-        param_A_part = parts[0]
-        param_B_part = parts[1]
-        param_A_val = float(param_A_part.split("=")[1])
-        param_B_val = float(param_B_part.split("=")[1])
+    # Custom color palettes for different plot types
+    line_colors = sns.color_palette("viridis", 10)
+    bar_colors = sns.color_palette("plasma", 10)
 
-        col_data = df[col].to_numpy()
-        initial_value = col_data[0]
-        min_value = np.min(col_data)
-        startup_inventory = initial_value - min_value
+    # Check if any case requests combined plots
+    combine_plots = any(case.get("combine_plots", False) for case in analysis_cases)
 
-        if param_A_val not in param_A_values:
-            param_A_values[param_A_val] = []
-        param_A_values[param_A_val].append((param_B_val, startup_inventory))
+    # Collect all valid plot configurations
+    valid_plots = []
+    for case in analysis_cases:
+        case_name = case["name"]
+        x_var = case["independent_variable"]
+        y_vars = case["dependent_variables"]
+        plot_type = case.get("plot_type", "bar")
 
-    # Plot line graph
-    plt.figure(figsize=(10, 6))
-    colors = sns.color_palette("tab10", len(param_A_values))
+        if x_var not in summary_df.columns:
+            print(
+                f"Warning: Independent variable '{x_var}' not found in summary data for case '{case_name}'. Skipping."
+            )
+            continue
 
-    for i, (param_A_val, data) in enumerate(param_A_values.items()):
-        data_sorted = sorted(data, key=lambda x: x[0])
-        param_B_vals = [x[0] for x in data_sorted]
-        startup_inventories = [x[1] for x in data_sorted]
+        for y_var in y_vars:
+            if y_var not in summary_df.columns:
+                print(
+                    f"Warning: Dependent variable '{y_var}' not found in summary data for case '{case_name}'. Skipping."
+                )
+                continue
 
-        plt.plot(
-            param_B_vals,
-            startup_inventories,
-            marker="o",
-            label=f"{param_A_name}={param_A_val:.3f}",
-            color=colors[i],
-            linewidth=1.5,
+            valid_plots.append(
+                {
+                    "case_name": case_name,
+                    "x_var": x_var,
+                    "y_var": y_var,
+                    "plot_type": plot_type,
+                }
+            )
+
+    if not valid_plots:
+        return []
+
+    if combine_plots:
+        # Generate combined subplot figure
+        return _generate_combined_plots(
+            summary_df, valid_plots, save_dir, line_colors, bar_colors
+        )
+    else:
+        # Generate individual plots (original behavior)
+        return _generate_individual_plots(
+            summary_df, valid_plots, save_dir, line_colors, bar_colors
         )
 
-    plt.xlabel(param_B_name)
-    plt.ylabel("Start-up Tritium Inventory")
-    plt.title(
-        f"Start-up Tritium Inventory vs {param_B_name} for Different {param_A_name}"
+
+def _generate_combined_plots(
+    summary_df: pd.DataFrame,
+    valid_plots: list,
+    save_dir: str,
+    line_colors: list,
+    bar_colors: list,
+) -> list:
+    """
+    Generate a single combined figure with multiple subplots.
+    """
+    n_plots = len(valid_plots)
+    if n_plots == 0:
+        return []
+
+    # Calculate optimal subplot layout
+    if n_plots == 1:
+        rows, cols = 1, 1
+    elif n_plots == 2:
+        rows, cols = 1, 2
+    elif n_plots <= 4:
+        rows, cols = 2, 2
+    elif n_plots <= 6:
+        rows, cols = 2, 3
+    elif n_plots <= 9:
+        rows, cols = 3, 3
+    else:
+        rows = int(np.ceil(np.sqrt(n_plots)))
+        cols = int(np.ceil(n_plots / rows))
+
+    # Create the combined figure
+    fig_width = max(16, cols * 5)
+    fig_height = max(12, rows * 4)
+    fig, axes = plt.subplots(rows, cols, figsize=(fig_width, fig_height))
+
+    # Ensure axes is always a 2D array for consistent indexing
+    if rows == 1 and cols == 1:
+        axes = np.array([[axes]])
+    elif rows == 1 or cols == 1:
+        axes = axes.reshape(rows, cols)
+
+    # Set overall figure properties
+    fig.patch.set_facecolor("white")
+    fig.suptitle(
+        "Sensitivity Analysis - Combined Results",
+        fontsize=20,
+        fontweight="bold",
+        y=0.98,
     )
-    plt.legend(loc="best", fontsize=8)
-    plt.grid(True)
-    plt.margins(x=0.05, y=0.1)
 
-    # Save plot
-    png_path = os.path.join(
-        save_dir, f"startup_tritium_inventory_{param_A_name}_vs_{param_B_name}.png"
+    # Generate each subplot
+    for idx, plot_config in enumerate(valid_plots):
+        row = idx // cols
+        col = idx % cols
+        ax = axes[row, col]
+
+        _create_subplot(summary_df, plot_config, ax, line_colors, bar_colors)
+
+    # Hide unused subplots
+    for idx in range(n_plots, rows * cols):
+        row = idx // cols
+        col = idx % cols
+        axes[row, col].set_visible(False)
+
+    # Adjust layout
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95], pad=3.0)
+
+    # Save the combined figure
+    combined_filename = "combined_analysis_plots.png"
+    save_path = os.path.join(save_dir, combined_filename)
+    plt.savefig(
+        save_path, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
     )
-    plt.savefig(png_path, dpi=300, bbox_inches="tight")
-    plt.close()
-    return png_path
+    plt.close(fig)
+
+    print(f"Generated combined analysis plot: {save_path}")
+    return [save_path]
 
 
-def plot_results(csv_path, param_name, param_values, stop_time, temp_dir):
-    """Plots time-series results from a simulation sweep.
+def _generate_individual_plots(
+    summary_df: pd.DataFrame,
+    valid_plots: list,
+    save_dir: str,
+    line_colors: list,
+    bar_colors: list,
+) -> list:
+    """
+    Generate individual plot files (original behavior).
+    """
+    plot_paths = []
 
-    This function reads a CSV file, automatically adjusts the time axis to focus
-    on the relevant startup period, and generates a series of plots for different
-    parameter groups.
+    for plot_config in valid_plots:
+        # Create individual figure
+        fig, ax = plt.subplots(figsize=(12, 8))
+        fig.patch.set_facecolor("white")
+
+        _create_subplot(summary_df, plot_config, ax, line_colors, bar_colors)
+
+        # Add case name as subtitle if available
+        case_name = plot_config["case_name"]
+        if case_name:
+            fig.suptitle(
+                f"Analysis Case: {case_name}", fontsize=12, style="italic", alpha=0.7
+            )
+
+        # Adjust layout
+        plt.tight_layout(pad=2.0)
+
+        # Save individual plot
+        x_var = plot_config["x_var"]
+        y_var = plot_config["y_var"]
+        plot_type = plot_config["plot_type"]
+        plot_filename = f"{plot_type}_{y_var}_vs_{x_var}.png"
+        save_path = os.path.join(save_dir, plot_filename)
+
+        plt.savefig(
+            save_path, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
+        )
+        plt.close(fig)
+        plot_paths.append(save_path)
+        print(f"Generated enhanced analysis plot: {save_path}")
+
+    return plot_paths
+
+
+def _create_subplot(
+    summary_df: pd.DataFrame, plot_config: dict, ax, line_colors: list, bar_colors: list
+) -> None:
+    """
+    Create a single subplot based on the plot configuration.
+    """
+    x_var = plot_config["x_var"]
+    y_var = plot_config["y_var"]
+    plot_type = plot_config["plot_type"]
+
+    # Set background color
+    ax.set_facecolor("#f8f9fa")
+
+    if plot_type == "line":
+        # Enhanced line plot
+        sns.lineplot(
+            data=summary_df,
+            x=x_var,
+            y=y_var,
+            marker="o",
+            markersize=6,
+            linewidth=2.5,
+            color=line_colors[0],
+            alpha=0.8,
+            ax=ax,
+        )
+
+        # Add data point annotations (smaller for subplots)
+        for i, row in summary_df.iterrows():
+            ax.annotate(
+                f"{row[y_var]:.2f}",
+                (row[x_var], row[y_var]),
+                textcoords="offset points",
+                xytext=(0, 8),
+                ha="center",
+                fontsize=8,
+                alpha=0.7,
+            )
+
+        title = f"Line: {y_var} vs. {x_var}"
+
+    elif plot_type == "bar":
+        # Enhanced bar plot
+        bars = sns.barplot(
+            data=summary_df,
+            x=x_var,
+            y=y_var,
+            hue=x_var,
+            palette=bar_colors[: len(summary_df)],
+            alpha=0.8,
+            edgecolor="black",
+            linewidth=0.8,
+            legend=False,
+            ax=ax,
+        )
+
+        # Add value labels on bars (smaller for subplots)
+        for i, bar in enumerate(bars.patches):
+            height = bar.get_height()
+            if not np.isnan(height):
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2.0,
+                    height,
+                    f"{height:.2f}",
+                    ha="center",
+                    va="bottom",
+                    fontweight="bold",
+                    fontsize=8,
+                )
+
+        title = f"Bar: {y_var} vs. {x_var}"
+        ax.tick_params(axis="x", rotation=45, labelsize=9)
+
+    else:
+        title = f"Unknown: {y_var} vs. {x_var}"
+
+    # Set title and labels
+    ax.set_title(title, fontsize=12, fontweight="bold", pad=15)
+    ax.set_xlabel(x_var, fontsize=11, fontweight="bold", labelpad=8)
+    ax.set_ylabel(y_var, fontsize=11, fontweight="bold", labelpad=8)
+
+    # Improve grid appearance
+    ax.grid(True, alpha=0.3, linestyle="--")
+    ax.set_axisbelow(True)
+
+    # Add subtle border
+    for spine in ax.spines.values():
+        spine.set_edgecolor("#cccccc")
+        spine.set_linewidth(1.2)
+
+    # Improve tick appearance
+    ax.tick_params(
+        axis="both", which="major", labelsize=9, colors="#333333", length=4, width=0.8
+    )
+
+
+def plot_sweep_time_series(
+    csv_path: str,
+    save_dir: str,
+    y_var_name: str,
+    independent_var_name: str,
+    independent_var_alias: str = None,
+) -> str:
+    """
+    Filter columns containing specified variables from the CSV file of scan results and plot all time series on a single graph.
+
+    This function is used for single-parameter scans when a variable is recorded over time.
+    Only plot columns whose names contain y_var_name.
 
     Args:
-        csv_path (str): Path to the simulation results CSV file.
-        param_name (str): The name of the primary parameter being swept.
-        param_values (list): The list of values used for the primary parameter.
-        stop_time (float): The simulation stop time, used as an upper bound for plotting.
-        temp_dir (str): The directory where the output plot images will be saved.
-
-    Returns:
-        list: A list of paths to the generated plot images.
-
-    Raises:
-        ValueError: If the CSV contains insufficient data for plotting.
+        csv_path (str): Path to the scan result CSV file.
+        save_dir (str): Directory to save the image.
+        y_var_name (str): Name of the Y-axis variable (e.g., "sds.I[1]").
+        independent_var_name (str): Full name of the scan parameter
+                                    (e.g., "tep_fep.to_SDS_Fraction[1]").
+        independent_var_al
     """
     try:
         df = pd.read_csv(csv_path)
-        time = df["time"].to_numpy()
+    except FileNotFoundError:
+        print(f"Error: Could not find results file at {csv_path}")
+        return None
 
-        if len(time) < 2:
-            raise ValueError("CSV contains insufficient time points")
+    time = df["time"]
+    plot_alias = (
+        independent_var_alias if independent_var_alias else independent_var_name
+    )
 
-        max_time = stop_time
-        for column in df.columns[1:]:
-            data = df[column].to_numpy()
-            if len(data) < 3:
-                continue
-            diffs = np.diff(data)
-            for i in range(1, len(diffs)):
-                if i > len(diffs) // 2 and diffs[i] > 0:
-                    rise_time = time[i]
-                    max_time = min(max_time, rise_time * 1.5)
-                    break
+    # Filter out columns containing y_var_name
+    y_var_columns = [col for col in df.columns if col != "time" and y_var_name in col]
 
-        time_mask = time <= max_time
-        if not any(time_mask):
-            time_mask = np.ones_like(time, dtype=bool)
-        time = time[time_mask]
-        df = df.iloc[time_mask]
+    if not y_var_columns:
+        print(f"Warning: No columns found containing '{y_var_name}' in {csv_path}")
+        return None
 
-        plot_paths = []
-        curves_per_plot = 5
-        sns.set(style="whitegrid")
-        for param_val in param_values:
-            param_columns = [
-                col for col in df.columns[1:] if f"{param_name}={param_val:.3f}" in col
-            ]
-            for i in range(0, len(param_columns), curves_per_plot):
-                plt.figure(figsize=(10, 6))
-                colors = sns.color_palette(
-                    "tab20", min(curves_per_plot, len(param_columns) - i)
-                )
-                for idx, column in enumerate(param_columns[i : i + curves_per_plot]):
-                    tbr_value = float(column.split("blanket.TBR=")[1])
-                    plt.plot(
-                        time,
-                        df[column],
-                        label=f"TBR={tbr_value:.2f}",
-                        color=colors[idx],
-                        linewidth=1.0,
-                    )
+    print(
+        f"Found {len(y_var_columns)} columns containing '{y_var_name}': {y_var_columns}"
+    )
 
-                plt.xlabel("Time (s)")
-                plt.ylabel("sds.I[1]")
-                plt.title(
-                    f"sds.I[1] vs Time for {param_name}={param_val:.2f} (Group {i//curves_per_plot + 1})"
-                )
-                plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=6)
-                plt.grid(True)
-                plt.tight_layout()
+    plt.figure(figsize=(12, 8))
+    sns.set_theme(style="whitegrid")
+    colors = sns.color_palette("viridis", len(y_var_columns))
 
-                safe_param_name = param_name.replace(".", "_")
-                png_path = os.path.join(
-                    temp_dir,
-                    f"sds_I1_sweep_{safe_param_name}_{param_val:.2f}_group_{i//curves_per_plot}.png",
-                )
-                plt.savefig(png_path, dpi=300, bbox_inches="tight")
-                plt.close()
-                plot_paths.append(png_path)
+    for i, column in enumerate(y_var_columns):
+        # Expected column name format: "y_var&param_name=value"
+        # e.g., "sds.I[1]&tep_fep.to_SDS_Fraction[1]=0.1"
+        if "&" in column and "=" in column:
+            # Parse column name format: y_var&param_name=value
+            parts = column.split("&")
+            if len(parts) >= 2:
+                param_part = parts[1]  # param_name=value
+                label = param_part.replace(f"{independent_var_name}=", f"{plot_alias}=")
+            else:
+                label = column
+        else:
+            # If the column name format does not match, use the original column name directly
+            label = column
 
-        return plot_paths
+        plt.plot(time, df[column], label=label, color=colors[i], linewidth=1.5)
 
-    except Exception:
-        raise
+    plt.xlabel("Time (hrs)")
+    plt.ylabel(y_var_name)
+    plt.title(f"Time Evolution of {y_var_name} vs. {plot_alias}")
+    plt.legend(title=plot_alias, loc="best")
+    plt.grid(True)
+    plt.tight_layout()
+
+    safe_y_var = y_var_name.replace(".", "_").replace("[", "").replace("]", "")
+    safe_param = plot_alias.replace(".", "_").replace("[", "").replace("]", "")
+    png_path = os.path.join(save_dir, f"sweep_{safe_y_var}_vs_{safe_param}.png")
+
+    try:
+        plt.savefig(png_path, dpi=300)
+        plt.close()
+        print(f"Successfully generated sweep plot: {png_path}")
+        return png_path
+    except Exception as e:
+        print(f"Error saving plot: {e}")
+        plt.close()
+        return None

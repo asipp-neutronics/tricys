@@ -1,6 +1,7 @@
 import ast
 import itertools
 import logging
+import os
 from typing import Any, Dict, List
 
 import numpy as np
@@ -63,6 +64,7 @@ def parse_parameter_value(value: Any) -> List[Any]:
     - "log:start:stop:num" -> e.g., "log:1:1000:4" for 4 points on a log scale.
     - "rand:min:max:count" -> e.g., "rand:0:1:10" for 10 random numbers.
     - "file:path:column" -> e.g., "file:data.csv:voltage" to read a CSV column.
+    - "file:path" -> e.g., "file:sampling.csv" to read all parameters from CSV (first row as parameter names).
     """
     if not isinstance(value, str):
         return value if isinstance(value, list) else [value]
@@ -76,31 +78,44 @@ def parse_parameter_value(value: Any) -> List[Any]:
 
         if prefix == "linspace":
             start, stop, num = map(float, args_str.split(":"))
-            return np.linspace(start, stop, int(num)).tolist()
+            return np.linspace(start, stop, int(num)).round(8).tolist()
 
         if prefix == "log":
             start, stop, num = map(float, args_str.split(":"))
             if start <= 0 or stop <= 0:
                 raise ValueError("Log scale start and stop values must be positive.")
-            return np.logspace(np.log10(start), np.log10(stop), int(num)).tolist()
+            return (
+                np.logspace(np.log10(start), np.log10(stop), int(num)).round(8).tolist()
+            )
 
         if prefix == "rand":
             low, high, count = map(float, args_str.split(":"))
-            return np.random.uniform(low, high, int(count)).tolist()
+            return np.random.uniform(low, high, int(count)).round(8).tolist()
 
         if prefix == "file":
             # Handle file paths that may contain colons (e.g., Windows C:\...)
             try:
-                file_path, column_name = args_str.rsplit(":", 1)
-                df = pd.read_csv(file_path.strip())
-                return df[column_name.strip()].tolist()
+                # Check if there's a column name specified
+                if ":" in args_str:
+                    file_path, column_name = args_str.rsplit(":", 1)
+                    if not os.path.isabs(file_path.strip()):
+                        abs_file_path = os.path.abspath(
+                            os.path.join(os.getcwd(), file_path.strip())
+                        )
+                    else:
+                        abs_file_path = file_path.strip()
+                    df = pd.read_csv(abs_file_path)
+                    return df[column_name.strip()].tolist()
+                else:
+                    # Return the file path for later processing
+                    return [args_str.strip()]
             except (ValueError, FileNotFoundError, KeyError):
                 # Re-raise to be caught by the outer try-except block
                 raise
 
         # Fallback to original start:stop:step logic if no prefix matches
         start, stop, step = map(float, value.split(":"))
-        return np.arange(start, stop + step / 2, step).tolist()
+        return np.arange(start, stop + step / 2, step).round(8).tolist()
 
     except (ValueError, FileNotFoundError, KeyError, IndexError) as e:
         logger.error(
@@ -109,15 +124,70 @@ def parse_parameter_value(value: Any) -> List[Any]:
         return [value]  # On any error, treat as a single literal value
 
 
+def _load_jobs_from_csv(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Load job parameters from a CSV file.
+    The first line serves as parameter names, and subsequent lines as parameter values, with each line generating a job.
+
+    Args:
+        file_path: CSV file path (can be a relative or absolute path)
+
+    Returns:
+        A list of jobs, where each job is a dictionary of parameters
+    """
+    try:
+        # Process relative paths and convert them to absolute paths based on the current working directory
+        if not os.path.isabs(file_path.strip()):
+            abs_file_path = os.path.abspath(
+                os.path.join(os.getcwd(), file_path.strip())
+            )
+            logger.debug(f"Convert relative path: '{file_path}' -> '{abs_file_path}'")
+        else:
+            abs_file_path = file_path.strip()
+
+        if not os.path.exists(abs_file_path):
+            raise FileNotFoundError(f"The CSV file does not exist: {abs_file_path}")
+
+        df = pd.read_csv(abs_file_path)
+        jobs = []
+
+        for _, row in df.iterrows():
+            job = {}
+            for column in df.columns:
+                job[column] = row[column]
+            jobs.append(job)
+
+        logger.info(f"Loaded {len(jobs)} jobs from CSV file '{abs_file_path}'")
+        return jobs
+
+    except Exception as e:
+        logger.error(f"Error loading CSV file '{file_path}': {e}")
+        raise
+
+
 def generate_simulation_jobs(
     simulation_params: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Generates a list of simulation jobs from parameters, handling sweeps and array expansion."""
+
+    logger.info(f"Generating simulation jobs.{simulation_params}")
+    if "file" in simulation_params:
+        file_value = simulation_params["file"]
+        if isinstance(file_value, str):
+            csv_jobs = _load_jobs_from_csv(file_value)
+
+            other_params = {k: v for k, v in simulation_params.items() if k != "file"}
+            for job in csv_jobs:
+                job.update(other_params)
+
+            return csv_jobs
+
     # First, expand any array-like parameters before processing.
     processed_params = _expand_array_parameters(simulation_params)
 
     sweep_params = {}
     single_value_params = {}
+
     for name, value in processed_params.items():
         parsed_values = parse_parameter_value(value)
         if len(parsed_values) > 1:

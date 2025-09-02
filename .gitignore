@@ -46,3 +46,6 @@ example/example_aspenbkp/*
 # Ignore all Interceptor and Intercepted model files  in the example folder
 example/example_model/*_Interceptor.mo
 example/example_model/*_Intercepted.mo
+
+# Ignore analysis_cases folders in example folder
+example/**/analysis_cases
