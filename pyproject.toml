@@ -30,7 +30,6 @@ dependencies = [
 "Bug Tracker" = "https://github.com/asipp-neutronics/tricys"
 
 [project.scripts]
-tricys-plus = "tricys.simulation_plus:main"
 tricys-gui = "tricys.simulation_gui:main"
 tricys = "tricys.simulation:main"
 
