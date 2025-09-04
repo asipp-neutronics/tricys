@@ -38,14 +38,16 @@ tricys = "tricys.simulation:main"
 dev = [
     "pytest",  # 用于测试
     "ruff",    # 用于代码检查和格式化
-    "black",   
+    "black",
+    "pre-commit"
 ]
 
 win = [
     "pytest",  # 用于测试
     "ruff",    # 用于代码检查和格式化
     "black",
-    "pywin32"  
+    "pywin32",
+    "pre-commit"
 ]
 
 [tool.setuptools]
@@ -58,10 +60,12 @@ target-version = ['py38']
 [tool.ruff]
 target-version = "py38"
 line-length = 88
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I"]
 ignore = ["E501","E722"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["src"]
 
 [tool.pytest.ini_options]

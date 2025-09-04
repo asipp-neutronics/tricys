@@ -14,6 +14,8 @@ REM   lint          Check code style and potential errors (report only, do not m
 REM   format        Automatically format and repair code.
 REM   check         Combine commands: format first, then check to make sure the codebase is clean.
 REM   test          Perform one-click tests.
+REM   uninstall     Uninstall the project.
+REM   reinstall     Re-install the project (clean and install).
 REM   help          Show this help message.
 REM ------------------------------------------------------------------------------
 
@@ -38,6 +40,8 @@ echo   lint          Check code style and potential errors (report only, do not 
 echo   format        Automatically format and repair code.
 echo   check         Combine commands: format first, then check to make sure the codebase is clean.
 echo   test          Perform one-click tests.
+echo   uninstall     Uninstall the project.
+echo   reinstall     Re-install the project (uninstall , clean and install).
 echo   help          Show this help message.
 goto :eof
 
@@ -52,12 +56,14 @@ goto :eof
 :dev-install
 echo --^> Installing project with development dependencies...
 call pip install -e ".[dev]"
+call pre-commit install
 echo --^> Development installation complete.
 goto :eof
 
 :win-install
 echo --^> Installing project with development dependencies...
 call pip install -e ".[win]"
+call pre-commit install
 echo --^> Development installation complete.
 goto :eof
 
@@ -117,6 +123,22 @@ goto :eof
 :test
 echo --^> Pytest Project...
 call pytest -v test\.
+goto :eof
+
+
+:uninstall
+echo --^> Uninstalling project...
+call pip uninstall tricys -y
+echo --^> Uninstallation complete.
+goto :eof
+
+
+:reinstall
+echo --^> Re-installing project...
+call :uninstall
+call :clean
+call :win-install
+echo --^> Re-installation complete.
 goto :eof
 
 
