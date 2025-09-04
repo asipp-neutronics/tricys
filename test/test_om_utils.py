@@ -1,6 +1,6 @@
+import gc
 import os
 from pathlib import Path
-import gc
 
 import pytest
 
@@ -12,10 +12,10 @@ from tricys.utils.om_utils import (
     load_modelica_package,
 )
 
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
-MODEL_PATH = os.path.join(project_root, "example", "example_model", "package.mo")
+MODEL_PATH = os.path.join(project_root, "example", "gui", "example_model", "package.mo")
+
 
 @pytest.mark.build_test
 def test_get_om_session():
@@ -29,6 +29,7 @@ def test_get_om_session():
     # Teardown: close the session after all tests in the module have run
     omc.sendExpression("quit()")
 
+
 @pytest.mark.build_test
 def test_format_parameter_value():
     """Tests the format_parameter_value function with various data types."""
@@ -38,6 +39,7 @@ def test_format_parameter_value():
     assert format_parameter_value("param", "hello") == 'param="hello"'
     assert format_parameter_value("param", [1, 2, 3]) == "param={1,2,3}"
     assert format_parameter_value("param", ["a", "b"]) == "param={a,b}"
+
 
 @pytest.mark.build_test
 def test_get_model_parameter_names():
@@ -54,6 +56,7 @@ def test_get_model_parameter_names():
 
     # Check for a known specific parameter
     assert "blanket.TBR" in names
+
 
 @pytest.mark.build_test
 def test_get_all_parameters_details():
@@ -74,6 +77,7 @@ def test_get_all_parameters_details():
     assert "defaultValue" in tbr_param
     assert "comment" in tbr_param
     assert "dimensions" in tbr_param
+
 
 @pytest.mark.build_test
 def test_integrate_interceptor_model(request):
@@ -145,11 +149,13 @@ def test_integrate_interceptor_model(request):
         'parameter String fileName = "data/i_iss_co_sim_results.csv"'
         in interceptor_content
     )
-    assert "Modelica.Blocks.Interfaces.RealInput physical_to_SDS[5]" in interceptor_content
-    assert "Modelica.Blocks.Interfaces.RealInput physical_to_WDS[5]" in interceptor_content
     assert (
-        "parameter Integer columns_to_SDS[6] = {1,2,3,4,5,6}" in interceptor_content
+        "Modelica.Blocks.Interfaces.RealInput physical_to_SDS[5]" in interceptor_content
     )
+    assert (
+        "Modelica.Blocks.Interfaces.RealInput physical_to_WDS[5]" in interceptor_content
+    )
+    assert "parameter Integer columns_to_SDS[6] = {1,2,3,4,5,6}" in interceptor_content
     assert (
         "parameter Integer columns_to_WDS[6] = {1,7,8,9,10,11}" in interceptor_content
     )
@@ -160,16 +166,9 @@ def test_integrate_interceptor_model(request):
     assert "example_model.I_ISS_Interceptor i_iss_interceptor;" in system_content
 
     # Check rewiring for to_SDS
-    assert (
-        "connect(i_iss.to_SDS, i_iss_interceptor.physical_to_SDS);"
-        in system_content
-    )
+    assert "connect(i_iss.to_SDS, i_iss_interceptor.physical_to_SDS);" in system_content
     assert "connect(i_iss_interceptor.final_to_SDS, sds.from_I_ISS)" in system_content
 
     # Check rewiring for to_WDS
-    assert (
-        "connect(i_iss.to_WDS, i_iss_interceptor.physical_to_WDS);"
-        in system_content
-    )
+    assert "connect(i_iss.to_WDS, i_iss_interceptor.physical_to_WDS);" in system_content
     assert "connect(i_iss_interceptor.final_to_WDS, wds.from_I_ISS)" in system_content
-

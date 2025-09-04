@@ -14,7 +14,7 @@ from tricys.simulation import run_simulation
 # Resolve project paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
-MODEL_PATH = os.path.join(project_root, "example", "example_model", "package.mo")
+MODEL_PATH = os.path.join(project_root, "example", "gui", "example_model", "package.mo")
 
 # Use POSIX paths for cross-platform compatibility in configs
 MODEL_PATH_POSIX = Path(MODEL_PATH).as_posix()

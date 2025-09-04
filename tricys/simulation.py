@@ -393,59 +393,85 @@ def run_simulation(config: Dict[str, Any]):
     simulation_results = {}
     use_concurrent = config["simulation"].get("concurrent", True)
 
-    if config.get("co_simulation") is None:
-        if use_concurrent:
-            logger.info("Starting simulation in CONCURRENT mode.")
-            max_workers = config["simulation"].get("max_workers", os.cpu_count())
-            logger.info(f"Using up to {max_workers} parallel workers.")
-            with concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers
-            ) as executor:
-                future_to_job = {
-                    executor.submit(
-                        _run_single_job, config, job_params, i + 1
-                    ): job_params
-                    for i, job_params in enumerate(jobs)
-                }
-                for future in concurrent.futures.as_completed(future_to_job):
-                    job_params = future_to_job[future]
-                    try:
-                        result_path = future.result()
-                        if result_path:
-                            simulation_results[tuple(sorted(job_params.items()))] = (
-                                result_path
+    try:
+        if config.get("co_simulation") is None:
+            if use_concurrent:
+                logger.info("Starting simulation in CONCURRENT mode.")
+                max_workers = config["simulation"].get("max_workers", os.cpu_count())
+                logger.info(f"Using up to {max_workers} parallel workers.")
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=max_workers
+                ) as executor:
+                    future_to_job = {
+                        executor.submit(
+                            _run_single_job, config, job_params, i + 1
+                        ): job_params
+                        for i, job_params in enumerate(jobs)
+                    }
+                    for future in concurrent.futures.as_completed(future_to_job):
+                        job_params = future_to_job[future]
+                        try:
+                            result_path = future.result()
+                            if result_path:
+                                simulation_results[
+                                    tuple(sorted(job_params.items()))
+                                ] = result_path
+                        except Exception as exc:
+                            logger.error(
+                                f"Job for {job_params} generated an exception: {exc}",
+                                exc_info=True,
                             )
-                    except Exception as exc:
-                        logger.error(
-                            f"Job for {job_params} generated an exception: {exc}",
-                            exc_info=True,
-                        )
+            else:
+                logger.info("Starting simulation in SEQUENTIAL mode.")
+                result_paths = _run_sequential_sweep(config, jobs)
+                for i, result_path in enumerate(result_paths):
+                    if result_path:
+                        simulation_results[tuple(sorted(jobs[i].items()))] = result_path
         else:
-            logger.info("Starting simulation in SEQUENTIAL mode.")
-            result_paths = _run_sequential_sweep(config, jobs)
-            for i, result_path in enumerate(result_paths):
-                if result_path:
-                    simulation_results[tuple(sorted(jobs[i].items()))] = result_path
-    else:
-        if use_concurrent:
-            logger.info("Starting co-simulation in CONCURRENT mode.")
-            max_workers = config["simulation"].get("max_workers", 4)
-            logger.info(f"Using up to {max_workers} parallel processes.")
+            if use_concurrent:
+                logger.info("Starting co-simulation in CONCURRENT mode.")
+                max_workers = config["simulation"].get("max_workers", 4)
+                logger.info(f"Using up to {max_workers} parallel processes.")
 
-            with concurrent.futures.ProcessPoolExecutor(
-                max_workers=max_workers
-            ) as executor:
-                future_to_job = {
-                    executor.submit(
-                        _run_co_simulation, config, job_params, job_id=i + 1
-                    ): job_params
-                    for i, job_params in enumerate(jobs)
-                }
+                with concurrent.futures.ProcessPoolExecutor(
+                    max_workers=max_workers
+                ) as executor:
+                    future_to_job = {
+                        executor.submit(
+                            _run_co_simulation, config, job_params, job_id=i + 1
+                        ): job_params
+                        for i, job_params in enumerate(jobs)
+                    }
 
-                for future in concurrent.futures.as_completed(future_to_job):
-                    job_params = future_to_job[future]
+                    for future in concurrent.futures.as_completed(future_to_job):
+                        job_params = future_to_job[future]
+                        try:
+                            result_path = future.result()
+                            if result_path:
+                                simulation_results[
+                                    tuple(sorted(job_params.items()))
+                                ] = result_path
+                                logger.info(
+                                    f"Successfully finished job for params: {job_params}"
+                                )
+                            else:
+                                logger.warning(
+                                    f"Job for params {job_params} did not return a result path."
+                                )
+                        except Exception as exc:
+                            logger.error(
+                                f"Job for params {job_params} generated an exception: {exc}",
+                                exc_info=True,
+                            )
+            else:
+                logger.info("Starting co-simulation in SEQUENTIAL mode.")
+                for i, job_params in enumerate(jobs):
+                    job_id = i + 1
+                    logger.info(f"--- Starting Sequential Job {job_id}/{len(jobs)} ---")
                     try:
-                        result_path = future.result()
+                        result_path = _run_co_simulation(
+                            config, job_params, job_id=job_id
+                        )
                         if result_path:
                             simulation_results[tuple(sorted(job_params.items()))] = (
                                 result_path
@@ -462,30 +488,9 @@ def run_simulation(config: Dict[str, Any]):
                             f"Job for params {job_params} generated an exception: {exc}",
                             exc_info=True,
                         )
-        else:
-            logger.info("Starting co-simulation in SEQUENTIAL mode.")
-            for i, job_params in enumerate(jobs):
-                job_id = i + 1
-                logger.info(f"--- Starting Sequential Job {job_id}/{len(jobs)} ---")
-                try:
-                    result_path = _run_co_simulation(config, job_params, job_id=job_id)
-                    if result_path:
-                        simulation_results[tuple(sorted(job_params.items()))] = (
-                            result_path
-                        )
-                        logger.info(
-                            f"Successfully finished job for params: {job_params}"
-                        )
-                    else:
-                        logger.warning(
-                            f"Job for params {job_params} did not return a result path."
-                        )
-                except Exception as exc:
-                    logger.error(
-                        f"Job for params {job_params} generated an exception: {exc}",
-                        exc_info=True,
-                    )
-                logger.info(f"--- Finished Sequential Job {job_id}/{len(jobs)} ---")
+                    logger.info(f"--- Finished Sequential Job {job_id}/{len(jobs)} ---")
+    except Exception as e:
+        raise RuntimeError(f"Failed to run simualtion: {e}")
 
     # --- Result Handling ---
     # The simulation_results dictionary now contains paths to results inside temporary job workspaces.

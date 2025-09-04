@@ -1,475 +1,668 @@
 # Tricys 用户手册
 
+**Tricys (TRitium Integrated CYcle Simulation)** 是一个基于 OpenModelica 的高级仿真平台，旨在分析和研究聚变燃料循环的动态行为。它提供了强大的参数扫描和协同仿真功能，以满足从初步研究到详细系统集成的不同需求。
+
+---
+
 - [Tricys 用户手册](#tricys-用户手册)
-  - [1. 项目简介](#1-项目简介)
-  - [2. 安装与使用](#2-安装与使用)
-    - [2.1 Docker环境 安装与使用](#21-docker环境-安装与使用)
-      - [环境要求](#环境要求)
-      - [安装步骤](#安装步骤)
-      - [使用方法](#使用方法)
-    - [2.2 Windows环境 安装与使用](#22-windows环境-安装与使用)
-      - [环境要求](#环境要求-1)
-      - [安装步骤](#安装步骤-1)
-      - [使用方法](#使用方法-1)
-  - [3. 图像仿真 (GUI)](#3-图像仿真-gui)
-    - [3.1. 启动 GUI](#31-启动-gui)
-    - [3.2. 界面说明](#32-界面说明)
-    - [3.3. 操作流程](#33-操作流程)
-  - [4. 命令仿真 (配置文件)](#4-命令仿真-配置文件)
-    - [4.1. 启动命令](#41-启动命令)
-    - [4.2. 配置文件说明](#42-配置文件说明)
-  - [5. 查看结果](#5-查看结果)
-  - [6. 查看日志以及中间结果](#6-查看日志以及中间结果)
-    - [6.1. 日志文件](#61-日志文件)
-    - [6.2. 中间结果 (Intermediate/Temporary Files)](#62-中间结果-intermediatetemporary-files)
-  - [7. 程序说明 (流程图)](#7-程序说明-流程图)
-    - [7.1. 命令行模式 (`tricys`) 流程图](#71-命令行模式-tricys-流程图)
-    - [7.2. 图形界面模式 (`tricys-gui`) 流程图](#72-图形界面模式-tricys-gui-流程图)
-    - [7.3. 工具函数 API 说明 (Utils API)](#73-工具函数-api-说明-utils-api)
-      - [`db_utils.py` - 数据库工具](#db_utilspy---数据库工具)
-      - [`file_utils.py` - 文件工具](#file_utilspy---文件工具)
-      - [`om_utils.py` - OpenModelica 工具](#om_utilspy---openmodelica-工具)
-      - [`plot_utils.py` - 绘图工具](#plot_utilspy---绘图工具)
+  - [1. 核心功能](#1-核心功能)
+      - [工作流程 (Workflows)](#工作流程-workflows)
+      - [运行模式 (Execution Modes)](#运行模式-execution-modes)
+  - [2. 安装指南](#2-安装指南)
+    - [2.1. Docker 环境](#21-docker-环境)
+    - [2.2. Windows 本地环境](#22-windows-本地环境)
+  - [3. 核心概念](#3-核心概念)
+    - [3.1. 工作区 (Workspace)](#31-工作区-workspace)
+    - [3.2. 配置文件 (`config.json`)](#32-配置文件-configjson)
+    - [3.3. 高级参数定义](#33-高级参数定义)
+  - [4. 示例说明 (Example Files)](#4-示例说明-example-files)
+  - [5. 使用: 命令行 (CLI)](#5-使用-命令行-cli)
+    - [5.1. 标准参数扫描](#51-标准参数扫描)
+    - [5.2. 混合协同仿真](#52-混合协同仿真)
+  - [6. 使用: 图形界面 (GUI)](#6-使用-图形界面-gui)
+    - [6.1. 界面布局](#61-界面布局)
+    - [6.2. 操作流程](#62-操作流程)
+      - [第 1 步：设置工作区和全局配置](#第-1-步设置工作区和全局配置)
+      - [第 2 步：加载模型参数](#第-2-步加载模型参数)
+      - [第 3 步：定义参数扫描](#第-3-步定义参数扫描)
+      - [第 4 步 (可选): 协同仿真配置](#第-4-步-可选-协同仿真配置)
+      - [第 5 步：运行仿真](#第-5-步运行仿真)
+    - [6.3. 其他功能按钮](#63-其他功能按钮)
+  - [7. 结果与输出](#7-结果与输出)
+    - [7.1. 最终结果](#71-最终结果)
+      - [`simulation_result.csv`](#simulation_resultcsv)
+      - [`sweep_results.csv`](#sweep_resultscsv)
+      - [`rises_info.csv`](#rises_infocsv)
+    - [7.2. 日志与临时文件](#72-日志与临时文件)
+  - [8. 开发者指南: 扩展 Tricys](#8-开发者指南-扩展-tricys)
+    - [8.1. 创建自定义处理器 (Handler)](#81-创建自定义处理器-handler)
+      - [步骤 1: 创建一个 Python 函数](#步骤-1-创建一个-python-函数)
+      - [步骤 2: 实现函数逻辑](#步骤-2-实现函数逻辑)
+      - [步骤 3: 定义返回值](#步骤-3-定义返回值)
+      - [步骤 4: 配置 `config.json`](#步骤-4-配置-configjson)
+    - [8.2. 代码架构 (Utils API)](#82-代码架构-utils-api)
+      - [`sim_utils.py` - 仿真任务生成器](#sim_utilspy---仿真任务生成器)
+      - [`om_utils.py` - OpenModelica 交互核心](#om_utilspy---openmodelica-交互核心)
+      - [`db_utils.py` - 参数数据库接口](#db_utilspy---参数数据库接口)
+      - [`file_utils.py` \& `log_utils.py` - 文件与日志工具](#file_utilspy--log_utilspy---文件与日志工具)
+      - [`plot_utils.py` - 结果绘图工具](#plot_utilspy---结果绘图工具)
+  - [9. 流程图](#9-流程图)
+    - [9.1. 命令行 (CLI) 工作流程](#91-命令行-cli-工作流程)
+    - [9.2. 图形界面 (GUI) 工作流程](#92-图形界面-gui-工作流程)
 
-## 1. 项目简介
+---
 
-**tricys (TRitium Integrated CYcle Simulation)** 是一个用于分析聚变燃料循环的仿真系统，基于 OpenModelica 平台开发。该项目旨在通过建模和仿真，研究聚变反应堆燃料循环的动态行为，特别关注参数（如 `blanket.TBR`）对系统性能的影响。
+## 1. 核心功能
 
-为满足不同用户的需求，`tricys` 提供了两种操作模式：
+Tricys 提供了灵活的仿真能力，其具有 **两种工作流程** 和 **两种运行模式**。
 
-*   **图形用户界面 (GUI)**: 提供一个直观的交互界面，用户可以方便地加载模型、设置仿真参数、定义参数扫描范围并启动仿真。
-*   **命令行界面 (CLI)**: 通过配置文件驱动，支持复杂的参数扫描和批量仿真任务，适合进行大规模的自动化计算和集成到其他工作流程中。
+#### 工作流程 (Workflows)
 
-## 2. 安装与使用
-###  2.1 Docker环境 安装与使用
-为了简化开发环境的配置，本项目维护了两个容器镜像, 支持 **VSCode & Dev Containers** 在容器化环境中运行和测试代码，：
-1. [ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_ompython/476218036?tag=docker_dev)：带有OMEdit可视化应用
-2. [ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_gui/476218102?tag=docker_dev)：不带有OMEdit可视化应用
+1.  **标准参数扫描 (Standard Parameter Sweep)**
+    -   **用途**: 研究一个或多个模型参数变化对系统行为的影响。
+    -   **工作方式**: 用户在配置文件或 GUI 中定义参数的扫描范围。Tricys 会自动生成所有参数组合（笛卡尔积），并并行或顺序地执行每一次独立的仿真，最后将结果汇总。
 
-**如需切换dev container请删除原容器并修改docker-compose.yml**
-```
-image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
-```
+2.  **混合协同仿真 (Hybrid Co-Simulation)**
+    -   **用途**: 将 Modelica 模型与外部程序（如 Aspen Plus、MATLAB 或自定义的 Python 脚本）进行集成，实现更复杂的系统级仿真。
+    -   **工作方式**: 此工作流通过一个“运行-处理-再运行”的自动化流程，将 Modelica 与外部工具（如 Aspen Plus 或自定义 Python 脚本）连接起来。首先，它运行一次初步的 Modelica 仿真以生成数据；接着，将这些数据交给用户定义的“处理器”(Handler)进行外部计算或处理；最后，Tricys 会动态地将处理器的结果（通常是 CSV 数据）“注入”回 Modelica 模型中，并运行一次最终的、完整的系统仿真。这个过程允许将外部工具的复杂计算能力无缝集成到 Modelica 的仿真环境中。
 
-#### 环境要求
-- **Docker**: 最新版本（从 [Docker 官网](https://www.docker.com/) 下载）。
-- **Docker Compose**: 最新版本（通常随 Docker Desktop 一起安装）。
-- **VSCode**: 最新版本（安装Dev Containers插件）。
-- **Windows 11**: 最新版本（安装 WSL2 并默认启用 WSLg 功能）。
-- **Linux**: 需要运行 **`xhost +local:`** 命令。
+#### 运行模式 (Execution Modes)
 
-| 系统测试| tricys_openmodelica_ompython | tricys_openmodelica_gui（OMEdit） |
-| :--- | :--- | :--- |
-| Windows11 (WSL2) | ✅ | ✅ |
-| Ubuntu 24.04 | ✅ | ✅ |
-| Rocky 10 | ✅ | ✅ |
-| CentOS 7 | ✅ | ❌|
+为了执行上述工作流程，Tricys 提供两种操作界面：
 
-**注意事项**：经测试，CentOS7考虑到版本较旧，无法在tricys_openmodelica_gui容器中运行`OMEdit`可视化应用
+1.  **命令行界面 (CLI)**: 通过 `tricys` 命令和 JSON 配置文件驱动，适合进行大规模的自动化计算、批量任务和集成到其他脚本或工作流中。
+2.  **图形用户界面 (GUI)**: 通过 `tricys-gui` 命令启动，提供一个直观的交互式环境，用户可以方便地加载模型、设置仿真参数、定义扫描范围并启动仿真。
 
+## 2. 安装指南
 
-#### 安装步骤
+### 2.1. Docker 环境 
 
-1.  **克隆仓库**: 打开终端，克隆本项目到本地。
-    ```bash
-    git clone https://github.com/asipp-neutronics/tricys.git
-    cd tricys
-    ```
+为简化配置，我们提供两个预配置的镜像：
 
-2.  **在 VSCode 中打开**:
-    ```bash
-    code .
-    ```
+-   `ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev`: 包含完整的图形环境和 OMEdit 可视化工具。
+-   `ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev`: 轻量级镜像，不含 OMEdit。
 
-3.  **在容器中重新打开**: VSCode 会检测到 `.devcontainer` 目录并提示“在容器中重新打开 (Reopen in Container)”，点击该按钮。
-    ```
-    注意: 首次构建容器时，需要下载指定的 Docker 镜像，可能需要一些时间。
-    ```
+**环境要求**:
+-   Docker & Docker Compose
+-   VSCode (已安装 Dev Containers 插件)
+-   Windows 11 (启用 WSL2) 或 Linux (需运行 `xhost +local:` 以支持 GUI)
 
-4.  **安装项目依赖**: 容器成功启动后进入容器的终端，在终端中执行以下命令来安装项目所需的 Python 库。
-    ```bash
-    make dev-install
-    ```
-#### 使用方法
+**安装步骤**:
+1.  克隆仓库: `git clone https://github.com/asipp-neutronics/tricys.git && cd tricys`
+2.  在 VSCode 中打开: `code .`
+3.  点击右下角弹出的 “Reopen in Container” 提示。
+4.  容器启动后，在 VSCode 的终端中运行 `make dev-install` 来安装所有依赖。
 
-安装完成后，在容器终端中，您可以使用以下命令：
+### 2.2. Windows 本地环境
 
-*   **运行图形用户界面 (GUI)**:
-    ```shell
-    tricys-gui
-    ```
+此安装方式适用于希望在本地直接运行，或需要进行涉及仅限 Windows 的软件（如 Aspen Plus）的协同仿真用户。
+> **重要提示**: 项目中提供的 `i_iss_handler` 处理器通过 COM 接口与 Aspen Plus 进行交互。由于 Aspen Plus 和 COM 技术仅限于 Windows 平台，任何涉及 Aspen Plus 的协同仿真任务 **必须在 Windows 本地环境下运行**，而不能在 Docker 容器中执行。因此，如果您需要进行此类协同仿真，请选择 [Windows 本地环境](#22-windows-本地环境) 进行安装和使用。
+> 
+**环境要求**:
+-   Python (>=3.8, 安装时勾选 "Add Python to PATH")
+-   Git
+-   OpenModelica (确保 `omc.exe` 在系统 PATH 中)
 
-*   **运行命令行 (CLI) 仿真**:
-    ```shell
-    tricys -c example_config.json
-    ```
-
-### 2.2 Windows环境 安装与使用
-
-#### 环境要求
-
-1.  **Python**: 安装 Python 3.8 或更高版本。您可以从 [Python 官网](https://www.python.org/downloads/) 下载或通过 Microsoft Store 安装。**重要提示**：在安装过程中，请务必勾选“Add Python to PATH”选项。
-2.  **Git**: 从 [Git 官网](https://git-scm.com/download/win) 下载并安装 Git for Windows。
-3.  **OpenModelica**: 需要安装 OpenModelica。请确保其命令行工具（如 `omc.exe`）已添加到系统的 `PATH` 环境变量中。
-
-#### 安装步骤
-
-1.  **克隆仓库**:
-    ```shell
-    git clone https://github.com/asipp-neutronics/tricys.git
-    cd tricys
-    ```
-
-2.  **创建并激活虚拟环境**:
-    ```shell
-    py -m venv venv
-    .\venv\Scripts\activate
-    ```
-
-3.  **安装项目依赖**: 以可编辑模式安装项目及所有开发工具，请运行：
-    ```shell
-    pip install -e ".[dev]"
-    ```
-
-#### 使用方法
-
-安装完成后，在激活虚拟环境的终端中，您可以使用以下命令：
-
-*   **运行图形用户界面 (GUI)**:
-    ```shell
-    tricys-gui
-    ```
-
-*   **运行命令行 (CLI) 仿真**:
-    ```shell
-    tricys -c example_config.json
-    ```
-
-*   **开发任务 (便捷脚本)**: 项目提供了 `Makefile.bat` 脚本，方便在 Windows 上执行常见的开发任务：
-    *   运行测试: `Makefile.bat test`
-    *   检查代码格式与风格: `Makefile.bat check`
-    *   清理生成的文件: `Makefile.bat clean`
+**安装步骤**:
+1.  克隆仓库: `git clone https://github.com/asipp-neutronics/tricys.git && cd tricys`
+2.  创建虚拟环境: `py -m venv venv && .\venv\Scripts\activate`
+3.  安装依赖: `Makefile.bat win-install`
 
 
-## 3. 图像仿真 (GUI)
 
-图形用户界面提供了一种交互式的方式来运行仿真。
+## 3. 核心概念
 
-### 3.1. 启动 GUI
+### 3.1. 工作区 (Workspace)
 
-在容器的终端中，执行以下命令来启动 GUI：
+Tricys 的所有相对路径（如模型、数据库、结果目录等）都是相对于其**工作区**目录解析的。默认情况下，工作区是您启动 `tricys` 或 `tricys-gui` 命令时所在的目录。在 GUI 模式下，您可以随时切换工作区。
 
-```bash
-cd /tricys/example && tricys-gui
-```
+### 3.2. 配置文件 (`config.json`)
 
-### 3.2. 界面说明
-
-GUI 界面主要分为两个部分：**设置 (Settings)** 和 **参数 (Parameters)**。
-
-![Tricys GUI](https://raw.githubusercontent.com/couuas/tricys/develop/docs/gui_interface.png)
-
-*   **设置区 (Settings)**:
-    *   `Package Path`: Modelica 模型的 `package.mo` 文件路径。
-    *   `Database Path`: 用于存储和管理模型参数的 SQLite 数据库文件路径。
-    *   `Results Dir`: 存放最终仿真结果的目录。
-    *   `Temp Dir`: 存放仿真过程中的临时文件的目录。
-    *   `Model Name`: 要仿真的顶层 Modelica 模型名称 (例如 `example_model.Cycle`)。
-    *   `Variable Filter`: 用于从结果中筛选特定变量的正则表达式，以减小输出文件的大小。
-    *   `Stop Time`, `Step Size`: 仿真的总时长和步长。
-    *   `Max Workers`: 在进行参数扫描时，允许并行运行的最大仿真任务数。
-    *   `Logging`: 日志相关的配置。
-
-*   **参数区 (Parameters)**:
-    *   这是一个表格，用于显示和修改模型的参数。
-    *   `Name`: 参数的完整名称。
-    *   `Default Value`: 模型中定义的默认值。
-    *   `Sweep Value`: **核心功能**。在此处为参数设置扫描范围。
-    *   `Description`: 模型中对该参数的注释。
-
-### 3.3. 操作流程
-
-1.  **加载模型参数到数据库**:
-    *   首先，正确填写 `Package Path` 和 `Model Name`。
-    *   点击 **`Load Model to DB`** 按钮。程序会自动调用 OpenModelica 解析指定的模型，提取所有参数的详细信息（名称、默认值、注释等），并将其存储到 `Database Path` 指定的数据库文件中。
-    *   加载成功后，参数表格会自动刷新并显示所有参数。
-
-2.  **设置参数扫描**:
-    *   在参数表格的 `Sweep Value` 列中，为您希望扫描的参数填入扫描值。支持三种格式：
-        *   **单个值**: 直接输入一个数值，例如 `1.1`。
-        *   **列表**: `[1.0, 1.5, 2.0]`
-        *   **范围**: `1.05:1.15:0.05` (格式为 `起始值:结束值:步长`)。
-    *   将某参数的 `Sweep Value` 留空，则在仿真时会使用其 `Default Value`。
-
-3.  **(可选) 保存扫描配置**:
-    *   点击 **`Save Sweep Values to DB`** 按钮，可以将当前填写的 `Sweep Value` 保存到数据库中，方便下次直接加载使用。
-
-4.  **运行仿真**:
-    *   确认所有配置无误后，点击 **`Run Simulation`** 按钮。
-    *   仿真将在后台线程中运行，界面不会卡死。
-    *   仿真结束后，会弹出“成功”或“失败”的提示框。
-
-## 4. 命令仿真 (配置文件)
-
-命令行模式通过一个 JSON 配置文件来驱动，非常适合执行非交互式的、自动化的仿真任务。
-
-### 4.1. 启动命令
-
-在容器的终端中，使用 `-c` 或 `--config` 参数指定配置文件路径来启动仿真：
-
-```bash
-cd /tricys/example && tricys -c example_config.json
-```
-
-### 4.2. 配置文件说明
-
-让我们以 `example/example_config.json` 为例，解析其结构：
+这是驱动所有仿真的核心文件，其主要结构如下：
 
 ```json
 {
-    "paths": {
-        "package_path": "example_model/package.mo",
-        "db_path": "data/parameters.db",
-        "results_dir": "results",
-        "temp_dir": "temp"
-    },
-    "logging": {
-        "log_level": "INFO",
-        "log_to_console": true
-    },
-    "simulation": {
-        "model_name": "example_model.Cycle",
-        "variableFilter": "time|sds\\.I\\[1\\]",
-        "stop_time": 5000.0,
-        "step_size": 1.0,
-        "max_workers": 4，
-        "keep_temp_files": false,
-        "concurrent": true
-    },
-    "simulation_parameters": {
-        "blanket.T": [6, 12, 18],
-        "blanket.TBR": "1.05:1.15:0.05",
-        "i_iss.T": 18.0
-    }
+    "paths": { ... },
+    "logging": { ... },
+    "simulation": { ... },
+    "simulation_parameters": { ... },
+    "co_simulation": [ ... ]
 }
 ```
 
-*   `paths`: 定义了所有必需的文件和目录路径。
-*   `logging`: 控制日志的级别和输出方式。
-*   `simulation`: 定义了仿真的核心参数，与 GUI 中的设置一一对应。
-*   `simulation_parameters`: **核心部分**。在这里定义要覆盖的模型参数。
-    *   如果一个参数有多个值（通过列表或范围字符串定义），程序会自动将这些参数进行组合（笛卡尔积），生成一系列独立的仿真任务，并并行执行它们。
-    *   例如，上面的配置会产生 `3 * 3 * 1 = 9` 个独立的仿真任务。
+-   `paths`: 定义所有相关的文件和目录路径（相对于工作区）。
+-   `logging`: 配置日志记录行为。
+-   `simulation`: 定义核心仿真参数，如模型名称、仿真时长、步长、是否并行 (`concurrent`) 等。
+-   `simulation_parameters`: **参数扫描的核心**。在这里定义要变化的模型参数及其扫描值。
+-   `co_simulation`: **(可选)** 定义协同仿真任务。如果此字段存在，Tricys 将切换到协同仿真工作流。
 
-## 5. 查看结果
+### 3.3. 高级参数定义
 
-仿真结果默认保存在 `results` 目录中。
+在 `simulation_parameters` 中，您可以使用多种高级格式来定义参数值，以实现灵活的扫描：
 
-*   **对于单次运行**:
-    *   会生成一个名为 `simulation_results.csv` 的文件，其中包含 `time` 列和您筛选的变量列。
+| 功能 | 格式 | 示例 | 说明 |
+| :--- | :--- | :--- | :--- |
+| **列表** | `[v1, v2, ...]` | `[6, 12, 18]` | 定义一组离散的扫描值。 |
+| **范围** | `"start:stop:step"` | `"1.05:1.15:0.05"` | 生成等差序列。 |
+| **线性间隔** | `"linspace:start:stop:num"` | `"linspace:10:20:5"` | 生成 `num` 个等间距点。 |
+| **对数间隔** | `"log:start:stop:num"` | `"log:1:1000:4"` | 生成 `num` 个对数尺度的点。 |
+| **随机值** | `"rand:min:max:count"` | `"rand:15:25:10"` | 生成 `count` 个均匀分布的随机数。 |
+| **从文件读取** | `"file:path:column"` | `"file:data.csv:voltage"` | 从 CSV 文件的指定列读取数据。 |
+| **数组参数** | `"{v1, v2, ...}"` | `"{10, 20.5, '1.05:1.15:0.05'}"` | 将字符串解析为独立的索引参数，如 `param[1]=10`。 |
 
-*   **对于参数扫描**:
-    *   会生成一个名为 `sweep_results.csv` (或类似名称) 的组合文件。
-    *   该文件的第一列是 `time`。
-    *   其余每一列代表一次独立的仿真运行，列名由该次运行所使用的参数组合而成，例如 `blanket.T=6_blanket.TBR=1.05`。
+## 4. 示例说明 (Example Files)
 
-您可以使用 Pandas、Excel 或其他数据分析工具来处理这些 CSV 文件。项目中的 `tricys/utils/plot_utils.py` 也提供了一些绘图函数，可供二次开发调用。
+项目根目录下的 `example/` 文件夹包含了多种预设的配置文件和模型，旨在帮助用户快速上手和测试不同的功能。该文件夹的结构如下：
 
-## 6. 查看日志以及中间结果
+-   **`example/cli/`**: 包含所有用于**命令行 (CLI)** 模式的示例。
+    -   `simulation_concurrent/`: 标准参数扫描（并行）。
+    -   `simulation_non_concurrent/`: 标准参数扫描（顺序）。
+    -   `co_simulation_concurrent/`: 混合协同仿真（并行）。
+    -   `co_simulation_non_concurrent/`: 混合协同仿真（顺序）。
+    -   每个子文件夹都包含一个 `example_config.json` 文件和相应的 `example_model` (Modelica 模型) 及 `example_aspenbkp` (Aspen Plus 模型) 等资源。
 
-在进行复杂的仿真或问题排查时，查看程序运行日志和仿真过程产生的中间文件非常重要，其中同一次运行仿真的日志和中间文件的文件名都带有相同的时间戳以便于排查。
+-   **`example/gui/`**: 包含用于**图形用户界面 (GUI)** 模式的示例资源。
+    -   `co_config.json`: 一个预设的协同仿真配置文件，可以在 GUI 中加载。
+    -   `example_model/` 和 `example_aspenbkp/`: 与 CLI 示例共享的模型资源。
 
-### 6.1. 日志文件
+-   **`example/parameters/`**: 包含演示高级参数定义格式的配置文件。
 
-`tricys` 会记录详细的运行日志，帮助用户了解内部执行流程和排查错误。
+**如何使用示例:**
 
-*   **日志位置**:
-    *   默认情况下，所有日志文件都保存在项目根目录下的 `log/` 目录中。
-    *   您可以在 GUI 的 `Logging -> Log Directory` 设置中或在配置文件的 `logging.log_dir` 字段中修改日志保存位置。
-*   **日志内容**:
-    *   日志中记录了包括加载模型、生成仿真任务、调用 OpenModelica、执行每个仿真、合并结果等关键步骤的详细信息和时间戳。
-    *   当仿真失败时，日志文件是定位问题的首要工具。
-*   **日志管理**:
-    *   程序会自动管理日志文件的数量。默认仅保留最新的5个日志文件，以避免占用过多磁盘空间。这个数量可以通过 GUI 的 `Log Count` 或配置文件的 `logging.log_count` 进行调整。
+-   **CLI 用户**: 首先使用 `cd` 命令进入您想运行的示例目录，然后使用 `-c` 参数指向该目录下的 `example_config.json` 文件。
+    ```bash
+    # 运行一个并行的协同仿真示例
+    cd example/cli/co_simulation_concurrent
+    tricys -c example_config.json
+    ```
+-   **GUI 用户**: 推荐将工作区设置为 `example/gui/` 目录。这样，GUI 中的默认路径（如 `example_model/package.mo`）就能正确指向示例模型。然后，您可以加载 `co_config.json` 文件来快速配置协同仿真任务。
 
-### 6.2. 中间结果 (Intermediate/Temporary Files)
+## 5. 使用: 命令行 (CLI)
 
-在参数扫描过程中，`tricys` 会为每一次独立的参数组合运行一次仿真，并将每次的结果先保存为独立的临时文件，最后再合并成最终的 `sweep_results.csv`。
+### 5.1. 标准参数扫描
 
-*   **临时文件位置**:
-    *   默认情况下，这些中间结果文件保存在项目根目录下的 `temp/` 目录中。
-    *   您可以在 GUI 的 `Settings -> Temp Dir` 或在配置文件的 `paths.temp_dir` 字段中修改该目录。
-*   **保留中间文件**:
-    *   默认情况下，为了节省空间，这些临时文件在仿真成功结束后会被 **自动删除**。
-    *   如果您希望保留它们用于调试（例如，查看某次特定参数组合的原始输出），您可以：
-        *   在 GUI 中，勾选 **`Keep Temp Files`** 选项。
-        *   在配置文件中，将 `simulation.keep_temp_files` 设置为 `true`。
+1.  确保您的 `config.json` 文件中**不包含** `co_simulation` 字段。
+2.  在 `simulation_parameters` 中定义您想扫描的参数。
+3.  运行命令: `tricys -c path/to/your_config.json`
 
+### 5.2. 混合协同仿真
 
-## 7. 程序说明 (流程图)
+您同样可以在配置文件中定义 `simulation_parameters` 块。当 `co_simulation` 和 `simulation_parameters` 同时存在时，Tricys 会对参数扫描中的每一个点，完整地执行一次协同仿真流程。
 
-为了更清晰地理解程序的内部工作流程，以下是 GUI 和 CLI 两种模式的流程图。
+1.  在 `config.json` 文件中加入 `co_simulation` 字段。该字段是一个列表，每个元素代表一个协同仿真任务。
 
-### 7.1. 命令行模式 (`tricys`) 流程图
+    ```json
+    "co_simulation": [
+        {
+            "submodel_name": "example_model.I_ISS",
+            "instance_name": "i_iss",
+            "handler_module": "tricys.handlers.i_iss_handler",
+            "handler_function": "run_aspen_simulation",
+            "params": {
+                "bkp_path": "example_aspenbkp/T2-Threetowers4.bkp",
+                "retime": 60
+            }
+        }
+    ]
+    ```
+    -   `submodel_name`: 要被拦截和替换的 Modelica 子模型的完整名称。
+    -   `instance_name`: 该子模型在主系统模型中的实例名称。
+    -   `handler_module`: 包含处理器函数的 Python 模块的路径。
+    -   `handler_function`: 要调用的处理器函数的名称。
+    -   `params`: 一个字典，包含要传递给处理器函数的关键字参数。
 
-```mermaid
-graph TD
-    A[开始] --> B{解析命令行参数};
-    B --> C[加载 JSON 配置文件];
-    C --> D[设置日志];
-    D --> E[生成仿真任务列表];
-    E --> F{是参数扫描吗?};
-    F -- 是 --> G[使用线程池并行执行];
-    F -- 否 --> H[执行单个仿真任务];
-    G --> I[执行单个仿真任务];
-    H --> I;
-    subgraph "单个仿真任务 (_run_single_job)"
-        I --> J[初始化 OpenModelica 会话];
-        J --> K[加载 Modelica 包];
-        K --> L[设置模型参数];
-        L --> M[运行仿真];
-        M --> N[结果保存到临时目录];
-    end
-    N --> O{是参数扫描吗?};
-    O -- 是 --> P[合并所有临时结果];
-    O -- 否 --> Q[移动单个结果文件];
-    P --> R[保存到最终结果目录];
-    Q --> R;
-    R --> S[结束];
+2.  运行命令: `tricys -c path/to/your_co_sim_config.json`
+
+## 6. 使用: 图形界面 (GUI)
+
+图形用户界面 (GUI) 提供了一个功能齐全的交互式环境，用于配置和运行标准仿真及协同仿真任务。所有在 GUI 中设置的相对路径都将基于当前选定的工作区进行解析。
+
+**启动 GUI**: `tricys-gui`
+
+![Tricys GUI](https://raw.githubusercontent.com/couuas/tricys/develop/docs/gui_interface.png)
+
+### 6.1. 界面布局
+
+GUI 界面主要分为两个核心区域：
+
+1.  **设置区 (Settings)**: 位于上方，用于配置仿真的全局参数和环境。这包括：
+    *   **工作区 (Workspace)**: 定义所有相对路径的根目录。
+    *   **路径设置**: Modelica 包 (`package.mo`)、参数数据库 (`.db`)、结果和临时目录的路径。
+    *   **仿真设置**: 模型名称、仿真时长、步长、求解器容差、并行工作线程数等。
+    -   **日志设置**: 日志级别、保存目录和数量。
+    *   **协同仿真设置**: 用于启用和配置协同仿真任务。
+
+2.  **参数区 (Parameters)**: 位于下方，是进行参数查看和扫描设置的主要区域。它包含一个参数表格和一系列操作按钮。
+
+### 6.2. 操作流程
+
+无论是进行标准仿真还是协同仿真，推荐的操作流程如下：
+
+#### 第 1 步：设置工作区和全局配置
+
+-   **选择工作区**: 启动 GUI 后，首先通过 **`Browse...`** 按钮设置您的工作区目录。这是确保所有相对路径（如模型、数据库、结果等）被正确解析的关键。
+-   **填写设置**: 检查并填写“设置区”中的所有字段，如模型路径、结果目录、仿真时长等。
+
+#### 第 2 步：加载模型参数
+
+-   点击 **`Load Model to DB`** 按钮。这是使用 GUI 的**核心步骤**。
+-   Tricys 将调用 OpenModelica 解析您指定的模型，提取其所有参数的详细信息（名称、默认值、注释等），并将这些信息存入由 `Database Path` 指定的 SQLite 数据库文件中。
+-   加载成功后，下方的“参数区”表格将自动填充所有模型参数。
+
+#### 第 3 步：定义参数扫描
+
+-   在参数表格的 **`Sweep Value`** 列中，为您希望扫描的参数填入扫描值。
+-   **重要**: GUI 的 `Sweep Value` 输入框同样支持在[高级参数定义](#33-高级参数定义)中描述的所有格式，包括：
+    -   **列表**: `[1.0, 1.5, 2.0]`
+    -   **范围**: `"1.05:1.15:0.05"`
+    -   **Linspace**: `"linspace:10:20:5"`
+    -   **从文件读取**: `"file:data/input.csv:column_name"`
+-   如果某个参数的 `Sweep Value` 留空，仿真时将使用其默认值。
+
+#### 第 4 步 (可选): 协同仿真配置
+
+-   如果您需要运行协同仿真，请勾选 **`Enable Co-simulation`** 复选框。
+-   点击 **`Browse...`** 按钮，选择一个包含 `co_simulation` 配置块的 JSON 文件。
+-   **注意**: 此配置文件**仅**用于提供协同仿真的处理器 (Handler) 配置。所有其他的仿真参数（如 `stop_time`, `step_size`）以及在参数表格中定义的参数扫描，都将以 GUI 中的设置为准。
+
+#### 第 5 步：运行仿真
+
+-   点击 **`Run Simulation`** 按钮。
+-   系统会弹出一个确认对话框，列出所有将被应用的扫描参数，供您最终检查。
+-   确认后，仿真将在后台线程中开始执行，界面不会冻结。
+-   您可以点击 **`Open the log window`** 按钮打开实时日志窗口，以监控仿真进度和查看详细输出。
+-   仿真结束后，会弹出“成功”或“失败”的提示框。
+
+### 6.3. 其他功能按钮
+
+-   **`Refresh From DB`**: 如果数据库文件被外部程序修改，点击此按钮可从数据库重新加载参数到 UI。
+-   **`Save Sweep Values to DB`**: 将当前在 `Sweep Value` 列中输入的所有扫描配置保存到数据库，方便未来重新加载使用。
+
+## 7. 结果与输出
+
+### 7.1. 最终结果
+
+每次运行 `tricys` 或 `tricys-gui` 都会在您配置的结果目录 (`results_dir`) 内创建一个以时间戳命名的唯一子目录（例如 `results/20230901_103000/`）。这确保了每次运行的结果都相互隔离，便于管理和追溯。
+
+在该目录中，您可能会找到以下几种输出文件：
+
+#### `simulation_result.csv`
+-   **生成条件**: 当进行单次仿真（即没有参数扫描）时生成。
+-   **内容**: 一个标准的 CSV 文件，第一列是 `time`，其余列是您通过 `variableFilter` 指定的变量的时间序列数据。
+
+#### `sweep_results.csv`
+-   **生成条件**: 当进行参数扫描时生成。
+-   **内容**: 这是一个汇总文件，用于比较不同参数下的仿真结果。
+    -   第一列是 `time`。
+    -   其余每一列代表一次独立的仿真运行。列的名称由该次运行所使用的参数组合而成，格式为 `参数1=值1_参数2=值2_...`，例如 `blanket.T=6_i_iss.T=18.0`。
+    -   这使您可以轻松地在数据分析工具（如 Excel, Pandas）中筛选和绘制特定参数组合下的结果曲线。
+
+#### `rises_info.csv`
+-   **生成条件**: 在参数扫描过程中，如果检测到某些结果曲线表现出特定的“先降后升”行为，则会生成此文件。
+-   **内容**: 记录了哪些参数组合导致了这种特定行为，便于快速识别和分析某些动态特性。
+
+### 7.2. 日志与临时文件
+
+在进行复杂的仿真或问题排查时，理解日志和临时文件的结构至关重要。
+
+-   **时间戳关联**: 每次运行 `tricys` 命令都会生成一个唯一的时间戳（如 `20230901_103000`）。这个时间戳会同时用于命名**结果子目录**、**日志文件**和**临时工作目录**，从而将一次运行的所有产物关联起来。
+    -   **结果目录**: `results/20230901_103000/`
+    -   **日志文件**: `log/simulation_20230901_103000.log`
+    -   **临时目录**: `temp/20230901_103000/`
+
+-   **临时文件 (`temp` 目录)**: 在仿真过程中，Tricys 会在 `temp/<timestamp>/` 目录下为每个独立的仿真任务（job）创建一个工作区（如 `job_1`, `job_2`）。这里存放了该任务的所有中间产物，包括模型副本、生成的代码、以及单次运行的原始结果 CSV。这对于调试特定参数组合的失败非常有用。
+    -   默认情况下，为了节省空间，这些临时文件在仿真成功结束后会被**自动删除**。
+    -   要保留这些文件，请在 `config.json` 的 `simulation` 部分设置 `"keep_temp_files": true`。
+
+## 8. 开发者指南: 扩展 Tricys
+
+### 8.1. 创建自定义处理器 (Handler)
+
+您可以轻松编写自己的处理器来将任何外部程序集成到协同仿真工作流中。下面是创建处理器的通用步骤，并以项目中的 `i_iss_handler` 为例进行说明，该处理器用于集成 Aspen Plus。
+
+#### 步骤 1: 创建一个 Python 函数
+
+您的函数必须遵循特定的签名，接受至少两个标准参数，以及任意数量的自定义关键字参数。
+
+-   `temp_input_csv` (str): 这是主仿真生成的、包含输入数据的时间序列 CSV 文件的路径。
+-   `temp_output_csv` (str): 这是您的函数必须写入的、包含最终输出的时间序列 CSV 文件的路径。
+-   `**kwargs`: 所有在 `config.json` 的 `params` 块中定义的额外参数都将通过关键字参数传递给您的函数。
+
+**示例 (`i_iss_handler.py`):**
+```python
+def run_aspen_simulation(
+    temp_input_csv: str, 
+    temp_output_csv: str, 
+    bkp_path: str, 
+    retime: int, 
+    **kwargs
+):
+    # ... 函数实现 ...
+```
+在这个例子中，`bkp_path` 和 `retime` 就是从 `config.json` 的 `params` 中传入的自定义参数。
+
+#### 步骤 2: 实现函数逻辑
+
+在函数内部，您可以执行任何所需的操作。
+
+**示例 (`i_iss_handler.py`):**
+1.  **初始化**: 使用 `win32com.client` 通过 COM 接口启动并连接到 Aspen Plus，并加载由 `bkp_path` 参数指定的 Aspen 模型文件。
+2.  **读取输入**: 使用 Pandas 读取 `temp_input_csv` 文件中的数据。
+3.  **循环计算**: 遍历输入数据，在每个时间步将数据发送到 Aspen Plus，运行 Aspen 的内部计算，然后获取结果。
+4.  **后处理**: 对从 Aspen 获取的结果进行处理和计算，生成最终的时间序列数据。
+5.  **写入输出**: 将最终计算得到的时间序列数据保存到 `temp_output_csv` 文件中。
+
+#### 步骤 3: 定义返回值
+
+处理器函数必须返回一个字典，该字典用于在生成拦截器模型时，为被替换的输出端口提供一个临时的、语法正确的占位符。这个占位符在最终仿真中**不会被使用**，但对于让 Modelica 模型在语法上通过检查是必需的。
+
+**示例 (`i_iss_handler.py`):**
+```python
+    output_placeholder = {
+        "to_SDS": "{1,2,3,4,1,1}",
+        "to_WDS": "{1,5,6,7,1,1}",
+    }
+    return output_placeholder
+```
+这里的键（`to_SDS`, `to_WDS`）是被拦截的 `I_ISS` 模型的输出端口名，值是符合 Modelica 数组语法的字符串。
+
+#### 步骤 4: 配置 `config.json`
+
+最后，在 `config.json` 的 `co_simulation` 块中，将 `handler_module` 和 `handler_function` 指向您创建的模块和函数，并在 `params` 中提供所有自定义参数。
+
+**示例 (`config.json`):**
+```json
+"co_simulation": [
+    {
+        "submodel_name": "example_model.I_ISS",
+        "instance_name": "i_iss",
+        "handler_module": "tricys.handlers.i_iss_handler",
+        "handler_function": "run_aspen_simulation",
+        "params": {
+            "bkp_path": "example_aspenbkp/T2-Threetowers4.bkp",
+            "retime": 60
+        }
+    }
+]
 ```
 
-### 7.2. 图形界面模式 (`tricys-gui`) 流程图
+### 8.2. 代码架构 (Utils API)
+
+`tricys/utils/` 目录包含了平台的核心工具模块，为上层仿真流程提供支持。理解这些模块的功能对于二次开发和扩展至关重要。
+
+#### `sim_utils.py` - 仿真任务生成器
+
+这是所有仿真运行的起点。它负责解析用户在配置文件或 GUI 中定义的参数，并生成一个包含所有独立仿真任务（Jobs）的列表。
+
+-   **核心功能**: `generate_simulation_jobs()`
+    -   接收 `simulation_parameters` 配置块。
+    -   调用 `parse_parameter_value()` 解析各种高级参数格式（如 `linspace:10:20:5`、`file:...` 等）。
+    -   对所有需要扫描的参数进行笛卡尔积，生成一个任务列表。每个任务都是一个字典，包含了该次独立仿真所需的所有参数。
+
+#### `om_utils.py` - OpenModelica 交互核心
+
+此模块封装了与 OpenModelica 编译器 (OMC) 的所有直接交互。它负责加载模型、提取参数，以及在协同仿真中动态生成和修改 Modelica 代码。
+
+-   **核心功能**:
+    -   `get_all_parameters_details()`: 递归扫描指定的 Modelica 模型，并提取其所有参数的详细信息（名称、类型、默认值、注释等）。
+    -   `load_modelica_package()`: 将 `package.mo` 文件加载到 OMC 会话中。
+    -   `integrate_interceptor_model()`: **协同仿真的魔法所在**。此函数接收主模型和处理器配置，动态生成 `_Interceptor` 和 `_Intercepted` 模型的代码，并将其保存为新的 `.mo` 文件。它会自动重写连接，将原始组件的输出重定向到拦截器。
+
+#### `db_utils.py` - 参数数据库接口
+
+该模块负责管理一个本地 SQLite 数据库，用于持久化存储模型参数和用户设置的扫描值。这主要是为了支持 GUI 的功能。
+
+-   **核心功能**:
+    -   `store_parameters_in_db()`: 将从 `om_utils` 获取的参数列表存入数据库。
+    -   `get_parameters_from_db()`: 从数据库读取参数，用于在 GUI 中显示。
+    -   `update_sweep_values_in_db()`: 将用户在 GUI 中输入的扫描值保存回数据库。
+
+#### `file_utils.py` & `log_utils.py` - 文件与日志工具
+
+这些模块提供基本的文件系统和日志记录服务。
+
+-   **核心功能**:
+    -   `get_unique_filename()`: 确保不会覆盖旧的结果文件，通过在文件名后附加计数器（如 `_1`, `_2`）来创建唯一的文件名。
+    -   `delete_old_logs()`: 管理日志文件轮换，根据设置的最大文件数删除最旧的日志，以节省磁盘空间。
+    -   `setup_logging()`: 根据配置文件或 GUI 设置，初始化整个项目的日志系统（例如，同时输出到控制台和文件）。
+
+#### `plot_utils.py` - 结果绘图工具
+
+包含用于从最终的仿真结果 CSV 文件生成图表的函数。
+
+-   **核心功能**:
+    -   `plot_results()`: 绘制指定变量的时间序列图。
+    -   `plot_startup_inventory()`: 一个专门的绘图函数，用于分析在二维参数扫描下，启动氚库存的变化情况。
+
+## 9. 流程图
+
+### 9.1. 命令行 (CLI) 工作流程
 
 ```mermaid
-graph TD
-    subgraph "初始化 (Initialization)"
-        A[启动 tricys-gui] --> A1[创建 UI 实例];
-        A1 --> A2[初始化 Tkinter 变量];
-        A2 --> A3[创建 UI 控件];
-        A3 --> A4[确保数据库表存在];
-        A4 --> A5[从数据库加载参数到 UI];
-        A5 --> B[UI 准备就绪, 等待用户操作];
-    end
-
-    subgraph "用户操作: 加载模型"
-        B -- "点击 'Load Model to DB'" --> C1[启动新线程];
-        C1 --> C2[执行模型加载函数];
-        C2 --> C3[调用 om_utils 获取参数详情];
-        C3 --> C4[调用 db_utils 存储参数];
-        C4 --> C5[刷新 UI 参数表格];
-        C5 --> B;
-    end
-
-    subgraph "用户操作: 保存扫描值"
-        B -- "点击 'Save Sweep Values'" --> D1[读取 UI 中所有扫描值];
-        D1 --> D2[调用 db_utils 更新扫描值];
-        D2 --> D3[弹窗提示成功];
-        D3 --> B;
-    end
+graph TB
+    Start[程序启动] --> InitRun[initialize_run函数]
+    InitRun --> ParseArgs[解析命令行参数]
+    ParseArgs --> LoadConfig[加载JSON配置文件]
+    LoadConfig --> AddTimestamp[添加运行时间戳]
+    AddTimestamp --> SetupLog[设置日志系统]
+    SetupLog --> RunSim[run_simulation主函数]
     
-    subgraph "用户操作: 运行仿真"
-        B -- "点击 'Run Simulation'" --> E1[启动新线程];
-        E1 --> E2[执行仿真函数];
-        E2 --> E3[从 UI 收集所有设置];
-        E3 --> E4[动态构建 config 对象];
-        E4 --> E5[调用核心仿真模块];
-        E5 --> E6[执行与 CLI 相同的仿真流程];
-        E6 --> E7[弹窗提示成功/失败];
-        E7 --> B;
-    end
-
-    subgraph "用户操作: 其他"
-        B -- "点击 'Refresh from DB'" --> F1[刷新 UI 参数表格];
-        F1 --> B;
-        B -- "关闭窗口" --> G[结束程序];
-    end
+    RunSim --> GenJobs[generate_simulation_jobs生成仿真任务]
+    GenJobs --> CheckCoSim{是否为协同仿真模式?}
+    
+    CheckCoSim -->|否| CheckConcurrent1{是否并发模式?}
+    CheckCoSim -->|是| CheckConcurrent2{是否并发模式?}
+    
+    CheckConcurrent1 -->|是| ConcurrentSim[并发单一仿真]
+    CheckConcurrent1 -->|否| SeqSim[顺序扫描仿真]
+    
+    CheckConcurrent2 -->|是| ConcurrentCoSim[并发共仿真]
+    CheckConcurrent2 -->|否| SeqCoSim[顺序共仿真]
+    
+    ConcurrentSim --> ThreadPool[ThreadPoolExecutor并发执行]
+    ThreadPool --> RunSingleJob[_run_single_job函数]
+    
+    SeqSim --> RunSeqSweep[_run_sequential_sweep函数]
+    RunSeqSweep --> SeqLoop[循环执行每个参数组合]
+    
+    ConcurrentCoSim --> ProcessPool[ProcessPoolExecutor并发执行]
+    ProcessPool --> RunCoSim[_run_co_simulation函数]
+    
+    SeqCoSim --> CoSimLoop[循环执行共仿真任务]
+    CoSimLoop --> RunCoSim
+    
+    RunSingleJob --> CreateWorkspace1[创建独立工作空间]
+    CreateWorkspace1 --> GetOMSession1[获取OM会话]
+    GetOMSession1 --> LoadPackage1[加载Modelica包]
+    LoadPackage1 --> CreateModel1[创建ModelicaSystem对象]
+    CreateModel1 --> SetParams1[设置仿真参数]
+    SetParams1 --> Simulate1[执行仿真]
+    Simulate1 --> SaveResult1[保存结果文件]
+    SaveResult1 --> Cleanup1[清理资源]
+    
+    RunCoSim --> CreateWorkspace2[创建隔离工作空间]
+    CreateWorkspace2 --> CopyPackage[复制Modelica包到隔离目录]
+    CopyPackage --> GetOMSession2[获取OM会话]
+    GetOMSession2 --> LoadPackage2[加载隔离的Modelica包]
+    LoadPackage2 --> CopyAssets[复制资产目录]
+    CopyAssets --> IdentifyPorts[识别输入端口]
+    IdentifyPorts --> CreatePrimaryModel[创建主仿真模型]
+    CreatePrimaryModel --> SimulatePrimary[执行主仿真]
+    SimulatePrimary --> CallHandlers[调用外部处理器]
+    CallHandlers --> IntegrateInterceptor[集成拦截器模型]
+    IntegrateInterceptor --> LoadInterceptor[加载拦截器模型]
+    LoadInterceptor --> FinalSimulation[执行最终仿真]
+    FinalSimulation --> SaveCoResult[保存共仿真结果]
+    SaveCoResult --> Cleanup2[清理资源]
+    
+    SaveResult1 --> CollectResults[收集所有结果]
+    SaveCoResult --> CollectResults
+    Cleanup1 --> CollectResults
+    Cleanup2 --> CollectResults
+    
+    CollectResults --> CheckJobCount{检查任务数量}
+    CheckJobCount -->|单个任务| SingleJob[处理单个任务结果]
+    CheckJobCount -->|多个任务| MultipleJobs[处理参数扫描结果]
+    
+    SingleJob --> CopyFinalResult[复制结果到最终目录]
+    
+    MultipleJobs --> CombineResults[合并所有结果]
+    CombineResults --> AnalyzeRises[分析数据趋势]
+    AnalyzeRises --> SaveCombined[保存合并结果]
+    AnalyzeRises --> SaveRisesInfo[保存趋势分析]
+    
+    CopyFinalResult --> FinalCleanup[最终清理]
+    SaveCombined --> FinalCleanup
+    SaveRisesInfo --> FinalCleanup
+    
+    FinalCleanup --> End[程序结束]
+    
+    style Start fill:#90EE90
+    style End fill:#FFB6C1
+    style CheckCoSim fill:#87CEEB
+    style CheckConcurrent1 fill:#87CEEB
+    style CheckConcurrent2 fill:#87CEEB
+    style CheckJobCount fill:#87CEEB
+    style RunCoSim fill:#DDA0DD
+    style RunSingleJob fill:#DDA0DD
+    style CollectResults fill:#F0E68C
 ```
 
-### 7.3. 工具函数 API 说明 (Utils API)
+### 9.2. 图形界面 (GUI) 工作流程
 
-本节详细介绍 `tricys/utils/` 目录下的工具模块所提供的核心函数，方便进行二次开发和功能扩展。
-
-#### `db_utils.py` - 数据库工具
-
-该模块负责与存储参数的 SQLite 数据库进行所有交互。
-
--   **`create_parameters_table(db_path: str) -> None`**
-    -   **功能**: 在指定的数据库路径下创建一个名为 `parameters` 的表（如果该表尚不存在）。
-    -   **参数**:
-        -   `db_path`: 数据库文件的路径。
-
--   **`store_parameters_in_db(db_path: str, params_data: List[Dict[str, Any]]) -> None`**
-    -   **功能**: 将从 Modelica 模型中提取的参数列表存储或更新到数据库中。
-    -   **参数**:
-        -   `db_path`: 数据库文件的路径。
-        -   `params_data`: 包含参数详细信息的字典列表。
-
--   **`update_sweep_values_in_db(db_path: str, param_sweep: Dict[str, Any]) -> None`**
-    -   **功能**: 更新数据库中指定参数的 `sweep_values` 字段，用于保存参数扫描的配置。
-    -   **参数**:
-        -   `db_path`: 数据库文件的路径。
-        -   `param_sweep`: 一个字典，键为参数名，值为该参数的扫描配置。
-
--   **`get_parameters_from_db(db_path: str) -> List[Dict[str, Any]]`**
-    -   **功能**: 从数据库中检索所有参数的详细信息。
-    -   **参数**:
-        -   `db_path`: 数据库文件的路径。
-    -   **返回**: 包含所有参数信息的字典列表。
-
-#### `file_utils.py` - 文件工具
-
-该模块提供文件和目录管理的辅助函数。
-
--   **`get_unique_filename(base_path: str, filename: str) -> str`**
-    -   **功能**: 如果文件名已存在，则通过附加计数器（如 `_1`, `_2`）的方式生成一个唯一的文件名。
-    -   **参数**:
-        -   `base_path`: 文件要保存的目录。
-        -   `filename`: 原始文件名。
-    -   **返回**: 一个唯一的、当前不存在的文件路径字符串。
-
--   **`delete_old_logs(log_path: str, max_files: int) -> None`**
-    -   **功能**: 清理日志目录，根据文件的修改时间删除最旧的日志文件，使日志文件总数不超过 `max_files` 的限制。
-    -   **参数**:
-        -   `log_path`: 日志文件所在的目录。
-        -   `max_files`: 希望保留的最大日志文件数量。
-
-#### `om_utils.py` - OpenModelica 工具
-
-该模块封装了与 OpenModelica (通过 `OMPython` 库) 的交互。
-
--   **`get_om_session() -> OMCSessionZMQ`**
-    -   **功能**: 初始化并返回一个新的 OpenModelica 会话。
-    -   **返回**: 一个 `OMCSessionZMQ` 会话对象。
-
--   **`load_modelica_package(omc: OMCSessionZMQ, package_path: str) -> bool`**
-    -   **功能**: 将指定的 Modelica 包（`package.mo`）加载到 OpenModelica 会话中。
-    -   **参数**:
-        -   `omc`: OpenModelica 会话对象。
-        -   `package_path`: `package.mo` 文件的路径。
-    -   **返回**: 如果加载成功，返回 `True`，否则返回 `False`。
-
--   **`get_all_parameters_details(omc: OMCSessionZMQ, model_name: str) -> List[Dict[str, Any]]`**
-    -   **功能**: 递归地遍历指定的 Modelica 模型，提取其所有组件的参数（`parameter`）的详细信息。
-    -   **参数**:
-        -   `omc`: OpenModelica 会话对象。
-        -   `model_name`: 完整的模型名称 (例如 `example.Cycle`)。
-    -   **返回**: 包含所有参数详细信息（名称、类型、默认值、注释等）的字典列表。
-
--   **`format_parameter_value(name: str, value: Any) -> str`**
-    -   **功能**: 将参数值格式化为 OpenModelica 仿真时可以识别的字符串。
-    -   **参数**:
-        -   `name`: 参数的名称。
-        -   `value`: 参数的值。
-    -   **返回**: 格式化后的字符串 (例如 `blanket.TBR=1.1`)。
-
-#### `plot_utils.py` - 绘图工具
-
-该模块提供从仿真结果（CSV 文件）生成图表的函数。
-
--   **`plot_startup_inventory(...) -> str`**
-    -   **功能**: 从参数扫描的组合结果中，绘制启动氚库存随两个变化参数的曲线图。
-    -   **返回**: 生成的图片文件的保存路径。
-
--   **`plot_results(...) -> list`**
-    -   **功能**: 从参数扫描的结果中，绘制指定变量的时间序列图。
-    -   **返回**: 所有生成的图片文件路径的列表。
+```mermaid
+graph TB
+    Start[程序启动] --> MainFunc[main函数]
+    MainFunc --> CreateRoot[创建Tkinter根窗口]
+    CreateRoot --> InitUI[初始化InteractiveSimulationUI]
+    
+    InitUI --> SetTitle[设置窗口标题和大小]
+    SetTitle --> InitVars[初始化成员变量]
+    InitVars --> InitLogWindow[初始化LogWindow实例]
+    InitLogWindow --> CreateSettingsVars[创建配置变量]
+    CreateSettingsVars --> CreateWidgets[创建UI组件]
+    CreateWidgets --> DelayedInit[延迟初始化]
+    
+    DelayedInit --> SetupLogging[设置日志系统]
+    SetupLogging --> DBPathUpdate[数据库路径更新检查]
+    DBPathUpdate --> LoadParams[加载参数]
+    LoadParams --> MainLoop[进入主事件循环]
+    
+    CreateWidgets --> CreateSettings[创建设置面板]
+    CreateSettings --> CreateWorkspace[工作空间选择区域]
+    CreateWorkspace --> CreatePathSim[路径和仿真设置]
+    CreatePathSim --> CreateLogging[日志设置面板]
+    CreateLogging --> CreateCoSim[共仿真设置面板]
+    CreateCoSim --> CreateParams[参数设置面板]
+    
+    CreateParams --> CreateToolbar[创建参数工具栏]
+    CreateToolbar --> CreateScrollable[创建可滚动参数表格]
+    CreateScrollable --> CreateHeaders[创建表格标题]
+    
+    MainLoop --> UserAction{用户操作}
+    
+    UserAction -->|选择工作空间| SelectWorkspace[select_workspace]
+    UserAction -->|加载模型到数据库| LoadModelButton[load_model_to_db_thread]
+    UserAction -->|刷新参数| RefreshParams[refresh_parameters_from_db]
+    UserAction -->|保存扫描值| SaveSweep[save_sweep_parameters]
+    UserAction -->|运行仿真| RunSimButton[run_simulation_thread]
+    UserAction -->|应用日志设置| ApplyLogging[setup_logging]
+    UserAction -->|打开日志窗口| ShowLogWindow[show_log_window]
+    UserAction -->|选择共仿真配置| SelectCoSim[select_co_sim_config]
+    
+    SelectWorkspace --> WorkspaceDialog[文件对话框选择目录]
+    WorkspaceDialog --> UpdateWorkspace[更新工作空间路径]
+    UpdateWorkspace --> ReloadAll[重新加载数据库和参数]
+    
+    LoadModelButton --> ShowLogWindowAuto1[自动显示日志窗口]
+    ShowLogWindowAuto1 --> LockUI1[锁定UI界面]
+    LockUI1 --> GetUIValues1[获取UI值]
+    GetUIValues1 --> StartThread1[启动后台线程]
+    StartThread1 --> ExecuteLoadModel[execute_load_model_to_db]
+    
+    ExecuteLoadModel --> GetOMSession[获取OM会话]
+    GetOMSession --> LoadModelicaPkg[加载Modelica包]
+    LoadModelicaPkg --> GetParamDetails[获取参数详情]
+    GetParamDetails --> StoreInDB[存储到数据库]
+    StoreInDB --> UpdateUIParams[更新UI参数显示]
+    UpdateUIParams --> ShowSuccess1[显示成功消息]
+    ShowSuccess1 --> UnlockUI1[解锁UI]
+    
+    RefreshParams --> LoadParamsFromDB[从数据库加载参数]
+    LoadParamsFromDB --> UpdateParamTable[更新参数表格]
+    UpdateParamTable --> ShowRefreshMsg[显示刷新消息]
+    
+    SaveSweep --> CollectSweepValues[收集扫描值]
+    CollectSweepValues --> UpdateDBSweep[更新数据库扫描值]
+    UpdateDBSweep --> ShowSaveMsg[显示保存消息]
+    
+    RunSimButton --> ShowLogWindowAuto2[自动显示日志窗口]
+    ShowLogWindowAuto2 --> ValidateParams[验证参数格式]
+    ValidateParams --> ParseParams[解析参数值]
+    ParseParams --> CheckFormat{格式检查}
+    
+    CheckFormat -->|格式错误| ShowFormatError[显示格式错误]
+    CheckFormat -->|格式正确| ShowConfirm[显示确认对话框]
+    
+    ShowConfirm --> UserConfirm{用户确认}
+    UserConfirm -->|取消| ReturnToUI[返回UI]
+    UserConfirm -->|确认| LockUI2[锁定UI]
+    
+    LockUI2 --> LoadCoSimConfig[加载共仿真配置]
+    LoadCoSimConfig --> StartThread2[启动仿真线程]
+    StartThread2 --> ExecuteSimulation[execute_simulation]
+    
+    ExecuteSimulation --> BuildConfig[构建配置结构]
+    BuildConfig --> CallRunSimulation[调用run_simulation]
+    CallRunSimulation --> ShowSimSuccess[显示仿真成功]
+    ShowSimSuccess --> UnlockUI2[解锁UI]
+    
+    ApplyLogging --> ConfigureLogger[配置日志器]
+    ConfigureLogger --> SetLogLevel[设置日志级别]
+    SetLogLevel --> AddHandlers[添加处理器]
+    AddHandlers --> ShowLogMsg[显示日志消息]
+    
+    ShowLogWindow --> CreateLogWindow[创建日志窗口]
+    CreateLogWindow --> LogWindowExists{窗口是否存在}
+    LogWindowExists -->|存在| BringToFront[置于前台]
+    LogWindowExists -->|不存在| CreateNewLogWindow[创建新日志窗口]
+    
+    CreateNewLogWindow --> SetupLogUI[设置日志UI]
+    SetupLogUI --> CreateLogToolbar[创建日志工具栏]
+    CreateLogToolbar --> CreateLogText[创建日志文本区域]
+    CreateLogText --> StartLogHandler[启动日志处理器]
+    StartLogHandler --> ProcessLogQueue[处理日志队列]
+    
+    ProcessLogQueue --> CheckQueue{检查队列}
+    CheckQueue -->|有消息| AddLogMessage[添加日志消息]
+    CheckQueue -->|无消息| ScheduleNext[调度下次检查]
+    AddLogMessage --> AutoScroll[自动滚动]
+    AutoScroll --> ScheduleNext
+    ScheduleNext --> ProcessLogQueue
+    
+    SelectCoSim --> CoSimDialog[共仿真配置对话框]
+    CoSimDialog --> UpdateCoSimPath[更新共仿真路径]
+    
+    ShowFormatError --> ReturnToUI
+    ShowRefreshMsg --> UserAction
+    ShowSaveMsg --> UserAction
+    ShowSimSuccess --> UserAction
+    ShowLogMsg --> UserAction
+    BringToFront --> UserAction
+    UnlockUI1 --> UserAction
+    UnlockUI2 --> UserAction
+    ReloadAll --> UserAction
+    UpdateCoSimPath --> UserAction
+    
+    style Start fill:#90EE90
+    style MainLoop fill:#87CEEB
+    style UserAction fill:#FFD700
+    style CheckFormat fill:#87CEEB
+    style UserConfirm fill:#87CEEB
+    style LogWindowExists fill:#87CEEB
+    style CheckQueue fill:#87CEEB
+    style ExecuteLoadModel fill:#DDA0DD
+    style ExecuteSimulation fill:#DDA0DD
+    style ProcessLogQueue fill:#F0E68C
+    style CreateLogWindow fill:#F0E68C
+```

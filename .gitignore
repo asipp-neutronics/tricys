@@ -33,9 +33,9 @@ temp/
 model/
 
 # Example specific files
-example/log/
-example/results/
-example/temp/
+example/**/log/
+example/**/results/
+example/**/temp/
 
 # Ignore all contents in the example_aspenbkp folder
 example/example_aspenbkp/*

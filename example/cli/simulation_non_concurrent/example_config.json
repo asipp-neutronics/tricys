@@ -1,0 +1,28 @@
+{
+    "paths": {
+        "package_path": "example_model/package.mo",
+        "db_path": "data/parameters.db",
+        "results_dir": "results",
+        "temp_dir": "temp"
+    },
+    "logging": {
+        "is_dev_mode": true,
+        "log_level": "INFO",
+        "log_to_console": true,
+        "log_count": 5,
+        "log_dir": "log"
+    },
+    "simulation": {
+        "model_name": "example_model.Cycle",
+        "variableFilter": "time|sds\\.I\\[[1-5]\\]",
+        "stop_time": 500.0,
+        "step_size": 1.0,
+        "max_workers": 4,
+        "keep_temp_files": true,
+        "concurrent": false
+    },
+    "simulation_parameters": {
+        "blanket.T": [6,12,18],
+        "i_iss.T": 18.0
+    }
+}
