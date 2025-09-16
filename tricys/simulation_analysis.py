@@ -1005,6 +1005,8 @@ def _run_single_job(
 
     logger.info(f"Starting job {job_id} with parameters: {job_params}")
     omc = None
+    optimal_param = 0.0
+    optimal_value = 0.0
     try:
         omc = get_om_session()
         package_path = os.path.abspath(paths_config["package_path"])
@@ -1041,8 +1043,6 @@ def _run_single_job(
             )
 
         logger.info(f"Job {job_id} finished. Results at {result_path}")
-
-        optimal_param = 0.0
 
         # DONE START: Check if optimization is enabled, if so call _run_bisection_search_for_job for optimization
         if _is_optimization_enabled(config):
