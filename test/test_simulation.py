@@ -76,6 +76,7 @@ def setup_and_teardown(request):
     # Cleanup logic runs after the test function completes
     gc.collect()  # Ensure all file handles are released
     if not getattr(request.node, "test_passed", False):
+        request.node.parent.failed = True
         print(
             f"\nTest '{test_name}' failed. Intermediate files kept at: {test_output_dir}"
         )
@@ -85,7 +86,7 @@ def setup_and_teardown(request):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def final_cleanup():
+def final_cleanup(request):
     """
     A module-scoped fixture to clean up the base output directory
     after all tests in this file have run.
@@ -93,6 +94,12 @@ def final_cleanup():
     # Let all tests run
     yield
     # This cleanup logic runs once after all tests in the file are complete.
+    if getattr(request.node, "failed", False):
+        print(
+            f"\nOne or more tests failed. Skipping final cleanup of base directory: {BASE_OUTPUT_DIR}"
+        )
+        return
+
     gc.collect()
     if Path(BASE_OUTPUT_DIR).exists():
         print(f"\nAll tests finished. Cleaning up base directory: {BASE_OUTPUT_DIR}")
