@@ -3,7 +3,7 @@ repos:
     hooks:
     -   id: check-dirty-py
         name: Check for unstaged changes and untracked files
-        entry: python script/check_dirty.py
+        entry: python script/git_hook/check_dirty.py
         language: python
         stages: [pre-commit]
         always_run: true
