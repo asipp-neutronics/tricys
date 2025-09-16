@@ -582,15 +582,39 @@ def initialize_run() -> Dict[str, Any]:
     parser = argparse.ArgumentParser(
         description="Run a unified simulation and co-simulation workflow in parallel."
     )
+
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
     parser.add_argument(
         "-c",
         "--config",
         type=str,
-        required=True,
-        default="config.json",
+        required=False,
+        default=None,
         help="Path to the JSON configuration file.",
     )
+
+    subparsers.add_parser("example", help="Run simulation examples interactively")
+
     args = parser.parse_args()
+
+    if args.command == "example":
+        import importlib.util
+
+        script_path = (
+            Path(__file__).parent.parent
+            / "script"
+            / "example_runner"
+            / "tricys_runner.py"
+        )
+        spec = importlib.util.spec_from_file_location("tricys_runner", script_path)
+        tricys_runner = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(tricys_runner)
+        tricys_runner.main()
+        sys.exit(0)
+
+    if not args.config:
+        parser.error("the following arguments are required: -c/--config")
 
     try:
         config_path = os.path.abspath(args.config)

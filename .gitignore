@@ -32,20 +32,5 @@ temp/
 # Privarte Paths
 model/
 
-# Example specific files
-example/**/log/
-example/**/results/
-example/**/temp/
-
-# Ignore all contents in the example_aspenbkp folder
-example/example_aspenbkp/*
-
-# However, do not ignore the .bkp files in the example_aspenbkp folder
-!example/example_aspenbkp/*.bkp
-
-# Ignore all Interceptor and Intercepted model files  in the example folder
-example/example_model/*_Interceptor.mo
-example/example_model/*_Intercepted.mo
-
-# Ignore analysis_cases folders in example folder
-example/**/analysis_cases
+# Ignore the result files from the example runner
+test_example/
