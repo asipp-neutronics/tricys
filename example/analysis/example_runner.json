@@ -29,6 +29,13 @@
       "path": "file_analysis",
       "config": "example_config_file.json",
       "command": "tricys-ana"
+    },
+    {
+      "name": "分析模式 - SALib配置",
+      "description": "运行SALib分析示例", 
+      "path": "salib_analysis",
+      "config": "example_config_salib.json",
+      "command": "tricys-ana"
     }
   ]
 }

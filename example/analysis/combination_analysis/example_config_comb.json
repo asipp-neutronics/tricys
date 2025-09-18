@@ -36,7 +36,6 @@
                     "Doubling_Time",
                     "Required_TBR"
                 ]
-
             },
             {
                 "name": "DIR_Analysis",
@@ -49,8 +48,7 @@
                     "Required_TBR"
                 ],
                 "plot_type":"bar",
-                "combine_plots":true,
-                "sweep_time":true
+                "combine_plots":true
             }
             ]
         ,

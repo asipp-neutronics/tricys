@@ -26,6 +26,7 @@ from tricys.utils.om_utils import (
     load_modelica_package,
 )
 from tricys.utils.plot_utils import generate_analysis_plots, plot_sweep_time_series
+from tricys.utils.salib_utils import run_salib_analysis
 from tricys.utils.sim_utils import generate_simulation_jobs
 
 # Standard logger setup
@@ -190,6 +191,16 @@ def _create_standard_config_for_case(
     )
     # Deep copy the converted configuration
     standard_config = json.loads(json.dumps(absolute_config))
+
+    # if analysis_case.get("name") == "SALib_Analysis":
+    if isinstance(analysis_case.get("independent_variable"), list) and isinstance(
+        analysis_case.get("independent_variable_sampling"), dict
+    ):
+        sensitivity_analysis = standard_config["sensitivity_analysis"]
+        if "analysis_cases" in sensitivity_analysis:
+            del sensitivity_analysis["analysis_cases"]
+        sensitivity_analysis["analysis_case"] = analysis_case.copy()
+        return standard_config
 
     # Create simulation_parameters
     # Support both single object and list formats for analysis_cases
@@ -1179,6 +1190,18 @@ def run_simulation(config: Dict[str, Any]):
         )
     )
 
+    # Check if it's a SALib analysis case (and not a multi-case analysis)
+    sa_config = config.get("sensitivity_analysis", {})
+    analysis_case = sa_config.get("analysis_case")
+
+    has_salib_analysis_case = (
+        not has_analysis_cases
+        and isinstance(analysis_case, dict)
+        and isinstance(analysis_case.get("independent_variable"), list)
+        and isinstance(analysis_case.get("independent_variable_sampling"), dict)
+        and "analyzer" in analysis_case
+    )
+
     if has_analysis_cases:
         logger.info(
             "Detected analysis_cases field, starting to create independent working directories for each analysis case..."
@@ -1252,6 +1275,10 @@ def run_simulation(config: Dict[str, Any]):
         _generate_analysis_cases_summary(case_configs, config)
 
         return  # End analysis_cases processing
+    elif has_salib_analysis_case:
+        logger.info("Detected SALib analysis case, diverting to SALib workflow...")
+        run_salib_analysis(config)
+        return  # End salib_analysis_case processing
 
     jobs = generate_simulation_jobs(config.get("simulation_parameters", {}))
 
@@ -1453,7 +1480,8 @@ def run_simulation(config: Dict[str, Any]):
 
     # Check if sweep_time plotting is enabled
     analysis_case = config["sensitivity_analysis"].get("analysis_case", {})
-    if analysis_case.get("sweep_time", False):
+    sweep_time_list = analysis_case.get("sweep_time", None)
+    if sweep_time_list and len(sweep_time_list) >= 1:
         # Get parameters for plot_sweep_time_series
         independent_var = analysis_case.get("independent_variable")
         dependent_vars = analysis_case.get("dependent_variables", [])
@@ -1470,7 +1498,7 @@ def run_simulation(config: Dict[str, Any]):
                 plot_path = plot_sweep_time_series(
                     csv_path=combined_csv_path,
                     save_dir=run_results_dir,
-                    y_var_name="sds.I[1]",
+                    y_var_name=sweep_time_list,
                     independent_var_name=independent_var,
                     independent_var_alias=independent_var_alias,
                 )

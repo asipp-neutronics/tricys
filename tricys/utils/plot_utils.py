@@ -5,6 +5,7 @@ CSV files, such as visualizing startup tritium inventory or time-series data.
 """
 
 import os
+from typing import List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -311,20 +312,20 @@ def _create_subplot(
 def plot_sweep_time_series(
     csv_path: str,
     save_dir: str,
-    y_var_name: str,
+    y_var_name: Union[str, List[str]],
     independent_var_name: str,
     independent_var_alias: str = None,
 ) -> str:
     """
     Filter columns containing specified variables from the CSV file of scan results and plot all time series on a single graph.
 
-    This function is used for single-parameter scans when a variable is recorded over time.
-    Only plot columns whose names contain y_var_name.
+    This function is used for single-parameter scans when variables are recorded over time.
+    Plot columns whose names contain any of the y_var_name(s).
 
     Args:
         csv_path (str): Path to the scan result CSV file.
         save_dir (str): Directory to save the image.
-        y_var_name (str): Name of the Y-axis variable (e.g., "sds.I[1]").
+        y_var_name (Union[str, List[str]]): Name(s) of the Y-axis variable(s) (e.g., "sds.I[1]" or ["sds.I[1]", "blanket.TBR"]).
         independent_var_name (str): Full name of the scan parameter
                                     (e.g., "tep_fep.to_SDS_Fraction[1]").
         independent_var_al
@@ -340,15 +341,30 @@ def plot_sweep_time_series(
         independent_var_alias if independent_var_alias else independent_var_name
     )
 
-    # Filter out columns containing y_var_name
-    y_var_columns = [col for col in df.columns if col != "time" and y_var_name in col]
+    # Handle both string and list inputs for y_var_name
+    if isinstance(y_var_name, str):
+        y_var_names = [y_var_name]
+    else:
+        y_var_names = y_var_name
+
+    # Filter out columns containing any of the y_var_name(s)
+    y_var_columns = []
+    for y_var in y_var_names:
+        y_var_columns.extend(
+            [col for col in df.columns if col != "time" and y_var in col]
+        )
+
+    # Remove duplicates while preserving order
+    y_var_columns = list(dict.fromkeys(y_var_columns))
 
     if not y_var_columns:
-        print(f"Warning: No columns found containing '{y_var_name}' in {csv_path}")
+        print(
+            f"Warning: No columns found containing any of {y_var_names} in {csv_path}"
+        )
         return None
 
     print(
-        f"Found {len(y_var_columns)} columns containing '{y_var_name}': {y_var_columns}"
+        f"Found {len(y_var_columns)} columns containing {y_var_names}: {y_var_columns}"
     )
 
     plt.figure(figsize=(12, 8))
@@ -356,32 +372,20 @@ def plot_sweep_time_series(
     colors = sns.color_palette("viridis", len(y_var_columns))
 
     for i, column in enumerate(y_var_columns):
-        # Expected column name format: "y_var&param_name=value"
-        # e.g., "sds.I[1]&tep_fep.to_SDS_Fraction[1]=0.1"
-        if "&" in column and "=" in column:
-            # Parse column name format: y_var&param_name=value
-            parts = column.split("&")
-            if len(parts) >= 2:
-                param_part = parts[1]  # param_name=value
-                label = param_part.replace(f"{independent_var_name}=", f"{plot_alias}=")
-            else:
-                label = column
-        else:
-            # If the column name format does not match, use the original column name directly
-            label = column
-
-        plt.plot(time, df[column], label=label, color=colors[i], linewidth=1.5)
+        plt.plot(time, df[column], label=column, color=colors[i], linewidth=1.5)
 
     plt.xlabel("Time (hrs)")
-    plt.ylabel(y_var_name)
-    plt.title(f"Time Evolution of {y_var_name} vs. {plot_alias}")
-    plt.legend(title=plot_alias, loc="best")
+    plt.ylabel(", ".join(y_var_names))
+    plt.title(f"Time Evolution of {', '.join(y_var_names)} vs. {plot_alias}")
+    plt.legend(loc="best")
     plt.grid(True)
     plt.tight_layout()
 
-    safe_y_var = y_var_name.replace(".", "_").replace("[", "").replace("]", "")
+    safe_y_vars = "_".join(
+        [var.replace(".", "_").replace("[", "").replace("]", "") for var in y_var_names]
+    )
     safe_param = plot_alias.replace(".", "_").replace("[", "").replace("]", "")
-    png_path = os.path.join(save_dir, f"sweep_{safe_y_var}_vs_{safe_param}.png")
+    png_path = os.path.join(save_dir, f"sweep_{safe_y_vars}_vs_{safe_param}.png")
 
     try:
         plt.savefig(png_path, dpi=300)

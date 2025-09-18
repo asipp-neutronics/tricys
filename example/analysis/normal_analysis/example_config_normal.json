@@ -37,8 +37,7 @@
                     "Required_TBR"
                 ],
                 "plot_type":"bar",
-                "combine_plots":false,
-                "sweep_time":true
+                "combine_plots":false
             },
             {
                 "name": "DIR_Analysis",
@@ -51,8 +50,7 @@
                     "Required_TBR"
                 ],
                 "plot_type":"bar",
-                "combine_plots":true,
-                "sweep_time":false
+                "combine_plots":true
             },
             {
                 "name": "I_ISS_T_Analysis",
@@ -65,8 +63,7 @@
                     "Required_TBR"
                 ],
                 "plot_type":"bar",
-                "combine_plots":true,
-                "sweep_time":true
+                "combine_plots":true
             },
             {
                 "name": "TBR_Analysis",
@@ -78,8 +75,7 @@
                     "Doubling_Time"
                 ],
                 "plot_type":"bar",
-                "combine_plots":false,
-                "sweep_time":false
+                "combine_plots":false
             }
         ],
         "metrics_definition": {
