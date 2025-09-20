@@ -29,8 +29,8 @@ equation
   for i in 1:5 loop
     // 根据I的总和是否超过阈值，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_Plasma[i] - (1 + nonradio_loss[i]) * (I[i] - threshold * I[i] / I_total) / T - decay_loss[i] * I[i];
-      outflow[i] = (I[i] - threshold * I[i] / I_total) / T;
+      der(I[i]) = from_Plasma[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T - decay_loss[i] * I[i];
+      outflow[i] = (1 - threshold / I_total) * I[i] / T;
     else
       der(I[i]) = from_Plasma[i] - nonradio_loss[i] * I[i] / T - decay_loss[i] * I[i];
       outflow[i] = 0;
