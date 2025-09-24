@@ -14,7 +14,7 @@ from tricys.utils.om_utils import (
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
-MODEL_PATH = os.path.join(project_root, "example", "gui", "example_model", "package.mo")
+MODEL_PATH = os.path.join(project_root, "example", "example_model", "package.mo")
 
 
 @pytest.mark.build_test

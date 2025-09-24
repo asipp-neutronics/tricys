@@ -12,7 +12,7 @@ import pytest
 # Resolve project paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
-MODEL_PATH = os.path.join(project_root, "example", "gui", "example_model", "package.mo")
+MODEL_PATH = os.path.join(project_root, "example", "example_model", "package.mo")
 
 # Use POSIX paths for cross-platform compatibility in configs
 MODEL_PATH_POSIX = Path(MODEL_PATH).as_posix()
@@ -286,7 +286,7 @@ def test_analysis_multiple_cases(setup_and_teardown, request, concurrent):
 
         # Check for report file
         report_files = list(
-            (analysis_cases_dir).glob(f"report_{config['run_timestamp']}.md")
+            (analysis_cases_dir).glob(f"execution_report_{config['run_timestamp']}.md")
         )
         assert len(report_files) >= 1, "Expected analysis cases report file"
 
@@ -315,7 +315,7 @@ def test_analysis_with_parameter_sweep(setup_and_teardown, request):
         "dependent_variables": ["Startup_Inventory", "Self_Sufficiency_Time"],
         "plot_type": "line",
         "combine_plots": True,
-        "sweep_time": True,  # Enable sweep time plotting
+        "sweep_time": ["sds.I[1]"],  # Enable sweep time plotting
     }
 
     # Change to test directory for analysis_cases execution
