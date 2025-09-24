@@ -34,3 +34,6 @@ model/
 
 # Ignore the result files from the example runner
 test_example/
+
+# Environment variables file
+.env

@@ -3,31 +3,10 @@
   "version": "1.0",
   "examples": [
     {
-      "name": "分析模式 - 单一配置",
-      "description": "运行单一分析示例",
-      "path": "single_analysis",
-      "config": "example_config_single.json",
-      "command": "tricys-ana"
-    },
-    {
       "name": "分析模式 - 普通配置",
       "description": "运行普通分析示例",
       "path": "normal_analysis",
       "config": "example_config_normal.json",
-      "command": "tricys-ana"
-    },
-    {
-      "name": "分析模式 - 组合配置", 
-      "description": "运行组合分析示例",
-      "path": "combination_analysis",
-      "config": "example_config_comb.json",
-      "command": "tricys-ana"
-    },
-    {
-      "name": "分析模式 - 文件配置",
-      "description": "运行文件分析示例", 
-      "path": "file_analysis",
-      "config": "example_config_file.json",
       "command": "tricys-ana"
     },
     {

@@ -1,11 +1,14 @@
 import logging
 import os
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+import openai
 import pandas as pd
+from dotenv import load_dotenv
 from SALib.analyze import fast, sobol
 from SALib.analyze import morris as morris_analyze
 from SALib.sample import fast_sampler, latin, morris, saltelli
@@ -930,12 +933,6 @@ class TricysSALibAnalyzer:
                     logger.info(f"  5%分位数: {lhs_result['percentile_5']:.4f}")
                     logger.info(f"  95%分位数: {lhs_result['percentile_95']:.4f}")
 
-                    # Remove parameter sensitivity (correlation coefficient) display
-                    # logger.info("\n参数敏感性 (相关系数):")
-                    # for i, param_name in enumerate(self.problem["names"]):
-                    #     corr = lhs_result["partial_correlations"][i]
-                    #     logger.info(f"  {param_name}: {corr:.4f}")
-
                 except Exception as e:
                     logger.error(f"LHS分析失败: {e}")
 
@@ -963,7 +960,37 @@ class TricysSALibAnalyzer:
                 save_dir=save_dir, format="csv", metric_names=output_metrics
             )
 
-            self._save_sensitivity_report(all_results, save_dir)
+            report_content = self._save_sensitivity_report(all_results, save_dir)
+            report_path = os.path.join(save_dir, "analysis_report.md")
+
+            load_dotenv()
+
+            # --- LLM Call for SALib Report Analysis ---
+            api_key = os.environ.get("SILICONFLOW_API_KEY")
+            base_url = os.environ.get("SILICONFLOW_BASE_URL")
+
+            if api_key and base_url:
+                wrapper_prompt, llm_summary = call_llm_for_salib_analysis(
+                    report_content=report_content,
+                    save_dir=save_dir,
+                    api_key=api_key,
+                    base_url=base_url,
+                    method=detected_method,
+                )
+                if wrapper_prompt and llm_summary:
+                    with open(report_path, "a", encoding="utf-8") as f:
+                        f.write("\n\n---\n\n# AI模型分析\n\n")
+                        f.write("## 提交的提示词 (Prompt)\n\n")
+                        f.write("```markdown\n")
+                        f.write(wrapper_prompt)
+                        f.write("\n```\n\n")
+                        f.write("## AI模型分析结果\n\n")
+                        f.write(llm_summary)
+                    logger.info(f"Appended LLM prompt and summary to {report_path}")
+            else:
+                logger.warning(
+                    "SILICONFLOW_API_KEY or SILICONFLOW_BASE_URL not set. Skipping LLM summary generation."
+                )
 
         except Exception as e:
             logger.warning(f"Failed to save result: {e}")
@@ -973,89 +1000,116 @@ class TricysSALibAnalyzer:
 
         return all_results
 
-    def _save_sensitivity_report(self, all_results: Dict[str, Any], save_dir: str):
+    def _save_sensitivity_report(
+        self, all_results: Dict[str, Any], save_dir: str
+    ) -> str:
         """The result has been saved to: {save_dir}"""
-        report_file = os.path.join(save_dir, "sensitivity_analysis_report.md")
+        report_file = os.path.join(save_dir, "analysis_report.md")
 
-        with open(report_file, "w", encoding="utf-8") as f:
-            f.write("# SALib Sensitivity Analysis Report\n\n")
-            f.write(f"Generation time: {pd.Timestamp.now()}\n\n")
+        report_lines = []
+        report_lines.append("# SALib Sensitivity Analysis Report\n\n")
+        report_lines.append(f"Generation time: {pd.Timestamp.now()}\n\n")
 
-            f.write("## Analyze parameters\n\n")
-            if self.problem:
+        report_lines.append("## Analyze parameters\n\n")
+        if self.problem:
+            for i, param_name in enumerate(self.problem["names"]):
+                bounds = self.problem["bounds"][i]
+                report_lines.append(
+                    f"- **{param_name}**: [{bounds[0]:.4f}, {bounds[1]:.4f}]\n"
+                )
+        report_lines.append("\n")
+
+        for metric_name, metric_results in all_results.items():
+            report_lines.append(f"## {metric_name} Sensitivity analysis results\n\n")
+
+            if "sobol" in metric_results:
+                report_lines.append("### Sobol敏感性指数\n\n")
+                report_lines.append(
+                    "| 参数 | S1 (一阶) | ST (总) | S1置信区间 | ST置信区间 |\n"
+                )
+                report_lines.append(
+                    "|------|----------|---------|------------|------------|\n"
+                )
+
+                sobol_data = metric_results["sobol"]
                 for i, param_name in enumerate(self.problem["names"]):
-                    bounds = self.problem["bounds"][i]
-                    f.write(f"- **{param_name}**: [{bounds[0]:.4f}, {bounds[1]:.4f}]\n")
-            f.write("\n")
-
-            for metric_name, metric_results in all_results.items():
-                f.write(f"## {metric_name} Sensitivity analysis results\n\n")
-
-                if "sobol" in metric_results:
-                    f.write("### Sobol敏感性指数\n\n")
-                    f.write(
-                        "| 参数 | S1 (一阶) | ST (总) | S1置信区间 | ST置信区间 |\n"
+                    s1 = sobol_data["S1"][i]
+                    st = sobol_data["ST"][i]
+                    s1_conf = sobol_data["S1_conf"][i]
+                    st_conf = sobol_data["ST_conf"][i]
+                    report_lines.append(
+                        f"| {param_name} | {s1:.4f} | {st:.4f} | ±{s1_conf:.4f} | ±{st_conf:.4f} |\n"
                     )
-                    f.write("|------|----------|---------|------------|------------|\n")
+                report_lines.append("\n")
+                plot_filename = (
+                    f'sobol_sensitivity_indices_{metric_name.replace(" ", "_")}.png'
+                )
+                report_lines.append(
+                    f"![Sobol Analysis for {metric_name}]({plot_filename})\n\n"
+                )
 
-                    sobol_data = metric_results["sobol"]
-                    for i, param_name in enumerate(self.problem["names"]):
-                        s1 = sobol_data["S1"][i]
-                        st = sobol_data["ST"][i]
-                        s1_conf = sobol_data["S1_conf"][i]
-                        st_conf = sobol_data["ST_conf"][i]
-                        f.write(
-                            f"| {param_name} | {s1:.4f} | {st:.4f} | ±{s1_conf:.4f} | ±{st_conf:.4f} |\n"
-                        )
-                    f.write("\n")
+            if "morris" in metric_results:
+                report_lines.append("### Morris敏感性指数\n\n")
+                report_lines.append(
+                    "| 参数 | μ* (平均绝对效应) | σ (标准差) | μ*置信区间 |\n"
+                )
+                report_lines.append(
+                    "|------|-------------------|------------|------------|\n"
+                )
 
-                if "morris" in metric_results:
-                    f.write("### Morris敏感性指数\n\n")
-                    f.write("| 参数 | μ* (平均绝对效应) | σ (标准差) | μ*置信区间 |\n")
-                    f.write("|------|-------------------|------------|------------|\n")
+                morris_data = metric_results["morris"]
+                for i, param_name in enumerate(self.problem["names"]):
+                    mu_star = morris_data["mu_star"][i]
+                    sigma = morris_data["sigma"][i]
+                    mu_star_conf = morris_data["mu_star_conf"][i]
+                    report_lines.append(
+                        f"| {param_name} | {mu_star:.4f} | {sigma:.4f} | ±{mu_star_conf:.4f} |\n"
+                    )
+                report_lines.append("\n")
+                plot_filename = (
+                    f'morris_sensitivity_analysis_{metric_name.replace(" ", "_")}.png'
+                )
+                report_lines.append(
+                    f"![Morris Analysis for {metric_name}]({plot_filename})\n\n"
+                )
 
-                    morris_data = metric_results["morris"]
-                    for i, param_name in enumerate(self.problem["names"]):
-                        mu_star = morris_data["mu_star"][i]
-                        sigma = morris_data["sigma"][i]
-                        mu_star_conf = morris_data["mu_star_conf"][i]
-                        f.write(
-                            f"| {param_name} | {mu_star:.4f} | {sigma:.4f} | ±{mu_star_conf:.4f} |\n"
-                        )
-                    f.write("\n")
+            if "fast" in metric_results:
+                report_lines.append("### FAST敏感性指数\n\n")
+                report_lines.append("| 参数 | S1 (一阶) | ST (总) |\n")
+                report_lines.append("|------|----------|---------|\n")
 
-                if "fast" in metric_results:
-                    f.write("### FAST敏感性指数\n\n")
-                    f.write("| 参数 | S1 (一阶) | ST (总) |\n")
-                    f.write("|------|----------|---------|\n")
+                fast_data = metric_results["fast"]
+                for i, param_name in enumerate(self.problem["names"]):
+                    s1 = fast_data["S1"][i]
+                    st = fast_data["ST"][i]
+                    report_lines.append(f"| {param_name} | {s1:.4f} | {st:.4f} |\n")
+                report_lines.append("\n")
+                plot_filename = (
+                    f'fast_sensitivity_indices_{metric_name.replace(" ", "_")}.png'
+                )
+                report_lines.append(
+                    f"![FAST Analysis for {metric_name}]({plot_filename})\n\n"
+                )
 
-                    fast_data = metric_results["fast"]
-                    for i, param_name in enumerate(self.problem["names"]):
-                        s1 = fast_data["S1"][i]
-                        st = fast_data["ST"][i]
-                        f.write(f"| {param_name} | {s1:.4f} | {st:.4f} |\n")
-                    f.write("\n")
+            if "latin" in metric_results:
+                lhs_data = metric_results["latin"]
+                report_lines.append(f"- 均值: {lhs_data['mean']:.4f}\n")
+                report_lines.append(f"- 标准差: {lhs_data['std']:.4f}\n")
+                report_lines.append(f"- 最小值: {lhs_data['min']:.4f}\n")
+                report_lines.append(f"- 最大值: {lhs_data['max']:.4f}\n")
+                report_lines.append(f"- 5%分位数: {lhs_data['percentile_5']:.4f}\n")
+                report_lines.append(f"- 95%分位数: {lhs_data['percentile_95']:.4f}\n\n")
+                plot_filename = f'lhs_analysis_{metric_name.replace(" ", "_")}.png'
+                report_lines.append(
+                    f"![LHS Analysis for {metric_name}]({plot_filename})\n\n"
+                )
 
-                if "latin" in metric_results:
-                    f.write("### LHS不确定性分析结果\n\n")
-                    lhs_data = metric_results["latin"]
-                    f.write(f"- 均值: {lhs_data['mean']:.4f}\n")
-                    f.write(f"- 标准差: {lhs_data['std']:.4f}\n")
-                    f.write(f"- 最小值: {lhs_data['min']:.4f}\n")
-                    f.write(f"- 最大值: {lhs_data['max']:.4f}\n")
-                    f.write(f"- 5%分位数: {lhs_data['percentile_5']:.4f}\n")
-                    f.write(f"- 95%分位数: {lhs_data['percentile_95']:.4f}\n\n")
-
-                    # Remove parameter sensitivity (correlation coefficient) data
-                    # f.write("#### 参数敏感性 (相关系数)\n\n")
-                    # f.write("| 参数 | 相关系数 |\n")
-                    # f.write("|------|----------|\n")
-                    # for i, param_name in enumerate(self.problem["names"]):
-                    #     corr = lhs_data["partial_correlations"][i]
-                    #     f.write(f"| {param_name} | {corr:.4f} |\n")
-                    # f.write("\n")
+        report_content = "".join(report_lines)
+        with open(report_file, "w", encoding="utf-8") as f:
+            f.write(report_content)
 
         logger.info(f"The sensitivity analysis report has been saved.: {report_file}")
+        return report_content
 
     def plot_sobol_results(
         self,
@@ -1462,6 +1516,75 @@ class TricysSALibAnalyzer:
                         # logger.info(f"LHS敏感性结果已保存: {filename_sens}")
 
         logger.info(f"The result has been saved to: {save_dir}")
+
+
+def call_llm_for_salib_analysis(
+    report_content: str, save_dir: str, api_key: str, base_url: str, method: str
+) -> Tuple[str, str]:
+    """Sends a SALib analysis report to an LLM for summarization and returns the prompt and summary."""
+    try:
+        logger.info("Proceeding with LLM analysis for SALib report.")
+
+        SENSITIVITY_PROMPT_WRAPPER = """**角色：** 你是一名在氚燃料循环领域具有深厚背景的敏感性分析专家。
+
+**任务：** 请仔细审查并解读以下这份由SALib库生成的敏感性分析报告。你的目标是：
+1.  **总结核心发现**：简明扼要地总结报告中的关键信息。
+2.  **识别关键参数**：对于报告中提到的每一个输出指标（如“启动氚量”、“倍增时间”等），明确指出哪些输入参数对它的影响最大（即最敏感）。
+3.  **提供综合结论**：基于所有分析结果，对模型的整体行为、参数间的相互作用（如果可能）以及这些发现对工程实践的潜在启示，给出一个综合性的结论。
+
+请确保你的分析清晰、专业，并直接切入要点。
+"""
+
+        LHS_PROMPT_WRAPPER = """**角色：** 你是一名在氚燃料循环领域具有深厚背景的统计学和不确定性分析专家。
+
+**任务：** 请仔细审查并解读以下这份由拉丁超立方采样（LHS）生成的不确定性分析报告。你的目标是：
+1.  **解读统计数据**：对于报告中的每一个输出指标（如“启动氚量”等），解读其均值、标准差、最大/最小值和百分位数。
+2.  **评估不确定性**：基于标准差和5%/95%百分位数的范围，评估模型输出结果的不确定性或波动范围有多大。
+3.  **提供综合结论**：总结在给定的参数不确定性下，模型的关键性能指标（KPIs）表现如何，是否存在较大的风险（例如，输出值波动范围过大），并对模型的稳定性给出评价。
+
+请确保你的分析聚焦于不确定性的量化和解读，而不是参数的敏感性排序。
+"""
+
+        if method == "latin":
+            wrapper_prompt = LHS_PROMPT_WRAPPER
+        else:
+            wrapper_prompt = SENSITIVITY_PROMPT_WRAPPER
+
+        full_prompt = f"{wrapper_prompt}\n\n---\n**分析报告原文：**\n\n{report_content}"
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                client = openai.OpenAI(api_key=api_key, base_url=base_url)
+                logger.info(
+                    f"Sending SALib report to LLM (Attempt {attempt + 1}/{max_retries})..."
+                )
+
+                response = client.chat.completions.create(
+                    model="deepseek-ai/DeepSeek-V3.1",
+                    messages=[{"role": "user", "content": full_prompt}],
+                    max_tokens=4000,
+                )
+                llm_summary = response.choices[0].message.content
+
+                logger.info("LLM analysis successful for SALib report.")
+                return wrapper_prompt, llm_summary  # Return wrapper prompt and summary
+
+            except Exception as e:
+                logger.error(
+                    f"Error calling LLM for SALib report on attempt {attempt + 1}: {e}"
+                )
+                if attempt < max_retries - 1:
+                    time.sleep(5)
+                else:
+                    logger.error(
+                        f"Failed to get LLM summary for SALib report after {max_retries} attempts."
+                    )
+                    return None, None  # Return None on failure
+
+    except Exception as e:
+        logger.error(f"Error in call_llm_for_salib_analysis: {e}", exc_info=True)
+        return None, None
 
 
 def run_salib_analysis(config: Dict[str, Any]):

@@ -26,6 +26,7 @@ from tricys.utils.om_utils import (
     load_modelica_package,
 )
 from tricys.utils.plot_utils import generate_analysis_plots, plot_sweep_time_series
+from tricys.utils.report_utils import generate_analysis_cases_summary
 from tricys.utils.salib_utils import run_salib_analysis
 from tricys.utils.sim_utils import generate_simulation_jobs
 
@@ -533,78 +534,6 @@ def _save_optimization_summary(
             output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
             final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
             logger.info(f"Sweep optimization summary saved to: {output_path}")
-
-
-def _generate_analysis_cases_summary(
-    case_configs: List[Dict[str, Any]], original_config: Dict[str, Any]
-):
-    """Generate summary report for analysis_cases"""
-    try:
-        run_timestamp = original_config["run_timestamp"]
-        # Generate report in current working directory
-        current_dir = os.getcwd()
-
-        # Create summary report
-        summary_data = []
-        for case_info in case_configs:
-            case_data = case_info["case_data"]
-            case_workspace = case_info["workspace"]
-
-            # Check if case results exist
-            case_results_dir = os.path.join(case_workspace, "results")
-            has_results = (
-                os.path.exists(case_results_dir)
-                and len(os.listdir(case_results_dir)) > 0
-            )
-
-            summary_entry = {
-                "case_name": case_data.get("name", f"Case{case_info['index']+1}"),
-                "independent_variable": case_data["independent_variable"],
-                "independent_variable_sampling": case_data[
-                    "independent_variable_sampling"
-                ],
-                "workspace_path": case_workspace,
-                "has_results": has_results,
-                "config_file": case_info["config_path"],
-            }
-            summary_data.append(summary_entry)
-
-        # Generate text report
-        report_lines = [
-            "# Analysis Cases Execution Report",
-            "\n## Basic Information",
-            f"- Execution time: {run_timestamp}",
-            f"- Total cases: {len(case_configs)}",
-            f"- Successfully executed: {sum(1 for entry in summary_data if entry['has_results'])}",
-            f"- Working directory: {current_dir}",
-            "\n## Case Details",
-        ]
-
-        for i, entry in enumerate(summary_data, 1):
-            status = "✓ Success" if entry["has_results"] else "✗ Failed"
-            report_lines.extend(
-                [
-                    f"\n### {i}. {entry['case_name']}",
-                    f"- Status: {status}",
-                    f"- Independent variable: {entry['independent_variable']}",
-                    f"- Sampling method: {entry['independent_variable_sampling']}",
-                    f"- Working directory: {entry['workspace_path']}",
-                    f"- Configuration file: {entry['config_file']}",
-                ]
-            )
-
-        # Save report to current directory
-        report_path = os.path.join(
-            current_dir, "analysis_cases", run_timestamp, f"report_{run_timestamp}.md"
-        )
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(report_lines))
-
-        logger.info("Summary report generated:")
-        logger.info(f"  - Detailed report: {report_path}")
-
-    except Exception as e:
-        logger.error(f"Error generating summary report: {e}", exc_info=True)
 
 
 def _run_bisection_search_for_job(
@@ -1202,7 +1131,7 @@ def run_simulation(config: Dict[str, Any]):
         and "analyzer" in analysis_case
     )
 
-    if has_analysis_cases:
+    if has_analysis_cases and not has_salib_analysis_case:
         logger.info(
             "Detected analysis_cases field, starting to create independent working directories for each analysis case..."
         )
@@ -1272,7 +1201,7 @@ def run_simulation(config: Dict[str, Any]):
         )
 
         # Generate summary report
-        _generate_analysis_cases_summary(case_configs, config)
+        generate_analysis_cases_summary(case_configs, config)
 
         return  # End analysis_cases processing
     elif has_salib_analysis_case:

@@ -244,11 +244,6 @@ class TricysAnaTestRunner:
         
         example_info = self.examples[choice]
         
-        # Ask whether to preview configuration file
-        preview_choice = input("\n是否预览配置文件? (y/n, 默认n): ").strip().lower()
-        if preview_choice in ['y', 'yes', '是']:
-            self.preview_config(example_info)
-        
         # 1. Copy example files
         if not self.copy_example(example_info):
             return False
@@ -264,55 +259,6 @@ class TricysAnaTestRunner:
             print(f"\n❌ 示例 '{example_info['name']}' 运行失败")
         
         return success
-    
-    def preview_config(self, example_info):
-        """
-        Preview configuration file content
-        
-        Args:
-            example_info: Example information dictionary
-        """
-        try:
-            config_path = self.example_dir / example_info["path"] / example_info["config"]
-            
-            if not config_path.exists():
-                print(f"⚠️  配置文件不存在: {config_path}")
-                return
-            
-            print(f"\n📄 配置文件预览: {config_path.name}")
-            print("─" * 60)
-            
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config_content = f.read()
-                
-            # Try to format JSON display
-            try:
-                config_json = json.loads(config_content)
-                formatted_content = json.dumps(config_json, indent=2, ensure_ascii=False)
-                
-                # Limit display lines
-                lines = formatted_content.split('\n')
-                if len(lines) > 30:
-                    print('\n'.join(lines[:25]))
-                    print(f"\n... (省略 {len(lines) - 25} 行)")
-                    print('\n'.join(lines[-5:]))
-                else:
-                    print(formatted_content)
-            except json.JSONDecodeError:
-                # If not valid JSON, display content directly
-                lines = config_content.split('\n')
-                if len(lines) > 30:
-                    print('\n'.join(lines[:25]))
-                    print(f"\n... (省略 {len(lines) - 25} 行)")
-                    print('\n'.join(lines[-5:]))
-                else:
-                    print(config_content)
-                    
-            print("─" * 60)
-            input("按回车键继续...")
-            
-        except Exception as e:
-            print(f"⚠️  无法预览配置文件: {e}")
     
     def show_help(self):
         """Display help information"""

@@ -13,6 +13,35 @@ import pandas as pd
 import seaborn as sns
 
 
+def _format_number_for_display(value):
+    """
+    Format a number for display with appropriate decimal places:
+    - If the value is a whole number, show no decimal places
+    - If the absolute value is >= 100, show 1 decimal place
+    - If the absolute value is >= 10, show 2 decimal places
+    - If the absolute value is >= 1, show 3 decimal places
+    - If the absolute value is >= 0.1, show 4 decimal places
+    - If the absolute value is < 0.1, show 5 decimal places
+    - If the value is very small (< 0.0001), use scientific notation
+    """
+    if np.isnan(value) or np.isinf(value):
+        return str(value)
+
+    abs_value = abs(value)
+
+    if abs_value == 0:
+        return "0"
+    elif abs_value >= 100:
+        return f"{value:.1f}"
+    elif abs_value >= 10:
+        return f"{value:.2f}"
+    elif abs_value >= 1:
+        return f"{value:.3f}"
+    else:
+        # For very small numbers, use scientific notation
+        return f"{value:.2e}"
+
+
 def generate_analysis_plots(
     summary_df: pd.DataFrame, analysis_case: dict, save_dir: str
 ) -> list:
@@ -103,31 +132,86 @@ def _generate_combined_plots(
     if n_plots == 0:
         return []
 
-    # Calculate optimal subplot layout
-    if n_plots == 1:
-        rows, cols = 1, 1
-    elif n_plots == 2:
-        rows, cols = 1, 2
-    elif n_plots <= 4:
-        rows, cols = 2, 2
-    elif n_plots <= 6:
-        rows, cols = 2, 3
-    elif n_plots <= 9:
-        rows, cols = 3, 3
+    # Create the combined figure with flexible layout
+    if n_plots == 3:
+        # Special layout for 3 plots: first row with 2 plots, second row with 1 centered plot
+        fig = plt.figure(figsize=(16, 10))
+
+        # Create a custom grid layout
+        gs = fig.add_gridspec(2, 2, height_ratios=[1, 1], hspace=0.3, wspace=0.2)
+
+        # First row: two plots
+        ax1 = fig.add_subplot(gs[0, 0])
+        ax2 = fig.add_subplot(gs[0, 1])
+
+        # Second row: one centered plot spanning both columns
+        ax3 = fig.add_subplot(gs[1, :])
+
+        axes_list = [ax1, ax2, ax3]
+    elif n_plots == 5:
+        # Special layout for 5 plots: first row with 3 plots, second row with 2 centered plots
+        fig = plt.figure(figsize=(18, 10))
+
+        # Create a custom grid layout
+        gs = fig.add_gridspec(2, 6, height_ratios=[1, 1], hspace=0.3, wspace=0.3)
+
+        # First row: three plots
+        ax1 = fig.add_subplot(gs[0, :2])  # First plot takes 2 columns
+        ax2 = fig.add_subplot(gs[0, 2:4])  # Second plot takes 2 columns
+        ax3 = fig.add_subplot(gs[0, 4:])  # Third plot takes 2 columns
+
+        # Second row: two plots, each taking 3 columns
+        ax4 = fig.add_subplot(gs[1, :3])  # Fourth plot takes 3 columns
+        ax5 = fig.add_subplot(gs[1, 3:])  # Fifth plot takes 3 columns
+
+        axes_list = [ax1, ax2, ax3, ax4, ax5]
+    elif n_plots == 7:
+        # Special layout for 7 plots: first row with 3 plots, second row with 2 plots, third row with 2 plots
+        fig = plt.figure(figsize=(18, 14))
+
+        # Create a custom grid layout
+        gs = fig.add_gridspec(3, 6, height_ratios=[1, 1, 1], hspace=0.3, wspace=0.3)
+
+        # First row: three plots
+        ax1 = fig.add_subplot(gs[0, :2])  # First plot takes 2 columns
+        ax2 = fig.add_subplot(gs[0, 2:4])  # Second plot takes 2 columns
+        ax3 = fig.add_subplot(gs[0, 4:])  # Third plot takes 2 columns
+
+        # Second row: two plots
+        ax4 = fig.add_subplot(gs[1, 1:3])  # Fourth plot takes 2 columns, centered
+        ax5 = fig.add_subplot(gs[1, 3:5])  # Fifth plot takes 2 columns, centered
+
+        # Third row: two plots
+        ax6 = fig.add_subplot(gs[2, 1:3])  # Sixth plot takes 2 columns, centered
+        ax7 = fig.add_subplot(gs[2, 3:5])  # Seventh plot takes 2 columns, centered
+
+        axes_list = [ax1, ax2, ax3, ax4, ax5, ax6, ax7]
     else:
-        rows = int(np.ceil(np.sqrt(n_plots)))
-        cols = int(np.ceil(n_plots / rows))
+        # Calculate optimal subplot layout for other cases
+        if n_plots == 1:
+            rows, cols = 1, 1
+        elif n_plots == 2:
+            rows, cols = 1, 2
+        elif n_plots <= 4:
+            rows, cols = 2, 2
+        elif n_plots <= 6:
+            rows, cols = 2, 3
+        elif n_plots <= 9:
+            rows, cols = 3, 3
+        else:
+            rows = int(np.ceil(np.sqrt(n_plots)))
+            cols = int(np.ceil(n_plots / rows))
 
-    # Create the combined figure
-    fig_width = max(16, cols * 5)
-    fig_height = max(12, rows * 4)
-    fig, axes = plt.subplots(rows, cols, figsize=(fig_width, fig_height))
+        # Create the combined figure
+        fig_width = max(16, cols * 5)
+        fig_height = max(12, rows * 4)
+        fig, axes = plt.subplots(rows, cols, figsize=(fig_width, fig_height))
 
-    # Ensure axes is always a 2D array for consistent indexing
-    if rows == 1 and cols == 1:
-        axes = np.array([[axes]])
-    elif rows == 1 or cols == 1:
-        axes = axes.reshape(rows, cols)
+        # Ensure axes is always a 2D array for consistent indexing
+        if rows == 1 and cols == 1:
+            axes = np.array([[axes]])
+        elif rows == 1 or cols == 1:
+            axes = axes.reshape(rows, cols)
 
     # Set overall figure properties
     fig.patch.set_facecolor("white")
@@ -140,17 +224,24 @@ def _generate_combined_plots(
 
     # Generate each subplot
     for idx, plot_config in enumerate(valid_plots):
-        row = idx // cols
-        col = idx % cols
-        ax = axes[row, col]
+        if n_plots in [3, 5, 7]:
+            # Use the custom layout for special cases
+            ax = axes_list[idx]
+        else:
+            # Use regular grid layout for other cases
+            row = idx // axes.shape[1]
+            col = idx % axes.shape[1]
+            ax = axes[row, col]
 
         _create_subplot(summary_df, plot_config, ax, line_colors, bar_colors)
 
-    # Hide unused subplots
-    for idx in range(n_plots, rows * cols):
-        row = idx // cols
-        col = idx % cols
-        axes[row, col].set_visible(False)
+    # Hide unused subplots (only applies to regular grid layouts)
+    if n_plots not in [3, 5, 7]:
+        total_cells = axes.shape[0] * axes.shape[1]
+        for idx in range(n_plots, total_cells):
+            row = idx // axes.shape[1]
+            col = idx % axes.shape[1]
+            axes[row, col].set_visible(False)
 
     # Adjust layout
     plt.tight_layout(rect=[0, 0.03, 1, 0.95], pad=3.0)
@@ -243,7 +334,7 @@ def _create_subplot(
         # Add data point annotations (smaller for subplots)
         for i, row in summary_df.iterrows():
             ax.annotate(
-                f"{row[y_var]:.2f}",
+                _format_number_for_display(row[y_var]),
                 (row[x_var], row[y_var]),
                 textcoords="offset points",
                 xytext=(0, 8),
@@ -276,7 +367,7 @@ def _create_subplot(
                 ax.text(
                     bar.get_x() + bar.get_width() / 2.0,
                     height,
-                    f"{height:.2f}",
+                    _format_number_for_display(height),
                     ha="center",
                     va="bottom",
                     fontweight="bold",
@@ -284,6 +375,50 @@ def _create_subplot(
                 )
 
         title = f"Bar: {y_var} vs. {x_var}"
+        ax.tick_params(axis="x", rotation=45, labelsize=9)
+
+    elif plot_type == "bar&line":
+        # Enhanced bar plot with line overlay
+        bars = sns.barplot(
+            data=summary_df,
+            x=x_var,
+            y=y_var,
+            hue=x_var,
+            palette=bar_colors[: len(summary_df)],
+            alpha=0.8,
+            edgecolor="black",
+            linewidth=0.8,
+            legend=False,
+            ax=ax,
+        )
+
+        # Overlay line plot connecting bar tops
+        x_positions = [bar.get_x() + bar.get_width() / 2.0 for bar in bars.patches]
+        y_positions = [bar.get_height() for bar in bars.patches]
+        ax.plot(
+            x_positions,
+            y_positions,
+            color=line_colors[0],
+            marker="o",
+            linewidth=2.5,
+            markersize=6,
+        )
+
+        # Add value labels on bars (smaller for subplots)
+        for i, bar in enumerate(bars.patches):
+            height = bar.get_height()
+            if not np.isnan(height):
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2.0,
+                    height,
+                    _format_number_for_display(height),
+                    ha="center",
+                    va="bottom",
+                    fontweight="bold",
+                    fontsize=8,
+                )
+
+        title = f"Bar & Line: {y_var} vs. {x_var}"
         ax.tick_params(axis="x", rotation=45, labelsize=9)
 
     else:

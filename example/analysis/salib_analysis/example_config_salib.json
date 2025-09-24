@@ -85,7 +85,7 @@
                 ],
                 "analyzer": {
                     "method": "morris",
-                    "sample_N": 64
+                    "sample_N": 256
                 }
             },
             {
@@ -116,7 +116,7 @@
                 ],
                 "analyzer": {
                     "method": "sobol",
-                    "sample_N": 64
+                    "sample_N": 256
                 }
             },
             {
@@ -147,7 +147,7 @@
                 ],
                 "analyzer": {
                     "method": "fast",
-                    "sample_N": 128
+                    "sample_N": 256
                 }
             }
         ]
