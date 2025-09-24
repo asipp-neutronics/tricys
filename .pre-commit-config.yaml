@@ -12,10 +12,10 @@ repos:
         entry: black
         language: system
         types: [python]
-        files: ^(tricys/|test/)
+        files: ^(tricys/|test/|script/)
     -   id: ruff
         name: ruff
         entry: ruff check --fix
         language: system
         types: [python]
-        files: ^(tricys/|test/)
+        files: ^(tricys/|test/|script/)

@@ -1,16 +1,16 @@
 {
-  "description": "Tricys 分析示例",
+  "description": "TRICYS ANALYSIS 分析示例",
   "version": "1.0",
   "examples": [
     {
-      "name": "分析模式 - 普通配置",
+      "name": "ANALYSIS - 普通配置",
       "description": "运行普通分析示例",
       "path": "normal_analysis",
       "config": "example_config_normal.json",
       "command": "tricys-ana"
     },
     {
-      "name": "分析模式 - SALib配置",
+      "name": "ANALYSIS - SALib配置",
       "description": "运行SALib分析示例", 
       "path": "salib_analysis",
       "config": "example_config_salib.json",

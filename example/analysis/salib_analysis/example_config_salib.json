@@ -1,6 +1,6 @@
 {
     "paths": {
-        "package_path": "example_model/package.mo",
+        "package_path": "../../example_model/package.mo",
         "db_path": "data/parameters.db",
         "results_dir": "results",
         "temp_dir": "temp"

@@ -574,6 +574,50 @@ def run_simulation(config: Dict[str, Any]):
                 logger.error(f"Error cleaning up temp directory: {e}")
 
 
+def _convert_relative_paths_to_absolute(
+    config: Dict[str, Any], base_dir: str
+) -> Dict[str, Any]:
+    """
+    Recursively traverse configuration data and convert relative paths to absolute paths based on the specified base directory
+
+    Args:
+        config: Configuration dictionary
+        base_dir: Base directory path
+
+    Returns:
+        Converted configuration dictionary
+    """
+
+    def _process_value(value, key_name="", parent_dict=None):
+        if isinstance(value, dict):
+            return {k: _process_value(v, k, value) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [_process_value(item, parent_dict=parent_dict) for item in value]
+        elif isinstance(value, str):
+            # Check if it's a path-related key name (extended support for more path fields)
+            path_keys = [
+                "package_path",
+                "db_path",
+                "results_dir",
+                "temp_dir",
+                "log_dir",
+            ]
+
+            if key_name.endswith("_path") or key_name in path_keys:
+                # If it's a relative path, convert to absolute path
+                if not os.path.isabs(value):
+                    abs_path = os.path.abspath(os.path.join(base_dir, value))
+                    logger.debug(
+                        f"Converted path: {key_name} '{value}' -> '{abs_path}'"
+                    )
+                    return abs_path
+            return value
+        else:
+            return value
+
+    return _process_value(config)
+
+
 def initialize_run() -> Dict[str, Any]:
     """
     Parses command-line arguments, loads the config file, and generates a run timestamp.
@@ -619,7 +663,7 @@ def initialize_run() -> Dict[str, Any]:
     try:
         config_path = os.path.abspath(args.config)
         with open(config_path, "r") as f:
-            config = json.load(f)
+            base_config = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         # Logger is not set up yet, so print directly to stderr
         print(
@@ -628,6 +672,16 @@ def initialize_run() -> Dict[str, Any]:
         )
         sys.exit(1)
 
+    original_config_dir = (
+        os.getcwd()
+    )  # Directory where the original configuration file is located
+
+    # First convert relative paths to absolute paths
+    absolute_config = _convert_relative_paths_to_absolute(
+        base_config, original_config_dir
+    )
+    # Deep copy the converted configuration
+    config = json.loads(json.dumps(absolute_config))
     # Generate a single timestamp for the entire run and add it to the config
     config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
     return config
