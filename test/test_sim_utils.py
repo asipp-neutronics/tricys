@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tricys.utils.sim_utils import (
+from tricys.core.jobs import (
     _expand_array_parameters,
     generate_simulation_jobs,
     parse_parameter_value,

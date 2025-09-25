@@ -10,19 +10,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-import numpy as np
 import pandas as pd
 from OMPython import ModelicaSystem
 
-from tricys.utils.file_utils import get_unique_filename
-from tricys.utils.log_utils import setup_logging
-from tricys.utils.om_utils import (
+from tricys.core.interceptor import integrate_interceptor_model
+from tricys.core.jobs import generate_simulation_jobs
+from tricys.core.modelica import (
     format_parameter_value,
     get_om_session,
-    integrate_interceptor_model,
     load_modelica_package,
 )
-from tricys.utils.sim_utils import generate_simulation_jobs
+from tricys.utils.file_utils import get_unique_filename
+from tricys.utils.log_utils import setup_logging
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
@@ -379,6 +378,43 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             omc.sendExpression("quit()")
 
 
+def _run_post_processing(
+    config: Dict[str, Any], results_df: pd.DataFrame, run_results_dir: str
+):
+    """
+    Dynamically load and run post-processing modules based on configuration.
+    """
+    post_processing_configs = config.get("post_processing")
+    if not post_processing_configs:
+        logger.info("No post-processing task configured, skipping this step.")
+        return
+
+    logger.info("--- Start post-processing phase ---")
+
+    post_processing_dir = os.path.join(run_results_dir, "post_processing")
+    os.makedirs(post_processing_dir, exist_ok=True)
+    logger.info(f"The post-processing report will be saved to:{post_processing_dir}")
+
+    for i, task_config in enumerate(post_processing_configs):
+        try:
+            module_name = task_config["module"]
+            function_name = task_config["function"]
+            params = task_config.get("params", {})
+            logger.info(
+                f"Run post-processing tasks #{i+1}: {module_name}.{function_name}"
+            )
+
+            module = importlib.import_module(module_name)
+            post_processing_func = getattr(module, function_name)
+
+            post_processing_func(
+                results_df=results_df, output_dir=post_processing_dir, **params
+            )
+        except Exception as e:
+            logger.error(f"Post-processing task #{i+1} failed: {e}", exc_info=True)
+    logger.info("--- The post-processing stage has ended ---")
+
+
 def run_simulation(config: Dict[str, Any]):
     """Orchestrates the simulation execution, result handling, and cleanup."""
     run_timestamp = config["run_timestamp"]
@@ -498,67 +534,72 @@ def run_simulation(config: Dict[str, Any]):
     run_results_dir = os.path.join(results_dir, run_timestamp)
     os.makedirs(run_results_dir, exist_ok=True)
 
-    # Case 1: Single job run
-    if len(jobs) == 1:
-        logger.info("Single job finished. Copying result to final destination.")
-        if simulation_results:
-            temp_result_path = list(simulation_results.values())[0]
-            if temp_result_path and os.path.exists(temp_result_path):
-                final_path = get_unique_filename(
-                    run_results_dir, "simulation_result.csv"
-                )
-                shutil.copy2(temp_result_path, final_path)  # copy2 preserves metadata
-                logger.info(f"Result copied to {final_path}")
-            else:
-                logger.warning("Single job did not produce a valid result file.")
+    # Unified result processing for both single and multiple jobs
+    logger.info(f"Processing {len(jobs)} job(s). Combining results.")
+    combined_df = None
 
-    # Case 2: Multiple jobs (sweep)
-    elif len(jobs) > 1:
-        logger.info("All sweep jobs completed. Combining results.")
-        combined_df = None
-        rises_info = []
+    all_dfs = []
+    time_df_added = False
 
-        for job_params in jobs:
-            job_key = tuple(sorted(job_params.items()))
-            result_path = simulation_results.get(job_key)
+    for job_params in jobs:
+        job_key = tuple(sorted(job_params.items()))
+        result_path = simulation_results.get(job_key)
 
-            if not result_path or not os.path.exists(result_path):
-                logger.warning(f"Job {job_params} produced no result file. Skipping.")
-                continue
+        if not result_path or not os.path.exists(result_path):
+            logger.warning(f"Job {job_params} produced no result file. Skipping.")
+            continue
 
-            df = pd.read_csv(result_path)
-            if combined_df is None:
-                combined_df = df[["time"]].copy()
+        # Read the current job's result file
+        df = pd.read_csv(result_path)
 
-            col_name = "_".join([f"{k}={v}" for k, v in job_params.items()])
-            if len(df.columns) > 1:
-                combined_df[col_name] = df.iloc[:, 1]
-                data = combined_df[col_name].to_numpy()
-                if len(data) > 2:
-                    diffs = np.diff(data)
-                    mid_index = len(diffs) // 2
-                    has_dip = np.any(diffs[:mid_index] < 0)
-                    has_rise = np.any(diffs[mid_index:] > 0)
-                    rises = has_dip and has_rise
-                else:
-                    rises = False
+        # From the very first valid DataFrame, grab the 'time' column
+        if not time_df_added and "time" in df.columns:
+            all_dfs.append(df[["time"]])
+            time_df_added = True
 
-                info = job_params.copy()
-                info["rises"] = rises
-                rises_info.append(info)
+        # Prepare the parameter string for column renaming
+        param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
 
-        if rises_info:
-            rises_df = pd.DataFrame(rises_info)
-            rises_csv_path = get_unique_filename(run_results_dir, "rises_info.csv")
-            rises_df.to_csv(rises_csv_path, index=False)
-            logger.info(f"Rise information saved to: {rises_csv_path}")
+        # Isolate the data columns (everything except 'time')
+        data_columns = df.drop(columns=["time"], errors="ignore")
 
-        if combined_df is not None:
+        # Create a dictionary to map old column names to new ones
+        # e.g., {'voltage': 'voltage&param1=A&param2=B'}
+        rename_mapping = {col: f"{col}&{param_string}" for col in data_columns.columns}
+
+        # Rename the columns and add the resulting DataFrame to our list
+        all_dfs.append(data_columns.rename(columns=rename_mapping))
+
+    # Concatenate all the DataFrames in the list along the columns axis (axis=1)
+    if all_dfs:
+        combined_df = pd.concat(all_dfs, axis=1)
+    else:
+        combined_df = pd.DataFrame()  # Or None, as you had before
+
+    if combined_df is not None and not combined_df.empty:
+        if len(jobs) == 1:
+            # For single job, save as simulation_result.csv
+            combined_csv_path = get_unique_filename(
+                run_results_dir, "simulation_result.csv"
+            )
+        else:
+            # For multiple jobs, save as sweep_results.csv
             combined_csv_path = get_unique_filename(
                 run_results_dir, "sweep_results.csv"
             )
-            combined_df.to_csv(combined_csv_path, index=False)
-            logger.info(f"Combined sweep results saved to: {combined_csv_path}")
+
+        combined_df.to_csv(combined_csv_path, index=False)
+        logger.info(f"Combined results saved to: {combined_csv_path}")
+    else:
+        logger.warning("No valid results found to combine.")
+
+    # --- Post-Processing ---
+    if combined_df is not None:
+        _run_post_processing(config, combined_df, run_results_dir)
+    else:
+        logger.warning(
+            "No simulation results were generated, skipping post-processing."
+        )
 
     # --- Final Cleanup ---
     # The primary cleanup of job workspaces is handled by the `finally` block in `_run_co_simulation`.
@@ -574,6 +615,50 @@ def run_simulation(config: Dict[str, Any]):
                 logger.error(f"Error cleaning up temp directory: {e}")
 
 
+def _convert_relative_paths_to_absolute(
+    config: Dict[str, Any], base_dir: str
+) -> Dict[str, Any]:
+    """
+    Recursively traverse configuration data and convert relative paths to absolute paths based on the specified base directory
+
+    Args:
+        config: Configuration dictionary
+        base_dir: Base directory path
+
+    Returns:
+        Converted configuration dictionary
+    """
+
+    def _process_value(value, key_name="", parent_dict=None):
+        if isinstance(value, dict):
+            return {k: _process_value(v, k, value) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [_process_value(item, parent_dict=parent_dict) for item in value]
+        elif isinstance(value, str):
+            # Check if it's a path-related key name (extended support for more path fields)
+            path_keys = [
+                "package_path",
+                "db_path",
+                "results_dir",
+                "temp_dir",
+                "log_dir",
+            ]
+
+            if key_name.endswith("_path") or key_name in path_keys:
+                # If it's a relative path, convert to absolute path
+                if not os.path.isabs(value):
+                    abs_path = os.path.abspath(os.path.join(base_dir, value))
+                    logger.debug(
+                        f"Converted path: {key_name} '{value}' -> '{abs_path}'"
+                    )
+                    return abs_path
+            return value
+        else:
+            return value
+
+    return _process_value(config)
+
+
 def initialize_run() -> Dict[str, Any]:
     """
     Parses command-line arguments, loads the config file, and generates a run timestamp.
@@ -582,20 +667,44 @@ def initialize_run() -> Dict[str, Any]:
     parser = argparse.ArgumentParser(
         description="Run a unified simulation and co-simulation workflow in parallel."
     )
+
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
     parser.add_argument(
         "-c",
         "--config",
         type=str,
-        required=True,
-        default="config.json",
+        required=False,
+        default=None,
         help="Path to the JSON configuration file.",
     )
+
+    subparsers.add_parser("example", help="Run simulation examples interactively")
+
     args = parser.parse_args()
+
+    if args.command == "example":
+        import importlib.util
+
+        script_path = (
+            Path(__file__).parent.parent
+            / "script"
+            / "example_runner"
+            / "tricys_runner.py"
+        )
+        spec = importlib.util.spec_from_file_location("tricys_runner", script_path)
+        tricys_runner = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(tricys_runner)
+        tricys_runner.main()
+        sys.exit(0)
+
+    if not args.config:
+        parser.error("the following arguments are required: -c/--config")
 
     try:
         config_path = os.path.abspath(args.config)
         with open(config_path, "r") as f:
-            config = json.load(f)
+            base_config = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         # Logger is not set up yet, so print directly to stderr
         print(
@@ -604,6 +713,16 @@ def initialize_run() -> Dict[str, Any]:
         )
         sys.exit(1)
 
+    original_config_dir = (
+        os.getcwd()
+    )  # Directory where the original configuration file is located
+
+    # First convert relative paths to absolute paths
+    absolute_config = _convert_relative_paths_to_absolute(
+        base_config, original_config_dir
+    )
+    # Deep copy the converted configuration
+    config = json.loads(json.dumps(absolute_config))
     # Generate a single timestamp for the entire run and add it to the config
     config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
     return config

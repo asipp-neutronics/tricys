@@ -14,7 +14,7 @@ from tricys.simulation import run_simulation
 # Resolve project paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
-MODEL_PATH = os.path.join(project_root, "example", "gui", "example_model", "package.mo")
+MODEL_PATH = os.path.join(project_root, "example", "example_model", "package.mo")
 
 # Use POSIX paths for cross-platform compatibility in configs
 MODEL_PATH_POSIX = Path(MODEL_PATH).as_posix()
@@ -76,6 +76,7 @@ def setup_and_teardown(request):
     # Cleanup logic runs after the test function completes
     gc.collect()  # Ensure all file handles are released
     if not getattr(request.node, "test_passed", False):
+        request.node.parent.failed = True
         print(
             f"\nTest '{test_name}' failed. Intermediate files kept at: {test_output_dir}"
         )
@@ -85,7 +86,7 @@ def setup_and_teardown(request):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def final_cleanup():
+def final_cleanup(request):
     """
     A module-scoped fixture to clean up the base output directory
     after all tests in this file have run.
@@ -93,6 +94,12 @@ def final_cleanup():
     # Let all tests run
     yield
     # This cleanup logic runs once after all tests in the file are complete.
+    if getattr(request.node, "failed", False):
+        print(
+            f"\nOne or more tests failed. Skipping final cleanup of base directory: {BASE_OUTPUT_DIR}"
+        )
+        return
+
     gc.collect()
     if Path(BASE_OUTPUT_DIR).exists():
         print(f"\nAll tests finished. Cleaning up base directory: {BASE_OUTPUT_DIR}")
@@ -168,8 +175,8 @@ def test_batch_run(setup_and_teardown, request, concurrent, use_cosim):
     assert (
         len(df.columns) == 3
     ), f"Expected 3 columns (time + 2 jobs), but got {len(df.columns)}"
-    assert "blanket.TBR=1.05" in df.columns
-    assert "blanket.TBR=1.1" in df.columns
+    assert "sds.I[1]&blanket.TBR=1.05" in df.columns
+    assert "sds.I[1]&blanket.TBR=1.1" in df.columns
 
     # 3. Assert that the temp directory was correctly created and kept
     temp_dir = Path(config["paths"]["temp_dir"])

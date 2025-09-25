@@ -1,0 +1,45 @@
+{
+  "description": "TRICYS BASIC 仿真示例",
+  "version": "1.0", 
+  "examples": [
+    {
+      "name": "BASIC - 并发仿真",
+      "description": "运行并发仿真示例",
+      "path": "simulation_concurrent",
+      "config": "example_config.json",
+      "command": "tricys"
+    },
+    {
+      "id": "simulation_non_concurrent",
+      "name": "BASIC - 非并发仿真",
+      "description": "运行非并发仿真示例",
+      "path": "simulation_non_concurrent",
+      "config": "example_config.json", 
+      "command": "tricys"
+    },
+    {
+      "id": "co_simulation_concurrent",
+      "name": "BASIC - 并发协同仿真",
+      "description": "运行并发协同仿真示例",
+      "path": "co_simulation_concurrent",
+      "config": "example_config.json",
+      "command": "tricys"
+    },
+    {
+      "id": "co_simulation_non_concurrent", 
+      "name": "BASIC - 非并发协同仿真",
+      "description": "运行非并发协同仿真示例",
+      "path": "co_simulation_non_concurrent",
+      "config": "example_config.json",
+      "command": "tricys"
+    },
+    {
+      "id": "post_process",
+      "name": "BASIC - 后处理",
+      "description": "运行后处理示例",
+      "path": "post_process",
+      "config": "example_config.json",
+      "command": "tricys"
+    }
+  ]
+}

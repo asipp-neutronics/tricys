@@ -22,7 +22,7 @@ help:
 install:
 	@echo "--> Installing project in editable mode..."
 	pip install -e .
-	omc /tricys/script/install.mos 
+	omc ./script/modelica_install/install.mos 
 	@echo "--> Installation complete."
 
 # 安装项目的所有依赖，包括开发和测试工具。
@@ -30,7 +30,7 @@ install:
 dev-install:
 	@echo "--> Installing project with development dependencies..."
 	pip install -e ".[dev]"
-	omc /tricys/script/install.mos 
+	omc ./script/modelica_install/install.mos 
 	@echo "--> Development installation complete."
 
 
