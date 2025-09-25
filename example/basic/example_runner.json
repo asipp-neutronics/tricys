@@ -32,6 +32,14 @@
       "path": "co_simulation_non_concurrent",
       "config": "example_config.json",
       "command": "tricys"
+    },
+    {
+      "id": "post_process",
+      "name": "BASIC - 后处理",
+      "description": "运行后处理示例",
+      "path": "post_process",
+      "config": "example_config.json",
+      "command": "tricys"
     }
   ]
 }

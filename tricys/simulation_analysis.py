@@ -1099,6 +1099,43 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             omc.sendExpression("quit()")
 
 
+def _run_post_processing(
+    config: Dict[str, Any], results_df: pd.DataFrame, run_results_dir: str
+):
+    """
+    Dynamically load and run post-processing modules based on configuration.
+    """
+    post_processing_configs = config.get("post_processing")
+    if not post_processing_configs:
+        logger.info("No post-processing task configured, skipping this step.")
+        return
+
+    logger.info("--- Start post-processing phase ---")
+
+    post_processing_dir = os.path.join(run_results_dir, "post_processing")
+    os.makedirs(post_processing_dir, exist_ok=True)
+    logger.info(f"The post-processing report will be saved to:{post_processing_dir}")
+
+    for i, task_config in enumerate(post_processing_configs):
+        try:
+            module_name = task_config["module"]
+            function_name = task_config["function"]
+            params = task_config.get("params", {})
+            logger.info(
+                f"Run post-processing tasks #{i+1}: {module_name}.{function_name}"
+            )
+
+            module = importlib.import_module(module_name)
+            post_processing_func = getattr(module, function_name)
+
+            post_processing_func(
+                results_df=results_df, output_dir=post_processing_dir, **params
+            )
+        except Exception as e:
+            logger.error(f"Post-processing task #{i+1} failed: {e}", exc_info=True)
+    logger.info("--- The post-processing stage has ended ---")
+
+
 def run_simulation(config: Dict[str, Any]):
     """Orchestrates the simulation execution, result handling, and cleanup."""
 
@@ -1440,6 +1477,14 @@ def run_simulation(config: Dict[str, Any]):
 
     # --- Sensitivity Analysis ---
     _run_sensitivity_analysis(config, run_results_dir, jobs)
+
+    # --- Post-Processing ---
+    if combined_df is not None:
+        _run_post_processing(config, combined_df, run_results_dir)
+    else:
+        logger.warning(
+            "No simulation results were generated, skipping post-processing."
+        )
 
     # --- Final Cleanup ---
     if not config["simulation"].get("keep_temp_files", True):
