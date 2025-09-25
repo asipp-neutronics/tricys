@@ -10,18 +10,18 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 
+from tricys.core.modelica import (
+    get_all_parameters_details,
+    get_om_session,
+    load_modelica_package,
+)
 from tricys.simulation import run_simulation
-from tricys.utils.db_utils import (
+from tricys.utils.file_utils import delete_old_logs
+from tricys.utils.sqlite_utils import (
     create_parameters_table,
     get_parameters_from_db,
     store_parameters_in_db,
     update_sweep_values_in_db,
-)
-from tricys.utils.file_utils import delete_old_logs
-from tricys.utils.om_utils import (
-    get_all_parameters_details,
-    get_om_session,
-    load_modelica_package,
 )
 
 logger = logging.getLogger(__name__)

@@ -966,30 +966,37 @@ class TricysSALibAnalyzer:
             load_dotenv()
 
             # --- LLM Call for SALib Report Analysis ---
-            api_key = os.environ.get("SILICONFLOW_API_KEY")
-            base_url = os.environ.get("SILICONFLOW_BASE_URL")
+            api_key = os.environ.get("API_KEY")
+            base_url = os.environ.get("BASE_URL")
+            ai_model = os.environ.get("AI_MODEL")
 
-            if api_key and base_url:
+            if (
+                api_key
+                and base_url
+                and ai_model
+                and self.base_config.get("sensitivity_analysis")
+                .get("analysis_case")
+                .get("ai", False)
+            ):
                 wrapper_prompt, llm_summary = call_llm_for_salib_analysis(
                     report_content=report_content,
-                    save_dir=save_dir,
                     api_key=api_key,
                     base_url=base_url,
+                    ai_model=ai_model,
                     method=detected_method,
                 )
                 if wrapper_prompt and llm_summary:
                     with open(report_path, "a", encoding="utf-8") as f:
-                        f.write("\n\n---\n\n# AI模型分析\n\n")
-                        f.write("## 提交的提示词 (Prompt)\n\n")
+                        f.write("\n\n---\n\n# AI模型分析提示词\n\n")
                         f.write("```markdown\n")
                         f.write(wrapper_prompt)
                         f.write("\n```\n\n")
-                        f.write("## AI模型分析结果\n\n")
+                        f.write("\n\n---\n\n# AI模型分析结果\n\n")
                         f.write(llm_summary)
                     logger.info(f"Appended LLM prompt and summary to {report_path}")
             else:
                 logger.warning(
-                    "SILICONFLOW_API_KEY or SILICONFLOW_BASE_URL not set. Skipping LLM summary generation."
+                    "API_KEY or BASE_URL not set. Skipping LLM summary generation."
                 )
 
         except Exception as e:
@@ -1007,10 +1014,10 @@ class TricysSALibAnalyzer:
         report_file = os.path.join(save_dir, "analysis_report.md")
 
         report_lines = []
-        report_lines.append("# SALib Sensitivity Analysis Report\n\n")
-        report_lines.append(f"Generation time: {pd.Timestamp.now()}\n\n")
+        report_lines.append("# SALib 敏感性分析报告\n\n")
+        report_lines.append(f"生成时间: {pd.Timestamp.now()}\n\n")
 
-        report_lines.append("## Analyze parameters\n\n")
+        report_lines.append("## 分析参数\n\n")
         if self.problem:
             for i, param_name in enumerate(self.problem["names"]):
                 bounds = self.problem["bounds"][i]
@@ -1020,7 +1027,7 @@ class TricysSALibAnalyzer:
         report_lines.append("\n")
 
         for metric_name, metric_results in all_results.items():
-            report_lines.append(f"## {metric_name} Sensitivity analysis results\n\n")
+            report_lines.append(f"## {metric_name} 敏感性分析结果\n\n")
 
             if "sobol" in metric_results:
                 report_lines.append("### Sobol敏感性指数\n\n")
@@ -1519,7 +1526,7 @@ class TricysSALibAnalyzer:
 
 
 def call_llm_for_salib_analysis(
-    report_content: str, save_dir: str, api_key: str, base_url: str, method: str
+    report_content: str, api_key: str, base_url: str, ai_model: str, method: str
 ) -> Tuple[str, str]:
     """Sends a SALib analysis report to an LLM for summarization and returns the prompt and summary."""
     try:
@@ -1561,7 +1568,7 @@ def call_llm_for_salib_analysis(
                 )
 
                 response = client.chat.completions.create(
-                    model="deepseek-ai/DeepSeek-V3.1",
+                    model=ai_model,
                     messages=[{"role": "user", "content": full_prompt}],
                     max_tokens=4000,
                 )

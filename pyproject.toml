@@ -23,6 +23,9 @@ dependencies = [
     "seaborn",
     "pathlib",
     "OMPython",
+    "openai",
+    "python-dotenv",
+    "SALib",
 ]
 
 [project.urls]
@@ -67,7 +70,7 @@ select = ["E", "F", "W", "I"]
 ignore = ["E501","E722"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src"]
+known-first-party = ["tricys"]
 
 [tool.pytest.ini_options]
 markers = [

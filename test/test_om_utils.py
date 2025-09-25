@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from tricys.utils.om_utils import (
+from tricys.core.modelica import (
     format_parameter_value,
     get_all_parameters_details,
     get_model_parameter_names,
@@ -119,7 +119,7 @@ def test_integrate_interceptor_model(request):
     request.addfinalizer(cleanup)
 
     # --- 3. Run the function to be tested ---
-    from tricys.utils.om_utils import integrate_interceptor_model
+    from tricys.core.interceptor import integrate_interceptor_model
 
     result = integrate_interceptor_model(
         package_path=str(package_path),

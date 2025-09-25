@@ -15,6 +15,13 @@
       "path": "salib_analysis",
       "config": "example_config_salib.json",
       "command": "tricys-ana"
+    },
+    {
+      "name": "ANALYSIS - AI组合配置",
+      "description": "运行AI组合分析示例", 
+      "path": "ai_analysis",
+      "config": "example_config_ai.json",
+      "command": "tricys-ana"
     }
   ]
 }

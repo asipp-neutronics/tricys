@@ -13,22 +13,22 @@ from typing import Any, Dict, List
 import pandas as pd
 from OMPython import ModelicaSystem
 
-from tricys.utils.file_utils import get_unique_filename
-from tricys.utils.log_utils import setup_logging
-from tricys.utils.metric_utils import (
+from tricys.analysis.metric import (
     extract_metrics,
     time_of_turning_point,
 )
-from tricys.utils.om_utils import (
+from tricys.analysis.plot import generate_analysis_plots, plot_sweep_time_series
+from tricys.analysis.report import generate_analysis_cases_summary
+from tricys.analysis.salib import run_salib_analysis
+from tricys.core.interceptor import integrate_interceptor_model
+from tricys.core.jobs import generate_simulation_jobs
+from tricys.core.modelica import (
     format_parameter_value,
     get_om_session,
-    integrate_interceptor_model,
     load_modelica_package,
 )
-from tricys.utils.plot_utils import generate_analysis_plots, plot_sweep_time_series
-from tricys.utils.report_utils import generate_analysis_cases_summary
-from tricys.utils.salib_utils import run_salib_analysis
-from tricys.utils.sim_utils import generate_simulation_jobs
+from tricys.utils.file_utils import get_unique_filename
+from tricys.utils.log_utils import setup_logging
 
 # Standard logger setup
 logger = logging.getLogger(__name__)

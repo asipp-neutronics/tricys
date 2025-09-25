@@ -162,14 +162,12 @@ class TricysTestRunner:
             if model_dst.exists():
                 shutil.rmtree(model_dst)
             shutil.copytree(model_src, model_dst)
-            print(f"   - 已复制模型文件到: {model_dst}")
 
             aspen_src = self.workspace_dir / "example" / "example_aspenbkp"
             aspen_dst = self.test_example_base_dir / "example_aspenbkp"
             if aspen_dst.exists():
                 shutil.rmtree(aspen_dst)
             shutil.copytree(aspen_src, aspen_dst)
-            print(f"   - 已复制Aspen BKP文件到: {aspen_dst}")
 
             # Verify if key files exist
             config_file = self.test_example_dir / example_info["config"]

@@ -1,12 +1,12 @@
+import gc
 import json
 import os
 import shutil
 import sqlite3
-import gc
 
 import pytest
 
-from tricys.utils.db_utils import (
+from tricys.utils.sqlite_utils import (
     create_parameters_table,
     get_parameters_from_db,
     store_parameters_in_db,
@@ -54,6 +54,7 @@ def setup_and_teardown(request):
 
     request.addfinalizer(cleanup)
 
+
 @pytest.mark.build_test
 def test_create_parameters_table(request):
     """Tests the creation of the parameters table."""
@@ -73,6 +74,7 @@ def test_create_parameters_table(request):
         pytest.fail(f"Database error occurred: {e}")
     request.node.test_passed = True
 
+
 @pytest.mark.build_test
 def test_store_and_get_parameters(request):
     """Tests storing and retrieving parameters."""
@@ -91,6 +93,7 @@ def test_store_and_get_parameters(request):
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")
     request.node.test_passed = True
+
 
 @pytest.mark.build_test
 def test_update_sweep_values(request):

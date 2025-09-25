@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 def call_openai_analysis_api(
     case_name: str,
-    case_results_dir: str,
     df: pd.DataFrame,
     api_key: str,
     base_url: str,
+    ai_model: str,
     independent_variable: str,
 ):
     """
@@ -27,27 +27,25 @@ def call_openai_analysis_api(
 
         # 1. Construct the prompt for the API
         content_parts = []
+        role_prompt = """**角色：** 你是一名聚变反应堆氚燃料循环领域的专家。
+
+**任务：** 请仔细审查并解读以下数据，对聚变堆燃料循环模型的模拟结果进行详细的敏感性分析。请遵循以下结构，分析各项重要参数对关键性能指标的影响，并得出结论。
+"""
         content_parts.append(
             {
                 "type": "text",
-                "text": """**角色：** 你是一名聚变反应堆氚燃料循环领域的专家。
-
-**任务：** 基于我提供的数据，对聚变堆燃料循环模型的模拟结果进行详细的敏感性分析。请遵循以下结构，分析各项重要参数对关键性能指标的影响，并得出结论。
-
-**分析数据：**
-""",
+                "text": role_prompt,
             }
         )
-
-        # NOTE: Image data has been removed from the prompt as per the user's request
-        # to create a text-only prompt.
-
         # Add data table and analysis points as text
-        analysis_prompt = f"""(Note: The plot images are not available for analysis. Please perform the analysis based on the data table provided below.)
+        analysis_prompt = f"""**分析数据：**(Note: The plot images are not available for analysis. Please perform the analysis based on the data table provided below.)
 
 * **相关指标的数据表:**
 {df.to_markdown(index=False)}
 
+"""
+        content_parts.append({"type": "text", "text": analysis_prompt})
+        points_prompt = f"""
 **分析要点：**
 
 1.  **总体趋势：** 描述随着{independent_variable}的提高（例如，从2%增加到9%），总氚库存（Inventory）的增长速率有何变化。
@@ -58,7 +56,7 @@ def call_openai_analysis_api(
    * **所需氚增殖比 (Required TBR, $TBR_r$)：** 描述其与{independent_variable}的关系。
 3.  **结论：** 总结提高{independent_variable}对于实现氚自持、减少初始投资（首炉氚）和加速氚增殖的有效性。
 """
-        content_parts.append({"type": "text", "text": analysis_prompt})
+        content_parts.append({"type": "text", "text": points_prompt})
 
         # 2. Call API with retry logic
         max_retries = 3
@@ -72,14 +70,20 @@ def call_openai_analysis_api(
                 full_text_prompt = "\n\n".join([part["text"] for part in content_parts])
 
                 response = client.chat.completions.create(
-                    model="deepseek-ai/DeepSeek-V3.1",
+                    model=ai_model,
                     messages=[{"role": "user", "content": full_text_prompt}],
                     max_tokens=4000,
                 )
                 analysis_result = response.choices[0].message.content
 
                 logger.info(f"LLM analysis successful for case {case_name}.")
-                return analysis_result  # Return the result string
+                return (
+                    role_prompt
+                    + points_prompt
+                    + "\n```\n\n"
+                    + "\n\n---\n\n# AI模型分析结果\n\n"
+                    + analysis_result
+                )  # Return the result string
 
             except Exception as e:
                 logger.error(f"Error calling OpenAI API on attempt {attempt + 1}: {e}")
@@ -148,43 +152,25 @@ def generate_prompt_templates(
 
             # Markdown Generation
             prompt_lines = [
-                "**角色：** 你是一名聚变反应堆氚燃料循环领域的专家。",
-                "",
-                "**任务：** 基于我提供的数据，对聚变堆燃料循环模型的模拟结果进行详细的敏感性分析。请遵循以下结构，分析各项重要参数对关键性能指标的影响，并得出结论。",
-                "",
-                "**分析数据：**",
-                "",
+                "# SALib 敏感性分析报告\n\n",
+                f"生成时间: {pd.Timestamp.now()}\n\n",
             ]
 
             # Add plots
             for plot in sweep_plots:
                 prompt_lines.append(
-                    f"* **不同{independent_variable}下Inventory随时间变化 的曲线图:**\n"
+                    f"## 不同{independent_variable}下Inventory随时间变化 的曲线图:\n\n"
                     f"![不同{independent_variable}下Inventory随时间变化 的曲线图]({plot})"
                 )
             for plot in combined_plots:
                 prompt_lines.append(
-                    f"* **不同{independent_variable}下首炉氚、自持时间、倍增时间变化，最小TBR 的柱状图/折线图:**\n"
+                    f"## 不同{independent_variable}下首炉氚、自持时间、倍增时间变化，最小TBR 的柱状图/折线图:\n\n"
                     f"![不同{independent_variable}下首炉氚、自持时间、倍增时间变化，最小TBR 的柱状图/折线图]({plot})"
                 )
 
             # Add data table
-            prompt_lines.append("* **相关指标的数据表:**\n")
+            prompt_lines.append("## 相关指标的数据表:\n\n")
             prompt_lines.append(df.to_markdown(index=False))
-
-            prompt_lines.extend(
-                [
-                    "",
-                    "**分析要点：**\n",
-                    f"1.  **总体趋势：** 描述随着{independent_variable}的提高，总氚库存（Inventory）的增长速率有何变化。",
-                    "2.  **关键指标影响：**",
-                    f"   * **首炉氚量 (Start-up Inventory, Unit: gram)：** 分析其如何随{independent_variable}变化，并量化其降幅。",
-                    "   * **倍增时间 (Doubling Time, Unit: hour)：** 分析其变化趋势，并量化其降幅。",
-                    "   * **自持时间 (Self-sufficiency Time, Unit: hour)：** 分析其变化趋势，通常变化较小，请指出。",
-                    f"   * **所需氚增殖比 (Required TBR, $TBR_r$)：** 描述其与{independent_variable}的关系。",
-                    f"3.  **结论：** 总结提高{independent_variable}对于实现氚自持、减少初始投资（首炉氚）和加速氚增殖的有效性。",
-                ]
-            )
 
             # Save the detailed report
             report_path = os.path.join(
@@ -198,21 +184,37 @@ def generate_prompt_templates(
             )
 
             # --- OpenAI API Call for Automated Analysis ---
+            if not case_data.get("ai", False):
+                logger.info(
+                    f"AI analysis not enabled for case '{case_name}'. Skipping LLM report generation."
+                )
+                continue
+
             load_dotenv()
+            api_key = os.environ.get("API_KEY")
+            base_url = os.environ.get("BASE_URL")
+            ai_model = os.environ.get("AI_MODEL")
+
+            if not api_key or not base_url or not ai_model:
+                logger.warning(
+                    "API_KEY or BASE_URL or AI_MODEL not found in environment variables. Skipping LLM analysis."
+                )
+                continue
 
             llm_analysis = call_openai_analysis_api(
                 case_name=case_name,
-                case_results_dir=case_results_dir,
                 df=df,
-                api_key=os.environ.get("SILICONFLOW_API_KEY"),
-                base_url=os.environ.get("SILICONFLOW_BASE_URL"),
+                api_key=api_key,
+                base_url=base_url,
+                ai_model=ai_model,
                 independent_variable=independent_variable,
             )
 
             # Append LLM analysis to the report
             if llm_analysis:
                 with open(report_path, "a", encoding="utf-8") as f:
-                    f.write("\n\n---\n\n# AI模型分析结果\n\n")
+                    f.write("\n\n---\n\n# AI模型分析提示词\n\n")
+                    f.write("```markdown\n")
                     f.write(llm_analysis)
                 logger.info(f"Appended LLM analysis to {report_path}")
 

@@ -13,15 +13,15 @@ from typing import Any, Dict, List
 import pandas as pd
 from OMPython import ModelicaSystem
 
-from tricys.utils.file_utils import get_unique_filename
-from tricys.utils.log_utils import setup_logging
-from tricys.utils.om_utils import (
+from tricys.core.interceptor import integrate_interceptor_model
+from tricys.core.jobs import generate_simulation_jobs
+from tricys.core.modelica import (
     format_parameter_value,
     get_om_session,
-    integrate_interceptor_model,
     load_modelica_package,
 )
-from tricys.utils.sim_utils import generate_simulation_jobs
+from tricys.utils.file_utils import get_unique_filename
+from tricys.utils.log_utils import setup_logging
 
 # Standard logger setup
 logger = logging.getLogger(__name__)

@@ -175,8 +175,8 @@ def test_batch_run(setup_and_teardown, request, concurrent, use_cosim):
     assert (
         len(df.columns) == 3
     ), f"Expected 3 columns (time + 2 jobs), but got {len(df.columns)}"
-    assert "blanket.TBR=1.05" in df.columns
-    assert "blanket.TBR=1.1" in df.columns
+    assert "sds.I[1]&blanket.TBR=1.05" in df.columns
+    assert "sds.I[1]&blanket.TBR=1.1" in df.columns
 
     # 3. Assert that the temp directory was correctly created and kept
     temp_dir = Path(config["paths"]["temp_dir"])
