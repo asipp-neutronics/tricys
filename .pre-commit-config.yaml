@@ -3,7 +3,7 @@ repos:
     hooks:
     -   id: check-dirty-py
         name: Check for unstaged changes and untracked files
-        entry: python script/check_dirty.py
+        entry: python script/git_hook/check_dirty.py
         language: python
         stages: [pre-commit]
         always_run: true
@@ -12,10 +12,10 @@ repos:
         entry: black
         language: system
         types: [python]
-        files: ^(tricys/|test/)
+        files: ^(tricys/|test/|script/)
     -   id: ruff
         name: ruff
         entry: ruff check --fix
         language: system
         types: [python]
-        files: ^(tricys/|test/)
+        files: ^(tricys/|test/|script/)
