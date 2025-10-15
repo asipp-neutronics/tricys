@@ -965,19 +965,23 @@ class TricysSALibAnalyzer:
 
             load_dotenv()
 
-            # --- LLM Call for SALib Report Analysis ---
+            # --- LLM Calls for analysis ---
             api_key = os.environ.get("API_KEY")
             base_url = os.environ.get("BASE_URL")
             ai_model = os.environ.get("AI_MODEL")
 
-            if (
-                api_key
-                and base_url
-                and ai_model
-                and self.base_config.get("sensitivity_analysis")
-                .get("analysis_case")
-                .get("ai", False)
-            ):
+            sa_config = self.base_config.get("sensitivity_analysis", {})
+            case_config = sa_config.get("analysis_case", {})
+            ai_config = case_config.get("ai")
+
+            ai_enabled = False
+            if isinstance(ai_config, bool):
+                ai_enabled = ai_config
+            elif isinstance(ai_config, dict):
+                ai_enabled = ai_config.get("enabled", False)
+
+            if api_key and base_url and ai_model and ai_enabled:
+                # First LLM call for initial analysis
                 wrapper_prompt, llm_summary = call_llm_for_salib_analysis(
                     report_content=report_content,
                     api_key=api_key,
@@ -994,9 +998,54 @@ class TricysSALibAnalyzer:
                         f.write("\n\n---\n\n# AI模型分析结果\n\n")
                         f.write(llm_summary)
                     logger.info(f"Appended LLM prompt and summary to {report_path}")
+
+                    # Second LLM call for academic report
+                    glossary_path = None
+                    if isinstance(case_config, dict):
+                        glossary_path = case_config.get("glossary_path")
+
+                    if glossary_path and os.path.exists(glossary_path):
+                        try:
+                            with open(glossary_path, "r", encoding="utf-8") as f:
+                                glossary_content = f.read()
+
+                            (
+                                academic_wrapper_prompt,
+                                academic_report,
+                            ) = call_llm_for_academic_report(
+                                analysis_report=llm_summary,
+                                glossary_content=glossary_content,
+                                api_key=api_key,
+                                base_url=base_url,
+                                ai_model=ai_model,
+                                problem_details=self.problem,
+                                metric_names=output_metrics,
+                                method=detected_method,
+                            )
+
+                            if academic_wrapper_prompt and academic_report:
+                                academic_report_path = os.path.join(
+                                    save_dir, "academic_report.md"
+                                )
+                                with open(
+                                    academic_report_path, "w", encoding="utf-8"
+                                ) as f:
+                                    f.write(academic_report)
+                                logger.info(
+                                    f"Generated academic report: {academic_report_path}"
+                                )
+                        except Exception as e:
+                            logger.error(
+                                f"Failed to generate or save academic report: {e}"
+                            )
+                    elif glossary_path:
+                        logger.warning(
+                            f"Glossary file not found at {glossary_path}, skipping academic report generation."
+                        )
+
             else:
                 logger.warning(
-                    "API_KEY or BASE_URL not set. Skipping LLM summary generation."
+                    "API_KEY, BASE_URL, or AI_MODEL not set, or AI analysis is disabled. Skipping LLM summary generation."
                 )
 
         except Exception as e:
@@ -1591,6 +1640,112 @@ def call_llm_for_salib_analysis(
 
     except Exception as e:
         logger.error(f"Error in call_llm_for_salib_analysis: {e}", exc_info=True)
+        return None, None
+
+
+def call_llm_for_academic_report(
+    analysis_report: str,
+    glossary_content: str,
+    api_key: str,
+    base_url: str,
+    ai_model: str,
+    problem_details: dict,
+    metric_names: list,
+    method: str,
+) -> Tuple[str, str]:
+    """Sends an analysis report and a glossary to an LLM to generate a professional academic report."""
+    try:
+        logger.info("Proceeding with LLM for academic report generation.")
+
+        param_names_str = ", ".join(
+            [f"`{name}`" for name in problem_details.get("names", [])]
+        )
+        metric_names_str = ", ".join([f"`{name}`" for name in metric_names])
+
+        SENSITIVITY_ACADEMIC_PROMPT = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。
+
+**任务：** 您收到了一个关于**SALib敏感性分析**的程序生成的初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
+
+**指令：**
+
+1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `Startup_Inventory`）替换为术语表中对应的“中文翻译”或“英文术语”。
+2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。
+3.  **结构化报告：** 您的报告是关于一项**敏感性分析**。报告应包含以下部分：
+    *   **摘要 (Abstract):** 简要概括本次敏感性研究的目的，明确指明分析的输入参数是 {param_names_str}，总结哪些参数对关键性能指标 ({metric_names_str}) 影响最显著，并陈述核心结论。
+    *   **引言 (Introduction):** 描述进行这项敏感性分析的背景和重要性。阐述研究目标，即量化评估输入参数的变化对氚燃料循环系统性能的影响。
+    *   **方法 (Methodology):** 简要说明分析方法。指出本次分析采用了SALib库，并提及具体的敏感性分析方法（如Sobol、Morris等）。说明被评估的关键性能指标是 {metric_names_str}，以及输入参数 {param_names_str} 的变化范围。
+    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的数据和图表（虽然图表未在此处提供，但请在文字中假设它们存在并进行讨论），分点详细论述：
+        *   对于每个性能指标，哪些输入参数是一阶敏感性（S1）或总体敏感性（ST）最高的？
+        *   对于Morris方法，哪些参数的 `μ*` 值最高，表明其影响最重要？`σ` 值的大小又说明了什么（参数间的交互或非线性效应）？
+        *   分析不同指标之间的**权衡关系 (Trade-offs)**。例如，某个参数对 `Startup_Inventory` 有正面影响，但可能对 `Doubling_Time` 有负面影响。
+    *   **结论 (Conclusion):** 总结本次敏感性分析得出的主要学术结论，并对反应堆设计或未来研究方向提出具体建议。
+4.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
+
+**输入文件：**
+"""
+
+        UNCERTAINTY_ACADEMIC_PROMPT = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家，擅长进行**不确定性量化 (UQ)** 和风险评估。
+
+**任务：** 您收到了一个基于**拉丁超立方采样 (LHS)** 的不确定性分析初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
+
+**指令：**
+
+1.  **专业化语言：** 将初步报告中的模型参数/缩写替换为术语表中对应的专业词汇。
+2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现，聚焦于**不确定性**的量化和解读。
+3.  **结构化报告：** 您的报告是关于一项**不确定性分析**。报告应包含以下部分：
+    *   **摘要 (Abstract):** 简要概括本次不确定性研究的目的，明确指出分析的输入参数是 {param_names_str}，总结这些参数的不确定性对关键性能指标 ({metric_names_str}) 的输出分布（如均值、标准差、置信区间）有何影响。
+    *   **引言 (Introduction):** 描述进行这项不确定性分析的背景和重要性。阐述研究目标，即量化评估当输入参数 {param_names_str} 在其定义域内变化时，氚燃料循环系统关键性能指标的统计分布和稳定性。
+    *   **方法 (Methodology):** 简要说明分析方法。指出本次分析采用了拉丁超立方采样（LHS）方法来对输入参数空间进行抽样。说明被评估的关键性能指标是 {metric_names_str}，以及输入参数的概率分布和范围。
+    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的统计数据（均值、标准差、百分位数等）和图表（如直方图、箱线图），分点详细论述：
+        *   对于每个性能指标，其输出的**概率分布**是怎样的？（例如，是正态分布、偏态分布还是双峰分布？）
+        *   输出指标的**不确定性范围**有多大？（参考标准差和5%-95%百分位数区间）。这个范围在工程实践中是否可以接受？
+        *   是否存在某些指标的波动范围过大，可能导致系统性能低于设计要求或存在运行风险？
+        *   虽然LHS主要用于UQ，但如果初步报告中包含了基于相关性的敏感性分析（如斯皮尔曼等级相关系数），可以简要提及哪些参数对输出不确定性的贡献最大。
+    *   **结论 (Conclusion):** 总结本次不确定性分析得出的主要学术结论（例如，模型的稳定性、输出指标的可靠性等），并对降低关键指标不确定性或未来的风险评估提出具体建议。
+4.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
+
+**输入文件：**
+"""
+
+        if method == "latin":
+            ACADEMIC_REPORT_PROMPT_WRAPPER = UNCERTAINTY_ACADEMIC_PROMPT
+        else:
+            ACADEMIC_REPORT_PROMPT_WRAPPER = SENSITIVITY_ACADEMIC_PROMPT
+
+        full_prompt = f"{ACADEMIC_REPORT_PROMPT_WRAPPER}\n\n---\n### 1. 初步分析报告\n---\n{analysis_report}\n\n---\n### 2. 专业术语表\n---\n{glossary_content}"
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                client = openai.OpenAI(api_key=api_key, base_url=base_url)
+                logger.info(
+                    f"Sending data for academic report to LLM (Attempt {attempt + 1}/{max_retries})..."
+                )
+
+                response = client.chat.completions.create(
+                    model=ai_model,
+                    messages=[{"role": "user", "content": full_prompt}],
+                    max_tokens=4000,
+                )
+                academic_report = response.choices[0].message.content
+
+                logger.info("LLM academic report generation successful.")
+                return ACADEMIC_REPORT_PROMPT_WRAPPER, academic_report
+
+            except Exception as e:
+                logger.error(
+                    f"Error calling LLM for academic report on attempt {attempt + 1}: {e}"
+                )
+                if attempt < max_retries - 1:
+                    time.sleep(5)
+                else:
+                    logger.error(
+                        f"Failed to get LLM academic report after {max_retries} attempts."
+                    )
+                    return None, None
+
+    except Exception as e:
+        logger.error(f"Error in call_llm_for_academic_report: {e}", exc_info=True)
         return None, None
 
 

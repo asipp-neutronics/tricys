@@ -37,3 +37,8 @@ test_example/
 
 # Environment variables file
 .env
+
+# Ignore cfedr directories
+cfedr*/
+
+cfedr/*

@@ -2,7 +2,6 @@ import json
 import logging
 import os
 
-import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -49,14 +48,43 @@ def analyze_rise_dip(results_df: pd.DataFrame, output_dir: str, **kwargs):
             )
             continue
 
-        data = results_df[col_name].to_numpy()
+        series = results_df[col_name]
         rises = False
-        if len(data) > 2:
-            diffs = np.diff(data)
-            mid_index = len(diffs) // 2
-            has_dip = np.any(diffs[:mid_index] < 0)
-            has_rise = np.any(diffs[mid_index:] > 0)
-            rises = has_dip and has_rise
+        if len(series) > 2:
+            # This logic is inspired by `time_of_turning_point` from `tricys/analysis/metric.py`.
+            # It uses a smoothed series to determine if there is a 'dip and rise' trend.
+            window_size = max(1, int(len(series) * 0.001))  # 0.1% smoothing window
+            smoothed = series.rolling(
+                window=window_size, center=True, min_periods=1
+            ).mean()
+
+            min_pos_index = smoothed.idxmin()
+            min_val = smoothed.loc[min_pos_index]
+
+            logger.info(
+                f"Analyzing curve '{col_name}': min at index {min_pos_index} with value {min_val}"
+            )
+
+            # Check if the minimum is at the beginning or end of the series
+            is_min_at_boundary = (min_pos_index == smoothed.index[0]) or (
+                min_pos_index == smoothed.index[-1]
+            )
+
+            if not is_min_at_boundary:
+                # Check if it dips from the start and rises to the end.
+                # A small tolerance is used to avoid issues with noise.
+                series_range = smoothed.max() - smoothed.min()
+                # Avoid division by zero or NaN tolerance if series is flat
+                if series_range > 1e-9:
+                    tolerance = series_range * 0.001  # 0.1% of range as tolerance
+                else:
+                    tolerance = 0
+
+                start_val = smoothed.iloc[0]
+                end_val = smoothed.iloc[-1]
+
+                if start_val > min_val + tolerance and end_val > min_val + tolerance:
+                    rises = True
 
         # Record the analysis result for every curve
         info = job_params.copy()

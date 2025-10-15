@@ -160,6 +160,18 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
         )
         mod.simulate(resultfile=Path(primary_result_filename).as_posix())
 
+        # Clean up the simulation result file
+        if os.path.exists(primary_result_filename):
+            try:
+                df = pd.read_csv(primary_result_filename)
+                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
+                df.dropna(subset=["time"], inplace=True)
+                df.to_csv(primary_result_filename, index=False)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to clean result file {primary_result_filename}: {e}"
+                )
+
         interception_configs = []
         for co_sim_config in co_sim_configs:
             handler_module = importlib.import_module(co_sim_config["handler_module"])
@@ -222,6 +234,18 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
             job_workspace, "co_simulation_results.csv"
         )
         verif_mod.simulate(resultfile=Path(default_result_path).as_posix())
+
+        # Clean up the simulation result file
+        if os.path.exists(default_result_path):
+            try:
+                df = pd.read_csv(default_result_path)
+                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
+                df.dropna(subset=["time"], inplace=True)
+                df.to_csv(default_result_path, index=False)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to clean result file {default_result_path}: {e}"
+                )
 
         if not os.path.exists(default_result_path):
             raise FileNotFoundError(
@@ -287,6 +311,16 @@ def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
 
         mod.simulate(resultfile=Path(result_path).as_posix())
 
+        # Clean up the simulation result file
+        if os.path.exists(result_path):
+            try:
+                df = pd.read_csv(result_path)
+                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
+                df.dropna(subset=["time"], inplace=True)
+                df.to_csv(result_path, index=False)
+            except Exception as e:
+                logger.warning(f"Failed to clean result file {result_path}: {e}")
+
         if not result_path.is_file():
             raise FileNotFoundError(
                 f"Simulation for job {job_id} failed to produce result file at {result_path}"
@@ -340,7 +374,7 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                 f"stepSize={sim_config['step_size']}",
             ]
         )
-        mod.buildModel()
+        # mod.buildModel()
 
         for i, job_params in enumerate(jobs):
             try:
@@ -360,6 +394,18 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                 result_file_path = os.path.join(job_workspace, result_filename)
 
                 mod.simulate(resultfile=Path(result_file_path).as_posix())
+
+                # Clean up the simulation result file
+                if os.path.exists(result_file_path):
+                    try:
+                        df = pd.read_csv(result_file_path)
+                        df.drop_duplicates(subset=["time"], keep="last", inplace=True)
+                        df.dropna(subset=["time"], inplace=True)
+                        df.to_csv(result_file_path, index=False)
+                    except Exception as e:
+                        logger.warning(
+                            f"Failed to clean result file {result_file_path}: {e}"
+                        )
 
                 logger.info(
                     f"Sequential job {i+1} finished. Results at {result_file_path}"
@@ -565,7 +611,10 @@ def run_simulation(config: Dict[str, Any]):
 
         # Create a dictionary to map old column names to new ones
         # e.g., {'voltage': 'voltage&param1=A&param2=B'}
-        rename_mapping = {col: f"{col}&{param_string}" for col in data_columns.columns}
+        rename_mapping = {
+            col: f"{col}&{param_string}" if param_string else col
+            for col in data_columns.columns
+        }
 
         # Rename the columns and add the resulting DataFrame to our list
         all_dfs.append(data_columns.rename(columns=rename_mapping))

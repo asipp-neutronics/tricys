@@ -29,11 +29,42 @@ def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
     """
     Finds the time of the turning point (minimum value) in the series.
     This represents the self-sufficiency time.
+    To handle noisy data, it first smooths the series to determine if an
+    overall turning point exists. If the minimum of the smoothed trend is at
+    the beginning or end of the series (indicating a monotonic trend),
+    it returns NaN. Otherwise, it returns the time of the minimum value from
+    the original, unsmoothed data.
     """
+
+    print(
+        f"Calculating time_of_turning_point for series with length {len(series)} and {len(time_series)} "
+    )
     if time_series is None:
         raise ValueError("time_series must be provided for time_of_turning_point")
+
+    # Define a window size for the rolling average, e.g., 5% of the data length
+    # with a minimum size of 1. This helps in smoothing out local fluctuations.
+    window_size = max(1, int(len(series) * 0.001))
+    smoothed_series = series.rolling(
+        window=window_size, center=True, min_periods=1
+    ).mean()
+
+    # Find the index label of the minimum value in the smoothed series.
+    smooth_min_index = smoothed_series.idxmin()
     min_index = series.idxmin()
-    return time_series.loc[min_index]
+
+    # Check if the minimum of the smoothed data is within the first or last 5%
+    # of the series. If so, the trend is considered monotonic.
+    smooth_min_pos = series.index.get_loc(smooth_min_index)
+    five_percent_threshold = int(len(series) * 0.3)
+
+    if smooth_min_pos >= len(series) - five_percent_threshold:
+        return np.nan
+    else:
+        # A clear turning point is identified in the overall trend.
+        # Now, find the precise turning point in the original, noisy data.
+        min_index = series.idxmin()
+        return time_series.loc[min_index]
 
 
 def calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float:
@@ -79,16 +110,17 @@ def extract_metrics(
         A pivoted DataFrame where index are the parameters, columns are metric names,
         and values are the calculated metric values.
     """
-    all_params = set()
-    all_params.add(analysis_case["independent_variable"])
 
     analysis_results = []
 
     source_to_metric = {}
-    for metric_name, definition in metrics_definition.items():
-        # If the metric is calculated via optimization, it's not extracted from results here.
-        # The main simulation script handles it. So, we skip it.
-        if definition.get("method") == "bisection_search":
+    dependent_vars = analysis_case.get("dependent_variables", [])
+
+    for metric_name in dependent_vars:
+        definition = metrics_definition.get(metric_name)
+
+        # If the metric is not in the definition or is calculated via optimization, skip it.
+        if not definition or definition.get("method") == "bisection_search":
             continue
 
         source = definition["source_column"]
