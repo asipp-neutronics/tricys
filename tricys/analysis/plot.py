@@ -14,15 +14,86 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+_english_glossary_map = {}
+_chinese_glossary_map = {}
+_use_chinese_labels = False
+
+
+def set_plot_language(lang: str = "en"):
+    """
+    Sets the preferred language for plot labels.
+    Args:
+        lang (str): 'en' for English (default), 'cn' for Chinese.
+    """
+    global _use_chinese_labels
+    _use_chinese_labels = lang.lower() == "cn"
+
+
+def load_glossary(glossary_path: str):
+    """
+    Loads glossary data from the specified CSV path into global dictionaries.
+    """
+    global _english_glossary_map, _chinese_glossary_map
+
+    if not glossary_path or not os.path.exists(glossary_path):
+        print(
+            f"Warning: Glossary file not found at {glossary_path}. No labels will be loaded."
+        )
+        _english_glossary_map = {}
+        _chinese_glossary_map = {}
+        return
+
+    try:
+        df = pd.read_csv(glossary_path)
+        if (
+            "模型参数 (Model Parameter)" in df.columns
+            and "英文术语 (English Term)" in df.columns
+            and "中文翻译 (Chinese Translation)" in df.columns
+        ):
+            df.dropna(subset=["模型参数 (Model Parameter)"], inplace=True)
+            _english_glossary_map = pd.Series(
+                df["英文术语 (English Term)"].values,
+                index=df["模型参数 (Model Parameter)"],
+            ).to_dict()
+            _chinese_glossary_map = pd.Series(
+                df["中文翻译 (Chinese Translation)"].values,
+                index=df["模型参数 (Model Parameter)"],
+            ).to_dict()
+            print(f"Successfully loaded glossary from {glossary_path}.")
+        else:
+            print("Warning: Glossary CSV does not contain expected columns.")
+            _english_glossary_map = {}
+            _chinese_glossary_map = {}
+    except Exception as e:
+        print(f"Warning: Failed to load or parse glossary file. Error: {e}")
+        _english_glossary_map = {}
+        _chinese_glossary_map = {}
+
 
 def _format_label(label: str) -> str:
-    """Formats a label for display, replacing underscores/dots with spaces and capitalizing each word."""
+    """
+    Formats a label for display. It first attempts to find a professional
+    term from the loaded glossary. If not found, it falls back to simple
+    string formatting.
+    """
+    global _english_glossary_map, _chinese_glossary_map, _use_chinese_labels
+
     if not isinstance(label, str):
         return label
-    label = label.replace("_", " ")
-    # Replace dots that are not part of a number with a space
-    label = re.sub(r"(?<!\d)\.|\.(?!\d)", " ", label)
-    return label
+
+    glossary_map = (
+        _chinese_glossary_map if _use_chinese_labels else _english_glossary_map
+    )
+
+    if glossary_map and label in glossary_map:
+        term = glossary_map[label]
+        if pd.notna(term) and str(term).strip():
+            return str(term)
+
+    # Fallback to simple formatting
+    formatted_label = label.replace("_", " ")
+    formatted_label = re.sub(r"(?<!\d)\.|\.(?!\d)", " ", formatted_label)
+    return formatted_label
 
 
 def _find_unit_config(var_name: str, unit_map: dict) -> dict | None:
@@ -228,7 +299,11 @@ def _generate_multi_required_plot(
 
 
 def generate_analysis_plots(
-    summary_df: pd.DataFrame, analysis_case: dict, save_dir: str, unit_map: dict = None
+    summary_df: pd.DataFrame,
+    analysis_case: dict,
+    save_dir: str,
+    unit_map: dict = None,
+    glossary_path: str = None,
 ) -> list:
     """
     Generates and saves plots based on the sensitivity analysis summary.
@@ -240,10 +315,14 @@ def generate_analysis_plots(
         analysis_case: Configuration for the analysis cases.
         save_dir: Directory to save the plot images.
         unit_map: Optional dictionary for unit conversion and labeling.
+        glossary_path: Optional path to the glossary CSV file for professional labels.
 
     Returns:
         A list of paths to the saved plot images.
     """
+    if glossary_path:
+        load_glossary(glossary_path)
+
     if summary_df.empty:
         return []
 
@@ -666,6 +745,7 @@ def plot_sweep_time_series(
     independent_var_name: str,
     independent_var_alias: str = None,
     default_params: Dict[str, Any] = None,
+    glossary_path: str = None,
 ) -> str:
     """
     Generates a single figure with two subplots: an overall time-series view and a
@@ -680,10 +760,14 @@ def plot_sweep_time_series(
         independent_var_alias (str): Alias for the scan parameter for cleaner plot titles.
         default_params (Dict[str, Any], optional): A dictionary of default parameters.
             If provided, only curves matching these parameters will be plotted.
+        glossary_path (str, optional): Path to the glossary file for professional labels.
 
     Returns:
         The path to the saved plot image, or None on failure.
     """
+    if glossary_path:
+        load_glossary(glossary_path)
+
     try:
         df = pd.read_csv(csv_path)
     except FileNotFoundError:

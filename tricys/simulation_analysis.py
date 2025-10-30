@@ -613,8 +613,13 @@ def _run_sensitivity_analysis(
 
         # Generate analysis charts
         unit_map = analysis_config.get("unit_map", {})
+        glossary_path = analysis_config.get("glossary_path", "")
         generate_analysis_plots(
-            df_to_save, analysis_case, run_results_dir, unit_map=unit_map
+            df_to_save,
+            analysis_case,
+            run_results_dir,
+            unit_map=unit_map,
+            glossary_path=glossary_path,
         )
 
     except Exception as e:
@@ -1803,6 +1808,9 @@ def run_simulation(config: Dict[str, Any]):
                     independent_var_name=independent_var,
                     independent_var_alias=independent_var_alias,
                     default_params=default_values,  # Pass default values to the plot function
+                    glossary_path=config["sensitivity_analysis"].get(
+                        "glossary_path", None
+                    ),
                 )
                 if plot_path:
                     logger.info(f"Sweep time series plot generated: {plot_path}")
