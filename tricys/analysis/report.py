@@ -1066,6 +1066,294 @@ def generate_prompt_templates(
         logger.error(f"Error generating detailed analysis reports: {e}", exc_info=True)
 
 
+def _retry_salib_case(case_info: Dict[str, Any], original_config: Dict[str, Any]):
+    """Retries AI analysis for a single SALib case."""
+    from tricys.analysis.salib import (
+        call_llm_for_academic_report,
+        call_llm_for_salib_analysis,
+    )
+
+    case_data = case_info["case_data"]
+    case_name = case_data.get("name", f"SALibCase{case_info['index']+1}")
+
+    results_dir = os.path.join(case_info["workspace"], "results")
+
+    if not results_dir:
+        logger.error(
+            "'paths.results_dir' not found in config. Cannot retry SALib case."
+        )
+        return
+
+    salib_report_dir = results_dir
+    if not os.path.isdir(salib_report_dir):
+        logger.warning(
+            f"SALib report directory '{salib_report_dir}' not found for case {case_name}, skipping retry."
+        )
+        return
+
+    load_dotenv()
+    api_key = os.environ.get("API_KEY")
+    base_url = os.environ.get("BASE_URL")
+    ai_models_str = os.environ.get("AI_MODELS") or os.environ.get("AI_MODEL")
+
+    if not all((api_key, base_url, ai_models_str)):
+        logger.warning(
+            f"API credentials not found. Skipping SALib AI analysis retry for case {case_name}."
+        )
+        return
+
+    ai_model_to_use = [model.strip() for model in ai_models_str.split(",")][0]
+    logger.info(
+        f"Checking for SALib retry: case '{case_name}' with model '{ai_model_to_use}'."
+    )
+
+    main_report_path = os.path.join(salib_report_dir, "analysis_report.md")
+    academic_report_path = os.path.join(salib_report_dir, "academic_report.md")
+
+    if not os.path.exists(main_report_path):
+        logger.warning(
+            f"SALib base report '{main_report_path}' not found. Cannot retry."
+        )
+        return
+
+    with open(main_report_path, "r", encoding="utf-8") as f:
+        report_content = f.read()
+
+    llm_summary = None
+    if "AI模型分析结果" not in report_content:
+        logger.info(
+            f"SALib AI analysis result not found in '{main_report_path}'. Retrying..."
+        )
+        method = case_data["analyzer"]["method"]
+        wrapper_prompt, llm_summary = call_llm_for_salib_analysis(
+            report_content=report_content,
+            api_key=api_key,
+            base_url=base_url,
+            ai_model=ai_model_to_use,
+            method=method,
+        )
+        if wrapper_prompt and llm_summary:
+            with open(main_report_path, "a", encoding="utf-8") as f:
+                f.write("\n\n---\n\n# AI模型分析提示词\n\n")
+                f.write("```markdown\n")
+                f.write(wrapper_prompt)
+                f.write("\n```\n\n")
+                f.write("\n\n---\n\n# AI模型分析结果\n\n")
+                f.write(llm_summary)
+            logger.info(f"Successfully appended LLM analysis to {main_report_path}")
+            with open(main_report_path, "r", encoding="utf-8") as f:
+                report_content = f.read()
+        else:
+            logger.error(
+                f"Failed to generate LLM analysis for {main_report_path} on retry."
+            )
+            return
+
+    if not os.path.exists(academic_report_path):
+        if llm_summary is None:
+            match = re.search(r"# AI模型分析结果\n\n(.*)", report_content, re.S)
+            if match:
+                llm_summary = match.group(1).strip()
+            else:
+                logger.warning(
+                    f"Could not find existing LLM summary in {main_report_path} to generate academic report."
+                )
+                return
+
+        logger.info(
+            f"SALib academic report '{academic_report_path}' not found. Generating..."
+        )
+        glossary_path = original_config.get("sensitivity_analysis", {}).get(
+            "glossary_path"
+        )
+        if not glossary_path or not os.path.exists(glossary_path):
+            logger.warning(
+                f"Glossary file not found at {glossary_path}, skipping academic report generation."
+            )
+            return
+        with open(glossary_path, "r", encoding="utf-8") as f:
+            glossary_content = f.read()
+
+        analysis_case = case_data
+        param_names = analysis_case.get("independent_variable")
+        sampling_details = analysis_case.get("independent_variable_sampling")
+        param_bounds = {
+            name: sampling_details[name]["bounds"]
+            for name in param_names
+            if name in sampling_details
+        }
+        param_dists = {
+            name: sampling_details[name].get("distribution", "unif")
+            for name in param_names
+            if name in sampling_details
+        }
+        problem_details = {
+            "num_vars": len(param_bounds),
+            "names": list(param_bounds.keys()),
+            "bounds": list(param_bounds.values()),
+            "dists": [param_dists.get(name, "unif") for name in param_bounds.keys()],
+        }
+        metric_names = case_data.get("dependent_variables", [])
+        method = case_data["analyzer"]["method"]
+
+        (
+            academic_wrapper_prompt,
+            academic_report,
+        ) = call_llm_for_academic_report(
+            analysis_report=llm_summary,
+            glossary_content=glossary_content,
+            api_key=api_key,
+            base_url=base_url,
+            ai_model=ai_model_to_use,
+            problem_details=problem_details,
+            metric_names=metric_names,
+            method=method,
+            save_dir=salib_report_dir,
+        )
+        if academic_wrapper_prompt and academic_report:
+            with open(academic_report_path, "w", encoding="utf-8") as f:
+                f.write(academic_report)
+            logger.info(
+                f"Successfully generated academic report: {academic_report_path}"
+            )
+    else:
+        logger.info(
+            f"SALib academic report '{academic_report_path}' already exists. Skipping generation."
+        )
+
+
+def _retry_standard_case(case_info: Dict[str, Any], original_config: Dict[str, Any]):
+    """Retries AI analysis for a single standard case."""
+    case_data = case_info["case_data"]
+    case_workspace = case_info["workspace"]
+    case_name = case_data.get("name", f"Case{case_info['index']+1}")
+
+    if not case_data.get("ai", False):
+        logger.debug(f"AI is disabled for case {case_name}, skipping retry.")
+        return
+
+    case_results_dir = os.path.join(case_workspace, "results")
+    if not os.path.isdir(case_results_dir):
+        logger.warning(
+            f"Results directory not found for case {case_name}, skipping retry."
+        )
+        return
+
+    load_dotenv()
+    api_key = os.environ.get("API_KEY")
+    base_url = os.environ.get("BASE_URL")
+    ai_models_str = os.environ.get("AI_MODELS") or os.environ.get("AI_MODEL")
+
+    if not all((api_key, base_url, ai_models_str)):
+        logger.warning(
+            "API credentials not found. Skipping AI analysis retry for all cases."
+        )
+        return
+
+    ai_models = [model.strip() for model in ai_models_str.split(",")]
+    independent_variable = case_data.get("independent_variable", "燃烧率")
+
+    for ai_model in ai_models:
+        logger.info(f"Checking for retry: case '{case_name}' with model '{ai_model}'.")
+        sanitized_model_name = "".join(
+            c for c in ai_model if c.isalnum() or c in ("-", "_")
+        ).rstrip()
+        model_report_filename = f"analysis_report_{case_name}_{sanitized_model_name}.md"
+        model_report_path = os.path.join(case_results_dir, model_report_filename)
+
+        if not os.path.exists(model_report_path):
+            logger.warning(
+                f"Base report '{model_report_path}' not found. Cannot retry. Please run the full analysis first."
+            )
+            continue
+
+        with open(model_report_path, "r", encoding="utf-8") as f:
+            report_content = f.read()
+
+        if "AI模型分析结果" not in report_content:
+            logger.info(
+                f"AI analysis result not found in '{model_report_path}'. Retrying generation..."
+            )
+            summary_csv_path = os.path.join(
+                case_results_dir, "sensitivity_analysis_summary.csv"
+            )
+            if not os.path.exists(summary_csv_path):
+                logger.error(
+                    f"Summary CSV not found for case {case_name}, cannot retry."
+                )
+                continue
+            summary_df = pd.read_csv(summary_csv_path)
+            reference_col_for_turning_point = None
+            sweep_csv_path = os.path.join(case_results_dir, "sweep_results.csv")
+            if case_data.get("sweep_time") and os.path.exists(sweep_csv_path):
+                try:
+                    sweep_df = pd.read_csv(sweep_csv_path)
+                    if "time" in sweep_df.columns and len(sweep_df.columns) > 1:
+                        reference_col_for_turning_point = sweep_df.columns[
+                            len(sweep_df.columns) // 2
+                        ]
+                except Exception as e:
+                    logger.warning(
+                        f"Could not determine reference_col_for_turning_point for retry: {e}"
+                    )
+            llm_analysis = call_openai_analysis_api(
+                case_name=case_name,
+                df=summary_df,
+                api_key=api_key,
+                base_url=base_url,
+                ai_model=ai_model,
+                independent_variable=independent_variable,
+                report_content=report_content,
+                original_config=original_config,
+                case_data=case_data,
+                reference_col_for_turning_point=reference_col_for_turning_point,
+            )
+            if llm_analysis:
+                with open(model_report_path, "a", encoding="utf-8") as f:
+                    f.write(
+                        f"\n\n---\n\n# AI模型分析提示词 ({ai_model})\n\n```markdown\n"
+                    )
+                    f.write(llm_analysis)
+                    f.write("\n```\n")
+                logger.info(
+                    f"Successfully appended LLM analysis to {model_report_path}"
+                )
+                with open(model_report_path, "r", encoding="utf-8") as f:
+                    report_content = f.read()
+            else:
+                logger.error(
+                    f"Failed to generate LLM analysis for {model_report_path} on retry."
+                )
+                continue
+
+        academic_report_filename = (
+            f"academic_report_{case_name}_{sanitized_model_name}.md"
+        )
+        academic_report_path = os.path.join(case_results_dir, academic_report_filename)
+        if not os.path.exists(academic_report_path):
+            if "AI模型分析结果" in report_content:
+                logger.info(
+                    f"Academic report '{academic_report_path}' not found. Generating..."
+                )
+                generate_sensitivity_academic_report(
+                    case_name=case_name,
+                    case_workspace=case_workspace,
+                    independent_variable=independent_variable,
+                    original_config=original_config,
+                    case_data=case_data,
+                    ai_model=ai_model,
+                    report_path=model_report_path,
+                )
+            else:
+                logger.warning(
+                    f"Skipping academic report for {case_name} as main AI analysis is still missing after retry."
+                )
+        else:
+            logger.info(
+                f"Academic report '{academic_report_path}' already exists. Skipping generation."
+            )
+
+
 def retry_ai_analysis(
     case_configs: List[Dict[str, Any]], original_config: Dict[str, Any]
 ):
@@ -1078,154 +1366,10 @@ def retry_ai_analysis(
     try:
         for case_info in case_configs:
             case_data = case_info["case_data"]
-            case_workspace = case_info["workspace"]
-            case_name = case_data.get("name", f"Case{case_info['index']+1}")
-
             if "analyzer" in case_data and case_data.get("analyzer", {}).get("method"):
-                logger.debug(f"Skipping SALib case during retry: {case_name}")
-                continue
-
-            if not case_data.get("ai", False):
-                logger.debug(f"AI is disabled for case {case_name}, skipping retry.")
-                continue
-
-            case_results_dir = os.path.join(case_workspace, "results")
-            if not os.path.isdir(case_results_dir):
-                logger.warning(
-                    f"Results directory not found for case {case_name}, skipping retry."
-                )
-                continue
-
-            load_dotenv()
-            api_key = os.environ.get("API_KEY")
-            base_url = os.environ.get("BASE_URL")
-            ai_models_str = os.environ.get("AI_MODELS") or os.environ.get("AI_MODEL")
-
-            if not all((api_key, base_url, ai_models_str)):
-                logger.warning(
-                    "API credentials not found. Skipping AI analysis retry for all cases."
-                )
-                return
-
-            ai_models = [model.strip() for model in ai_models_str.split(",")]
-            independent_variable = case_data.get("independent_variable", "燃烧率")
-
-            for ai_model in ai_models:
-                logger.info(
-                    f"Checking for retry: case '{case_name}' with model '{ai_model}'."
-                )
-                sanitized_model_name = "".join(
-                    c for c in ai_model if c.isalnum() or c in ("-", "_")
-                ).rstrip()
-                model_report_filename = (
-                    f"analysis_report_{case_name}_{sanitized_model_name}.md"
-                )
-                model_report_path = os.path.join(
-                    case_results_dir, model_report_filename
-                )
-
-                if not os.path.exists(model_report_path):
-                    logger.warning(
-                        f"Base report '{model_report_path}' not found. Cannot retry. Please run the full analysis first."
-                    )
-                    continue
-
-                with open(model_report_path, "r", encoding="utf-8") as f:
-                    report_content = f.read()
-
-                # Check if main AI analysis is missing
-                if "AI模型分析结果" not in report_content:
-                    logger.info(
-                        f"AI analysis result not found in '{model_report_path}'. Retrying generation..."
-                    )
-
-                    summary_csv_path = os.path.join(
-                        case_results_dir, "sensitivity_analysis_summary.csv"
-                    )
-                    if not os.path.exists(summary_csv_path):
-                        logger.error(
-                            f"Summary CSV not found for case {case_name}, cannot retry."
-                        )
-                        continue
-                    summary_df = pd.read_csv(summary_csv_path)
-
-                    reference_col_for_turning_point = None
-                    sweep_csv_path = os.path.join(case_results_dir, "sweep_results.csv")
-                    if case_data.get("sweep_time") and os.path.exists(sweep_csv_path):
-                        try:
-                            sweep_df = pd.read_csv(sweep_csv_path)
-                            if "time" in sweep_df.columns and len(sweep_df.columns) > 1:
-                                reference_col_for_turning_point = sweep_df.columns[
-                                    len(sweep_df.columns) // 2
-                                ]
-                        except Exception as e:
-                            logger.warning(
-                                f"Could not determine reference_col_for_turning_point for retry: {e}"
-                            )
-
-                    llm_analysis = call_openai_analysis_api(
-                        case_name=case_name,
-                        df=summary_df,
-                        api_key=api_key,
-                        base_url=base_url,
-                        ai_model=ai_model,
-                        independent_variable=independent_variable,
-                        report_content=report_content,
-                        original_config=original_config,
-                        case_data=case_data,
-                        reference_col_for_turning_point=reference_col_for_turning_point,
-                    )
-
-                    if llm_analysis:
-                        with open(model_report_path, "a", encoding="utf-8") as f:
-                            f.write(
-                                f"\n\n---\n\n# AI模型分析提示词 ({ai_model})\n\n```markdown\n"
-                            )
-                            f.write(llm_analysis)
-                            f.write("\n```\n")
-                        logger.info(
-                            f"Successfully appended LLM analysis to {model_report_path}"
-                        )
-                        # Update content in memory for the next step
-                        with open(model_report_path, "r", encoding="utf-8") as f:
-                            report_content = f.read()
-                    else:
-                        logger.error(
-                            f"Failed to generate LLM analysis for {model_report_path} on retry."
-                        )
-                        continue
-
-                # Check if academic report is missing
-                academic_report_filename = (
-                    f"academic_report_{case_name}_{sanitized_model_name}.md"
-                )
-                academic_report_path = os.path.join(
-                    case_results_dir, academic_report_filename
-                )
-
-                if not os.path.exists(academic_report_path):
-                    if "AI模型分析结果" in report_content:
-                        logger.info(
-                            f"Academic report '{academic_report_path}' not found. Generating..."
-                        )
-                        generate_sensitivity_academic_report(
-                            case_name=case_name,
-                            case_workspace=case_workspace,
-                            independent_variable=independent_variable,
-                            original_config=original_config,
-                            case_data=case_data,
-                            ai_model=ai_model,
-                            report_path=model_report_path,
-                        )
-                    else:
-                        logger.warning(
-                            f"Skipping academic report for {case_name} as main AI analysis is still missing after retry."
-                        )
-                else:
-                    logger.info(
-                        f"Academic report '{academic_report_path}' already exists. Skipping generation."
-                    )
-
+                _retry_salib_case(case_info, original_config)
+            else:
+                _retry_standard_case(case_info, original_config)
     except Exception as e:
         logger.error(f"Error during AI analysis retry process: {e}", exc_info=True)
 

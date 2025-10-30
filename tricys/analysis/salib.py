@@ -154,6 +154,26 @@ class TricysSALibAnalyzer:
                 f"Model file does not exist: {package_path}, which may cause simulation failure"
             )
 
+    def _find_unit_config(self, var_name: str, unit_map: dict) -> dict | None:
+        """
+        Finds the unit configuration for a variable name from the unit_map.
+        1. Checks for an exact match.
+        2. Checks if the last part of a dot-separated name matches.
+        3. Checks for a simple substring containment as a fallback, matching longest keys first.
+        """
+        if not unit_map or not var_name:
+            return None
+        if var_name in unit_map:
+            return unit_map[var_name]
+        components = var_name.split(".")
+        if len(components) > 1 and components[-1] in unit_map:
+            return unit_map[components[-1]]
+        # Fallback to substring match, longest key first
+        for key in sorted(unit_map.keys(), key=len, reverse=True):
+            if key in var_name:
+                return unit_map[key]
+        return None
+
     def define_problem(
         self,
         param_bounds: Dict[str, Tuple[float, float]],
@@ -1002,7 +1022,7 @@ class TricysSALibAnalyzer:
                     # Second LLM call for academic report
                     glossary_path = None
                     if isinstance(case_config, dict):
-                        glossary_path = case_config.get("glossary_path")
+                        glossary_path = sa_config.get("glossary_path")
 
                     if glossary_path and os.path.exists(glossary_path):
                         try:
@@ -1021,6 +1041,7 @@ class TricysSALibAnalyzer:
                                 problem_details=self.problem,
                                 metric_names=output_metrics,
                                 method=detected_method,
+                                save_dir=save_dir,
                             )
 
                             if academic_wrapper_prompt and academic_report:
@@ -1061,23 +1082,50 @@ class TricysSALibAnalyzer:
     ) -> str:
         """The result has been saved to: {save_dir}"""
         report_file = os.path.join(save_dir, "analysis_report.md")
-
+        # Determine analysis type based on sampling method
+        is_uncertainty_analysis = (
+            hasattr(self, "_last_sampling_method")
+            and self._last_sampling_method == "latin"
+        )
+        report_title = (
+            "# SALib 不确定性分析报告\n\n"
+            if is_uncertainty_analysis
+            else "# SALib 敏感性分析报告\n\n"
+        )
         report_lines = []
-        report_lines.append("# SALib 敏感性分析报告\n\n")
+        report_lines.append(report_title)
         report_lines.append(f"生成时间: {pd.Timestamp.now()}\n\n")
-
+        # Get unit_map from config
+        sensitivity_analysis_config = self.base_config.get("sensitivity_analysis", {})
+        unit_map = sensitivity_analysis_config.get("unit_map", {})
         report_lines.append("## 分析参数\n\n")
         if self.problem:
             for i, param_name in enumerate(self.problem["names"]):
                 bounds = self.problem["bounds"][i]
+                # --- Unit Conversion Logic for Bounds ---
+                unit_config = self._find_unit_config(param_name, unit_map)
+                display_bounds = list(bounds)
+                unit_str = ""
+                if unit_config:
+                    unit = unit_config.get("unit")
+                    factor = unit_config.get("conversion_factor")
+                    if factor:
+                        display_bounds[0] /= float(factor)
+                        display_bounds[1] /= float(factor)
+                    if unit:
+                        unit_str = f" ({unit})"
+                # --- End Conversion Logic ---
                 report_lines.append(
-                    f"- **{param_name}**: [{bounds[0]:.4f}, {bounds[1]:.4f}]\n"
+                    f"- **{param_name}**: [{display_bounds[0]:.4f}, {display_bounds[1]:.4f}]{unit_str}\n"
                 )
         report_lines.append("\n")
-
         for metric_name, metric_results in all_results.items():
-            report_lines.append(f"## {metric_name} 敏感性分析结果\n\n")
-
+            metric_section_title = (
+                f"## {metric_name} 不确定性分析结果\n\n"
+                if is_uncertainty_analysis
+                else f"## {metric_name} 敏感性分析结果\n\n"
+            )
+            report_lines.append(metric_section_title)
             if "sobol" in metric_results:
                 report_lines.append("### Sobol敏感性指数\n\n")
                 report_lines.append(
@@ -1086,7 +1134,6 @@ class TricysSALibAnalyzer:
                 report_lines.append(
                     "|------|----------|---------|------------|------------|\n"
                 )
-
                 sobol_data = metric_results["sobol"]
                 for i, param_name in enumerate(self.problem["names"]):
                     s1 = sobol_data["S1"][i]
@@ -1103,7 +1150,6 @@ class TricysSALibAnalyzer:
                 report_lines.append(
                     f"![Sobol Analysis for {metric_name}]({plot_filename})\n\n"
                 )
-
             if "morris" in metric_results:
                 report_lines.append("### Morris敏感性指数\n\n")
                 report_lines.append(
@@ -1112,7 +1158,6 @@ class TricysSALibAnalyzer:
                 report_lines.append(
                     "|------|-------------------|------------|------------|\n"
                 )
-
                 morris_data = metric_results["morris"]
                 for i, param_name in enumerate(self.problem["names"]):
                     mu_star = morris_data["mu_star"][i]
@@ -1128,12 +1173,10 @@ class TricysSALibAnalyzer:
                 report_lines.append(
                     f"![Morris Analysis for {metric_name}]({plot_filename})\n\n"
                 )
-
             if "fast" in metric_results:
                 report_lines.append("### FAST敏感性指数\n\n")
                 report_lines.append("| 参数 | S1 (一阶) | ST (总) |\n")
                 report_lines.append("|------|----------|---------|\n")
-
                 fast_data = metric_results["fast"]
                 for i, param_name in enumerate(self.problem["names"]):
                     s1 = fast_data["S1"][i]
@@ -1146,24 +1189,84 @@ class TricysSALibAnalyzer:
                 report_lines.append(
                     f"![FAST Analysis for {metric_name}]({plot_filename})\n\n"
                 )
-
             if "latin" in metric_results:
+                # --- Unit Conversion Logic for Metrics ---
+                unit_config = self._find_unit_config(metric_name, unit_map)
+                unit_str = ""
+                factor = 1.0
+                if unit_config:
+                    unit = unit_config.get("unit")
+                    conv_factor = unit_config.get("conversion_factor")
+                    if conv_factor:
+                        factor = float(conv_factor)
+                    if unit:
+                        unit_str = f" ({unit})"
+                # --- End Conversion Logic ---
+                # 1. Get raw data and clean it
+                output_index = metric_results["latin"]["output_index"]
+                Y = self.simulation_results[:, output_index]
+                Y_clean = Y[~np.isnan(Y)]
+                # --- Modify report generation ---
+                report_lines.append("### 统计摘要\n\n")
                 lhs_data = metric_results["latin"]
-                report_lines.append(f"- 均值: {lhs_data['mean']:.4f}\n")
-                report_lines.append(f"- 标准差: {lhs_data['std']:.4f}\n")
-                report_lines.append(f"- 最小值: {lhs_data['min']:.4f}\n")
-                report_lines.append(f"- 最大值: {lhs_data['max']:.4f}\n")
-                report_lines.append(f"- 5%分位数: {lhs_data['percentile_5']:.4f}\n")
-                report_lines.append(f"- 95%分位数: {lhs_data['percentile_95']:.4f}\n\n")
+                report_lines.append(
+                    f"- 均值: {lhs_data['mean']/factor:.4f}{unit_str}\n"
+                )
+                report_lines.append(
+                    f"- 标准差: {lhs_data['std']/factor:.4f}{unit_str}\n"
+                )
+                report_lines.append(
+                    f"- 最小值: {lhs_data['min']/factor:.4f}{unit_str}\n"
+                )
+                report_lines.append(
+                    f"- 最大值: {lhs_data['max']/factor:.4f}{unit_str}\n\n"
+                )
+                # 2. Calculate more percentiles
+                if len(Y_clean) > 0:
+                    percentiles_to_calc = [5, 10, 25, 50, 75, 90, 95]
+                    percentile_values = np.percentile(Y_clean, percentiles_to_calc)
+                    report_lines.append("### 分布关键点 (CDF)\n\n")
+                    report_lines.append(
+                        f"- 5%分位数: {percentile_values[0]/factor:.4f}{unit_str}\n"
+                    )
+                    report_lines.append(
+                        f"- 10%分位数: {percentile_values[1]/factor:.4f}{unit_str}\n"
+                    )
+                    report_lines.append(
+                        f"- 25%分位数 (Q1): {percentile_values[2]/factor:.4f}{unit_str}\n"
+                    )
+                    report_lines.append(
+                        f"- 50%分位数 (中位数): {percentile_values[3]/factor:.4f}{unit_str}\n"
+                    )
+                    report_lines.append(
+                        f"- 75%分位数 (Q3): {percentile_values[4]/factor:.4f}{unit_str}\n"
+                    )
+                    report_lines.append(
+                        f"- 90%分位数: {percentile_values[5]/factor:.4f}{unit_str}\n"
+                    )
+                    report_lines.append(
+                        f"- 95%分位数: {percentile_values[6]/factor:.4f}{unit_str}\n\n"
+                    )
+                    # 3. Calculate histogram data
+                    hist_freq, bin_edges = np.histogram(Y_clean, bins=10)
+                    report_lines.append("### 输出分布 (直方图数据)\n\n")
+                    report_lines.append("| 数值范围 | 频数 |\n")
+                    report_lines.append("|:---|---:|\n")
+                    for i in range(len(hist_freq)):
+                        lower_bound = bin_edges[i] / factor
+                        upper_bound = bin_edges[i + 1] / factor
+                        freq = hist_freq[i]
+                        report_lines.append(
+                            f"| {lower_bound:.2f} - {upper_bound:.2f} | {freq} |\n"
+                        )
+                    report_lines.append("\n")
                 plot_filename = f'lhs_analysis_{metric_name.replace(" ", "_")}.png'
                 report_lines.append(
                     f"![LHS Analysis for {metric_name}]({plot_filename})\n\n"
                 )
-
         report_content = "".join(report_lines)
         with open(report_file, "w", encoding="utf-8") as f:
             f.write(report_content)
-
         logger.info(f"The sensitivity analysis report has been saved.: {report_file}")
         return report_content
 
@@ -1378,7 +1481,7 @@ class TricysSALibAnalyzer:
     def plot_lhs_results(
         self,
         save_dir: str = None,
-        figsize: Tuple[int, int] = (15, 10),
+        figsize: Tuple[int, int] = (12, 8),
         metric_names: List[str] = None,
     ):
         """Plot LHS (Latin Hypercube Sampling) uncertainty analysis results"""
@@ -1409,11 +1512,24 @@ class TricysSALibAnalyzer:
             else:
                 metric_display_name = f"Metric_{output_index}"
 
-            # Create a figure with multiple subplots
-            plt.figure(figsize=figsize)
+            # Get unit from config
+            sensitivity_analysis_config = self.base_config.get(
+                "sensitivity_analysis", {}
+            )
+            unit_map = sensitivity_analysis_config.get("unit_map", {})
+            unit_config = self._find_unit_config(metric_display_name, unit_map)
+            unit_str = ""
+            if unit_config:
+                unit = unit_config.get("unit")
+                if unit:
+                    unit_str = f" ({unit})"
 
-            # 1. Distribution histogram
-            ax1 = plt.subplot(2, 3, 1)
+            xlabel = f"{metric_display_name}{unit_str}"
+
+            # Create a figure with two subplots
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+
+            # Plot 1: Distribution histogram
             ax1.hist(
                 self.simulation_results[:, output_index],
                 bins=30,
@@ -1421,12 +1537,12 @@ class TricysSALibAnalyzer:
                 color="skyblue",
                 edgecolor="black",
             )
-            ax1.set_xlabel("输出值", fontsize=12)
+            ax1.set_xlabel(xlabel, fontsize=12)
             ax1.set_ylabel("频率", fontsize=12)
-            ax1.set_title(f"输出分布直方图\n{metric_display_name}", fontsize=14, pad=10)
+            ax1.set_title("输出分布直方图", fontsize=14, pad=10)
             ax1.grid(True, alpha=0.3)
 
-            # Add statistics text
+            # Add statistics text to the histogram plot
             stats_text = f"均值: {Si['mean']:.4f}\n标准差: {Si['std']:.4f}\n最小值: {Si['min']:.4f}\n最大值: {Si['max']:.4f}"
             ax1.text(
                 0.05,
@@ -1438,31 +1554,14 @@ class TricysSALibAnalyzer:
                 bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
             )
 
-            # 2. Box plot of output
-            ax2 = plt.subplot(2, 3, 2)
-            ax2.boxplot(
-                self.simulation_results[:, output_index],
-                vert=True,
-                patch_artist=True,
-                boxprops=dict(facecolor="lightblue", alpha=0.7),
-            )
-            ax2.set_ylabel("输出值", fontsize=12)
-            ax2.set_title(f"输出箱线图\n{metric_display_name}", fontsize=14, pad=10)
-            ax2.grid(True, alpha=0.3)
-
-            # 3. Cumulative distribution function
-            ax3 = plt.subplot(2, 3, 3)
+            # Plot 2: Cumulative distribution function
             sorted_data = np.sort(self.simulation_results[:, output_index])
             y_vals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-            ax3.plot(sorted_data, y_vals, linewidth=2, color="darkgreen")
-            ax3.set_xlabel("输出值", fontsize=12)
-            ax3.set_ylabel("累积概率", fontsize=12)
-            ax3.set_title(f"累积分布函数\n{metric_display_name}", fontsize=14, pad=10)
-            ax3.grid(True, alpha=0.3)
-
-            # Remove parameter sensitivity plots (related coefficient plots)
-            # These were in positions (2,3,4), (2,3,5), and (2,3,6) but we only need the first 3 plots
-            # So we'll leave the remaining subplots empty or add additional analysis if needed
+            ax2.plot(sorted_data, y_vals, linewidth=2, color="darkgreen")
+            ax2.set_xlabel(xlabel, fontsize=12)
+            ax2.set_ylabel("累积概率", fontsize=12)
+            ax2.set_title("累积分布函数", fontsize=14, pad=10)
+            ax2.grid(True, alpha=0.3)
 
             plt.tight_layout()
             filename = f'lhs_analysis_{metric_display_name.replace(" ", "_")}.png'
@@ -1581,17 +1680,38 @@ def call_llm_for_salib_analysis(
     try:
         logger.info("Proceeding with LLM analysis for SALib report.")
 
-        SENSITIVITY_PROMPT_WRAPPER = """**角色：** 你是一名在氚燃料循环领域具有深厚背景的敏感性分析专家。
+        PROMPT_TEMPLATES = {
+            "sobol": """**角色：** 你是一名在氚燃料循环领域具有深厚背景的敏感性分析专家。
 
-**任务：** 请仔细审查并解读以下这份由SALib库生成的敏感性分析报告。你的目标是：
-1.  **总结核心发现**：简明扼要地总结报告中的关键信息。
-2.  **识别关键参数**：对于报告中提到的每一个输出指标（如“启动氚量”、“倍增时间”等），明确指出哪些输入参数对它的影响最大（即最敏感）。
-3.  **提供综合结论**：基于所有分析结果，对模型的整体行为、参数间的相互作用（如果可能）以及这些发现对工程实践的潜在启示，给出一个综合性的结论。
+**任务：** 请仔细审查并解读以下这份由SALib库生成的**Sobol敏感性分析**报告。你的目标是：
+1.  **总结核心发现**：对于报告中提到的每一个输出指标（如“启动氚量”等），总结其敏感性分析结果。
+2.  **识别关键参数**：明确指出哪些输入参数的**一阶敏感性指数（S1）**和**总敏感性指数（ST）**最高。
+3.  **解读指数含义**：解释S1和ST指数的含义。例如，高S1值表示参数对输出有重要的直接影响，而ST与S1的显著差异表示参数存在强烈的交互作用或非线性效应。
+4.  **提供综合结论**：基于所有分析结果，对模型的整体行为、参数间的相互作用，以及这些发现对工程实践的潜在启示，给出一个综合性的结论。
 
 请确保你的分析清晰、专业，并直接切入要点。
-"""
+""",
+            "morris": """**角色：** 你是一名在氚燃料循环领域具有深厚背景的敏感性分析专家。
 
-        LHS_PROMPT_WRAPPER = """**角色：** 你是一名在氚燃料循环领域具有深厚背景的统计学和不确定性分析专家。
+**任务：** 请仔细审查并解读以下这份由SALib库生成的**Morris敏感性分析**报告。你的目标是：
+1.  **总结核心发现**：对于报告中提到的每一个输出指标（如“启动氚量”等），总结其敏感性分析结果。
+2.  **识别关键参数**：根据**μ* (mu_star)**值对参数进行排序，识别出对模型输出影响最大的参数。
+3.  **解读参数效应**：解释**μ***和**σ (sigma)**的含义。高μ*表示参数有重要影响，高σ表示参数存在非线性影响或与其他参数有交互作用。结合μ*-σ图进行分析。
+4.  **提供综合结论**：基于所有分析结果，对模型的整体行为、参数间的相互作用，以及这些发现对工程实践的潜在启示，给出一个综合性的结论。
+
+请确保你的分析清晰、专业，并直接切入要点。
+""",
+            "fast": """**角色：** 你是一名在氚燃料循环领域具有深厚背景的敏感性分析专家。
+
+**任务：** 请仔细审查并解读以下这份由SALib库生成的**FAST敏感性分析**报告。你的目标是：
+1.  **总结核心发现**：对于报告中提到的每一个输出指标（如“启动氚量”等），总结其敏感性分析结果。
+2.  **识别关键参数**：明确指出哪些输入参数的**一阶敏感性指数（S1）**和**总敏感性指数（ST）**最高。
+3.  **解读指数含义**：解释S1和ST指数的含义。高S1值表示参数对输出有重要的直接影响，而ST与S1的差异表示参数可能存在交互作用。
+4.  **提供综合结论**：基于所有分析结果，对模型的整体行为、参数间的相互作用，以及这些发现对工程实践的潜在启示，给出一个综合性的结论。
+
+请确保你的分析清晰、专业，并直接切入要点。
+""",
+            "latin": """**角色：** 你是一名在氚燃料循环领域具有深厚背景的统计学和不确定性分析专家。
 
 **任务：** 请仔细审查并解读以下这份由拉丁超立方采样（LHS）生成的不确定性分析报告。你的目标是：
 1.  **解读统计数据**：对于报告中的每一个输出指标（如“启动氚量”等），解读其均值、标准差、最大/最小值和百分位数。
@@ -1599,12 +1719,21 @@ def call_llm_for_salib_analysis(
 3.  **提供综合结论**：总结在给定的参数不确定性下，模型的关键性能指标（KPIs）表现如何，是否存在较大的风险（例如，输出值波动范围过大），并对模型的稳定性给出评价。
 
 请确保你的分析聚焦于不确定性的量化和解读，而不是参数的敏感性排序。
-"""
+""",
+        }
 
-        if method == "latin":
-            wrapper_prompt = LHS_PROMPT_WRAPPER
-        else:
-            wrapper_prompt = SENSITIVITY_PROMPT_WRAPPER
+        wrapper_prompt = PROMPT_TEMPLATES.get(
+            method,
+            """**角色：** 你是一名在氚燃料循环领域具有深厚背景的敏感性分析专家。
+
+**任务：** 请仔细审查并解读以下这份由SALib库生成的敏感性分析报告。你的目标是：
+1.  **总结核心发现**：简明扼要地总结报告中的关键信息。
+2.  **识别关键参数**：对于报告中提到的每一个输出指标（如“启动氚量”、“倍增时间”等），明确指出哪些输入参数对它的影响最大（即最敏感）。
+3.  **提供综合结论**：基于所有分析结果，对模型的整体行为、参数间的相互作用（如果可能）以及这些发现对工程实践的潜在启示，给出一个综合性的结论。
+
+请确保你的分析清晰、专业，并直接切入要点。
+""",
+        )
 
         full_prompt = f"{wrapper_prompt}\n\n---\n**分析报告原文：**\n\n{report_content}"
 
@@ -1652,6 +1781,7 @@ def call_llm_for_academic_report(
     problem_details: dict,
     metric_names: list,
     method: str,
+    save_dir: str,
 ) -> Tuple[str, str]:
     """Sends an analysis report and a glossary to an LLM to generate a professional academic report."""
     try:
@@ -1662,29 +1792,36 @@ def call_llm_for_academic_report(
         )
         metric_names_str = ", ".join([f"`{name}`" for name in metric_names])
 
-        SENSITIVITY_ACADEMIC_PROMPT = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。
+        all_plots = [f for f in os.listdir(save_dir) if f.endswith((".svg", ".png"))]
+        plot_list_str = "\n".join([f"    *   `{plot}`" for plot in all_plots])
 
-**任务：** 您收到了一个关于**SALib敏感性分析**的程序生成的初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
+        method_details = {
+            "sobol": {
+                "name": "Sobol",
+                "methodology": "指出本次分析采用了SALib库，并使用了**Sobol方法**。这是一种基于方差的全局敏感性分析技术，能够量化单个参数以及参数间交互作用对模型输出方差的贡献。",
+                "results_discussion": """*   对于每个性能指标，哪些输入参数的一阶敏感性（S1）和总体敏感性（ST）最高？请结合图表（如条形图）进行解读。
+        *   S1和ST指数之间的差异揭示了什么？（例如，ST显著大于S1意味着该参数与其他参数存在显著的交互作用或其影响是非线性的）。
+        *   分析不同指标之间的**权衡关系 (Trade-offs)**。例如，某个参数对某个指标 (e.g., `Startup_Inventory`) 有正面影响，但可能对另一个指标 (e.g., `Doubling_Time`) 有负面影响。""",
+            },
+            "morris": {
+                "name": "Morris",
+                "methodology": "指出本次分析采用了SALib库，并使用了**Morris方法**。这是一种基于轨迹的“一次性”设计方法，常用于在高维参数空间中进行参数筛选，以识别出影响最大的少数几个参数。",
+                "results_discussion": """*   对于每个性能指标，哪些参数的 `μ*` (mu_star) 值最高，表明其对输出的总体影响最重要？
+        *   `σ` (sigma) 值的大小又说明了什么？较高的 `σ` 值通常表明参数具有非线性效应或与其他参数存在强烈的交互作用。
+        *   请结合 `μ*-σ` 图进行分析，对参数进行分类（例如，高 `μ*`/高 `σ` vs. 高 `μ*`/低 `σ`），并解释其含义。
+        *   分析不同指标之间的**权衡关系 (Trade-offs)**。例如，某个参数对某个指标 (e.g., `Startup_Inventory`) 有正面影响，但可能对另一个指标 (e.g., `Doubling_Time`) 有负面影响。""",
+            },
+            "fast": {
+                "name": "FAST",
+                "methodology": "指出本次分析采用了SALib库，并使用了**FAST（傅里叶幅度敏感性检验）方法**。这是一种基于频率的全局敏感性分析技术，通过将参数在傅里叶级数中展开来计算敏感性指数。",
+                "results_discussion": """*   对于每个性能指标，哪些输入参数的一阶敏感性（S1）最高？
+        *   （如果可用）总体敏感性（ST）与一阶敏感性（S1）的比较揭示了什么？较大的差异通常表明存在参数交互。
+        *   分析不同指标之间的**权衡关系 (Trade-offs)**。例如，某个参数对某个指标 (e.g., `Startup_Inventory`) 有正面影响，但可能对另一个指标 (e.g., `Doubling_Time`) 有负面影响。""",
+            },
+        }
 
-**指令：**
-
-1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `Startup_Inventory`）替换为术语表中对应的“中文翻译”或“英文术语”。
-2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。
-3.  **结构化报告：** 您的报告是关于一项**敏感性分析**。报告应包含以下部分：
-    *   **摘要 (Abstract):** 简要概括本次敏感性研究的目的，明确指明分析的输入参数是 {param_names_str}，总结哪些参数对关键性能指标 ({metric_names_str}) 影响最显著，并陈述核心结论。
-    *   **引言 (Introduction):** 描述进行这项敏感性分析的背景和重要性。阐述研究目标，即量化评估输入参数的变化对氚燃料循环系统性能的影响。
-    *   **方法 (Methodology):** 简要说明分析方法。指出本次分析采用了SALib库，并提及具体的敏感性分析方法（如Sobol、Morris等）。说明被评估的关键性能指标是 {metric_names_str}，以及输入参数 {param_names_str} 的变化范围。
-    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的数据和图表（虽然图表未在此处提供，但请在文字中假设它们存在并进行讨论），分点详细论述：
-        *   对于每个性能指标，哪些输入参数是一阶敏感性（S1）或总体敏感性（ST）最高的？
-        *   对于Morris方法，哪些参数的 `μ*` 值最高，表明其影响最重要？`σ` 值的大小又说明了什么（参数间的交互或非线性效应）？
-        *   分析不同指标之间的**权衡关系 (Trade-offs)**。例如，某个参数对 `Startup_Inventory` 有正面影响，但可能对 `Doubling_Time` 有负面影响。
-    *   **结论 (Conclusion):** 总结本次敏感性分析得出的主要学术结论，并对反应堆设计或未来研究方向提出具体建议。
-4.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
-
-**输入文件：**
-"""
-
-        UNCERTAINTY_ACADEMIC_PROMPT = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家，擅长进行**不确定性量化 (UQ)** 和风险评估。
+        if method == "latin":
+            ACADEMIC_REPORT_PROMPT_WRAPPER = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家，擅长进行**不确定性量化 (UQ)** 和风险评估。
 
 **任务：** 您收到了一个基于**拉丁超立方采样 (LHS)** 的不确定性分析初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
 
@@ -1692,25 +1829,58 @@ def call_llm_for_academic_report(
 
 1.  **专业化语言：** 将初步报告中的模型参数/缩写替换为术语表中对应的专业词汇。
 2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现，聚焦于**不确定性**的量化和解读。
-3.  **结构化报告：** 您的报告是关于一项**不确定性分析**。报告应包含以下部分：
+3.  **图表和表格的呈现与引用：**
+    *   **显示图表：** 在报告的“结果与讨论”部分，您**必须**使用Markdown语法 `![图表标题](图表文件名)` 来**直接嵌入**和显示初步报告中包含的所有图表。可用的图表文件如下：
+{plot_list_str}
+    *   **引用图表：** 在正文中分析和讨论图表内容时，请使用“如图1所示...”等方式对图表进行编号和文字引用。
+    *   **显示表格：** 当呈现数据时（例如，统计摘要、分布数据等），您**必须**使用Markdown的管道表格（pipe-table）格式来清晰地展示它们。您可以直接复用或重新格式化初步报告中的数据表格。
+4.  **结构化报告：** 您的报告是关于一项**不确定性分析**。报告应包含以下部分：
     *   **摘要 (Abstract):** 简要概括本次不确定性研究的目的，明确指出分析的输入参数是 {param_names_str}，总结这些参数的不确定性对关键性能指标 ({metric_names_str}) 的输出分布（如均值、标准差、置信区间）有何影响。
     *   **引言 (Introduction):** 描述进行这项不确定性分析的背景和重要性。阐述研究目标，即量化评估当输入参数 {param_names_str} 在其定义域内变化时，氚燃料循环系统关键性能指标的统计分布和稳定性。
     *   **方法 (Methodology):** 简要说明分析方法。指出本次分析采用了拉丁超立方采样（LHS）方法来对输入参数空间进行抽样。说明被评估的关键性能指标是 {metric_names_str}，以及输入参数的概率分布和范围。
-    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的统计数据（均值、标准差、百分位数等）和图表（如直方图、箱线图），分点详细论述：
+    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的统计数据和您嵌入的图表（如直方图、累积分布图），分点详细论述：
         *   对于每个性能指标，其输出的**概率分布**是怎样的？（例如，是正态分布、偏态分布还是双峰分布？）
         *   输出指标的**不确定性范围**有多大？（参考标准差和5%-95%百分位数区间）。这个范围在工程实践中是否可以接受？
         *   是否存在某些指标的波动范围过大，可能导致系统性能低于设计要求或存在运行风险？
-        *   虽然LHS主要用于UQ，但如果初步报告中包含了基于相关性的敏感性分析（如斯皮尔曼等级相关系数），可以简要提及哪些参数对输出不确定性的贡献最大。
     *   **结论 (Conclusion):** 总结本次不确定性分析得出的主要学术结论（例如，模型的稳定性、输出指标的可靠性等），并对降低关键指标不确定性或未来的风险评估提出具体建议。
-4.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
+5.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
 
 **输入文件：**
 """
-
-        if method == "latin":
-            ACADEMIC_REPORT_PROMPT_WRAPPER = UNCERTAINTY_ACADEMIC_PROMPT
         else:
-            ACADEMIC_REPORT_PROMPT_WRAPPER = SENSITIVITY_ACADEMIC_PROMPT
+            selected_method = method_details.get(method)
+            if not selected_method:
+                # Fallback for unknown methods
+                selected_method = {
+                    "name": method.capitalize(),
+                    "methodology": f"指出本次分析采用了SALib库，并提及具体的敏感性分析方法为**{method.capitalize()}**。",
+                    "results_discussion": "*   对于每个性能指标，识别出最重要的输入参数。\n*   讨论这些发现的意义。",
+                }
+
+            ACADEMIC_REPORT_PROMPT_WRAPPER = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。
+
+**任务：** 您收到了一个关于**SALib {selected_method['name']} 方法敏感性分析**的程序生成的初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
+
+**指令：**
+
+1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `Startup_Inventory`）替换为术语表中对应的“中文翻译”或“英文术语”。
+2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。
+3.  **图表和表格的呈现与引用：**
+    *   **显示图表：** 在报告的“结果与讨论”部分，您**必须**使用Markdown语法 `![图表标题](图表文件名)` 来**直接嵌入**和显示初步报告中包含的所有图表。可用的图表文件如下：
+{plot_list_str}
+    *   **引用图表：** 在正文中分析和讨论图表内容时，请使用“如图1所示...”等方式对图表进行编号和文字引用。
+    *   **显示表格：** 当呈现数据时（例如，敏感性指数表），您**必须**使用Markdown的管道表格（pipe-table）格式来清晰地展示它们。您可以直接复用或重新格式化初步报告中的数据表格。
+4.  **结构化报告：** 您的报告是关于一项**敏感性分析**。报告应包含以下部分：
+    *   **摘要 (Abstract):** 简要概括本次敏感性研究的目的，明确指明分析的输入参数是 {param_names_str}，总结哪些参数对关键性能指标 ({metric_names_str}) 影响最显著，并陈述核心结论。
+    *   **引言 (Introduction):** 描述进行这项敏感性分析的背景和重要性。阐述研究目标，即量化评估输入参数的变化对氚燃料循环系统性能的影响。
+    *   **方法 (Methodology):** {selected_method['methodology']} 说明被评估的关键性能指标是 {metric_names_str}，以及输入参数 {param_names_str} 的变化范围。
+    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的数据和您嵌入的图表，分点详细论述：
+{selected_method['results_discussion']}
+    *   **结论 (Conclusion):** 总结本次敏感性分析得出的主要学术结论，并对反应堆设计或未来研究方向提出具体建议。
+5.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
+
+**输入文件：**
+"""
 
         full_prompt = f"{ACADEMIC_REPORT_PROMPT_WRAPPER}\n\n---\n### 1. 初步分析报告\n---\n{analysis_report}\n\n---\n### 2. 专业术语表\n---\n{glossary_content}"
 
