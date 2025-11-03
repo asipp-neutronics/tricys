@@ -1388,6 +1388,48 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             omc.sendExpression("quit()")
 
 
+def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
+    """
+    Executes a single analysis case. Designed to be run in a separate process.
+    It changes the working directory, sets up logging, and calls run_simulation.
+    Inner concurrency is disabled to prevent nested process pools.
+    """
+    case_index = case_info["index"]
+    case_workspace = case_info["workspace"]
+    case_config = case_info["config"]
+    case_data = case_info["case_data"]
+
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(case_workspace)
+        # Each process will have its own logging setup.
+        setup_logging(case_config)
+
+        logger.info(
+            f"Executing case '{case_data.get('name', case_index)}' in process {os.getpid()}"
+        )
+
+        # Disable inner concurrency to prevent nested process pools
+        if "simulation" not in case_config:
+            case_config["simulation"] = {}
+        case_config["simulation"]["concurrent"] = False
+        logger.info("Inner concurrency has been disabled for this case.")
+
+        run_simulation(case_config)
+
+        logger.info(
+            f"Case '{case_data.get('name', case_index)}' executed successfully."
+        )
+        return True
+    except Exception:
+        logger.error(
+            f"Case '{case_data.get('name', case_index)}' failed.", exc_info=True
+        )
+        return False
+    finally:
+        os.chdir(original_cwd)
+
+
 def _run_post_processing(
     config: Dict[str, Any], results_df: pd.DataFrame, run_results_dir: str
 ):
@@ -1473,53 +1515,90 @@ def run_simulation(config: Dict[str, Any]):
 
         logger.info(f"Starting execution of {len(case_configs)} analysis cases...")
 
-        # Execute simulation for each case
+        sa_config = config.get("sensitivity_analysis", {})
+        run_cases_concurrently = sa_config.get("concurrent_cases", False)
         successful_cases = 0
-        for case_info in case_configs:
-            try:
-                case_index = case_info["index"]
-                case_workspace = case_info["workspace"]
-                case_config = case_info["config"]
-                case_data = case_info["case_data"]
 
-                logger.info(
-                    f"\n=== Starting execution of analysis case {case_index + 1}/{len(case_configs)} ==="
-                )
-                logger.info(
-                    f"Case name: {case_data.get('name', f'Case{case_index+1}')}"
-                )
-                logger.info(
-                    f"Independent variable: {case_data['independent_variable']}"
-                )
-                logger.info(f"Working directory: {case_workspace}")
+        if run_cases_concurrently:
+            logger.info(
+                f"Starting execution of {len(case_configs)} analysis cases in PARALLEL."
+            )
+            max_workers = sa_config.get("max_case_workers", os.cpu_count())
+            logger.info(
+                f"Using up to {max_workers} parallel processes for analysis cases."
+            )
 
-                # Set current working directory as Python's working directory
-                original_cwd = os.getcwd()
-                os.chdir(case_workspace)
-
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=max_workers
+            ) as executor:
+                future_to_case = {
+                    executor.submit(_execute_analysis_case, case_info): case_info
+                    for case_info in case_configs
+                }
+                for future in concurrent.futures.as_completed(future_to_case):
+                    case_info = future_to_case[future]
+                    case_name = case_info["case_data"].get("name", case_info["index"])
+                    try:
+                        if future.result():
+                            successful_cases += 1
+                            logger.info(
+                                f"Parallel case '{case_name}' completed successfully."
+                            )
+                        else:
+                            logger.warning(
+                                f"Parallel case '{case_name}' completed with errors."
+                            )
+                    except Exception as exc:
+                        logger.error(
+                            f"Parallel case '{case_name}' failed in executor with: {exc}",
+                            exc_info=True,
+                        )
+        else:
+            logger.info(
+                f"Starting execution of {len(case_configs)} analysis cases SEQUENTIALLY."
+            )
+            for case_info in case_configs:
                 try:
-                    # Recursively call run_simulation to execute single case
-                    run_simulation(case_config)
-                    successful_cases += 1
-                    logger.info(
-                        f"✓ Analysis case {case_index + 1} executed successfully"
-                    )
+                    case_index = case_info["index"]
+                    case_workspace = case_info["workspace"]
+                    case_config = case_info["config"]
+                    case_data = case_info["case_data"]
 
-                except Exception as case_e:
+                    logger.info(
+                        f"\n=== Starting execution of analysis case {case_index + 1}/{len(case_configs)} ==="
+                    )
+                    logger.info(
+                        f"Case name: {case_data.get('name', f'Case{case_index+1}')}"
+                    )
+                    logger.info(
+                        f"Independent variable: {case_data['independent_variable']}"
+                    )
+                    logger.info(f"Working directory: {case_workspace}")
+
+                    original_cwd = os.getcwd()
+                    os.chdir(case_workspace)
+
+                    try:
+                        setup_logging(case_config)
+                        run_simulation(case_config)
+                        successful_cases += 1
+                        logger.info(
+                            f"✓ Analysis case {case_index + 1} executed successfully"
+                        )
+                    except Exception as case_e:
+                        logger.error(
+                            f"✗ Analysis case {case_index + 1} execution failed: {case_e}",
+                            exc_info=True,
+                        )
+                    finally:
+                        os.chdir(original_cwd)
+                        setup_logging(config)
+
+                except Exception as e:
                     logger.error(
-                        f"✗ Analysis case {case_index + 1} execution failed: {case_e}",
+                        f"✗ Error processing analysis case {case_index + 1}: {e}",
                         exc_info=True,
                     )
-
-                finally:
-                    # Restore original working directory
-                    os.chdir(original_cwd)
-
-            except Exception as e:
-                logger.error(
-                    f"✗ Error processing analysis case {case_index + 1}: {e}",
-                    exc_info=True,
-                )
 
         logger.info("\n=== Analysis Cases Execution Completed ===")
         logger.info(
