@@ -900,18 +900,41 @@ def _run_co_simulation(
 
     try:
         original_package_path = os.path.abspath(paths_config["package_path"])
-        original_package_dir = os.path.dirname(original_package_path)
-        package_dir_name = os.path.basename(original_package_dir)
 
-        isolated_package_dir = os.path.join(job_workspace, package_dir_name)
+        # Determine if it's a single-file or multi-file package and copy accordingly.
+        if os.path.isfile(original_package_path) and not original_package_path.endswith(
+            "package.mo"
+        ):
+            # SINGLE-FILE: Copy the single .mo file into the root of the job_workspace.
+            isolated_package_path = os.path.join(
+                job_workspace, os.path.basename(original_package_path)
+            )
+            shutil.copy(original_package_path, isolated_package_path)
+            logger.info(f"Copied single-file package to: {isolated_package_path}")
+        else:
+            # MULTI-FILE: Copy the entire package directory.
+            # This handles both a directory path and a path to a package.mo file.
+            if os.path.isfile(original_package_path):
+                original_package_dir = os.path.dirname(original_package_path)
+            else:  # It's a directory
+                original_package_dir = original_package_path
 
-        if os.path.exists(isolated_package_dir):
-            shutil.rmtree(isolated_package_dir)
-        shutil.copytree(original_package_dir, isolated_package_dir)
+            package_dir_name = os.path.basename(original_package_dir)
+            isolated_package_dir = os.path.join(job_workspace, package_dir_name)
 
-        isolated_package_path = os.path.join(
-            isolated_package_dir, os.path.basename(original_package_path)
-        )
+            if os.path.exists(isolated_package_dir):
+                shutil.rmtree(isolated_package_dir)
+            shutil.copytree(original_package_dir, isolated_package_dir)
+
+            # Reconstruct the path to the main package file inside the new isolated directory
+            if os.path.isfile(original_package_path):
+                isolated_package_path = os.path.join(
+                    isolated_package_dir, os.path.basename(original_package_path)
+                )
+            else:  # path was a directory, so we assume package.mo
+                isolated_package_path = os.path.join(isolated_package_dir, "package.mo")
+
+            logger.info(f"Copied multi-file package to: {isolated_package_dir}")
         isolated_temp_dir = job_workspace
         results_dir = os.path.abspath(paths_config["results_dir"])
         os.makedirs(results_dir, exist_ok=True)
