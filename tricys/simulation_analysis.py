@@ -36,12 +36,13 @@ from tricys.core.modelica import (
     load_modelica_package,
 )
 from tricys.utils.file_utils import get_unique_filename
-from tricys.utils.log_utils import setup_logging
+from tricys.utils.log_utils import log_execution_time, setup_logging
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
 
 
+@log_execution_time
 def _validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
     """Validate analysis_cases configuration format, supporting both list and single object formats
 
@@ -131,6 +132,7 @@ def _validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
     return True
 
 
+@log_execution_time
 def _convert_relative_paths_to_absolute(
     config: Dict[str, Any], base_dir: str
 ) -> Dict[str, Any]:
@@ -182,14 +184,17 @@ def _convert_relative_paths_to_absolute(
     return _process_value(config)
 
 
+@log_execution_time
 def _create_standard_config_for_case(
     base_config: Dict[str, Any], analysis_case: Dict[str, Any], i: int
 ) -> Dict[str, Any]:
     """Create a standard format configuration file for a single analysis case and handle path conversion"""
-    # Get the base directory where the original configuration file is located
-    original_config_dir = (
-        os.getcwd()
-    )  # Directory where the original configuration file is located
+    # This function is called after initialize_run, where paths have already been made absolute.
+    # The conversion here is for robustness, assuming it might be called in other contexts.
+    # We need to derive the original config directory from one of the absolute paths.
+    original_config_dir = os.path.dirname(
+        base_config.get("paths", {}).get("package_path", os.getcwd())
+    )
 
     # First convert relative paths to absolute paths
     absolute_config = _convert_relative_paths_to_absolute(
@@ -334,6 +339,7 @@ def _create_standard_config_for_case(
     return standard_config
 
 
+@log_execution_time
 def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Set up independent working directories and configuration files for multiple analysis_cases
@@ -369,13 +375,17 @@ def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, A
         # Already in list format
         analysis_cases = analysis_cases_raw
 
-    # Create case working directories in current working directory
-    current_dir = os.getcwd()
+    # The main run workspace is the timestamped directory, already created by initialize_run.
+    # We will create the case workspaces inside it.
+    run_workspace = os.path.abspath(config["run_timestamp"])
+
+    # Determine the main log file path to be shared with all cases
+    main_log_file_name = f"simulation_{config['run_timestamp']}.log"
+    main_log_path = os.path.join(run_workspace, main_log_file_name)
 
     logger.info(
-        f"Detected {len(analysis_cases)} analysis cases, creating independent working directories in current directory..."
+        f"Detected {len(analysis_cases)} analysis cases, creating independent workspaces inside: {run_workspace}"
     )
-    logger.info(f"Current working directory: {current_dir}")
 
     case_configs = []
 
@@ -383,12 +393,8 @@ def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, A
         try:
             # Generate case working directory name
             workspace_name = analysis_case.get("name", f"case_{i}")
-            # Get runtime timestamp
-            run_timestamp = config["run_timestamp"]
-            # Create timestamped analysis_cases directory in current directory, then create case directory within it
-            case_workspace = os.path.join(
-                current_dir, "analysis_cases", run_timestamp, workspace_name
-            )
+            # Create the case workspace directly inside the main run workspace
+            case_workspace = os.path.join(run_workspace, workspace_name)
             os.makedirs(case_workspace, exist_ok=True)
 
             # Create standard configuration
@@ -407,6 +413,8 @@ def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, A
             # If there's logging configuration, also update log directory
             if "logging" in case_config and "log_dir" in case_config["logging"]:
                 case_config["logging"]["log_dir"] = os.path.join(case_workspace, "log")
+                # Inject the main log path for dual logging
+                case_config["logging"]["main_log_path"] = main_log_path
 
             # Save standard configuration file to case working directory
             config_file_path = os.path.join(case_workspace, "config.json")
@@ -423,16 +431,15 @@ def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, A
             }
             case_configs.append(case_info)
 
-            logger.info(f"✓ Working directory for case {i+1} created:")
-            logger.info(f"  - Case name: {analysis_case.get('name', f'Case{i+1}')}")
             logger.info(
-                f"  - Independent variable: {analysis_case['independent_variable']}"
+                f"Workspace for case {i+1} created successfully",
+                extra={
+                    "case_index": i,
+                    "case_name": analysis_case.get("name", f"case_{i}"),
+                    "workspace": case_workspace,
+                    "config_path": config_file_path,
+                },
             )
-            logger.info(
-                f"  - Sampling method: {analysis_case['independent_variable_sampling']}"
-            )
-            logger.info(f"  - Working directory: {case_workspace}")
-            logger.info(f"  - Configuration file: {config_file_path}")
 
         except Exception as e:
             logger.error(f"✗ Error processing case {i}: {e}", exc_info=True)
@@ -444,6 +451,7 @@ def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, A
     return case_configs
 
 
+@log_execution_time
 def _get_optimization_tasks(config: dict) -> List[str]:
     """
     Identifies all valid optimization tasks from the configuration.
@@ -490,6 +498,7 @@ def _get_optimization_tasks(config: dict) -> List[str]:
     return optimization_tasks
 
 
+@log_execution_time
 def _is_optimization_enabled(config: dict) -> bool:
     """
     Check if any optimization functionality is enabled.
@@ -506,6 +515,7 @@ def _is_optimization_enabled(config: dict) -> bool:
     return len(optimization_tasks) > 0
 
 
+@log_execution_time
 def _run_sensitivity_analysis(
     config: Dict[str, Any], run_results_dir: str, jobs: List[Dict[str, Any]]
 ) -> None:
@@ -626,6 +636,7 @@ def _run_sensitivity_analysis(
         logger.error(f"Automated sensitivity analysis failed: {e}", exc_info=True)
 
 
+@log_execution_time
 def _save_optimization_summary(
     config: dict, final_results: List[Dict[str, Any]]
 ) -> None:
@@ -646,6 +657,7 @@ def _save_optimization_summary(
             logger.info(f"Sweep optimization summary saved to: {output_path}")
 
 
+@log_execution_time
 def _run_bisection_search_for_job(
     config: Dict[str, Any], job_id_prefix: str, optimization_metric_name: str
 ) -> tuple[Dict[str, float], Dict[str, float]]:
@@ -731,10 +743,13 @@ def _run_bisection_search_for_job(
         for current_metric_max_value in metric_max_values:
             low, high = low_orig, high_orig
             logger.info(
-                f"Starting bisection search for '{param_to_optimize}' in range [{low}, {high}]"
-            )
-            logger.info(
-                f"Target: Find parameter where '{metric_name}' < {current_metric_max_value}"
+                "Starting bisection search",
+                extra={
+                    "param_to_optimize": param_to_optimize,
+                    "search_range": [low, high],
+                    "target_metric": metric_name,
+                    "target_value": f"< {current_metric_max_value}",
+                },
             )
 
             best_successful_param = float("inf")
@@ -750,7 +765,13 @@ def _run_bisection_search_for_job(
                 mid_param = (low + high) / 2
 
                 logger.info(
-                    f"--- [{job_id_prefix}] Iteration {i+1}/{max_iterations}: Testing {param_to_optimize} = {mid_param:.4f} ---"
+                    "Bisection search iteration",
+                    extra={
+                        "job_id_prefix": job_id_prefix,
+                        "iteration": f"{i+1}/{max_iterations}",
+                        "param_tested": param_to_optimize,
+                        "param_value": f"{mid_param:.4f}",
+                    },
                 )
 
                 job_params = config.get("simulation_parameters", {}).copy()
@@ -821,7 +842,12 @@ def _run_bisection_search_for_job(
                                     f"Unsupported metric_name for bisection search: {metric_name}"
                                 )
                             logger.info(
-                                f"Analysis for params {job_params} successful. Metric '{metric_name}': {metric_value}"
+                                "Bisection analysis successful",
+                                extra={
+                                    "job_params": job_params,
+                                    "metric_name": metric_name,
+                                    "metric_value": metric_value,
+                                },
                             )
                     except Exception as e:
                         logger.error(
@@ -846,7 +872,12 @@ def _run_bisection_search_for_job(
                 )
             else:
                 logger.info(
-                    f"Bisection search for {job_id_prefix} with target < {current_metric_max_value} finished. Optimal value: {best_successful_param:.4f}"
+                    "Bisection search finished",
+                    extra={
+                        "job_id_prefix": job_id_prefix,
+                        "target_value": f"< {current_metric_max_value}",
+                        "optimal_param": f"{best_successful_param:.4f}",
+                    },
                 )
 
             # Dynamically create the key for the resulting optimal value to ensure uniqueness.
@@ -880,6 +911,7 @@ def _run_bisection_search_for_job(
     return all_optimal_params, all_optimal_values
 
 
+@log_execution_time
 def _run_co_simulation(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
@@ -1167,20 +1199,26 @@ def _run_co_simulation(
 
         # Return the path to the result file inside the temporary workspace
         return optimal_param, optimal_value, Path(default_result_path).as_posix()
-    except Exception as e:
-        logger.error(f"Workflow for job {job_id} failed: {e}", exc_info=True)
+    except Exception:
+        logger.error(
+            "Co-simulation workflow failed", exc_info=True, extra={"job_id": job_id}
+        )
         return optimal_param, optimal_value, ""
     finally:
         if omc:
             omc.sendExpression("quit()")
-            logger.info(f"Closed OMPython session for job {job_id}.")
+            logger.info("Closed OMPython session", extra={"job_id": job_id})
 
         if not sim_config.get("keep_temp_files", False):
             if os.path.exists(job_workspace):
                 shutil.rmtree(job_workspace)
-                logger.info(f"Cleaned up workspace for job {job_id}: {job_workspace}")
+                logger.info(
+                    "Cleaned up job workspace",
+                    extra={"job_id": job_id, "workspace": job_workspace},
+                )
 
 
+@log_execution_time
 def _run_single_job(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
@@ -1192,7 +1230,10 @@ def _run_single_job(
     job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
     os.makedirs(job_workspace, exist_ok=True)
 
-    logger.info(f"Starting job {job_id} with parameters: {job_params}")
+    logger.info(
+        "Starting single job",
+        extra={"job_id": job_id, "job_params": job_params},
+    )
     omc = None
     optimal_param = {}
     optimal_value = {}
@@ -1241,7 +1282,10 @@ def _run_single_job(
                 f"Simulation for job {job_id} failed to produce result file at {result_path}"
             )
 
-        logger.info(f"Job {job_id} finished. Results at {result_path}")
+        logger.info(
+            "Job finished successfully",
+            extra={"job_id": job_id, "result_path": str(result_path)},
+        )
 
         optimal_param = {}
         optimal_value = {}
@@ -1279,14 +1323,15 @@ def _run_single_job(
                 )
 
         return optimal_param, optimal_value, str(result_path)
-    except Exception as e:
-        logger.error(f"Job {job_id} failed: {e}", exc_info=True)
+    except Exception:
+        logger.error("Job failed", exc_info=True, extra={"job_id": job_id})
         return optimal_param, optimal_value, ""
     finally:
         if omc:
             omc.sendExpression("quit()")
 
 
+@log_execution_time
 def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
     """
     Executes a parameter sweep sequentially, reusing the OM session for efficiency.
@@ -1411,6 +1456,7 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             omc.sendExpression("quit()")
 
 
+@log_execution_time
 def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
     """
     Executes a single analysis case. Designed to be run in a separate process.
@@ -1429,7 +1475,13 @@ def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
         setup_logging(case_config)
 
         logger.info(
-            f"Executing case '{case_data.get('name', case_index)}' in process {os.getpid()}"
+            "Executing analysis case",
+            extra={
+                "case_name": case_data.get("name", case_index),
+                "case_index": case_index,
+                "workspace": case_workspace,
+                "pid": os.getpid(),
+            },
         )
 
         # Disable inner concurrency to prevent nested process pools
@@ -1441,20 +1493,30 @@ def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
         run_simulation(case_config)
 
         logger.info(
-            f"Case '{case_data.get('name', case_index)}' executed successfully."
+            "Case executed successfully",
+            extra={
+                "case_name": case_data.get("name", case_index),
+                "case_index": case_index,
+            },
         )
         return True
     except Exception:
         logger.error(
-            f"Case '{case_data.get('name', case_index)}' failed.", exc_info=True
+            "Case execution failed",
+            exc_info=True,
+            extra={
+                "case_name": case_data.get("name", case_index),
+                "case_index": case_index,
+            },
         )
         return False
     finally:
         os.chdir(original_cwd)
 
 
+@log_execution_time
 def _run_post_processing(
-    config: Dict[str, Any], results_df: pd.DataFrame, run_results_dir: str
+    config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
 ):
     """
     Dynamically load and run post-processing modules based on configuration.
@@ -1466,7 +1528,7 @@ def _run_post_processing(
 
     logger.info("--- Start post-processing phase ---")
 
-    post_processing_dir = os.path.join(run_results_dir, "post_processing")
+    post_processing_dir = post_processing_output_dir
     os.makedirs(post_processing_dir, exist_ok=True)
     logger.info(f"The post-processing report will be saved to:{post_processing_dir}")
 
@@ -1476,7 +1538,12 @@ def _run_post_processing(
             function_name = task_config["function"]
             params = task_config.get("params", {})
             logger.info(
-                f"Run post-processing tasks #{i+1}: {module_name}.{function_name}"
+                "Running post-processing task",
+                extra={
+                    "task_index": i + 1,
+                    "task_module": module_name,
+                    "function": function_name,
+                },
             )
 
             module = importlib.import_module(module_name)
@@ -1490,6 +1557,7 @@ def _run_post_processing(
     logger.info("--- The post-processing stage has ended ---")
 
 
+@log_execution_time
 def run_simulation(config: Dict[str, Any]):
     """Orchestrates the simulation execution, result handling, and cleanup."""
 
@@ -1628,7 +1696,6 @@ def run_simulation(config: Dict[str, Any]):
             f"Successfully executed: {successful_cases}/{len(case_configs)} cases"
         )
 
-        # Generate summary report
         generate_analysis_cases_summary(case_configs, config)
 
         return  # End analysis_cases processing
@@ -1926,7 +1993,12 @@ def run_simulation(config: Dict[str, Any]):
 
     # --- Post-Processing ---
     if combined_df is not None:
-        _run_post_processing(config, combined_df, run_results_dir)
+        # Calculate the top-level post-processing directory
+        top_level_run_workspace = os.path.abspath(config["run_timestamp"])
+        top_level_post_processing_dir = os.path.join(
+            top_level_run_workspace, "post_processing"
+        )
+        _run_post_processing(config, combined_df, top_level_post_processing_dir)
     else:
         logger.warning(
             "No simulation results were generated, skipping post-processing."
@@ -1944,6 +2016,7 @@ def run_simulation(config: Dict[str, Any]):
                 logger.error(f"Error cleaning up temp directory: {e}")
 
 
+@log_execution_time
 def initialize_run() -> Dict[str, Any]:
     """
     Parses command-line arguments, loads the config file, and generates a run timestamp.
@@ -2003,30 +2076,61 @@ def initialize_run() -> Dict[str, Any]:
         sys.exit(0)
 
     if not args.config:
-        parser.error("the following arguments are required: -c/--config")
-
-    try:
-        config_path = os.path.abspath(args.config)
-        with open(config_path, "r") as f:
-            config = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        # Logger is not set up yet, so print directly to stderr
-        print(
-            f"ERROR: Failed to load or parse config file {args.config}: {e}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    # Handle timestamp
-    if args.command == "retry":
-        config["run_timestamp"] = args.timestamp
+        if args.command == "retry":
+            # In retry mode, config is optional, create a default empty config
+            base_config = {}
+            config_path = os.getcwd()  # Default path, not critical for retry
+        else:
+            parser.error("the following arguments are required: -c/--config")
     else:
-        config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+        try:
+            config_path = os.path.abspath(args.config)
+            with open(config_path, "r") as f:
+                base_config = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(
+                f"ERROR: Failed to load or parse config file {args.config}: {e}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
-    config["command"] = args.command
+    # Correctly set the base directory for resolving relative paths to the config file's location
+    original_config_dir = os.path.dirname(config_path)
+
+    # First convert relative paths to absolute paths
+    absolute_config = _convert_relative_paths_to_absolute(
+        base_config, original_config_dir
+    )
+    # Deep copy the converted configuration
+    config = json.loads(json.dumps(absolute_config))
+
+    # Generate a single timestamp for the entire run and add it to the config
+    run_timestamp = (
+        args.timestamp
+        if args.command == "retry"
+        else datetime.now().strftime("%Y%m%d_%H%M%S")
+    )
+    config["run_timestamp"] = run_timestamp
+
+    # --- Create a self-contained workspace for this run ---
+    # The workspace is a directory named after the timestamp, created in the current working directory.
+    run_workspace = os.path.abspath(config["run_timestamp"])
+
+    # Ensure the 'paths' and 'logging' keys exist
+    if "paths" not in config:
+        config["paths"] = {}
+    if "logging" not in config:
+        config["logging"] = {}
+
+    # Override the paths in the config to point to the new workspace
+    config["logging"]["log_dir"] = run_workspace
+
+    # --- End of workspace creation ---
+
     return config
 
 
+@log_execution_time
 def main():
     """Main function to run the simulation from the command line."""
     config = initialize_run()

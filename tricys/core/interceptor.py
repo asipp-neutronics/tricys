@@ -43,7 +43,8 @@ def _generate_interceptor(
     equation_code = "equation\n"
 
     logger.info(
-        f"Generating interceptor code for ports: '{[p['name'] for p in output_ports]}'"
+        "Generating interceptor code for ports",
+        extra={"ports": [p["name"] for p in output_ports]},
     )
     for port in output_ports:
         dim_str = f'[{port["dim"]}]' if port["dim"] > 1 else ""
@@ -124,7 +125,11 @@ def _integrate_interceptor_single_file(
 ):
     omc = None
     logger.info(
-        f"--- Starting model processing for single-file package, {len(interception_configs)} interception tasks in total ---"
+        "Starting model processing for single-file package",
+        extra={
+            "package_path": package_path,
+            "num_interception_tasks": len(interception_configs),
+        },
     )
     try:
         with open(package_path, "r", encoding="utf-8") as f:
@@ -142,7 +147,9 @@ def _integrate_interceptor_single_file(
             csv_uri = config["csv_uri"]
             column_config = config["output_placeholder"]
 
-            logger.info(f"Identifying output ports for '{submodel_name}'...")
+            logger.info(
+                "Identifying output ports", extra={"submodel_name": submodel_name}
+            )
             components = omc.sendExpression(f"getComponents({submodel_name})")
             output_ports = []
             for comp in components:
@@ -162,8 +169,10 @@ def _integrate_interceptor_single_file(
                 raise ValueError(f"No RealOutput ports found in model {submodel_name}.")
 
             config["output_ports"] = output_ports
-            logger.info(f"Identified output ports: {[p['name'] for p in output_ports]}")
-
+            logger.info(
+                "Identified output ports",
+                extra={"output_ports": [p["name"] for p in output_ports]},
+            )
             interceptor_name, interceptor_code = _generate_interceptor(
                 submodel_name, output_ports, csv_uri, add_within_clause=False
             )
@@ -226,7 +235,11 @@ def _integrate_interceptor_single_file(
                 )
             else:
                 logger.warning(
-                    f"Could not find a connection for port '{port_name}' of instance '{instance_name_in_system}'."
+                    "Could not find a connection for port",
+                    extra={
+                        "port_name": port_name,
+                        "instance_name": instance_name_in_system,
+                    },
                 )
 
         all_interceptor_declarations += (
@@ -281,10 +294,7 @@ def _integrate_interceptor_single_file(
     with open(modified_system_file_path, "w", encoding="utf-8") as f:
         f.write(final_package_code)
 
-    logger.info(
-        f"\nGenerated modified single-file package: {modified_system_file_path}"
-    )
-    logger.info("\n--- Automated modification complete! ---")
+    logger.info("Automated modification complete")
 
     return {
         "interceptor_model_paths": [],
@@ -297,13 +307,14 @@ def _integrate_interceptor_multi_file(
 ):
     omc = None
     logger.info(
-        f"--- Starting model processing, {len(interception_configs)} interception tasks in total ---"
+        "Starting model processing for multi-file package",
+        extra={
+            "num_interception_tasks": len(interception_configs),
+        },
     )
     try:
         omc = OMCSessionZMQ()
-        omc.sendExpression(f'loadFile("{Path(package_path).as_posix()}")')
-
-        logger.info("Proceeding with multi-interceptor model generation.")
+        logger.info("Proceeding with multi-interceptor model generation")
         package_dir = os.path.dirname(package_path)
         model_short_name = model_name.split(".")[-1]
         system_model_path = os.path.join(package_dir, f"{model_short_name}.mo")
@@ -316,7 +327,7 @@ def _integrate_interceptor_multi_file(
         output_dir = os.path.dirname(system_model_path)
         os.makedirs(output_dir, exist_ok=True)
 
-        logger.info("Proceeding with multi-interceptor model generation.")
+        logger.info("Proceeding with multi-interceptor model generation")
         package_dir = os.path.dirname(package_path)
         model_short_name = model_name.split(".")[-1]
         system_model_path = os.path.join(package_dir, f"{model_short_name}.mo")
@@ -334,7 +345,9 @@ def _integrate_interceptor_multi_file(
             csv_uri = config["csv_uri"]
             column_config = config["output_placeholder"]
 
-            logger.info(f"Identifying output ports for '{submodel_name}'...")
+            logger.info(
+                "Identifying output ports", extra={"submodel_name": submodel_name}
+            )
             components = omc.sendExpression(f"getComponents({submodel_name})")
             output_ports = []
             for comp in components:
@@ -354,7 +367,10 @@ def _integrate_interceptor_multi_file(
                 raise ValueError(f"No RealOutput ports found in model {submodel_name}.")
 
             config["output_ports"] = output_ports
-            logger.info(f"Identified output ports: {[p['name'] for p in output_ports]}")
+            logger.info(
+                "Identified output ports",
+                extra={"output_ports": [p["name"] for p in output_ports]},
+            )
 
             package_name = submodel_name.split(".")[0]
             original_model_short_name = submodel_name.split(".")[-1]
@@ -365,7 +381,10 @@ def _integrate_interceptor_multi_file(
             interceptor_file_path = os.path.join(output_dir, f"{interceptor_name}.mo")
             with open(interceptor_file_path, "w", encoding="utf-8") as f:
                 f.write(interceptor_code)
-            logger.info(f"Generated interceptor model file: {interceptor_file_path}")
+            logger.info(
+                "Generated interceptor model file",
+                extra={"file_path": interceptor_file_path},
+            )
             generated_interceptor_files.append(interceptor_file_path)
 
     finally:
@@ -406,11 +425,19 @@ def _integrate_interceptor_multi_file(
             )
             if num_subs > 0:
                 logger.info(
-                    f"Successfully rewired port '{port_name}' for instance '{instance_name_in_system}'."
+                    "Successfully rewired port",
+                    extra={
+                        "port_name": port_name,
+                        "instance_name": instance_name_in_system,
+                    },
                 )
             else:
                 logger.warning(
-                    f"Could not find a connection for port '{port_name}' of instance '{instance_name_in_system}'."
+                    "Could not find a connection for port",
+                    extra={
+                        "port_name": port_name,
+                        "instance_name": instance_name_in_system,
+                    },
                 )
 
         all_interceptor_declarations += (
@@ -452,8 +479,13 @@ def _integrate_interceptor_multi_file(
     with open(modified_system_file_path, "w", encoding="utf-8") as f:
         f.write(final_system_code)
 
-    logger.info(f"\nGenerated modified main model file: {modified_system_file_path}")
-    logger.info("\n--- Automated modification complete! ---")
+    logger.info(
+        "Generated modified main model file",
+        extra={
+            "file_path": modified_system_file_path,
+        },
+    )
+    logger.info("Automated modification complete")
 
     return {
         "interceptor_model_paths": generated_interceptor_files,
@@ -492,7 +524,10 @@ def integrate_interceptor_model(
             )
         else:
             raise FileNotFoundError(
-                f"No package.mo found in the directory: {package_path}"
+                "No package.mo found in the directory",
+                extra={
+                    "directory": package_path,
+                },
             )
     elif os.path.isfile(package_path) and package_path.endswith("package.mo"):
         return _integrate_interceptor_multi_file(
@@ -503,4 +538,9 @@ def integrate_interceptor_model(
             package_path, model_name, interception_configs
         )
     else:
-        raise FileNotFoundError(f"Invalid package path provided: {package_path}")
+        raise FileNotFoundError(
+            "Invalid package path provided",
+            extra={
+                "package_path": package_path,
+            },
+        )

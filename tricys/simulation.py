@@ -21,7 +21,7 @@ from tricys.core.modelica import (
     load_modelica_package,
 )
 from tricys.utils.file_utils import get_unique_filename
-from tricys.utils.log_utils import setup_logging
+from tricys.utils.log_utils import log_execution_time, setup_logging
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
@@ -33,13 +33,10 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
     """
     paths_config = config["paths"]
     sim_config = config["simulation"]
-    run_timestamp = config["run_timestamp"]  # Get the timestamp from config
 
     base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
-    run_temp_dir = os.path.join(
-        base_temp_dir, run_timestamp
-    )  # Create timestamped subdirectory
-    job_workspace = os.path.join(run_temp_dir, f"job_{job_id}")
+    # The temp_dir from the config is now the self-contained workspace's temp folder.
+    job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
     os.makedirs(job_workspace, exist_ok=True)
 
     omc = None
@@ -56,7 +53,14 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                 job_workspace, os.path.basename(original_package_path)
             )
             shutil.copy(original_package_path, isolated_package_path)
-            logger.info(f"Copied single-file package to: {isolated_package_path}")
+            logger.info(
+                "Copied single-file package",
+                extra={
+                    "job_id": job_id,
+                    "source_path": original_package_path,
+                    "destination_path": isolated_package_path,
+                },
+            )
         else:
             # MULTI-FILE: Copy the entire package directory.
             # This handles both a directory path and a path to a package.mo file.
@@ -80,7 +84,14 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
             else:  # path was a directory, so we assume package.mo
                 isolated_package_path = os.path.join(isolated_package_dir, "package.mo")
 
-            logger.info(f"Copied multi-file package to: {isolated_package_dir}")
+            logger.info(
+                "Copied multi-file package",
+                extra={
+                    "job_id": job_id,
+                    "source_dir": original_package_dir,
+                    "destination_dir": isolated_package_dir,
+                },
+            )
 
         isolated_temp_dir = job_workspace
         results_dir = os.path.abspath(paths_config["results_dir"])
@@ -127,21 +138,37 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                         if not dest_dir.exists():
                             shutil.copytree(original_asset_dir, dest_dir)
                             logger.info(
-                                f"Copied asset directory '{original_asset_dir}' to '{dest_dir}' for job {job_id}"
+                                "Copied asset directory",
+                                extra={
+                                    "job_id": job_id,
+                                    "source_dir": original_asset_dir,
+                                    "destination_dir": dest_dir,
+                                },
                             )
 
                         # Update the path in the config to point to the new location
                         new_asset_path = dest_dir / original_asset_path.name
                         co_sim_config["params"][param_key] = new_asset_path.as_posix()
                         logger.info(
-                            f"Updated parameter '{param_key}' for job {job_id} to '{co_sim_config['params'][param_key]}'"
+                            "Updated asset parameter path",
+                            extra={
+                                "job_id": job_id,
+                                "parameter_key": param_key,
+                                "new_path": co_sim_config["params"][param_key],
+                            },
                         )
 
         all_input_vars = []
         for co_sim_config in co_sim_configs:
             submodel_name = co_sim_config["submodel_name"]
             instance_name = co_sim_config["instance_name"]
-            logger.info(f"Identifying input ports for submodel '{submodel_name}'...")
+            logger.info(
+                "Identifying input ports for submodel",
+                extra={
+                    "job_id": job_id,
+                    "submodel_name": submodel_name,
+                },
+            )
             components = omc.sendExpression(f"getComponents({submodel_name})")
             input_ports = [
                 {"name": c[1], "dim": int(c[11][0]) if c[11] else 1}
@@ -153,7 +180,12 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                 continue
 
             logger.info(
-                f"Found input ports for {instance_name}: {[p['name'] for p in input_ports]}"
+                "Found input ports for instance",
+                extra={
+                    "job_id": job_id,
+                    "instance_name": instance_name,
+                    "input_ports": [p["name"] for p in input_ports],
+                },
             )
             for port in input_ports:
                 full_name = f"{instance_name}.{port['name']}".replace(".", "\\.")
@@ -176,7 +208,13 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
             format_parameter_value(name, value) for name, value in job_params.items()
         ]
         if param_settings:
-            logger.info(f"Applying parameters for job {job_id}: {param_settings}")
+            logger.info(
+                "Applying parameters for job",
+                extra={
+                    "job_id": job_id,
+                    "param_settings": param_settings,
+                },
+            )
             mod.setParameters(param_settings)
 
         primary_result_filename = get_unique_filename(
@@ -193,7 +231,12 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                 df.to_csv(primary_result_filename, index=False)
             except Exception as e:
                 logger.warning(
-                    f"Failed to clean result file {primary_result_filename}: {e}"
+                    "Failed to clean primary result file",
+                    extra={
+                        "job_id": job_id,
+                        "file_path": primary_result_filename,
+                        "error": str(e),
+                    },
                 )
 
         interception_configs = []
@@ -230,7 +273,7 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
         )
 
         verif_config = config["simulation"]["variableFilter"]
-        logger.info("Proceeding with Final simulation.")
+        logger.info("Proceeding with Final simulation.", extra={"job_id": job_id})
 
         for model_path in intercepted_model_paths["interceptor_model_paths"]:
             omc.sendExpression(f"""loadFile("{Path(model_path).as_posix()}")""")
@@ -268,7 +311,12 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                 df.to_csv(default_result_path, index=False)
             except Exception as e:
                 logger.warning(
-                    f"Failed to clean result file {default_result_path}: {e}"
+                    "Failed to clean final co-simulation result file",
+                    extra={
+                        "job_id": job_id,
+                        "file_path": default_result_path,
+                        "error": str(e),
+                    },
                 )
 
         if not os.path.exists(default_result_path):
@@ -278,32 +326,39 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
 
         # Return the path to the result file inside the temporary workspace
         return Path(default_result_path).as_posix()
-    except Exception as e:
-        logger.error(f"Workflow for job {job_id} failed: {e}", exc_info=True)
+    except Exception:
+        logger.error(
+            "Co-simulation workflow failed", exc_info=True, extra={"job_id": job_id}
+        )
         return ""
     finally:
         if omc:
             omc.sendExpression("quit()")
-            logger.info(f"Closed OMPython session for job {job_id}.")
+            logger.info("Closed OMPython session", extra={"job_id": job_id})
 
         if not sim_config.get("keep_temp_files", False):
             if os.path.exists(job_workspace):
                 shutil.rmtree(job_workspace)
-                logger.info(f"Cleaned up workspace for job {job_id}: {job_workspace}")
+                logger.info(
+                    "Cleaned up job workspace",
+                    extra={"job_id": job_id, "workspace": job_workspace},
+                )
 
 
 def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
     """Executes a single simulation job in an isolated workspace."""
     paths_config = config["paths"]
     sim_config = config["simulation"]
-    run_timestamp = config["run_timestamp"]
 
     base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
-    run_temp_dir = os.path.join(base_temp_dir, run_timestamp)
-    job_workspace = os.path.join(run_temp_dir, f"job_{job_id}")
+    # The temp_dir from the config is now the self-contained workspace's temp folder.
+    job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
     os.makedirs(job_workspace, exist_ok=True)
 
-    logger.info(f"Starting job {job_id} with parameters: {job_params}")
+    logger.info(
+        "Starting single job",
+        extra={"job_id": job_id, "job_params": job_params},
+    )
     omc = None
     try:
         omc = get_om_session()
@@ -343,17 +398,27 @@ def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
                 df.dropna(subset=["time"], inplace=True)
                 df.to_csv(result_path, index=False)
             except Exception as e:
-                logger.warning(f"Failed to clean result file {result_path}: {e}")
+                logger.warning(
+                    "Failed to clean result file",
+                    extra={
+                        "job_id": job_id,
+                        "file_path": result_path,
+                        "error": str(e),
+                    },
+                )
 
         if not result_path.is_file():
             raise FileNotFoundError(
                 f"Simulation for job {job_id} failed to produce result file at {result_path}"
             )
 
-        logger.info(f"Job {job_id} finished. Results at {result_path}")
+        logger.info(
+            "Job finished successfully",
+            extra={"job_id": job_id, "result_path": str(result_path)},
+        )
         return str(result_path)
-    except Exception as e:
-        logger.error(f"Job {job_id} failed: {e}", exc_info=True)
+    except Exception:
+        logger.error("Job failed", exc_info=True, extra={"job_id": job_id})
         return ""
     finally:
         if omc:
@@ -367,14 +432,17 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
     """
     paths_config = config["paths"]
     sim_config = config["simulation"]
-    run_timestamp = config["run_timestamp"]
 
     base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
-    run_temp_dir = os.path.join(base_temp_dir, run_timestamp)
-    os.makedirs(run_temp_dir, exist_ok=True)
+    # The temp_dir is now the self-contained workspace's temp folder.
+    os.makedirs(base_temp_dir, exist_ok=True)
 
     logger.info(
-        f"Running sweep sequentially. Intermediate files will be in: {run_temp_dir}"
+        "Running sequential sweep",
+        extra={
+            "mode": "sequential",
+            "intermediate_files_dir": base_temp_dir,
+        },
     )
 
     omc = None
@@ -403,7 +471,11 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
         for i, job_params in enumerate(jobs):
             try:
                 logger.info(
-                    f"Running sequential job {i+1}/{len(jobs)} with parameters: {job_params}"
+                    "Running sequential job",
+                    extra={
+                        "job_index": f"{i+1}/{len(jobs)}",
+                        "job_params": job_params,
+                    },
                 )
                 param_settings = [
                     format_parameter_value(name, value)
@@ -412,7 +484,7 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                 if param_settings:
                     mod.setParameters(param_settings)
 
-                job_workspace = os.path.join(run_temp_dir, f"job_{i+1}")
+                job_workspace = os.path.join(base_temp_dir, f"job_{i+1}")
                 os.makedirs(job_workspace, exist_ok=True)
                 result_filename = f"job_{i+1}_simulation_results.csv"
                 result_file_path = os.path.join(job_workspace, result_filename)
@@ -428,20 +500,31 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                         df.to_csv(result_file_path, index=False)
                     except Exception as e:
                         logger.warning(
-                            f"Failed to clean result file {result_file_path}: {e}"
+                            "Failed to clean result file",
+                            extra={
+                                "job_index": i + 1,
+                                "file_path": result_file_path,
+                                "error": str(e),
+                            },
                         )
 
                 logger.info(
-                    f"Sequential job {i+1} finished. Results at {result_file_path}"
+                    "Sequential job finished successfully",
+                    extra={
+                        "job_index": i + 1,
+                        "result_path": result_file_path,
+                    },
                 )
                 result_paths.append(result_file_path)
-            except Exception as e:
-                logger.error(f"Sequential job {i+1} failed: {e}", exc_info=True)
+            except Exception:
+                logger.error(
+                    "Sequential job failed", exc_info=True, extra={"job_index": i + 1}
+                )
                 result_paths.append("")
 
         return result_paths
-    except Exception as e:
-        logger.error(f"Sequential sweep failed during setup: {e}", exc_info=True)
+    except Exception:
+        logger.error("Sequential sweep setup failed", exc_info=True)
         return [""] * len(jobs)
     finally:
         if omc:
@@ -449,7 +532,7 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
 
 
 def _run_post_processing(
-    config: Dict[str, Any], results_df: pd.DataFrame, run_results_dir: str
+    config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
 ):
     """
     Dynamically load and run post-processing modules based on configuration.
@@ -459,11 +542,14 @@ def _run_post_processing(
         logger.info("No post-processing task configured, skipping this step.")
         return
 
-    logger.info("--- Start post-processing phase ---")
+    logger.info("Starting post-processing phase")
 
-    post_processing_dir = os.path.join(run_results_dir, "post_processing")
+    post_processing_dir = post_processing_output_dir
     os.makedirs(post_processing_dir, exist_ok=True)
-    logger.info(f"The post-processing report will be saved to:{post_processing_dir}")
+    logger.info(
+        "Post-processing report will be saved",
+        extra={"output_dir": post_processing_dir},
+    )
 
     for i, task_config in enumerate(post_processing_configs):
         try:
@@ -471,7 +557,12 @@ def _run_post_processing(
             function_name = task_config["function"]
             params = task_config.get("params", {})
             logger.info(
-                f"Run post-processing tasks #{i+1}: {module_name}.{function_name}"
+                "Running post-processing task",
+                extra={
+                    "task_index": i + 1,
+                    "task_module": module_name,
+                    "function": function_name,
+                },
             )
 
             module = importlib.import_module(module_name)
@@ -480,14 +571,18 @@ def _run_post_processing(
             post_processing_func(
                 results_df=results_df, output_dir=post_processing_dir, **params
             )
-        except Exception as e:
-            logger.error(f"Post-processing task #{i+1} failed: {e}", exc_info=True)
-    logger.info("--- The post-processing stage has ended ---")
+        except Exception:
+            logger.error(
+                "Post-processing task failed",
+                exc_info=True,
+                extra={"task_index": i + 1},
+            )
+    logger.info("Post-processing phase ended")
 
 
+@log_execution_time
 def run_simulation(config: Dict[str, Any]):
     """Orchestrates the simulation execution, result handling, and cleanup."""
-    run_timestamp = config["run_timestamp"]
     jobs = generate_simulation_jobs(config.get("simulation_parameters", {}))
 
     try:
@@ -502,9 +597,14 @@ def run_simulation(config: Dict[str, Any]):
     try:
         if config.get("co_simulation") is None:
             if use_concurrent:
-                logger.info("Starting simulation in CONCURRENT mode.")
                 max_workers = config["simulation"].get("max_workers", os.cpu_count())
-                logger.info(f"Using up to {max_workers} parallel workers.")
+                logger.info(
+                    "Starting simulation",
+                    extra={
+                        "mode": "CONCURRENT",
+                        "max_workers": max_workers,
+                    },
+                )
                 with concurrent.futures.ThreadPoolExecutor(
                     max_workers=max_workers
                 ) as executor:
@@ -528,16 +628,20 @@ def run_simulation(config: Dict[str, Any]):
                                 exc_info=True,
                             )
             else:
-                logger.info("Starting simulation in SEQUENTIAL mode.")
+                logger.info("Starting simulation", extra={"mode": "SEQUENTIAL"})
                 result_paths = _run_sequential_sweep(config, jobs)
                 for i, result_path in enumerate(result_paths):
                     if result_path:
                         simulation_results[tuple(sorted(jobs[i].items()))] = result_path
         else:
             if use_concurrent:
-                logger.info("Starting co-simulation in CONCURRENT mode.")
-                max_workers = config["simulation"].get("max_workers", 4)
-                logger.info(f"Using up to {max_workers} parallel processes.")
+                logger.info(
+                    "Starting co-simulation",
+                    extra={
+                        "mode": "CONCURRENT",
+                        "max_workers": max_workers,
+                    },
+                )
 
                 with concurrent.futures.ProcessPoolExecutor(
                     max_workers=max_workers
@@ -558,22 +662,37 @@ def run_simulation(config: Dict[str, Any]):
                                     tuple(sorted(job_params.items()))
                                 ] = result_path
                                 logger.info(
-                                    f"Successfully finished job for params: {job_params}"
+                                    "Successfully finished co-simulation job",
+                                    extra={
+                                        "job_params": job_params,
+                                    },
                                 )
                             else:
                                 logger.warning(
-                                    f"Job for params {job_params} did not return a result path."
+                                    "Co-simulation job did not return a result path",
+                                    extra={
+                                        "job_params": job_params,
+                                    },
                                 )
                         except Exception as exc:
                             logger.error(
-                                f"Job for params {job_params} generated an exception: {exc}",
+                                "Co-simulation job generated an exception",
                                 exc_info=True,
+                                extra={
+                                    "job_params": job_params,
+                                    "exception": str(exc),
+                                },
                             )
             else:
-                logger.info("Starting co-simulation in SEQUENTIAL mode.")
+                logger.info("Starting co-simulation", extra={"mode": "SEQUENTIAL"})
                 for i, job_params in enumerate(jobs):
                     job_id = i + 1
-                    logger.info(f"--- Starting Sequential Job {job_id}/{len(jobs)} ---")
+                    logger.info(
+                        "Starting Sequential Co-simulation Job",
+                        extra={
+                            "job_index": f"{job_id}/{len(jobs)}",
+                        },
+                    )
                     try:
                         result_path = _run_co_simulation(
                             config, job_params, job_id=job_id
@@ -583,29 +702,49 @@ def run_simulation(config: Dict[str, Any]):
                                 result_path
                             )
                             logger.info(
-                                f"Successfully finished job for params: {job_params}"
+                                "Successfully finished co-simulation job",
+                                extra={
+                                    "job_params": job_params,
+                                },
                             )
                         else:
                             logger.warning(
-                                f"Job for params {job_params} did not return a result path."
+                                "Co-simulation job did not return a result path",
+                                extra={
+                                    "job_params": job_params,
+                                },
                             )
                     except Exception as exc:
                         logger.error(
-                            f"Job for params {job_params} generated an exception: {exc}",
+                            "Co-simulation job generated an exception",
                             exc_info=True,
+                            extra={
+                                "job_params": job_params,
+                                "exception": str(exc),
+                            },
                         )
-                    logger.info(f"--- Finished Sequential Job {job_id}/{len(jobs)} ---")
+                    logger.info(
+                        "Finished Sequential Co-simulation Job",
+                        extra={
+                            "job_index": f"{job_id}/{len(jobs)}",
+                        },
+                    )
     except Exception as e:
-        raise RuntimeError(f"Failed to run simualtion: {e}")
+        raise RuntimeError("Failed to run simulation", e)
 
     # --- Result Handling ---
     # The simulation_results dictionary now contains paths to results inside temporary job workspaces.
-    # Create a timestamped directory for this run's final results.
-    run_results_dir = os.path.join(results_dir, run_timestamp)
+    # The results_dir from the config is now the self-contained workspace's results folder.
+    run_results_dir = results_dir
     os.makedirs(run_results_dir, exist_ok=True)
 
     # Unified result processing for both single and multiple jobs
-    logger.info(f"Processing {len(jobs)} job(s). Combining results.")
+    logger.info(
+        "Processing jobs and combining results",
+        extra={
+            "num_jobs": len(jobs),
+        },
+    )
     combined_df = None
 
     all_dfs = []
@@ -616,7 +755,12 @@ def run_simulation(config: Dict[str, Any]):
         result_path = simulation_results.get(job_key)
 
         if not result_path or not os.path.exists(result_path):
-            logger.warning(f"Job {job_params} produced no result file. Skipping.")
+            logger.warning(
+                "Job produced no result file",
+                extra={
+                    "job_params": job_params,
+                },
+            )
             continue
 
         # Read the current job's result file
@@ -662,30 +806,49 @@ def run_simulation(config: Dict[str, Any]):
             )
 
         combined_df.to_csv(combined_csv_path, index=False)
-        logger.info(f"Combined results saved to: {combined_csv_path}")
+        logger.info(
+            "Combined results saved",
+            extra={
+                "file_path": combined_csv_path,
+            },
+        )
     else:
-        logger.warning("No valid results found to combine.")
+        logger.warning("No valid results found to combine")
 
     # --- Post-Processing ---
     if combined_df is not None:
-        _run_post_processing(config, combined_df, run_results_dir)
-    else:
-        logger.warning(
-            "No simulation results were generated, skipping post-processing."
+        # Calculate the top-level post-processing directory
+        top_level_run_workspace = os.path.abspath(config["run_timestamp"])
+        top_level_post_processing_dir = os.path.join(
+            top_level_run_workspace, "post_processing"
         )
+        _run_post_processing(config, combined_df, top_level_post_processing_dir)
+    else:
+        logger.warning("No simulation results generated, skipping post-processing")
 
     # --- Final Cleanup ---
     # The primary cleanup of job workspaces is handled by the `finally` block in `_run_co_simulation`.
     # This is an additional safeguard.
     if not config["simulation"].get("keep_temp_files", True):
-        logger.info("Cleaning up temporary directory...")
         temp_dir_path = os.path.abspath(config["paths"].get("temp_dir", "temp"))
+        logger.info(
+            "Cleaning up temporary directory",
+            extra={
+                "directory": temp_dir_path,
+            },
+        )
         if os.path.exists(temp_dir_path):
             try:
                 shutil.rmtree(temp_dir_path)
                 os.makedirs(temp_dir_path)  # Recreate for next run
             except OSError as e:
-                logger.error(f"Error cleaning up temp directory: {e}")
+                logger.error(
+                    "Error cleaning up temporary directory",
+                    extra={
+                        "directory": temp_dir_path,
+                        "error": str(e),
+                    },
+                )
 
 
 def _convert_relative_paths_to_absolute(
@@ -722,7 +885,12 @@ def _convert_relative_paths_to_absolute(
                 if not os.path.isabs(value):
                     abs_path = os.path.abspath(os.path.join(base_dir, value))
                     logger.debug(
-                        f"Converted path: {key_name} '{value}' -> '{abs_path}'"
+                        "Converted path",
+                        extra={
+                            "key_name": key_name,
+                            "original_value": value,
+                            "absolute_path": abs_path,
+                        },
                     )
                     return abs_path
             return value
@@ -786,9 +954,8 @@ def initialize_run() -> Dict[str, Any]:
         )
         sys.exit(1)
 
-    original_config_dir = (
-        os.getcwd()
-    )  # Directory where the original configuration file is located
+    # Correctly set the base directory for resolving relative paths to the config file's location
+    original_config_dir = os.path.dirname(config_path)
 
     # First convert relative paths to absolute paths
     absolute_config = _convert_relative_paths_to_absolute(
@@ -798,6 +965,29 @@ def initialize_run() -> Dict[str, Any]:
     config = json.loads(json.dumps(absolute_config))
     # Generate a single timestamp for the entire run and add it to the config
     config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # --- Create a self-contained workspace for this run ---
+    # The workspace is a directory named after the timestamp, created in the current working directory.
+    run_workspace = os.path.abspath(config["run_timestamp"])
+
+    # Ensure the 'paths' and 'logging' keys exist
+    if "paths" not in config:
+        config["paths"] = {}
+    if "logging" not in config:
+        config["logging"] = {}
+
+    # Override the paths in the config to point to the new workspace
+    config["logging"]["log_dir"] = os.path.join(run_workspace, "log")  # Corrected path
+    config["paths"]["temp_dir"] = os.path.join(run_workspace, "temp")
+    config["paths"]["results_dir"] = os.path.join(run_workspace, "results")
+
+    # Create the new directory structure
+    os.makedirs(config["logging"]["log_dir"], exist_ok=True)
+    os.makedirs(config["paths"]["temp_dir"], exist_ok=True)
+    os.makedirs(config["paths"]["results_dir"], exist_ok=True)
+
+    # --- End of workspace creation ---
+
     return config
 
 
@@ -805,12 +995,19 @@ def main():
     """Main function to run the simulation from the command line."""
     config = initialize_run()
     setup_logging(config)
-    logger.info(f"Loading configuration from: {os.path.abspath(sys.argv[-1])}")
+    logger.info(
+        "Loading configuration",
+        extra={
+            "config_path": os.path.abspath(sys.argv[-1]),
+        },
+    )
     try:
         run_simulation(config)
-        logger.info("Main execution completed successfully.")
+        logger.info("Main execution completed successfully")
     except Exception as e:
-        logger.error(f"Main execution failed: {e}", exc_info=True)
+        logger.error(
+            "Main execution failed", exc_info=True, extra={"exception": str(e)}
+        )
         sys.exit(1)
 
 

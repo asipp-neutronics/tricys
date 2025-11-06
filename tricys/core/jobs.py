@@ -45,8 +45,12 @@ def _expand_array_parameters(simulation_params: Dict[str, Any]) -> Dict[str, Any
             except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
                 # If parsing fails for any reason, fall back to treating it as a single literal string.
                 logger.warning(
-                    f"Could not parse complex array-like string '{value}' for parameter '{name}'. "
-                    "Treating it as a single literal value."
+                    "Could not parse complex array-like string",
+                    extra={
+                        "parameter_name": name,
+                        "value": value,
+                        "reason": "Treating as single literal value",
+                    },
                 )
                 expanded_params[name] = value
         else:
@@ -119,7 +123,11 @@ def parse_parameter_value(value: Any) -> List[Any]:
 
     except (ValueError, FileNotFoundError, KeyError, IndexError) as e:
         logger.error(
-            f"Invalid format or error processing parameter value '{value}'. Error: {e}"
+            "Invalid format or error processing parameter value",
+            extra={
+                "value": value,
+                "error": str(e),
+            },
         )
         return [value]  # On any error, treat as a single literal value
 
@@ -141,7 +149,13 @@ def _load_jobs_from_csv(file_path: str) -> List[Dict[str, Any]]:
             abs_file_path = os.path.abspath(
                 os.path.join(os.getcwd(), file_path.strip())
             )
-            logger.debug(f"Convert relative path: '{file_path}' -> '{abs_file_path}'")
+            logger.debug(
+                "Convert relative path",
+                extra={
+                    "original_path": file_path,
+                    "absolute_path": abs_file_path,
+                },
+            )
         else:
             abs_file_path = file_path.strip()
 
@@ -157,11 +171,23 @@ def _load_jobs_from_csv(file_path: str) -> List[Dict[str, Any]]:
                 job[column] = row[column]
             jobs.append(job)
 
-        logger.info(f"Loaded {len(jobs)} jobs from CSV file '{abs_file_path}'")
+        logger.info(
+            "Loaded jobs from CSV file",
+            extra={
+                "num_jobs": len(jobs),
+                "file_path": abs_file_path,
+            },
+        )
         return jobs
 
     except Exception as e:
-        logger.error(f"Error loading CSV file '{file_path}': {e}")
+        logger.error(
+            "Error loading CSV file",
+            extra={
+                "file_path": file_path,
+                "error": str(e),
+            },
+        )
         raise
 
 
@@ -170,7 +196,12 @@ def generate_simulation_jobs(
 ) -> List[Dict[str, Any]]:
     """Generates a list of simulation jobs from parameters, handling sweeps and array expansion."""
 
-    logger.info(f"Generating simulation jobs.{simulation_params}")
+    logger.info(
+        "Generating simulation jobs",
+        extra={
+            "simulation_parameters": simulation_params,
+        },
+    )
     if "file" in simulation_params:
         file_value = simulation_params["file"]
         if isinstance(file_value, str):

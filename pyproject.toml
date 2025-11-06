@@ -26,6 +26,7 @@ dependencies = [
     "openai",
     "python-dotenv",
     "SALib",
+    "python-json-logger",
 ]
 
 [project.urls]

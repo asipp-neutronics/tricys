@@ -20,7 +20,7 @@ def get_om_session() -> OMCSessionZMQ:
     Returns:
         OMCSessionZMQ: An active OpenModelica session object.
     """
-    logger.debug("Initializing new OMCSessionZMQ session.")
+    logger.debug("Initializing new OMCSessionZMQ session")
     return OMCSessionZMQ()
 
 
@@ -34,10 +34,10 @@ def load_modelica_package(omc: OMCSessionZMQ, package_path: str) -> bool:
     Returns:
         bool: True if the package was loaded successfully, False otherwise.
     """
-    logger.info(f"Loading package: {package_path}")
+    logger.info("Loading package", extra={"package_path": package_path})
     load_result = omc.sendExpression(f'loadFile("{package_path}")')
     if not load_result:
-        logger.error(f"Failed to load package: {package_path}")
+        logger.error("Failed to load package", extra={"package_path": package_path})
         return False
     return True
 
@@ -52,16 +52,20 @@ def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
     Returns:
         List[str]: A list of all available parameter names (e.g., ['blanket.TBR']).
     """
-    logger.info(f"Getting parameter names for model '{model_name}'")
+    logger.info("Getting parameter names for model", extra={"model_name": model_name})
     all_params = []
     try:
         if not omc.sendExpression(f"isModel({model_name})"):
-            logger.warning(f"Model '{model_name}' not found in package.")
+            logger.warning(
+                "Model not found in package", extra={"model_name": model_name}
+            )
             return []
 
         components = omc.sendExpression(f"getComponents({model_name})")
         if not components:
-            logger.warning(f"No components found for {model_name}")
+            logger.warning(
+                "No components found for model", extra={"model_name": model_name}
+            )
             return []
 
         for comp in components:
@@ -73,11 +77,13 @@ def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
                     if full_param not in all_params:
                         all_params.append(full_param)
 
-        logger.info(f"Found {len(all_params)} parameter names.")
+        logger.info("Found parameter names", extra={"count": len(all_params)})
         return all_params
 
     except Exception as e:
-        logger.error(f"Failed to get parameter names: {e}", exc_info=True)
+        logger.error(
+            "Failed to get parameter names", exc_info=True, extra={"error": str(e)}
+        )
         return []
 
 
@@ -92,7 +98,13 @@ def _recursive_get_parameters(
         path_prefix (str): The hierarchical path prefix for the current component.
         params_list (list): The list to which parameter details are appended.
     """
-    logger.debug(f"Recursively exploring: {class_name} with prefix: '{path_prefix}'")
+    logger.debug(
+        "Recursively exploring model",
+        extra={
+            "class_name": class_name,
+            "path_prefix": path_prefix,
+        },
+    )
     components = omc.sendExpression(f"getComponents({class_name})")
     if not components:
         return
@@ -105,7 +117,13 @@ def _recursive_get_parameters(
         full_name = f"{path_prefix}.{comp_name}" if path_prefix else comp_name
 
         if comp_variability == "parameter":
-            logger.debug(f"Found parameter: {full_name} of type {comp_type}")
+            logger.debug(
+                "Found parameter",
+                extra={
+                    "full_name": full_name,
+                    "type": comp_type,
+                },
+            )
             param_value = omc.sendExpression(
                 f'getParameterValue(stringTypeName("{class_name}"), "{comp_name}")'
             )
@@ -136,7 +154,11 @@ def _recursive_get_parameters(
                 _recursive_get_parameters(omc, comp_type, full_name, params_list)
             else:
                 logger.debug(
-                    f"Skipping non-example component: {full_name} ({comp_type})"
+                    "Skipping non-example component",
+                    extra={
+                        "full_name": full_name,
+                        "type": comp_type,
+                    },
                 )
 
 
@@ -153,20 +175,25 @@ def get_all_parameters_details(
         List[Dict[str, Any]]: A list of dictionaries, where each dictionary
             contains the detailed information of a single parameter.
     """
-    logger.info(f"Getting detailed parameters for model '{model_name}' via recursion.")
+    logger.info(
+        "Getting detailed parameters via recursion", extra={"model_name": model_name}
+    )
     all_params_details = []
     try:
         if not omc.sendExpression(f"isModel({model_name})"):
-            logger.error(f"Model '{model_name}' not found in package.")
+            logger.error("Model not found in package", extra={"model_name": model_name})
             return []
         _recursive_get_parameters(omc, model_name, "", all_params_details)
         logger.info(
-            f"Successfully found details for {len(all_params_details)} parameters."
+            "Successfully found parameter details",
+            extra={"count": len(all_params_details)},
         )
         return all_params_details
     except Exception as e:
         logger.error(
-            f"Failed to get detailed parameters via recursion: {e}", exc_info=True
+            "Failed to get detailed parameters via recursion",
+            exc_info=True,
+            extra={"error": str(e)},
         )
         return []
 
@@ -242,14 +269,16 @@ def get_model_default_parameters(omc: OMCSessionZMQ, model_name: str) -> Dict[st
             dictionary if the model is not found or has no parameters.
     """
     logger.info(
-        f"Getting and parsing default parameter values for model '{model_name}'."
+        "Getting and parsing default parameter values", extra={"model_name": model_name}
     )
 
     # Use the existing detailed function to get all parameter info
     all_params_details = get_all_parameters_details(omc, model_name)
 
     if not all_params_details:
-        logger.warning(f"No parameters found for model '{model_name}'.")
+        logger.warning(
+            "No parameters found for model", extra={"model_name": model_name}
+        )
         return {}
 
     # Convert the list of dicts into a single dict of name: parsed_defaultValue
@@ -259,29 +288,30 @@ def get_model_default_parameters(omc: OMCSessionZMQ, model_name: str) -> Dict[st
     }
 
     logger.info(
-        f"Found and parsed {len(default_params)} default parameters for model '{model_name}'."
+        "Found and parsed default parameters",
+        extra={
+            "count": len(default_params),
+            "model_name": model_name,
+        },
     )
     return default_params
 
 
 def _clear_stale_init_xml(mod: ModelicaSystem, model_name: str):
     """
-    查找 ModelicaSystem 的工作目录并删除残留的 <model_name>_init.xml 文件，
-    以防止 GUID 不匹配的错误。
+    Find the working directory of ModelicaSystem and delete the residual <model_name>_init.xml file to prevent GUID mismatch errors.
 
     Args:
-        mod: OMPython.ModelicaSystem 的实例对象。
-        model_name: 模型的名称 (例如 "CFEDR.Cycle")。
-        logger: 用于记录日志的 logging.Logger 对象。
+        mod: An instance object of OMPython.ModelicaSystem.
+        model_name: The name of the model (e.g., "CFEDR.Cycle").
+        logger: A logging.Logger object for logging.
     """
     try:
         work_dir = ""
         try:
-            # 1. 尝试使用标准方法获取工作目录
             work_dir = mod.getWorkDirectory()
         except AttributeError:
-            # 2. 如果方法不存在，尝试访问 "私有" 属性
-            logger.warning("'.getWorkDirectory()' not found, trying '._workDir'")
+            logger.warning("getWorkDirectory() not found, trying ._workDir")
             work_dir = mod._workDir  # 很多 OMPython 版本使用这个
 
         if not work_dir or not os.path.isdir(work_dir):
@@ -289,17 +319,16 @@ def _clear_stale_init_xml(mod: ModelicaSystem, model_name: str):
                 f"Could not get a valid work_dir from mod object: {work_dir}"
             )
 
-        logger.info(f"ModelicaSystem working directory is: {work_dir}")
+        logger.info("ModelicaSystem working directory", extra={"directory": work_dir})
 
-        # 3. 构造旧文件的完整路径
         xml_file_name = f"{model_name}_init.xml"
         xml_file_path = os.path.join(work_dir, xml_file_name)
 
-        # 4. 检查并删除它
-        logger.info(f"Checking for stale init file at: {xml_file_path}")
+        logger.info("Checking for stale init file", extra={"file_path": xml_file_path})
         if os.path.exists(xml_file_path):
             logger.warning(
-                f"Found and removing stale init file (old GUID): {xml_file_path}"
+                "Found and removing stale init file (old GUID)",
+                extra={"file_path": xml_file_path},
             )
             os.remove(xml_file_path)
         else:
@@ -307,7 +336,10 @@ def _clear_stale_init_xml(mod: ModelicaSystem, model_name: str):
 
     except Exception as e:
         logger.error(
-            f"Error during stale init file cleanup: {e}. "
-            "This might not be critical, but GUID errors may occur.",
+            "Error during stale init file cleanup",
             exc_info=True,
+            extra={
+                "error": str(e),
+                "note": "This might not be critical, but GUID errors may occur.",
+            },
         )

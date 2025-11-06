@@ -1416,8 +1416,8 @@ def consolidate_reports(
 
             for filename in files_to_copy:
                 source_path = os.path.join(source_dir, filename)
-                shutil.copy(source_path, dest_dir)
-                logger.info(f"Copied {filename} to {dest_dir}")
+                shutil.move(source_path, dest_dir)
+                logger.info(f"Moved {filename} to {dest_dir}")
 
     except Exception as e:
         logger.error(f"Error during report consolidation: {e}", exc_info=True)
@@ -1485,7 +1485,6 @@ def generate_analysis_cases_summary(
         # Save report to current directory
         report_path = os.path.join(
             current_dir,
-            "analysis_cases",
             run_timestamp,
             f"execution_report_{run_timestamp}.md",
         )

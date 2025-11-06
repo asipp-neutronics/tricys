@@ -82,7 +82,7 @@ class TricysSALibAnalyzer:
                 plt.rcParams["font.sans-serif"] = [available_font] + plt.rcParams[
                     "font.sans-serif"
                 ]
-                logger.info(f"Using Chinese fonts: {available_font}")
+                logger.info("Using Chinese font", extra={"font": available_font})
             else:
                 logger.warning(
                     "No suitable Chinese font found, which may affect Chinese display"
@@ -91,7 +91,10 @@ class TricysSALibAnalyzer:
             plt.rcParams["axes.unicode_minus"] = False
 
         except Exception as e:
-            logger.warning(f"Failed to set Chinese font: {e}, using default font")
+            logger.warning(
+                "Failed to set Chinese font, using default font",
+                extra={"error": str(e)},
+            )
 
     def _handle_nan_values(
         self, Y: np.ndarray, method_name: str = "Sensitivity analysis"
@@ -110,7 +113,11 @@ class TricysSALibAnalyzer:
         if np.any(nan_indices):
             n_nan = np.sum(nan_indices)
             logger.info(
-                f"{method_name}: Found {n_nan} NaN values, using maximum value for imputation"
+                "Found NaN values, using maximum value for imputation",
+                extra={
+                    "method_name": method_name,
+                    "nan_count": n_nan,
+                },
             )
 
             valid_values = Y[~nan_indices]
@@ -122,7 +129,10 @@ class TricysSALibAnalyzer:
                 return Y_processed
             else:
                 logger.error(
-                    f"{method_name}: All values are NaN, analysis cannot be performed"
+                    "All values are NaN, analysis cannot be performed",
+                    extra={
+                        "method_name": method_name,
+                    },
                 )
                 raise ValueError(
                     f"{method_name}: All simulation results are NaN, sensitivity analysis cannot be performed"
@@ -138,20 +148,30 @@ class TricysSALibAnalyzer:
         for section, keys in required_keys.items():
             if section not in self.base_config:
                 logger.warning(
-                    f"Missing configuration section: {section}, default values will be used"
+                    "Missing configuration section, default values will be used",
+                    extra={
+                        "section": section,
+                    },
                 )
                 continue
 
             for key in keys:
                 if key not in self.base_config[section]:
                     logger.warning(
-                        f"Missing configuration item: {section}.{key}, using default value"
+                        "Missing configuration item, using default value",
+                        extra={
+                            "section": section,
+                            "key": key,
+                        },
                     )
 
         package_path = self.base_config.get("paths", {}).get("package_path")
         if package_path and not os.path.exists(package_path):
             logger.warning(
-                f"Model file does not exist: {package_path}, which may cause simulation failure"
+                "Model file does not exist, which may cause simulation failure",
+                extra={
+                    "package_path": package_path,
+                },
             )
 
     def _find_unit_config(self, var_name: str, unit_map: dict) -> dict | None:
@@ -197,7 +217,11 @@ class TricysSALibAnalyzer:
         for name, dist in param_distributions.items():
             if dist not in valid_dists:
                 logger.warning(
-                    f"The distribution type '{dist}' for parameter {name} is invalid, changed to use 'unif'"
+                    "Invalid distribution type, using 'unif' instead",
+                    extra={
+                        "parameter_name": name,
+                        "invalid_distribution": dist,
+                    },
                 )
                 param_distributions[name] = "unif"
 
@@ -211,11 +235,19 @@ class TricysSALibAnalyzer:
         }
 
         logger.info(
-            f"Defined a problem space containing {self.problem['num_vars']} parameters:"
+            "Defined a problem space",
+            extra={
+                "num_parameters": self.problem["num_vars"],
+            },
         )
         for i, name in enumerate(self.problem["names"]):
             logger.info(
-                f"  {name}: {self.problem['bounds'][i]} (distribution: {self.problem['dists'][i]})"
+                "Parameter definition",
+                extra={
+                    "parameter_name": name,
+                    "bounds": self.problem["bounds"][i],
+                    "distribution": self.problem["dists"][i],
+                },
             )
 
         return self.problem
@@ -240,7 +272,11 @@ class TricysSALibAnalyzer:
             )
 
         logger.info(
-            f"Generate samples using the {method} method, base sample count: {N}"
+            "Generating samples",
+            extra={
+                "method": method,
+                "base_sample_count": N,
+            },
         )
 
         if method.lower() == "sobol":
@@ -287,13 +323,13 @@ class TricysSALibAnalyzer:
         else:
             raise ValueError(f"Unsupported sampling method: {method}")
 
-        logger.info(f"Successfully generated {actual_samples} samples")
+        logger.info(
+            "Successfully generated samples", extra={"actual_samples": actual_samples}
+        )
 
         if self.parameter_samples is not None:
             self.parameter_samples = np.round(self.parameter_samples, decimals=5)
-            logger.info(
-                "The parameter sample precision has been adjusted to 5 decimal places."
-            )
+            logger.info("Parameter sample precision adjusted to 5 decimal places")
 
         self._last_sampling_method = method.lower()
 
@@ -322,7 +358,7 @@ class TricysSALibAnalyzer:
                 "Doubling_Time",
             ]
 
-        logger.info(f"Target output metrics: {output_metrics}")
+        logger.info("Target output metrics", extra={"output_metrics": output_metrics})
 
         sampled_param_names = self.problem["names"]
 
@@ -354,11 +390,14 @@ class TricysSALibAnalyzer:
 
         df.to_csv(csv_output_path, index=False, encoding="utf-8")
 
-        logger.info(f"Successfully generated {len(param_data)} parameter samples")
-        logger.info(f"Parameter file saved to: {csv_output_path}")
-        logger.info(f"Column list: {list(df.columns)}")
-        logger.info("Parameter precision: 5 decimal places")
-        logger.info(f"Sample statistics:\n{df.describe()}")
+        logger.info(
+            "Successfully generated parameter samples",
+            extra={"num_samples": len(param_data)},
+        )
+        logger.info("Parameter file saved", extra={"file_path": csv_output_path})
+        logger.info("Parameter file columns", extra={"columns": list(df.columns)})
+        logger.info("Parameter precision set to 5 decimal places")
+        logger.info("Sample statistics", extra={"statistics": df.describe().to_dict()})
 
         self.sampling_csv_path = csv_output_path
 

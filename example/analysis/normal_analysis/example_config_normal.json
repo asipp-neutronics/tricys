@@ -33,8 +33,7 @@
                 "dependent_variables": [
                     "Startup_Inventory",
                     "Self_Sufficiency_Time",
-                    "Doubling_Time",
-                    "Required_TBR"
+                    "Doubling_Time"
                 ],
                 "plot_type":"bar&line",
                 "combine_plots":true,
@@ -47,8 +46,7 @@
                 "dependent_variables": [
                     "Startup_Inventory",
                     "Self_Sufficiency_Time",
-                    "Doubling_Time",
-                    "Required_TBR"
+                    "Doubling_Time"
                 ],
                 "plot_type":"bar&line",
                 "combine_plots":true,
@@ -74,8 +72,7 @@
                 "dependent_variables": [
                     "Startup_Inventory",
                     "Self_Sufficiency_Time",
-                    "Doubling_Time",
-                    "Required_TBR"
+                    "Doubling_Time"
                 ],
                 "plot_type":"bar&line",
                 "combine_plots":true,
