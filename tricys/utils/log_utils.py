@@ -13,7 +13,7 @@ from tricys.utils.file_utils import delete_old_logs
 logger = logging.getLogger(__name__)
 
 
-def setup_logging(config: Dict[str, Any]):
+def setup_logging(config: Dict[str, Any], original_config: Dict[str, Any] = None):
     """Configures the logging module based on the application configuration."""
     log_config = config.get("logging", {})
     log_level_str = log_config.get("log_level", "INFO").upper()
@@ -74,6 +74,10 @@ def setup_logging(config: Dict[str, Any]):
         logger.info(
             f"Runtime Configuration (compact JSON): {json.dumps(config, separators=(',', ':'), ensure_ascii=False)}"
         )
+        if original_config:
+            logger.info(
+                f"Original Configuration (compact JSON): {json.dumps(original_config, separators=(',', ':'), ensure_ascii=False)}"
+            )
 
 
 def log_execution_time(func):

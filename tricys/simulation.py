@@ -6,6 +6,7 @@ import logging
 import os
 import shutil
 import sys
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
@@ -851,6 +852,223 @@ def run_simulation(config: Dict[str, Any]):
                 )
 
 
+def archive_simulation(timestamp: str):
+    """
+    Archives a simulation run by collecting all necessary files and compressing them.
+    """
+    # Basic logging setup for archive command
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        stream=sys.stdout,
+    )
+    logger = logging.getLogger(__name__)
+
+    logger.info(f"Starting archive for timestamp: {timestamp}")
+
+    if not os.path.isdir(timestamp):
+        logger.error(f"Timestamp directory not found: {timestamp}")
+        sys.exit(1)
+
+    # 0. Create archive directory
+    archive_root = "archive"
+    if os.path.exists(archive_root):
+        shutil.rmtree(archive_root)  # Clean up previous archive attempt
+    os.makedirs(archive_root)
+    logger.info(f"Created archive directory: {archive_root}")
+
+    try:
+        # 1. Find log file and extract configs
+        log_dir = os.path.join(timestamp, "log")
+        log_file = None
+        if os.path.isdir(log_dir):
+            for f in os.listdir(log_dir):
+                if f.startswith("simulation_") and f.endswith(".log"):
+                    log_file = os.path.join(log_dir, f)
+                    break
+
+        if not log_file:
+            logger.error(f"Could not find log file in {log_dir}")
+            return
+
+        runtime_config_str = None
+        original_config_str = None
+        with open(log_file, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    log_entry = json.loads(line)
+                    if "message" in log_entry:
+                        if log_entry["message"].startswith(
+                            "Runtime Configuration (compact JSON):"
+                        ):
+                            runtime_config_str = log_entry["message"].replace(
+                                "Runtime Configuration (compact JSON): ", ""
+                            )
+                        elif log_entry["message"].startswith(
+                            "Original Configuration (compact JSON):"
+                        ):
+                            original_config_str = log_entry["message"].replace(
+                                "Original Configuration (compact JSON): ", ""
+                            )
+
+                    if runtime_config_str and original_config_str:
+                        break  # Found both, no need to read further
+                except json.JSONDecodeError:
+                    continue  # Ignore lines that are not valid JSON
+
+        if not runtime_config_str or not original_config_str:
+            logger.error(
+                "Could not find runtime and/or original configuration in log file."
+            )
+            return
+
+        runtime_config = json.loads(runtime_config_str)
+        original_config = json.loads(original_config_str)
+        logger.info("Successfully extracted both runtime and original configurations.")
+
+        # Create a deep copy of the original config to modify
+        final_config = json.loads(json.dumps(original_config))
+
+        # 2. Use RUNTIME config to find, copy, and update path in FINAL config
+        original_package_path = runtime_config["paths"]["package_path"]
+        new_package_path = ""
+
+        if os.path.isfile(original_package_path) and not original_package_path.endswith(
+            "package.mo"
+        ):
+            # SINGLE-FILE
+            model_filename = os.path.basename(original_package_path)
+            destination_model_path = os.path.join(archive_root, model_filename)
+            shutil.copy(original_package_path, destination_model_path)
+            logger.info(f"Copied single-file model to {destination_model_path}")
+            new_package_path = model_filename
+        else:
+            # MULTI-FILE
+            if os.path.isfile(original_package_path):
+                original_package_dir = os.path.dirname(original_package_path)
+            else:
+                original_package_dir = original_package_path
+
+            package_dir_name = os.path.basename(original_package_dir)
+            destination_model_dir = os.path.join(archive_root, package_dir_name)
+            shutil.copytree(original_package_dir, destination_model_dir)
+            logger.info(f"Copied multi-file model to {destination_model_dir}")
+
+            if os.path.isfile(original_package_path):
+                new_package_path = os.path.join(
+                    package_dir_name, os.path.basename(original_package_path)
+                ).replace("\\", "/")
+            else:
+                new_package_path = os.path.join(package_dir_name, "package.mo").replace(
+                    "\\", "/"
+                )
+
+        # Update the path in the final_config
+        if "paths" not in final_config:
+            final_config["paths"] = {}
+        final_config["paths"]["package_path"] = new_package_path
+        logger.info(f"Updated package_path in final config to '{new_package_path}'")
+
+        # 3. Save the MODIFIED ORIGINAL config
+        config_path_in_archive = os.path.join(archive_root, "config.json")
+        with open(config_path_in_archive, "w", encoding="utf-8") as f:
+            json.dump(final_config, f, indent=4, ensure_ascii=False)
+        logger.info(
+            f"Saved modified original configuration to {config_path_in_archive}"
+        )
+
+        # 4. Copy timestamped results directory, ignoring temp/
+        destination_timestamp_dir = os.path.join(archive_root, timestamp)
+        shutil.copytree(
+            timestamp, destination_timestamp_dir, ignore=shutil.ignore_patterns("temp")
+        )
+        logger.info(
+            f"Copied timestamp directory to {destination_timestamp_dir}, ignoring temp/"
+        )
+
+        # 5. Pack into a compressed file
+        archive_filename = f"archive_{timestamp}"
+        shutil.make_archive(archive_filename, "zip", archive_root)
+        logger.info(f"Successfully created archive: {archive_filename}.zip")
+
+    finally:
+        if os.path.exists(archive_root):
+            shutil.rmtree(archive_root)
+            logger.info(f"Cleaned up temporary archive directory: {archive_root}")
+
+
+def _relativize_paths_in_config(config_node, logger):
+    """
+    Recursively traverses the config and converts absolute paths to relative (basename).
+    """
+    # The keys that hold paths that need to be made relative.
+    path_keys = ["db_path", "results_dir", "temp_dir", "log_dir"]
+
+    if isinstance(config_node, dict):
+        for key, value in config_node.items():
+            if isinstance(value, str):
+                # Check if the key indicates a path. We exclude 'package_path' as it's handled separately.
+                is_path_key = (
+                    key.endswith("_path") or key in path_keys
+                ) and key != "package_path"
+
+                if is_path_key and os.path.isabs(value):
+                    original_path = value
+                    new_path = os.path.basename(original_path)
+                    config_node[key] = new_path
+                    logger.debug(
+                        f"Relativizing path for key '{key}': '{original_path}' -> '{new_path}'"
+                    )
+            elif isinstance(value, (dict, list)):
+                _relativize_paths_in_config(value, logger)  # Recurse
+    elif isinstance(config_node, list):
+        for item in config_node:
+            _relativize_paths_in_config(item, logger)
+
+
+def unarchive_simulation(zip_file: str):
+    """
+    Unarchives a simulation run from a zip file.
+    Extracts to a new folder if the current directory is not empty.
+    """
+    # Basic logging setup for unarchive command
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        stream=sys.stdout,
+    )
+    logger = logging.getLogger(__name__)
+
+    if not os.path.isfile(zip_file):
+        logger.error(f"Archive file not found: {zip_file}")
+        sys.exit(1)
+
+    target_dir = "."
+    if os.listdir("."):  # If the list of CWD contents is not empty
+        dir_name = os.path.splitext(os.path.basename(zip_file))[0]
+        target_dir = dir_name
+        logger.info(
+            f"Current directory is not empty. Extracting to new directory: {target_dir}"
+        )
+        os.makedirs(target_dir, exist_ok=True)
+    else:
+        logger.info("Current directory is empty. Extracting to current directory.")
+
+    # Unzip the file
+    try:
+        with zipfile.ZipFile(zip_file, "r") as zip_ref:
+            zip_ref.extractall(target_dir)
+        logger.info(
+            f"Successfully unarchived '{zip_file}' to '{os.path.abspath(target_dir)}'"
+        )
+    except zipfile.BadZipFile:
+        logger.error(f"Error: '{zip_file}' is not a valid zip file.")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An error occurred during unarchiving: {e}")
+        sys.exit(1)
+
+
 def _convert_relative_paths_to_absolute(
     config: Dict[str, Any], base_dir: str
 ) -> Dict[str, Any]:
@@ -900,7 +1118,7 @@ def _convert_relative_paths_to_absolute(
     return _process_value(config)
 
 
-def initialize_run() -> Dict[str, Any]:
+def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Parses command-line arguments, loads the config file, and generates a run timestamp.
     Returns a fully prepared configuration dictionary.
@@ -922,7 +1140,31 @@ def initialize_run() -> Dict[str, Any]:
 
     subparsers.add_parser("example", help="Run simulation examples interactively")
 
+    archive_parser = subparsers.add_parser("archive", help="Archive a simulation run.")
+    archive_parser.add_argument(
+        "timestamp",
+        type=str,
+        help="Timestamp of the simulation run to archive.",
+    )
+
+    unarchive_parser = subparsers.add_parser(
+        "unarchive", help="Unarchive a simulation run."
+    )
+    unarchive_parser.add_argument(
+        "zip_file",
+        type=str,
+        help="Path to the archive file to unarchive.",
+    )
+
     args = parser.parse_args()
+
+    if args.command == "archive":
+        archive_simulation(args.timestamp)
+        sys.exit(0)
+
+    if args.command == "unarchive":
+        unarchive_simulation(args.zip_file)
+        sys.exit(0)
 
     if args.command == "example":
         import importlib.util
@@ -940,7 +1182,16 @@ def initialize_run() -> Dict[str, Any]:
         sys.exit(0)
 
     if not args.config:
-        parser.error("the following arguments are required: -c/--config")
+        default_config_path = "config.json"
+        if os.path.exists(default_config_path):
+            args.config = default_config_path
+            print(
+                f"INFO: No config file specified, using default: {default_config_path}"
+            )
+        else:
+            parser.error(
+                "the following arguments are required: -c/--config, or 'config.json' must exist in the current directory."
+            )
 
     try:
         config_path = os.path.abspath(args.config)
@@ -988,13 +1239,13 @@ def initialize_run() -> Dict[str, Any]:
 
     # --- End of workspace creation ---
 
-    return config
+    return config, base_config
 
 
 def main():
     """Main function to run the simulation from the command line."""
-    config = initialize_run()
-    setup_logging(config)
+    config, original_config = initialize_run()
+    setup_logging(config, original_config)
     logger.info(
         "Loading configuration",
         extra={

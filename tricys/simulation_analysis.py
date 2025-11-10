@@ -2017,7 +2017,7 @@ def run_simulation(config: Dict[str, Any]):
 
 
 @log_execution_time
-def initialize_run() -> Dict[str, Any]:
+def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Parses command-line arguments, loads the config file, and generates a run timestamp.
     Returns a fully prepared configuration dictionary.
@@ -2058,7 +2058,22 @@ def initialize_run() -> Dict[str, Any]:
         help="Path to the JSON configuration file.",
     )
 
+    archive_parser = subparsers.add_parser("archive", help="Archive an analysis run.")
+    archive_parser.add_argument(
+        "timestamp",
+        type=str,
+        help="Timestamp of the analysis run to archive.",
+    )
+
     args = parser.parse_args()
+
+    if args.command == "retry":
+        retry_ai_analysis(args.report_path)
+        sys.exit(0)
+
+    if args.command == "archive":
+        archive_analysis(args.timestamp)
+        sys.exit(0)
 
     if args.command == "example":
         import importlib.util
@@ -2076,23 +2091,27 @@ def initialize_run() -> Dict[str, Any]:
         sys.exit(0)
 
     if not args.config:
-        if args.command == "retry":
-            # In retry mode, config is optional, create a default empty config
-            base_config = {}
-            config_path = os.getcwd()  # Default path, not critical for retry
-        else:
-            parser.error("the following arguments are required: -c/--config")
-    else:
-        try:
-            config_path = os.path.abspath(args.config)
-            with open(config_path, "r") as f:
-                base_config = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
+        default_config_path = "config.json"
+        if os.path.exists(default_config_path):
+            args.config = default_config_path
             print(
-                f"ERROR: Failed to load or parse config file {args.config}: {e}",
-                file=sys.stderr,
+                f"INFO: No config file specified, using default: {default_config_path}"
             )
-            sys.exit(1)
+        else:
+            parser.error(
+                "the following arguments are required: -c/--config, or 'config.json' must exist in the current directory."
+            )
+
+    try:
+        config_path = os.path.abspath(args.config)
+        with open(config_path, "r") as f:
+            base_config = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(
+            f"ERROR: Failed to load or parse config file {args.config}: {e}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # Correctly set the base directory for resolving relative paths to the config file's location
     original_config_dir = os.path.dirname(config_path)
@@ -2127,16 +2146,206 @@ def initialize_run() -> Dict[str, Any]:
 
     # --- End of workspace creation ---
 
-    return config
+    return config, base_config
 
 
-@log_execution_time
+def archive_analysis(timestamp: str):
+    """
+    Archives an analysis run by collecting all necessary files and compressing them.
+    """
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        stream=sys.stdout,
+    )
+    logger = logging.getLogger(__name__)
+
+    logger.info(f"Starting archive for analysis run: {timestamp}")
+
+    if not os.path.isdir(timestamp):
+        logger.error(f"Timestamp directory not found: {timestamp}")
+        sys.exit(1)
+
+    archive_root = "archive"
+    if os.path.exists(archive_root):
+        shutil.rmtree(archive_root)
+    os.makedirs(archive_root)
+    logger.info(f"Created archive directory: {archive_root}")
+
+    try:
+        # 1. Find and load config from the main log file
+        log_file_path = os.path.join(timestamp, f"simulation_{timestamp}.log")
+        if not os.path.isfile(log_file_path):
+            logger.error(f"Main log file not found: {log_file_path}")
+            return
+
+        runtime_config_str = None
+        original_config_str = None
+        with open(log_file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    log_entry = json.loads(line)
+                    if "message" in log_entry:
+                        if log_entry["message"].startswith(
+                            "Runtime Configuration (compact JSON):"
+                        ):
+                            runtime_config_str = log_entry["message"].replace(
+                                "Runtime Configuration (compact JSON): ", ""
+                            )
+                        elif log_entry["message"].startswith(
+                            "Original Configuration (compact JSON):"
+                        ):
+                            original_config_str = log_entry["message"].replace(
+                                "Original Configuration (compact JSON): ", ""
+                            )
+                    if runtime_config_str and original_config_str:
+                        break
+                except json.JSONDecodeError:
+                    continue
+
+        if not runtime_config_str or not original_config_str:
+            logger.error(
+                "Could not find runtime and/or original configuration in log file."
+            )
+            return
+
+        runtime_config = json.loads(runtime_config_str)
+        original_config = json.loads(original_config_str)
+        logger.info("Successfully extracted both runtime and original configurations.")
+
+        # Create a deep copy of the original config to modify
+        final_config = json.loads(json.dumps(original_config))
+
+        # 2. Copy external assets and update paths in the final_config
+        _copy_and_update_paths(runtime_config, final_config, archive_root, logger)
+        logger.info("Copied external assets and updated paths in final configuration.")
+
+        # 3. Copy the entire analysis workspace, ignoring temp directories
+        dest_workspace_path = os.path.join(archive_root, timestamp)
+        shutil.copytree(
+            timestamp,
+            dest_workspace_path,
+            ignore=shutil.ignore_patterns("temp", "*.tmp"),
+        )
+        logger.info(
+            f"Copied analysis workspace '{timestamp}' to archive, ignoring temp files."
+        )
+
+        # 4. Save the modified original config to the root of the archive
+        final_config_path = os.path.join(archive_root, "config.json")
+        with open(final_config_path, "w", encoding="utf-8") as f:
+            json.dump(final_config, f, indent=4, ensure_ascii=False)
+        logger.info(f"Saved modified original configuration to {final_config_path}")
+
+        # 5. Create zip archive
+        archive_filename = f"archive_ana_{timestamp}"
+        shutil.make_archive(archive_filename, "zip", archive_root)
+        logger.info(f"Successfully created analysis archive: {archive_filename}.zip")
+
+    finally:
+        if os.path.exists(archive_root):
+            shutil.rmtree(archive_root)
+            logger.info(f"Cleaned up temporary archive directory: {archive_root}")
+
+
+def _copy_and_update_paths(runtime_node, final_node, archive_root, logger):
+    """
+    Recursively traverses runtime_node and final_node. Finds asset paths in runtime_node,
+    copies them to the archive, and updates the corresponding path in final_node.
+    """
+    if not isinstance(runtime_node, type(final_node)):
+        return
+
+    if isinstance(runtime_node, dict):
+        # Handle special case: independent_variable_sampling when independent_variable is "file"
+        if (
+            runtime_node.get("independent_variable") == "file"
+            and "independent_variable_sampling" in runtime_node
+            and isinstance(runtime_node["independent_variable_sampling"], str)
+            and os.path.isfile(runtime_node["independent_variable_sampling"])
+        ):
+            original_path = runtime_node["independent_variable_sampling"]
+            base_name = os.path.basename(original_path)
+            dest_path = os.path.join(archive_root, base_name)
+            if not os.path.exists(dest_path):
+                shutil.copy(original_path, dest_path)
+                logger.info(f"Copied asset: {original_path} -> {dest_path}")
+            final_node["independent_variable_sampling"] = base_name
+
+        for key, runtime_value in runtime_node.items():
+            if key not in final_node:
+                continue
+
+            if isinstance(runtime_value, str):
+                path_keys = ["package_path", "db_path", "glossary_path"]
+                is_path_key = key.endswith("_path") or key in path_keys
+
+                if is_path_key and os.path.exists(runtime_value):
+                    new_relative_path = ""
+                    if key == "package_path":
+                        if os.path.isfile(runtime_value) and not runtime_value.endswith(
+                            "package.mo"
+                        ):
+                            base_name = os.path.basename(runtime_value)
+                            dest_path = os.path.join(archive_root, base_name)
+                            if not os.path.exists(dest_path):
+                                shutil.copy(runtime_value, dest_path)
+                            new_relative_path = base_name
+                        else:
+                            src_dir = (
+                                os.path.dirname(runtime_value)
+                                if os.path.isfile(runtime_value)
+                                else runtime_value
+                            )
+                            dir_name = os.path.basename(src_dir)
+                            dest_dir = os.path.join(archive_root, dir_name)
+                            if not os.path.exists(dest_dir):
+                                shutil.copytree(src_dir, dest_dir)
+
+                            if os.path.isfile(runtime_value):
+                                new_relative_path = os.path.join(
+                                    dir_name, os.path.basename(runtime_value)
+                                ).replace("\\", "/")
+                            else:
+                                new_relative_path = dir_name.replace("\\", "/")
+                    else:
+                        if os.path.isfile(runtime_value):
+                            base_name = os.path.basename(runtime_value)
+                            dest_path = os.path.join(archive_root, base_name)
+                            if not os.path.exists(dest_path):
+                                shutil.copy(runtime_value, dest_path)
+                            new_relative_path = base_name
+                        elif os.path.isdir(runtime_value):
+                            dir_name = os.path.basename(runtime_value)
+                            dest_dir = os.path.join(archive_root, dir_name)
+                            if not os.path.exists(dest_dir):
+                                shutil.copytree(runtime_value, dest_dir)
+                            new_relative_path = dir_name
+
+                    if new_relative_path:
+                        final_node[key] = new_relative_path
+                        logger.info(
+                            f"Copied and updated path for '{key}': {runtime_value} -> {new_relative_path}"
+                        )
+
+            elif isinstance(runtime_value, (dict, list)):
+                _copy_and_update_paths(
+                    runtime_value, final_node[key], archive_root, logger
+                )
+
+    elif isinstance(runtime_node, list):
+        if len(runtime_node) != len(final_node):
+            return
+        for i in range(len(runtime_node)):
+            _copy_and_update_paths(runtime_node[i], final_node[i], archive_root, logger)
+
+
 def main():
     """Main function to run the simulation from the command line."""
-    config = initialize_run()
+    config, original_config = initialize_run()
     command = config.pop("command", None)
 
-    setup_logging(config)
+    setup_logging(config, original_config)
 
     config_path = None
     try:
