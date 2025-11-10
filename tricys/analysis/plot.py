@@ -18,6 +18,41 @@ _english_glossary_map = {}
 _chinese_glossary_map = {}
 _use_chinese_labels = False
 
+# Add a dictionary for UI text translations
+_ui_text = {
+    "en": {
+        "dependence_of_on": "Dependence of {y_label} on {x_label}",
+        "constraint": "Constraint",
+        "overall_view": "Overall View (Data exceeding 2x initial value is hidden)",
+        "detailed_view": "Detailed View (t=0 to Post-Minimum)",
+        "time_days": "Time (days)",
+        "days": "days",
+        "kg": "kg",
+        "g": "g",
+        "hours": "hours",
+        "years": "years",
+    },
+    "cn": {
+        "dependence_of_on": "{y_label}与{x_label}的关系",
+        "constraint": "约束",
+        "overall_view": "全局视图 (超出初始值2倍的数据已隐藏)",
+        "detailed_view": "细节视图 (t=0到最小值后)",
+        "time_days": "时间 (天)",
+        "days": "天",
+        "kg": "千克",
+        "g": "克",
+        "hours": "小时",
+        "years": "年",
+    },
+}
+
+
+def _get_text(key: str) -> str:
+    """Helper to get text based on the current language setting."""
+    # Fallback to key itself if not found, useful for units from unit_map
+    lang = "cn" if _use_chinese_labels else "en"
+    return _ui_text[lang].get(key, key)
+
 
 def set_plot_language(lang: str = "en"):
     """
@@ -27,6 +62,16 @@ def set_plot_language(lang: str = "en"):
     """
     global _use_chinese_labels
     _use_chinese_labels = lang.lower() == "cn"
+
+    if _use_chinese_labels:
+        # To display Chinese characters correctly, specify a list of fallback fonts.
+        plt.rcParams["font.sans-serif"] = ["SimHei"]  # 替换成你电脑上有的字体
+        plt.rcParams["axes.unicode_minus"] = False  # To display minus sign correctly.
+        plt.rcParams["font.family"] = "sans-serif"  # 确保字体家族设置生效
+    else:
+        # Restore default settings
+        plt.rcParams["font.sans-serif"] = plt.rcParamsDefault["font.sans-serif"]
+        plt.rcParams["axes.unicode_minus"] = plt.rcParamsDefault["axes.unicode_minus"]
 
 
 def load_glossary(glossary_path: str):
@@ -166,136 +211,151 @@ def _generate_multi_required_plot(
     Generates a figure with subplots for 'Required_***' metrics,
     where each subplot corresponds to a unique combination of simulation parameters (hue_vars).
     """
-    x_var = case["independent_variable"]
-    case_sim_params = case.get("default_simulation_values", {})
-    hue_vars = sorted(list(case_sim_params.keys()))
+    plot_paths = []
+    original_lang_is_chinese = _use_chinese_labels
 
-    x_var_label = _format_label(x_var)
-    base_metric_name_label = _format_label(base_metric_name)
+    for lang in ["en", "cn"]:
+        set_plot_language(lang)
 
-    # Apply units to labels if unit_map is provided
-    if unit_map:
-        x_config = _find_unit_config(x_var, unit_map)
-        if x_config and x_config.get("unit"):
-            x_var_label = f'{x_var_label} ({x_config["unit"]})'
+        x_var = case["independent_variable"]
+        case_sim_params = case.get("default_simulation_values", {})
+        hue_vars = sorted(list(case_sim_params.keys()))
 
-        base_config = _find_unit_config(base_metric_name, unit_map)
-        if base_config and base_config.get("unit"):
-            base_metric_name_label = f'{base_metric_name_label} ({base_config["unit"]})'
+        x_var_label = _format_label(x_var)
+        base_metric_name_label = _format_label(base_metric_name)
 
-    if not hue_vars:
-        # If no hue_vars, create a single plot with all required_cols.
-        fig, ax = plt.subplots(1, 1, figsize=(12, 8))
-        axes = [ax]
-        plot_groups = [("All Data", summary_df)]
-    else:
-        # Group data by unique combinations of hue_vars
-        plot_groups = list(summary_df.groupby(hue_vars))
-        n_plots = len(plot_groups)
-        if n_plots == 0:
-            return []
-
-        # Determine layout
-        if n_plots <= 2:
-            rows, cols = 1, n_plots
-        elif n_plots <= 4:
-            rows, cols = 2, 2
-        else:
-            rows = int(np.ceil(np.sqrt(n_plots)))
-            cols = int(np.ceil(n_plots / rows))
-
-        fig, axes = plt.subplots(
-            rows, cols, figsize=(cols * 7, rows * 5), squeeze=False
-        )
-        axes = axes.flatten()
-
-    line_colors = sns.color_palette("viridis", len(required_cols))
-
-    # Create a subplot for each group
-    for idx, (group_name, group_df) in enumerate(plot_groups):
-        if idx >= len(axes):
-            break
-        ax = axes[idx]
-
-        plot_df = group_df.copy()
-
-        # Apply data conversion for x-axis
+        # Apply units to labels if unit_map is provided
         if unit_map:
             x_config = _find_unit_config(x_var, unit_map)
-            if x_config:
-                factor = x_config.get("conversion_factor")
-                if factor and pd.api.types.is_numeric_dtype(plot_df[x_var]):
-                    plot_df[x_var] = plot_df[x_var] / float(factor)
+            if x_config and x_config.get("unit"):
+                unit = _get_text(x_config.get("unit"))
+                x_var_label = f"{x_var_label} ({unit})"
 
-        # Plot each required_col as a line in the subplot
-        for i, req_col in enumerate(required_cols):
-            # Create a clean label for the legend
-            legend_label = req_col.replace(base_metric_name, "").strip("()")
-            if not legend_label:
-                legend_label = req_col
+            base_config = _find_unit_config(base_metric_name, unit_map)
+            if base_config and base_config.get("unit"):
+                unit = _get_text(base_config.get("unit"))
+                base_metric_name_label = f"{base_metric_name_label} ({unit})"
 
-            # Apply data conversion for y-axis
-            if unit_map:
-                base_config = _find_unit_config(base_metric_name, unit_map)
-                if base_config:
-                    factor = base_config.get("conversion_factor")
-                    if factor and pd.api.types.is_numeric_dtype(plot_df[req_col]):
-                        plot_df[req_col] = plot_df[req_col] / float(factor)
-
-            sns.lineplot(
-                data=plot_df,
-                x=x_var,
-                y=req_col,
-                ax=ax,
-                color=line_colors[i],
-                label=_format_label(legend_label),
-                marker="o",
-                markersize=6,
-                linewidth=2.0,
-            )
-
-        # Subplot titles and labels
-        if hue_vars:
-            if isinstance(group_name, tuple):
-                title = ", ".join(
-                    f"{_format_label(k)}={v}" for k, v in zip(hue_vars, group_name)
-                )
-            else:
-                title = f"{_format_label(hue_vars[0])}={group_name}"
-            ax.set_title(title, fontsize=12)
+        if not hue_vars:
+            # If no hue_vars, create a single plot with all required_cols.
+            fig, ax = plt.subplots(1, 1, figsize=(12, 8))
+            axes = [ax]
+            plot_groups = [("All Data", summary_df)]
         else:
-            ax.set_title(
-                f"Dependence of {base_metric_name_label} on {x_var_label}", fontsize=12
+            # Group data by unique combinations of hue_vars
+            plot_groups = list(summary_df.groupby(hue_vars))
+            n_plots = len(plot_groups)
+            if n_plots == 0:
+                return []
+
+            # Determine layout
+            if n_plots <= 2:
+                rows, cols = 1, n_plots
+            elif n_plots <= 4:
+                rows, cols = 2, 2
+            else:
+                rows = int(np.ceil(np.sqrt(n_plots)))
+                cols = int(np.ceil(n_plots / rows))
+
+            fig, axes = plt.subplots(
+                rows, cols, figsize=(cols * 7, rows * 5), squeeze=False
             )
+            axes = axes.flatten()
 
-        ax.set_xlabel(x_var_label, fontsize=12)
-        ax.set_ylabel(base_metric_name_label, fontsize=12)
-        ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-        # Dynamically determine the legend title from associated metric columns
-        legend_title = "Constraint"  # A more descriptive default
-        search_pattern = f"_for_{base_metric_name}"
-        for col in summary_df.columns:
-            if search_pattern in col:
-                metric_name = col.split(search_pattern)[0]
-                legend_title = _format_label(metric_name)
+        line_colors = sns.color_palette("viridis", len(required_cols))
+
+        # Create a subplot for each group
+        for idx, (group_name, group_df) in enumerate(plot_groups):
+            if idx >= len(axes):
                 break
+            ax = axes[idx]
 
-        ax.legend(title=legend_title)
+            plot_df = group_df.copy()
 
-    # Hide unused axes
-    for i in range(len(plot_groups), len(axes)):
-        axes[i].set_visible(False)
+            # Apply data conversion for x-axis
+            if unit_map:
+                x_config = _find_unit_config(x_var, unit_map)
+                if x_config:
+                    factor = x_config.get("conversion_factor")
+                    if factor and pd.api.types.is_numeric_dtype(plot_df[x_var]):
+                        plot_df[x_var] = plot_df[x_var] / float(factor)
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            # Plot each required_col as a line in the subplot
+            for i, req_col in enumerate(required_cols):
+                # Create a clean label for the legend
+                legend_label = req_col.replace(base_metric_name, "").strip("()")
+                if not legend_label:
+                    legend_label = req_col
 
-    save_path = os.path.join(
-        save_dir, f"multi_{base_metric_name}_analysis_by_param.svg"
-    )
-    plt.savefig(save_path, format="svg", bbox_inches="tight")
-    plt.close(fig)
+                # Apply data conversion for y-axis
+                if unit_map:
+                    base_config = _find_unit_config(base_metric_name, unit_map)
+                    if base_config:
+                        factor = base_config.get("conversion_factor")
+                        if factor and pd.api.types.is_numeric_dtype(plot_df[req_col]):
+                            plot_df[req_col] = plot_df[req_col] / float(factor)
 
-    print(f"Generated multi-metric analysis plot by parameter: {save_path}")
-    return [save_path]
+                sns.lineplot(
+                    data=plot_df,
+                    x=x_var,
+                    y=req_col,
+                    ax=ax,
+                    color=line_colors[i],
+                    label=_format_label(legend_label),
+                    marker="o",
+                    markersize=6,
+                    linewidth=2.0,
+                )
+
+            # Subplot titles and labels
+            if hue_vars:
+                if isinstance(group_name, tuple):
+                    title = ", ".join(
+                        f"{_format_label(k)}={v}" for k, v in zip(hue_vars, group_name)
+                    )
+                else:
+                    title = f"{_format_label(hue_vars[0])}={group_name}"
+                ax.set_title(title, fontsize=12)
+            else:
+                title = _get_text("dependence_of_on").format(
+                    y_label=base_metric_name_label, x_label=x_var_label
+                )
+                ax.set_title(title, fontsize=12)
+
+            ax.set_xlabel(x_var_label, fontsize=12)
+            ax.set_ylabel(base_metric_name_label, fontsize=12)
+            ax.grid(True, which="both", linestyle="--", linewidth=0.5)
+            # Dynamically determine the legend title from associated metric columns
+            legend_title = _get_text("constraint")  # A more descriptive default
+            search_pattern = f"_for_{base_metric_name}"
+            for col in summary_df.columns:
+                if search_pattern in col:
+                    metric_name = col.split(search_pattern)[0]
+                    legend_title = _format_label(metric_name)
+                    break
+
+            ax.legend(title=legend_title)
+
+        # Hide unused axes
+        for i in range(len(plot_groups), len(axes)):
+            axes[i].set_visible(False)
+
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+        suffix = "_zh" if lang == "cn" else ""
+        save_path = os.path.join(
+            save_dir, f"multi_{base_metric_name}_analysis_by_param{suffix}.svg"
+        )
+        # Force text to be rendered as paths in SVG.
+        plt.rcParams["svg.fonttype"] = "path"
+        plt.savefig(save_path, format="svg", bbox_inches="tight")
+        plt.close(fig)
+
+        print(f"Generated multi-metric analysis plot by parameter: {save_path}")
+        plot_paths.append(save_path)
+
+    set_plot_language("cn" if original_lang_is_chinese else "en")
+    return plot_paths
 
 
 def generate_analysis_plots(
@@ -477,69 +537,81 @@ def _generate_combined_plots(
             summary_df, valid_plots, save_dir, line_colors, unit_map=unit_map
         )
 
-    axes_list = []
-    is_odd = n_plots % 2 == 1
+    plot_paths = []
+    original_lang_is_chinese = _use_chinese_labels
 
-    # Determine layout based on number of plots
-    if is_odd and n_plots > 1:
-        # Custom layout for odd numbers (3, 5, 7...)
-        rows = int(np.ceil(n_plots / 2))
-        cols = 2
-        fig = plt.figure(figsize=(cols * 8, rows * 5))
-        gs = fig.add_gridspec(
-            rows, cols, height_ratios=[1] * rows, hspace=0.3, wspace=0.2
-        )
+    for lang in ["en", "cn"]:
+        set_plot_language(lang)
 
-        # Add all but the last plot
-        for i in range(n_plots - 1):
-            ax = fig.add_subplot(gs[i // cols, i % cols])
+        axes_list = []
+        is_odd = n_plots % 2 == 1
+
+        # Determine layout based on number of plots
+        if is_odd and n_plots > 1:
+            # Custom layout for odd numbers (3, 5, 7...)
+            rows = int(np.ceil(n_plots / 2))
+            cols = 2
+            fig = plt.figure(figsize=(cols * 8, rows * 5))
+            gs = fig.add_gridspec(
+                rows, cols, height_ratios=[1] * rows, hspace=0.3, wspace=0.2
+            )
+
+            # Add all but the last plot
+            for i in range(n_plots - 1):
+                ax = fig.add_subplot(gs[i // cols, i % cols])
+                axes_list.append(ax)
+
+            # Add the last plot, spanning the full width of the last row
+            ax = fig.add_subplot(gs[rows - 1, :])
             axes_list.append(ax)
 
-        # Add the last plot, spanning the full width of the last row
-        ax = fig.add_subplot(gs[rows - 1, :])
-        axes_list.append(ax)
+        else:
+            # General layout for even numbers and a single plot
+            cols = 2
+            rows = int(np.ceil(n_plots / cols))
+            fig, axes = plt.subplots(
+                rows, cols, figsize=(cols * 8, rows * 5), squeeze=False
+            )
+            axes_list = axes.flatten()
 
-    else:
-        # General layout for even numbers and a single plot
-        cols = 2
-        rows = int(np.ceil(n_plots / cols))
-        fig, axes = plt.subplots(
-            rows, cols, figsize=(cols * 8, rows * 5), squeeze=False
+        # Set overall figure properties
+        fig.patch.set_facecolor("white")
+        # x_var_label = _format_label(valid_plots[0]["x_var"])
+
+        # Generate each subplot
+        for idx, plot_config in enumerate(valid_plots):
+            ax = axes_list[idx]
+            _create_subplot(
+                summary_df, plot_config, ax, line_colors, idx, unit_map=unit_map
+            )
+
+        # Hide any unused axes (only relevant for even-number layouts)
+        for i in range(n_plots, len(axes_list)):
+            axes_list[i].set_visible(False)
+
+        # Adjust layout
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95], pad=3.0)
+
+        # Save the combined figure
+        suffix = "_zh" if lang == "cn" else ""
+        combined_filename = f"combined_analysis_plots{suffix}.svg"
+        save_path = os.path.join(save_dir, combined_filename)
+        # Force text to be rendered as paths in SVG.
+        plt.rcParams["svg.fonttype"] = "path"
+        plt.savefig(
+            save_path,
+            format="svg",
+            bbox_inches="tight",
+            facecolor="white",
+            edgecolor="none",
         )
-        axes_list = axes.flatten()
+        plt.close(fig)
 
-    # Set overall figure properties
-    fig.patch.set_facecolor("white")
-    # x_var_label = _format_label(valid_plots[0]["x_var"])
+        print(f"Generated combined analysis plot: {save_path}")
+        plot_paths.append(save_path)
 
-    # Generate each subplot
-    for idx, plot_config in enumerate(valid_plots):
-        ax = axes_list[idx]
-        _create_subplot(
-            summary_df, plot_config, ax, line_colors, idx, unit_map=unit_map
-        )
-
-    # Hide any unused axes (only relevant for even-number layouts)
-    for i in range(n_plots, len(axes_list)):
-        axes_list[i].set_visible(False)
-
-    # Adjust layout
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95], pad=3.0)
-
-    # Save the combined figure
-    combined_filename = "combined_analysis_plots.svg"
-    save_path = os.path.join(save_dir, combined_filename)
-    plt.savefig(
-        save_path,
-        format="svg",
-        bbox_inches="tight",
-        facecolor="white",
-        edgecolor="none",
-    )
-    plt.close(fig)
-
-    print(f"Generated combined analysis plot: {save_path}")
-    return [save_path]
+    set_plot_language("cn" if original_lang_is_chinese else "en")
+    return plot_paths
 
 
 def _generate_individual_plots(
@@ -553,37 +625,45 @@ def _generate_individual_plots(
     Generate individual plot files (original behavior).
     """
     plot_paths = []
+    original_lang_is_chinese = _use_chinese_labels
 
     for idx, plot_config in enumerate(valid_plots):
-        # Create individual figure
-        fig, ax = plt.subplots(figsize=(12, 8))
-        fig.patch.set_facecolor("white")
+        for lang in ["en", "cn"]:
+            set_plot_language(lang)
 
-        _create_subplot(
-            summary_df, plot_config, ax, line_colors, idx, unit_map=unit_map
-        )
+            # Create individual figure
+            fig, ax = plt.subplots(figsize=(12, 8))
+            fig.patch.set_facecolor("white")
 
-        # Adjust layout
-        plt.tight_layout(pad=2.0)
+            _create_subplot(
+                summary_df, plot_config, ax, line_colors, idx, unit_map=unit_map
+            )
 
-        # Save individual plot
-        x_var = plot_config["x_var"]
-        y_var = plot_config["y_var"]
-        plot_type = plot_config["plot_type"]
-        plot_filename = f"{plot_type}_{y_var}_vs_{x_var}.svg"
-        save_path = os.path.join(save_dir, plot_filename)
+            # Adjust layout
+            plt.tight_layout(pad=2.0)
 
-        plt.savefig(
-            save_path,
-            format="svg",
-            bbox_inches="tight",
-            facecolor="white",
-            edgecolor="none",
-        )
-        plt.close(fig)
-        plot_paths.append(save_path)
-        print(f"Generated enhanced analysis plot: {save_path}")
+            # Save individual plot
+            x_var = plot_config["x_var"]
+            y_var = plot_config["y_var"]
+            plot_type = plot_config["plot_type"]
+            suffix = "_zh" if lang == "cn" else ""
+            plot_filename = f"{plot_type}_{y_var}_vs_{x_var}{suffix}.svg"
+            save_path = os.path.join(save_dir, plot_filename)
 
+            # Force text to be rendered as paths in SVG.
+            plt.rcParams["svg.fonttype"] = "path"
+            plt.savefig(
+                save_path,
+                format="svg",
+                bbox_inches="tight",
+                facecolor="white",
+                edgecolor="none",
+            )
+            plt.close(fig)
+            plot_paths.append(save_path)
+            print(f"Generated enhanced analysis plot: {save_path}")
+
+    set_plot_language("cn" if original_lang_is_chinese else "en")
     return plot_paths
 
 
@@ -636,7 +716,7 @@ def _create_subplot(
             if factor and pd.api.types.is_numeric_dtype(plot_data[y_var]):
                 plot_data[y_var] = plot_data[y_var] / float(factor)
             if unit:
-                final_y_var_label = f"{y_var_display} ({unit})"
+                final_y_var_label = f"{y_var_display} ({_get_text(unit)})"
 
         # Process X-axis variable
         x_config = _find_unit_config(x_var, unit_map)
@@ -646,15 +726,15 @@ def _create_subplot(
             if factor and pd.api.types.is_numeric_dtype(plot_data[x_var]):
                 plot_data[x_var] = plot_data[x_var] / float(factor)
             if unit:
-                final_x_var_label = f"{x_var_label} ({unit})"
+                final_x_var_label = f"{x_var_label} ({_get_text(unit)})"
     else:
         # Fallback to old hard-coded logic if no unit_map is provided
         if y_var in ["Doubling_Time", "Self_Sufficiency_Time"]:
             plot_data[y_var] = plot_data[y_var] / 24
-            final_y_var_label = f"{y_var_display} (days)"
+            final_y_var_label = f"{y_var_display} ({_get_text('days')})"
         elif y_var == "Startup_Inventory":
             plot_data[y_var] = plot_data[y_var] / 1000.0
-            final_y_var_label = f"{y_var_display} (kg)"
+            final_y_var_label = f"{y_var_display} ({_get_text('kg')})"
 
     # --- Plotting Logic ---
     num_curves = 1  # Default for a single curve
@@ -717,12 +797,14 @@ def _create_subplot(
                 alpha=0.75,
             )
 
-    title = f"Dependence of {final_y_var_label} on {final_x_var_label}"
+    title = _get_text("dependence_of_on").format(
+        y_label=final_y_var_label, x_label=final_x_var_label
+    )
 
     # Set title and labels
-    ax.set_title(title, fontsize=14, fontweight="bold", pad=20)
-    ax.set_xlabel(final_x_var_label, fontsize=14)
-    ax.set_ylabel(final_y_var_label, fontsize=14)
+    ax.set_title(title, fontsize=12, fontweight="bold", pad=20)
+    ax.set_xlabel(final_x_var_label, fontsize=12)
+    ax.set_ylabel(final_y_var_label, fontsize=12)
 
     # Set grid style and legend
     ax.grid(True, which="both", linestyle="--", linewidth=0.5)
@@ -746,7 +828,7 @@ def plot_sweep_time_series(
     independent_var_alias: str = None,
     default_params: Dict[str, Any] = None,
     glossary_path: str = None,
-) -> str:
+) -> List[str]:
     """
     Generates a single figure with two subplots: an overall time-series view and a
     zoomed-in view around the minimum point of the curves. The time axis is in days.
@@ -763,7 +845,7 @@ def plot_sweep_time_series(
         glossary_path (str, optional): Path to the glossary file for professional labels.
 
     Returns:
-        The path to the saved plot image, or None on failure.
+        A list of paths to the saved plot images, or an empty list on failure.
     """
     if glossary_path:
         load_glossary(glossary_path)
@@ -772,11 +854,11 @@ def plot_sweep_time_series(
         df = pd.read_csv(csv_path)
     except FileNotFoundError:
         print(f"Error: Could not find results file at {csv_path}")
-        return None
+        return []
 
     if "time" not in df.columns:
         print(f"Error: 'time' column not found in {csv_path}")
-        return None
+        return []
 
     # Convert time from hours to days
     time_days = df["time"] / 24
@@ -785,7 +867,6 @@ def plot_sweep_time_series(
     raw_plot_alias = (
         independent_var_alias if independent_var_alias else independent_var_name
     )
-    # plot_alias = _format_label(raw_plot_alias)
 
     if isinstance(y_var_name, str):
         y_var_names = [y_var_name]
@@ -824,7 +905,7 @@ def plot_sweep_time_series(
         print(
             f"Warning: No columns found containing any of {y_var_names} in {csv_path} that match the criteria."
         )
-        return None
+        return []
 
     # Convert y-axis data from grams to kilograms
     for col in y_var_columns:
@@ -849,126 +930,140 @@ def plot_sweep_time_series(
     )
 
     sns.set_theme(style="whitegrid")
-    colors = sns.color_palette("plasma", len(y_var_columns))
+    plot_paths = []
+    original_lang_is_chinese = _use_chinese_labels
 
-    # Create a figure with two subplots (overall and zoom)
-    fig, (ax1, ax2) = plt.subplots(
-        2, 1, figsize=(12, 16), sharex=False, gridspec_kw={"height_ratios": [2, 1]}
-    )
-    y_var_names_formatted = [_format_label(y) for y in y_var_names]
+    for lang in ["en", "cn"]:
+        set_plot_language(lang)
 
-    min_y_global = float("inf")
-    min_x_global = float("inf")
+        colors = sns.color_palette("plasma", len(y_var_columns))
 
-    # Define the y-axis label with units
-    y_label = f"{', '.join(y_var_names_formatted)} (kg)"
-
-    # --- Subplot 1: Overall View ---
-    for i, column in enumerate(y_var_columns):
-        y_data = df[column]
-
-        # For the global view, mask data that is more than 2x the initial value
-        if not y_data.empty:
-            initial_value = y_data.iloc[0]
-            threshold = 2 * initial_value
-            y_masked = y_data.where(y_data <= threshold)
-        else:
-            y_masked = y_data
-
-        ax1.plot(
-            time_days,
-            y_masked,
-            label=plot_labels[i],
-            color=colors[i],
-            linewidth=1.2,
-            alpha=0.85,
+        # Create a figure with two subplots (overall and zoom)
+        fig, (ax1, ax2) = plt.subplots(
+            2, 1, figsize=(12, 16), sharex=False, gridspec_kw={"height_ratios": [2, 1]}
         )
+        y_var_names_formatted = [_format_label(y) for y in y_var_names]
 
-        # Calculations for zoom window should use the original, unmasked data
-        if not y_data.empty:
-            min_idx = y_data.idxmin()
-            current_min_y = y_data.loc[min_idx]
-            if current_min_y < min_y_global:
-                min_y_global = current_min_y
-                min_x_global = time_days.loc[min_idx]
+        min_y_global = float("inf")
+        min_x_global = float("inf")
 
-    ax1.set_ylabel(y_label, fontsize=14)
-    ax1.set_title(
-        "Overall View (Data exceeding 2x initial value is hidden)", fontsize=12
-    )
-    ax1.legend(loc="best", title=_format_label(independent_var_name))
-    ax1.grid(True)
+        # Define the y-axis label with units
+        y_label = f"{', '.join(y_var_names_formatted)} ({_get_text('kg')})"
 
-    # --- Subplot 2: Zoomed-in View (uses original data) ---
-    if min_y_global != float("inf") and np.isfinite(min_y_global):
+        # --- Subplot 1: Overall View ---
         for i, column in enumerate(y_var_columns):
-            # Plot original, unmasked data in the zoom plot
-            ax2.plot(
+            y_data = df[column]
+
+            # For the global view, mask data that is more than 2x the initial value
+            if not y_data.empty:
+                initial_value = y_data.iloc[0]
+                threshold = 2 * initial_value
+                y_masked = y_data.where(y_data <= threshold)
+            else:
+                y_masked = y_data
+
+            ax1.plot(
                 time_days,
-                df[column],
+                y_masked,
                 label=plot_labels[i],
                 color=colors[i],
-                linewidth=1.8,
-                alpha=0.9,
+                linewidth=1.2,
+                alpha=0.85,
             )
 
-        # Define the zoom window from t=0 to a bit after the minimum
-        x1 = 0
-        x2 = min_x_global + 2  # Show 2 days past the minimum
+            # Calculations for zoom window should use the original, unmasked data
+            if not y_data.empty:
+                min_idx = y_data.idxmin()
+                current_min_y = y_data.loc[min_idx]
+                if current_min_y < min_y_global:
+                    min_y_global = current_min_y
+                    min_x_global = time_days.loc[min_idx]
 
-        # Filter the DataFrame to the new x-range to find the y-range
-        zoom_mask = (time_days >= x1) & (time_days <= x2)
-        df_zoom_range = df[zoom_mask]
+        ax1.set_ylabel(y_label, fontsize=12)
+        ax1.set_title(_get_text("overall_view"), fontsize=12)
+        ax1.legend(loc="best", title=_format_label(independent_var_name))
+        ax1.grid(True)
 
-        # Find y-min and y-max within this specific range
-        y_min_in_range = df_zoom_range[y_var_columns].min().min()
-        y_max_in_range = df_zoom_range[y_var_columns].max().max()
+        # --- Subplot 2: Zoomed-in View (uses original data) ---
+        if min_y_global != float("inf") and np.isfinite(min_y_global):
+            for i, column in enumerate(y_var_columns):
+                # Plot original, unmasked data in the zoom plot
+                ax2.plot(
+                    time_days,
+                    df[column],
+                    label=plot_labels[i],
+                    color=colors[i],
+                    linewidth=1.8,
+                    alpha=0.9,
+                )
 
-        # Add padding to the y-axis
-        y_padding = (y_max_in_range - y_min_in_range) * 0.05
-        y1 = y_min_in_range - y_padding
-        y2 = y_max_in_range + y_padding
+            # Define the zoom window from t=0 to a bit after the minimum
+            x1 = 0
+            x2 = min_x_global + 2  # Show 2 days past the minimum
 
-        ax2.set_xlim(x1, x2)
-        ax2.set_ylim(y1, y2)
+            # Filter the DataFrame to the new x-range to find the y-range
+            zoom_mask = (time_days >= x1) & (time_days <= x2)
+            df_zoom_range = df[zoom_mask]
 
-        ax2.set_xlabel("Time (days)", fontsize=14)
-        ax2.set_ylabel(y_label, fontsize=14)
-        ax2.set_title("Detailed View (t=0 to Post-Minimum)", fontsize=12)
-        ax2.grid(True, linestyle="--")
+            # Find y-min and y-max within this specific range
+            y_min_in_range = df_zoom_range[y_var_columns].min().min()
+            y_max_in_range = df_zoom_range[y_var_columns].max().max()
 
-        # Add a rectangle to the main plot to indicate the new zoom area
-        rect = patches.Rectangle(
-            (x1, y1),
-            (x2 - x1),
-            (y2 - y1),
-            linewidth=1,
-            edgecolor="r",
-            facecolor="none",
-            linestyle="--",
-            alpha=0.7,
+            # Add padding to the y-axis
+            y_padding = (y_max_in_range - y_min_in_range) * 0.05
+            y1 = y_min_in_range - y_padding
+            y2 = y_max_in_range + y_padding
+
+            ax2.set_xlim(x1, x2)
+            ax2.set_ylim(y1, y2)
+
+            ax2.set_xlabel(_get_text("time_days"), fontsize=12)
+            ax2.set_ylabel(y_label, fontsize=12)
+            ax2.set_title(_get_text("detailed_view"), fontsize=12)
+            ax2.grid(True, linestyle="--")
+
+            # Add a rectangle to the main plot to indicate the new zoom area
+            rect = patches.Rectangle(
+                (x1, y1),
+                (x2 - x1),
+                (y2 - y1),
+                linewidth=1,
+                edgecolor="r",
+                facecolor="none",
+                linestyle="--",
+                alpha=0.7,
+            )
+            ax1.add_patch(rect)
+        else:
+            # If no zoom, hide the second subplot
+            ax2.set_visible(False)
+
+        ax1.set_xlabel(_get_text("time_days"), fontsize=12)
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust for suptitle
+
+        # --- Save Figure ---
+        safe_y_vars = "_".join(
+            [
+                var.replace(".", "_").replace("[", "").replace("]", "")
+                for var in y_var_names
+            ]
         )
-        ax1.add_patch(rect)
-    else:
-        # If no zoom, hide the second subplot
-        ax2.set_visible(False)
+        safe_param = raw_plot_alias.replace(".", "_").replace("[", "").replace("]", "")
+        suffix = "_zh" if lang == "cn" else ""
+        svg_path = os.path.join(
+            save_dir, f"sweep_{safe_y_vars}_vs_{safe_param}{suffix}.svg"
+        )
 
-    ax1.set_xlabel("Time (days)", fontsize=14)
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust for suptitle
+        try:
+            # Force text to be rendered as paths in SVG.
+            plt.rcParams["svg.fonttype"] = "path"
+            plt.savefig(svg_path, format="svg", bbox_inches="tight")
+            print(f"Successfully generated combined sweep plot: {svg_path}")
+            plot_paths.append(svg_path)
+        except Exception as e:
+            print(f"Error saving plot: {e}")
+        finally:
+            plt.close(fig)
 
-    # --- Save Figure ---
-    safe_y_vars = "_".join(
-        [var.replace(".", "_").replace("[", "").replace("]", "") for var in y_var_names]
-    )
-    safe_param = raw_plot_alias.replace(".", "_").replace("[", "").replace("]", "")
-    svg_path = os.path.join(save_dir, f"sweep_{safe_y_vars}_vs_{safe_param}.svg")
-
-    try:
-        plt.savefig(svg_path, format="svg", bbox_inches="tight")
-        print(f"Successfully generated combined sweep plot: {svg_path}")
-        return svg_path
-    except Exception as e:
-        print(f"Error saving plot: {e}")
-        return None
-    finally:
-        plt.close(fig)
+    set_plot_language("cn" if original_lang_is_chinese else "en")
+    return plot_paths
