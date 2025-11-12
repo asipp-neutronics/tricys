@@ -35,18 +35,6 @@
                 "description": "This is a dummy handler for DIV.",
                 "dummy_value": 123.45
             }
-        },
-        {
-            "submodel_name": "example_model.I_ISS",
-            "instance_name": "i_iss",
-            "handler_module": "tricys.handlers.i_iss_handler",
-            "handler_function": "run_aspen_simulation",
-            "params": {
-                "bkp_path": "../../example_aspenbkp/T2-Threetowers4.bkp",
-                "base": 20,
-                "retime": 60,
-                "time_step": 3
-            }
         }
     ]
 }

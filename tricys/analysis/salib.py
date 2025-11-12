@@ -558,7 +558,7 @@ class TricysSALibAnalyzer:
             # Call the Tricys simulation engine
             from datetime import datetime
 
-            from tricys.simulation_analysis import run_simulation
+            from tricys.simulation.simulation_analysis import run_simulation
 
             tricys_config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
 

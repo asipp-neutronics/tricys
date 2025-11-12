@@ -314,6 +314,8 @@ def _integrate_interceptor_multi_file(
     )
     try:
         omc = OMCSessionZMQ()
+        omc.sendExpression(f'loadFile("{Path(package_path).as_posix()}")')
+
         logger.info("Proceeding with multi-interceptor model generation")
         package_dir = os.path.dirname(package_path)
         model_short_name = model_name.split(".")[-1]

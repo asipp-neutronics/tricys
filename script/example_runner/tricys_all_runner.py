@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Tricys Analysis Example Runner
-Specially designed for running tricys analysis command example configurations
+Tricys All-in-One Example Runner
+A unified runner for running all tricys command examples (BASIC and ANALYSIS)
 """
 import json
 import shutil
@@ -11,15 +11,15 @@ import time
 from pathlib import Path
 
 
-class TricysAnaTestRunner:
-    """Tricys Analysis Example Runner"""
+class TricysAllTestRunner:
+    """Tricys All-in-One Example Runner"""
 
     def __init__(self):
         """Initialize the runner"""
         # Locate project root directory from script/example_runner directory
         self.script_dir = Path(__file__).parent.parent.parent
         self.workspace_dir = self.script_dir
-        self.example_dir = self.workspace_dir / "example" / "analysis"
+        self.example_base_dir = self.workspace_dir / "example"
         self.test_example_base_dir = self.workspace_dir / "test_example"
 
         # Automatically scan and generate example configurations
@@ -27,82 +27,92 @@ class TricysAnaTestRunner:
 
     def _scan_examples(self):
         """
-        Read analysis example configurations from example/analysis/example_runner.json
+        Read all example configurations from example/basic/ and example/analysis/
 
         Returns:
-            dict: Example configuration dictionary
+            dict: Combined example configuration dictionary
         """
         examples = {}
+        counter = 1
+        example_types = ["basic", "analysis"]
 
-        # Read analysis example configuration file
-        config_file = self.example_dir / "example_runner.json"
-        if not config_file.exists():
-            print(f"⚠️  警告: 分析示例配置文件不存在: {config_file}")
-            print("请创建 example/analysis/example_runner.json 文件")
-            return examples
+        print("\n" + "=" * 60 + "\n")
+        print("🔄 正在扫描所有示例目录 (basic/, analysis/)...\n")
 
-        try:
-            with open(config_file, "r", encoding="utf-8") as f:
-                config_data = json.load(f)
+        for example_type in example_types:
+            config_file = self.example_base_dir / example_type / "example_runner.json"
+            if not config_file.exists():
+                print(
+                    f"⚠️  警告: {example_type.upper()} 示例配置文件不存在: {config_file}"
+                )
+                continue
 
-            print("\n" + "=" * 60 + "\n")
+            try:
+                with open(config_file, "r", encoding="utf-8") as f:
+                    config_data = json.load(f)
 
-            print(f"📄 正在读取分析示例配置: {config_data.get('description', '')}")
+                print(
+                    f"📄 正在读取 {example_type.upper()} 示例配置: {config_data.get('description', '')}"
+                )
 
-            examples_list = config_data.get("examples", [])
-            counter = 1
+                examples_list = config_data.get("examples", [])
 
-            for example_config in examples_list:
-                # Check if example is enabled
-                if not example_config.get("enabled", True):
-                    print(
-                        f"  ⏸️  跳过禁用的示例: {example_config.get('name', 'Unknown')}"
+                for example_config in examples_list:
+                    if not example_config.get("enabled", True):
+                        print(
+                            f"  ⏸️  跳过禁用的示例: {example_config.get('name', 'Unknown')}"
+                        )
+                        continue
+
+                    example_path = (
+                        self.example_base_dir / example_type / example_config["path"]
                     )
-                    continue
+                    config_path = example_path / example_config["config"]
 
-                # Check if configuration file exists
-                example_path = self.example_dir / example_config["path"]
-                config_path = example_path / example_config["config"]
+                    if not config_path.exists():
+                        print(
+                            f"  ⚠️  跳过缺失配置文件的示例: {example_config['name']} ({config_path})"
+                        )
+                        continue
 
-                if not config_path.exists():
+                    # The 'command' from JSON is no longer needed, but we keep it for compatibility
+                    examples[str(counter)] = {
+                        "name": example_config["name"],
+                        "type": example_type,
+                        "path": example_config["path"],
+                        "config": example_config["config"],
+                        "command": example_config.get(
+                            "command", "tricys"
+                        ),  # Default to tricys
+                        "description": example_config["description"],
+                    }
+
                     print(
-                        f"  ⚠️  跳过缺失配置文件的示例: {example_config['name']} ({config_path})"
+                        f"  ✅ 加载示例: [{example_type.upper()}] {example_config['name']}"
                     )
-                    continue
+                    counter += 1
 
-                examples[str(counter)] = {
-                    "name": example_config["name"],
-                    "path": example_config["path"],
-                    "config": example_config["config"],
-                    "command": example_config.get("command", "tricys"),
-                    "description": example_config["description"],
-                }
+            except json.JSONDecodeError as e:
+                print(f"❌ {example_type.upper()} 的 JSON 解析错误: {e}")
+                print(f"   请检查 {config_file} 文件格式")
+            except Exception as e:
+                print(f"❌ 读取 {example_type.upper()} 配置文件时出错: {e}")
 
-                print(f"  ✅ 加载示例: {example_config['name']}")
-                counter += 1
-
-            print(f"🎉 成功加载 {len(examples)} 个分析示例")
-
-        except json.JSONDecodeError as e:
-            print(f"❌ JSON解析错误: {e}")
-            print("请检查 example_runner.json 文件格式")
-        except Exception as e:
-            print(f"❌ 读取配置文件时出错: {e}")
-
+        print(f"\n🎉 成功加载 {len(examples)} 个示例")
         return examples
 
     def show_menu(self):
         """Display available example menu"""
         print("\n" + "=" * 60)
-        print("         TRICYS ANALYSIS 示例运行器")
+        print("         TRICYS 统一示例运行器")
         print("=" * 60 + "\n")
 
         if not self.examples:
-            print("❌ 未发现任何分析示例")
-            print("请检查 example/analysis 目录是否存在配置文件")
+            print("❌ 未发现任何示例")
+            print("请检查 example/basic 和 example/analysis 目录是否存在配置文件")
         else:
             for key, example in self.examples.items():
-                print(f"  {key}. {example['name']}")
+                print(f"  {key}. [{example['type'].upper()}] {example['name']}")
                 print(f"     描述: {example['description']}")
                 print(f"     配置: {example['config']}")
                 print()
@@ -123,37 +133,31 @@ class TricysAnaTestRunner:
             bool: Whether copy is successful
         """
         try:
-            source_path = self.example_dir / example_info["path"]
+            source_path = (
+                self.example_base_dir / example_info["type"] / example_info["path"]
+            )
 
-            # Check if source path exists
             if not source_path.exists():
                 print(f"❌ 示例路径不存在: {source_path}")
                 return False
 
-            # Create corresponding subdirectory based on example type
-            example_type = (
-                example_info["path"].split("/")[0]
-                if "/" in example_info["path"]
-                else example_info["path"]
-            )
             self.test_example_dir = (
-                self.test_example_base_dir / "analysis" / example_type
+                self.test_example_base_dir / example_info["type"] / example_info["path"]
             )
 
-            # If corresponding test_example subdirectory exists, delete it first
             if self.test_example_dir.exists():
                 print("─" * 50)
                 print(f"🧹 正在清理旧的测试目录: {self.test_example_dir}")
                 shutil.rmtree(self.test_example_dir)
 
-            # Create base directory
             self.test_example_base_dir.mkdir(exist_ok=True)
 
-            # Copy entire example directory
             print("─" * 50)
             print("📋 正在复制示例目录...")
             print(f"   从: {source_path}")
             print(f"   到: {self.test_example_dir}")
+
+            shutil.copytree(source_path, self.test_example_dir)
 
             # Also copy the 'example_model' and 'example_aspenbkp' directories
             model_src = self.workspace_dir / "example" / "example_model"
@@ -168,14 +172,12 @@ class TricysAnaTestRunner:
                 shutil.rmtree(aspen_dst)
             shutil.copytree(aspen_src, aspen_dst)
 
-            shutil.copytree(source_path, self.test_example_dir)
-
-            # Verify if key files exist
             config_file = self.test_example_dir / example_info["config"]
             if not config_file.exists():
                 print(f"⚠️  警告: 配置文件不存在: {config_file}")
                 return False
 
+            print(f"✅ 示例文件已复制到: {self.test_example_dir}")
             return True
 
         except PermissionError:
@@ -188,7 +190,7 @@ class TricysAnaTestRunner:
 
     def run_command(self, example_info):
         """
-        Run tricys analysis command
+        Run tricys command
 
         Args:
             example_info: Example information dictionary
@@ -211,18 +213,14 @@ class TricysAnaTestRunner:
             print(f"🏃‍ 执行命令: {' '.join(cmd)}")
             print("─" * 50)
 
-            # Record start time
             start_time = time.time()
 
-            # Switch to test_example directory to execute command
             result = subprocess.run(
                 cmd,
                 cwd=self.test_example_dir,
-                capture_output=False,  # Allow real-time output
+                capture_output=False,
                 text=True,
             )
-
-            # Calculate execution time
 
             print("─" * 50)
 
@@ -261,11 +259,9 @@ class TricysAnaTestRunner:
 
         example_info = self.examples[choice]
 
-        # 1. Copy example files
         if not self.copy_example(example_info):
             return False
 
-        # 2. Run command
         success = self.run_command(example_info)
 
         if success:
@@ -281,27 +277,24 @@ class TricysAnaTestRunner:
         """Display help information"""
         help_text = """
 ════════════════════════════════════════════════════════════
-                    TRICYS ANALYSIS 分析示例运行器帮助
+                    TRICYS 统一示例运行器帮助
 ════════════════════════════════════════════════════════════
 
   使用说明:
-    1. 选择要运行的分析示例编号。
+    1. 选择要运行的示例编号。
     2. 程序会自动复制示例文件到 test_example 目录。
     3. 执行 `tricys -c <配置文件>` 命令。
-    4. 程序会自动识别为 analysis 工作流并执行。
+    4. 程序会根据配置文件内容自动识别并运行 `basic` 或 `analysis` 工作流。
     5. 查看运行结果和日志输出。
 
-  分析功能特性:
-    • 敏感性分析: Sobol、Morris、FAST等方法
-    • 二分法查找: 二分法搜索最小自持TBR
-    • 结果可视化: 自动生成图表和报告
-    • 多分析指标: 支持Startup_Inventory等多种指标
+  示例类型说明:
+    • [BASIC]:    基础仿真任务，如参数扫描、并发仿真等。
+    • [ANALYSIS]: 复杂分析任务，如敏感性分析、TBR搜索等。
 
   注意事项:
     • 确保已正确安装 Tricys 和相关依赖 (`pip install -e .`)。
-    • 运行前会清理 test_example 目录。
+    • 运行前会清理 test_example 目录中对应的旧示例。
     • 结果文件保存在 test_example 目录中。
-    • 分析模式通常需要更长的运行时间。
 
   快捷键:
     • h: 显示此帮助信息
@@ -321,7 +314,7 @@ class TricysAnaTestRunner:
 
             try:
                 choice = input(
-                    "\n请输入选择 (0-{}/h/s): ".format(len(self.examples))
+                    "\n请输入选择 (0-{}/h/s): ".format(len(self.examples))  # noqa
                 ).strip()
 
                 if choice == "0":
@@ -330,7 +323,6 @@ class TricysAnaTestRunner:
                 if choice in self.examples:
                     self.run_example(choice)
 
-                    # Ask whether to continue
                     while True:
                         continue_choice = (
                             input("\n是否继续运行其他示例? (y/n, 默认y): ")
@@ -344,16 +336,11 @@ class TricysAnaTestRunner:
                 elif choice.lower() == "h":
                     self.show_help()
                 elif choice.lower() == "s":
-                    # Rescan examples
                     print("\n🔄 正在重新扫描示例目录...")
                     self.examples = self._scan_examples()
-                    if self.examples:
-                        print(f"✅ 重新扫描完成，发现 {len(self.examples)} 个示例")
-                    else:
-                        print("❌ 未发现任何示例")
                 else:
                     print(
-                        "\n❌ 无效的选择，请输入 0-{}、h 或 s".format(
+                        "\n❌ 无效的选择，请输入 0-{}、h 或 s".format(  # noqa
                             len(self.examples)
                         )
                     )
@@ -368,7 +355,7 @@ class TricysAnaTestRunner:
 def main():
     """Main function entry point"""
     try:
-        runner = TricysAnaTestRunner()
+        runner = TricysAllTestRunner()
         runner.main()
     except KeyboardInterrupt:
         print("\n\n👋 程序被用户中断，再见!")

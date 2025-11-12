@@ -36,13 +36,15 @@ from tricys.core.modelica import (
     load_modelica_package,
 )
 from tricys.utils.file_utils import get_unique_filename
-from tricys.utils.log_utils import log_execution_time, setup_logging
+from tricys.utils.log_utils import (
+    restore_configs_from_log,
+    setup_logging,
+)
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
 
 
-@log_execution_time
 def _validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
     """Validate analysis_cases configuration format, supporting both list and single object formats
 
@@ -132,7 +134,6 @@ def _validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
     return True
 
 
-@log_execution_time
 def _convert_relative_paths_to_absolute(
     config: Dict[str, Any], base_dir: str
 ) -> Dict[str, Any]:
@@ -184,7 +185,6 @@ def _convert_relative_paths_to_absolute(
     return _process_value(config)
 
 
-@log_execution_time
 def _create_standard_config_for_case(
     base_config: Dict[str, Any], analysis_case: Dict[str, Any], i: int
 ) -> Dict[str, Any]:
@@ -339,7 +339,6 @@ def _create_standard_config_for_case(
     return standard_config
 
 
-@log_execution_time
 def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Set up independent working directories and configuration files for multiple analysis_cases
@@ -451,7 +450,6 @@ def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, A
     return case_configs
 
 
-@log_execution_time
 def _get_optimization_tasks(config: dict) -> List[str]:
     """
     Identifies all valid optimization tasks from the configuration.
@@ -498,7 +496,6 @@ def _get_optimization_tasks(config: dict) -> List[str]:
     return optimization_tasks
 
 
-@log_execution_time
 def _is_optimization_enabled(config: dict) -> bool:
     """
     Check if any optimization functionality is enabled.
@@ -515,7 +512,6 @@ def _is_optimization_enabled(config: dict) -> bool:
     return len(optimization_tasks) > 0
 
 
-@log_execution_time
 def _run_sensitivity_analysis(
     config: Dict[str, Any], run_results_dir: str, jobs: List[Dict[str, Any]]
 ) -> None:
@@ -636,7 +632,6 @@ def _run_sensitivity_analysis(
         logger.error(f"Automated sensitivity analysis failed: {e}", exc_info=True)
 
 
-@log_execution_time
 def _save_optimization_summary(
     config: dict, final_results: List[Dict[str, Any]]
 ) -> None:
@@ -657,7 +652,6 @@ def _save_optimization_summary(
             logger.info(f"Sweep optimization summary saved to: {output_path}")
 
 
-@log_execution_time
 def _run_bisection_search_for_job(
     config: Dict[str, Any], job_id_prefix: str, optimization_metric_name: str
 ) -> tuple[Dict[str, float], Dict[str, float]]:
@@ -911,7 +905,6 @@ def _run_bisection_search_for_job(
     return all_optimal_params, all_optimal_values
 
 
-@log_execution_time
 def _run_co_simulation(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
@@ -1218,7 +1211,6 @@ def _run_co_simulation(
                 )
 
 
-@log_execution_time
 def _run_single_job(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
@@ -1331,7 +1323,6 @@ def _run_single_job(
             omc.sendExpression("quit()")
 
 
-@log_execution_time
 def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
     """
     Executes a parameter sweep sequentially, reusing the OM session for efficiency.
@@ -1456,7 +1447,6 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             omc.sendExpression("quit()")
 
 
-@log_execution_time
 def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
     """
     Executes a single analysis case. Designed to be run in a separate process.
@@ -1514,7 +1504,6 @@ def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
         os.chdir(original_cwd)
 
 
-@log_execution_time
 def _run_post_processing(
     config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
 ):
@@ -1557,7 +1546,6 @@ def _run_post_processing(
     logger.info("--- The post-processing stage has ended ---")
 
 
-@log_execution_time
 def run_simulation(config: Dict[str, Any]):
     """Orchestrates the simulation execution, result handling, and cleanup."""
 
@@ -1994,11 +1982,8 @@ def run_simulation(config: Dict[str, Any]):
     # --- Post-Processing ---
     if combined_df is not None:
         # Calculate the top-level post-processing directory
-        top_level_run_workspace = os.path.abspath(config["run_timestamp"])
-        top_level_post_processing_dir = os.path.join(
-            top_level_run_workspace, "post_processing"
-        )
-        _run_post_processing(config, combined_df, top_level_post_processing_dir)
+        top_level_run_workspace = os.path.abspath("post_processing")
+        _run_post_processing(config, combined_df, top_level_run_workspace)
     else:
         logger.warning(
             "No simulation results were generated, skipping post-processing."
@@ -2016,7 +2001,6 @@ def run_simulation(config: Dict[str, Any]):
                 logger.error(f"Error cleaning up temp directory: {e}")
 
 
-@log_execution_time
 def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Parses command-line arguments, loads the config file, and generates a run timestamp.
@@ -2042,44 +2026,22 @@ def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
         "retry", help="Retry failed AI analysis for existing reports."
     )
     retry_parser.add_argument(
-        "-t",
-        "--timestamp",
-        type=str,
-        required=True,
-        help="Timestamp of the run to retry (e.g., '20231026_153000').",
-    )
-
-    retry_parser.add_argument(
-        "-c",
-        "--config",
-        type=str,
-        required=False,
-        default=None,
-        help="Path to the JSON configuration file.",
-    )
-
-    archive_parser = subparsers.add_parser("archive", help="Archive an analysis run.")
-    archive_parser.add_argument(
         "timestamp",
         type=str,
-        help="Timestamp of the analysis run to archive.",
+        help="Timestamp of the analysis run to retry.",
     )
 
     args = parser.parse_args()
 
     if args.command == "retry":
-        retry_ai_analysis(args.report_path)
-        sys.exit(0)
-
-    if args.command == "archive":
-        archive_analysis(args.timestamp)
+        retry_analysis(args.timestamp)
         sys.exit(0)
 
     if args.command == "example":
         import importlib.util
 
         script_path = (
-            Path(__file__).parent.parent
+            Path(__file__).parent.parent.parent
             / "script"
             / "example_runner"
             / "tricys_ana_runner.py"
@@ -2149,201 +2111,45 @@ def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
     return config, base_config
 
 
-def archive_analysis(timestamp: str):
+def retry_analysis(timestamp: str):
     """
-    Archives an analysis run by collecting all necessary files and compressing them.
+    Retries a failed AI analysis for a given analysis run timestamp.
     """
+    config, original_config = restore_configs_from_log(timestamp)
+    if not config or not original_config:
+        # Error is printed inside the helper function
+        sys.exit(1)
+
+    config["run_timestamp"] = timestamp
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         stream=sys.stdout,
     )
     logger = logging.getLogger(__name__)
+    logger.info(
+        f"Successfully restored configuration for timestamp {timestamp} for retry."
+    )
 
-    logger.info(f"Starting archive for analysis run: {timestamp}")
-
-    if not os.path.isdir(timestamp):
-        logger.error(f"Timestamp directory not found: {timestamp}")
+    logger.info("Starting in AI analysis retry mode...")
+    if not _validate_analysis_cases_config(config):
         sys.exit(1)
 
-    archive_root = "archive"
-    if os.path.exists(archive_root):
-        shutil.rmtree(archive_root)
-    os.makedirs(archive_root)
-    logger.info(f"Created archive directory: {archive_root}")
+    case_configs = _setup_analysis_cases_workspaces(config)
+    if not case_configs:
+        logger.error("Could not set up case workspaces for retry. Aborting.")
+        sys.exit(1)
 
-    try:
-        # 1. Find and load config from the main log file
-        log_file_path = os.path.join(timestamp, f"simulation_{timestamp}.log")
-        if not os.path.isfile(log_file_path):
-            logger.error(f"Main log file not found: {log_file_path}")
-            return
+    retry_ai_analysis(case_configs, config)
+    consolidate_reports(case_configs, config)
 
-        runtime_config_str = None
-        original_config_str = None
-        with open(log_file_path, "r", encoding="utf-8") as f:
-            for line in f:
-                try:
-                    log_entry = json.loads(line)
-                    if "message" in log_entry:
-                        if log_entry["message"].startswith(
-                            "Runtime Configuration (compact JSON):"
-                        ):
-                            runtime_config_str = log_entry["message"].replace(
-                                "Runtime Configuration (compact JSON): ", ""
-                            )
-                        elif log_entry["message"].startswith(
-                            "Original Configuration (compact JSON):"
-                        ):
-                            original_config_str = log_entry["message"].replace(
-                                "Original Configuration (compact JSON): ", ""
-                            )
-                    if runtime_config_str and original_config_str:
-                        break
-                except json.JSONDecodeError:
-                    continue
-
-        if not runtime_config_str or not original_config_str:
-            logger.error(
-                "Could not find runtime and/or original configuration in log file."
-            )
-            return
-
-        runtime_config = json.loads(runtime_config_str)
-        original_config = json.loads(original_config_str)
-        logger.info("Successfully extracted both runtime and original configurations.")
-
-        # Create a deep copy of the original config to modify
-        final_config = json.loads(json.dumps(original_config))
-
-        # 2. Copy external assets and update paths in the final_config
-        _copy_and_update_paths(runtime_config, final_config, archive_root, logger)
-        logger.info("Copied external assets and updated paths in final configuration.")
-
-        # 3. Copy the entire analysis workspace, ignoring temp directories
-        dest_workspace_path = os.path.join(archive_root, timestamp)
-        shutil.copytree(
-            timestamp,
-            dest_workspace_path,
-            ignore=shutil.ignore_patterns("temp", "*.tmp"),
-        )
-        logger.info(
-            f"Copied analysis workspace '{timestamp}' to archive, ignoring temp files."
-        )
-
-        # 4. Save the modified original config to the root of the archive
-        final_config_path = os.path.join(archive_root, "config.json")
-        with open(final_config_path, "w", encoding="utf-8") as f:
-            json.dump(final_config, f, indent=4, ensure_ascii=False)
-        logger.info(f"Saved modified original configuration to {final_config_path}")
-
-        # 5. Create zip archive
-        archive_filename = f"archive_ana_{timestamp}"
-        shutil.make_archive(archive_filename, "zip", archive_root)
-        logger.info(f"Successfully created analysis archive: {archive_filename}.zip")
-
-    finally:
-        if os.path.exists(archive_root):
-            shutil.rmtree(archive_root)
-            logger.info(f"Cleaned up temporary archive directory: {archive_root}")
-
-
-def _copy_and_update_paths(runtime_node, final_node, archive_root, logger):
-    """
-    Recursively traverses runtime_node and final_node. Finds asset paths in runtime_node,
-    copies them to the archive, and updates the corresponding path in final_node.
-    """
-    if not isinstance(runtime_node, type(final_node)):
-        return
-
-    if isinstance(runtime_node, dict):
-        # Handle special case: independent_variable_sampling when independent_variable is "file"
-        if (
-            runtime_node.get("independent_variable") == "file"
-            and "independent_variable_sampling" in runtime_node
-            and isinstance(runtime_node["independent_variable_sampling"], str)
-            and os.path.isfile(runtime_node["independent_variable_sampling"])
-        ):
-            original_path = runtime_node["independent_variable_sampling"]
-            base_name = os.path.basename(original_path)
-            dest_path = os.path.join(archive_root, base_name)
-            if not os.path.exists(dest_path):
-                shutil.copy(original_path, dest_path)
-                logger.info(f"Copied asset: {original_path} -> {dest_path}")
-            final_node["independent_variable_sampling"] = base_name
-
-        for key, runtime_value in runtime_node.items():
-            if key not in final_node:
-                continue
-
-            if isinstance(runtime_value, str):
-                path_keys = ["package_path", "db_path", "glossary_path"]
-                is_path_key = key.endswith("_path") or key in path_keys
-
-                if is_path_key and os.path.exists(runtime_value):
-                    new_relative_path = ""
-                    if key == "package_path":
-                        if os.path.isfile(runtime_value) and not runtime_value.endswith(
-                            "package.mo"
-                        ):
-                            base_name = os.path.basename(runtime_value)
-                            dest_path = os.path.join(archive_root, base_name)
-                            if not os.path.exists(dest_path):
-                                shutil.copy(runtime_value, dest_path)
-                            new_relative_path = base_name
-                        else:
-                            src_dir = (
-                                os.path.dirname(runtime_value)
-                                if os.path.isfile(runtime_value)
-                                else runtime_value
-                            )
-                            dir_name = os.path.basename(src_dir)
-                            dest_dir = os.path.join(archive_root, dir_name)
-                            if not os.path.exists(dest_dir):
-                                shutil.copytree(src_dir, dest_dir)
-
-                            if os.path.isfile(runtime_value):
-                                new_relative_path = os.path.join(
-                                    dir_name, os.path.basename(runtime_value)
-                                ).replace("\\", "/")
-                            else:
-                                new_relative_path = dir_name.replace("\\", "/")
-                    else:
-                        if os.path.isfile(runtime_value):
-                            base_name = os.path.basename(runtime_value)
-                            dest_path = os.path.join(archive_root, base_name)
-                            if not os.path.exists(dest_path):
-                                shutil.copy(runtime_value, dest_path)
-                            new_relative_path = base_name
-                        elif os.path.isdir(runtime_value):
-                            dir_name = os.path.basename(runtime_value)
-                            dest_dir = os.path.join(archive_root, dir_name)
-                            if not os.path.exists(dest_dir):
-                                shutil.copytree(runtime_value, dest_dir)
-                            new_relative_path = dir_name
-
-                    if new_relative_path:
-                        final_node[key] = new_relative_path
-                        logger.info(
-                            f"Copied and updated path for '{key}': {runtime_value} -> {new_relative_path}"
-                        )
-
-            elif isinstance(runtime_value, (dict, list)):
-                _copy_and_update_paths(
-                    runtime_value, final_node[key], archive_root, logger
-                )
-
-    elif isinstance(runtime_node, list):
-        if len(runtime_node) != len(final_node):
-            return
-        for i in range(len(runtime_node)):
-            _copy_and_update_paths(runtime_node[i], final_node[i], archive_root, logger)
+    logger.info("AI analysis retry and consolidation complete.")
 
 
 def main():
     """Main function to run the simulation from the command line."""
     config, original_config = initialize_run()
-    command = config.pop("command", None)
 
     setup_logging(config, original_config)
 
@@ -2363,22 +2169,6 @@ def main():
         logger.info(f"Loading configuration from: {config_path}")
     else:
         logger.info("Configuration loaded.")
-
-    if command == "retry":
-        logger.info("Starting in AI analysis retry mode...")
-        if not _validate_analysis_cases_config(config):
-            sys.exit(1)
-
-        case_configs = _setup_analysis_cases_workspaces(config)
-        if not case_configs:
-            logger.error("Could not set up case workspaces for retry. Aborting.")
-            sys.exit(1)
-
-        retry_ai_analysis(case_configs, config)
-        consolidate_reports(case_configs, config)
-
-        logger.info("AI analysis retry and consolidation complete.")
-        return
 
     if _validate_analysis_cases_config(config):
         try:

@@ -15,8 +15,8 @@ from tricys.core.modelica import (
     get_om_session,
     load_modelica_package,
 )
-from tricys.simulation import run_simulation
-from tricys.utils.file_utils import delete_old_logs
+from tricys.simulation.simulation import run_simulation
+from tricys.utils.log_utils import delete_old_logs
 from tricys.utils.sqlite_utils import (
     create_parameters_table,
     get_parameters_from_db,

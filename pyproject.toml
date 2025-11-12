@@ -34,9 +34,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/asipp-neutronics/tricys"
 
 [project.scripts]
-tricys-gui = "tricys.simulation_gui:main"
-tricys-ana = "tricys.simulation_analysis:main"
-tricys = "tricys.simulation:main"
+tricys = "tricys.main:main"
 
 
 [project.optional-dependencies]
@@ -56,7 +54,7 @@ win = [
 ]
 
 [tool.setuptools]
-packages = ["tricys","tricys.utils"]
+packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess"]
 
 [tool.black]
 line-length = 88

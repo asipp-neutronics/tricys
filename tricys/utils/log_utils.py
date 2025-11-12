@@ -8,9 +8,34 @@ from typing import Any, Dict
 
 from pythonjsonlogger import jsonlogger
 
-from tricys.utils.file_utils import delete_old_logs
-
 logger = logging.getLogger(__name__)
+
+
+def delete_old_logs(log_path: str, max_files: int):
+    """Deletes the oldest log files in a directory to meet a specified limit.
+
+    Checks the number of `.log` files in the given directory and removes the
+    oldest ones based on modification time until the file count matches the
+    `max_files` limit.
+
+    Args:
+        log_path (str): The path to the directory containing log files.
+        max_files (int): The maximum number of `.log` files to retain.
+    """
+    log_files = [
+        os.path.join(log_path, f) for f in os.listdir(log_path) if f.endswith(".log")
+    ]
+
+    if len(log_files) > max_files:
+        # Sort by modification time, oldest first
+        log_files.sort(key=os.path.getmtime)
+
+        # Calculate how many files to delete
+        files_to_delete_count = len(log_files) - max_files
+
+        # Delete the oldest files
+        for i in range(files_to_delete_count):
+            os.remove(log_files[i])
 
 
 def setup_logging(config: Dict[str, Any], original_config: Dict[str, Any] = None):
@@ -101,3 +126,80 @@ def log_execution_time(func):
         return result
 
     return wrapper
+
+
+def restore_configs_from_log(
+    timestamp: str,
+) -> tuple[Dict[str, Any] | None, Dict[str, Any] | None]:
+    """
+    Finds the log file for a given timestamp and restores the runtime and original configurations.
+    """
+    log_file_path = None
+    # Define potential locations for the log file
+    search_paths = [
+        os.path.join(timestamp, f"simulation_{timestamp}.log"),  # analysis style
+        os.path.join(timestamp, "log"),  # simulation style
+    ]
+
+    for path in search_paths:
+        if os.path.isfile(path):
+            log_file_path = path
+            break
+        if os.path.isdir(path):
+            for f in os.listdir(path):
+                if f.startswith("simulation_") and f.endswith(".log"):
+                    log_file_path = os.path.join(path, f)
+                    break
+            if log_file_path:
+                break
+
+    if not log_file_path:
+        print(
+            f"ERROR: Main log file not found for timestamp {timestamp}", file=sys.stderr
+        )
+        return None, None
+
+    runtime_config_str = None
+    original_config_str = None
+    try:
+        with open(log_file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    log_entry = json.loads(line)
+                    if "message" in log_entry:
+                        if log_entry["message"].startswith(
+                            "Runtime Configuration (compact JSON):"
+                        ):
+                            runtime_config_str = log_entry["message"].replace(
+                                "Runtime Configuration (compact JSON): ", ""
+                            )
+                        elif log_entry["message"].startswith(
+                            "Original Configuration (compact JSON):"
+                        ):
+                            original_config_str = log_entry["message"].replace(
+                                "Original Configuration (compact JSON): ", ""
+                            )
+                    if runtime_config_str and original_config_str:
+                        break
+                except json.JSONDecodeError:
+                    continue
+    except Exception as e:
+        print(f"ERROR: Failed to read log file {log_file_path}: {e}", file=sys.stderr)
+        return None, None
+
+    if not runtime_config_str or not original_config_str:
+        print(
+            "ERROR: Could not find runtime and/or original configuration in log file.",
+            file=sys.stderr,
+        )
+        return None, None
+
+    try:
+        runtime_config = json.loads(runtime_config_str)
+        original_config = json.loads(original_config_str)
+        return runtime_config, original_config
+    except json.JSONDecodeError as e:
+        print(
+            f"ERROR: Failed to parse configuration from log file: {e}", file=sys.stderr
+        )
+        return None, None
