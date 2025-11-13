@@ -1,12 +1,10 @@
 import argparse
 import concurrent.futures
 import importlib
-import json
 import logging
 import os
 import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -20,10 +18,8 @@ from tricys.core.modelica import (
     get_om_session,
     load_modelica_package,
 )
-from tricys.utils.file_utils import (
-    convert_relative_paths_to_absolute,
-    get_unique_filename,
-)
+from tricys.utils.config_utils import basic_prepare_config
+from tricys.utils.file_utils import get_unique_filename
 from tricys.utils.log_utils import setup_logging
 
 # Standard logger setup
@@ -461,6 +457,7 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             modelName=sim_config["model_name"],
             variableFilter=sim_config["variableFilter"],
         )
+
         mod.setSimulationOptions(
             [
                 f"stopTime={sim_config['stop_time']}",
@@ -594,7 +591,7 @@ def run_simulation(config: Dict[str, Any]):
         sys.exit(1)
 
     simulation_results = {}
-    use_concurrent = config["simulation"].get("concurrent", True)
+    use_concurrent = config["simulation"].get("concurrent", False)
 
     try:
         max_workers = config["simulation"].get("max_workers", os.cpu_count())
@@ -853,114 +850,14 @@ def run_simulation(config: Dict[str, Any]):
                 )
 
 
-def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    Parses command-line arguments, loads the config file, and generates a run timestamp.
-    Returns a fully prepared configuration dictionary.
-    """
-    parser = argparse.ArgumentParser(
-        description="Run a unified simulation and co-simulation workflow in parallel."
-    )
-
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-
-    parser.add_argument(
-        "-c",
-        "--config",
-        type=str,
-        required=False,
-        default=None,
-        help="Path to the JSON configuration file.",
-    )
-
-    subparsers.add_parser("example", help="Run simulation examples interactively")
-
-    args = parser.parse_args()
-
-    if args.command == "example":
-        import importlib.util
-
-        script_path = (
-            Path(__file__).parent.parent.parent
-            / "script"
-            / "example_runner"
-            / "tricys_runner.py"
-        )
-        spec = importlib.util.spec_from_file_location("tricys_runner", script_path)
-        tricys_runner = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(tricys_runner)
-        tricys_runner.main()
-        sys.exit(0)
-
-    if not args.config:
-        default_config_path = "config.json"
-        if os.path.exists(default_config_path):
-            args.config = default_config_path
-            print(
-                f"INFO: No config file specified, using default: {default_config_path}"
-            )
-        else:
-            parser.error(
-                "the following arguments are required: -c/--config, or 'config.json' must exist in the current directory."
-            )
-
-    try:
-        config_path = os.path.abspath(args.config)
-        with open(config_path, "r") as f:
-            base_config = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        # Logger is not set up yet, so print directly to stderr
-        print(
-            f"ERROR: Failed to load or parse config file {args.config}: {e}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    # Correctly set the base directory for resolving relative paths to the config file's location
-    original_config_dir = os.path.dirname(config_path)
-
-    # First convert relative paths to absolute paths
-    absolute_config = convert_relative_paths_to_absolute(
-        base_config, original_config_dir
-    )
-    # Deep copy the converted configuration
-    config = json.loads(json.dumps(absolute_config))
-    # Generate a single timestamp for the entire run and add it to the config
-    config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # --- Create a self-contained workspace for this run ---
-    # The workspace is a directory named after the timestamp, created in the current working directory.
-    run_workspace = os.path.abspath(config["run_timestamp"])
-
-    # Ensure the 'paths' and 'logging' keys exist
-    if "paths" not in config:
-        config["paths"] = {}
-    if "logging" not in config:
-        config["logging"] = {}
-
-    # Override the paths in the config to point to the new workspace
-    config["logging"]["log_dir"] = os.path.join(run_workspace, "log")  # Corrected path
-    config["paths"]["temp_dir"] = os.path.join(run_workspace, "temp")
-    config["paths"]["results_dir"] = os.path.join(run_workspace, "results")
-
-    # Create the new directory structure
-    os.makedirs(config["logging"]["log_dir"], exist_ok=True)
-    os.makedirs(config["paths"]["temp_dir"], exist_ok=True)
-    os.makedirs(config["paths"]["results_dir"], exist_ok=True)
-
-    # --- End of workspace creation ---
-
-    return config, base_config
-
-
-def main():
+def main(config_path: str):
     """Main function to run the simulation from the command line."""
-    config, original_config = initialize_run()
+    config, original_config = basic_prepare_config(config_path)
     setup_logging(config, original_config)
     logger.info(
         "Loading configuration",
         extra={
-            "config_path": os.path.abspath(sys.argv[-1]),
+            "config_path": os.path.abspath(config_path),
         },
     )
     try:
@@ -974,4 +871,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Run a unified simulation and co-simulation workflow."
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=str,
+        required=True,
+        help="Path to the JSON configuration file.",
+    )
+    args = parser.parse_args()
+    main(args.config)

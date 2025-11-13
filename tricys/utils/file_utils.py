@@ -10,7 +10,6 @@ import os
 import shutil
 import sys
 import zipfile
-from typing import Any, Dict
 
 from tricys.utils.log_utils import restore_configs_from_log
 
@@ -258,52 +257,3 @@ def _copy_and_update_paths(runtime_node, final_node, archive_root, logger):
             return
         for i in range(len(runtime_node)):
             _copy_and_update_paths(runtime_node[i], final_node[i], archive_root, logger)
-
-
-def convert_relative_paths_to_absolute(
-    config: Dict[str, Any], base_dir: str
-) -> Dict[str, Any]:
-    """
-    Recursively traverse configuration data and convert relative paths to absolute paths based on the specified base directory
-
-    Args:
-        config: Configuration dictionary
-        base_dir: Base directory path
-
-    Returns:
-        Converted configuration dictionary
-    """
-
-    def _process_value(value, key_name="", parent_dict=None):
-        if isinstance(value, dict):
-            return {k: _process_value(v, k, value) for k, v in value.items()}
-        elif isinstance(value, list):
-            return [_process_value(item, parent_dict=parent_dict) for item in value]
-        elif isinstance(value, str):
-            # Check if it's a path-related key name (extended support for more path fields)
-            path_keys = [
-                "package_path",
-                "db_path",
-                "results_dir",
-                "temp_dir",
-                "log_dir",
-            ]
-
-            if key_name.endswith("_path") or key_name in path_keys:
-                # If it's a relative path, convert to absolute path
-                if not os.path.isabs(value):
-                    abs_path = os.path.abspath(os.path.join(base_dir, value))
-                    logger.debug(
-                        "Converted path",
-                        extra={
-                            "key_name": key_name,
-                            "original_value": value,
-                            "absolute_path": abs_path,
-                        },
-                    )
-                    return abs_path
-            return value
-        else:
-            return value
-
-    return _process_value(config)

@@ -46,7 +46,7 @@ def setup_logging(config: Dict[str, Any], original_config: Dict[str, Any] = None
     log_to_console = log_config.get("log_to_console", True)
     run_timestamp = config.get("run_timestamp")
 
-    log_dir_path = log_config.get("log_dir")
+    log_dir_path = config.get("paths", {}).get("log_dir")
     log_count = log_config.get("log_count", 5)
 
     root_logger = logging.getLogger()

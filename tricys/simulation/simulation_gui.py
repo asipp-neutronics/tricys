@@ -898,6 +898,7 @@ class InteractiveSimulationUI:
                 "package_path": self._get_abs_path(self.package_path_var.get()),
                 "results_dir": self._get_abs_path(self.results_dir_var.get()),
                 "temp_dir": self._get_abs_path(self.temp_dir_var.get()),
+                "log_dir": self._get_abs_path(self.log_dir_var.get()),
             }
 
             sim_config = {

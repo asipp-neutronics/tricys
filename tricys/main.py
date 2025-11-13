@@ -7,6 +7,7 @@ from pathlib import Path
 
 from tricys.simulation.simulation import main as simulation_main
 from tricys.simulation.simulation_analysis import main as analysis_main
+from tricys.simulation.simulation_analysis import retry_analysis
 from tricys.simulation.simulation_gui import main as gui_main
 from tricys.utils.file_utils import archive_run, unarchive_run
 
@@ -93,11 +94,117 @@ def main():
     # 1. Handle explicit subcommands
     if main_args.command:
         if main_args.command == "basic":
-            sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
-            simulation_main()
+            # This block replaces the logic that was in simulation.py's _parse_command_line_args
+            basic_parser = argparse.ArgumentParser()
+            basic_subparsers = basic_parser.add_subparsers(dest="subcommand")
+            basic_subparsers.add_parser("example")
+            basic_parser.add_argument("-c", "--config", type=str, default=None)
+
+            basic_args, _ = basic_parser.parse_known_args(remaining_argv)
+
+            if basic_args.subcommand == "example":
+                # This is the 'basic example' case.
+                import importlib.util
+
+                script_path = (
+                    Path(__file__).parent.parent
+                    / "script"
+                    / "example_runner"
+                    / "tricys_runner.py"
+                )
+                spec = importlib.util.spec_from_file_location(
+                    "tricys_runner", script_path
+                )
+                tricys_runner = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(tricys_runner)
+                tricys_runner.main()
+                sys.exit(0)
+
+            # This is the standard 'basic' simulation case.
+            config_path = basic_args.config
+            if not config_path:
+                default_config_path = "config.json"
+                if os.path.exists(default_config_path):
+                    config_path = default_config_path
+                    print(
+                        "INFO: No config file specified for 'basic' command, using default: config.json"
+                    )
+                else:
+                    print(
+                        "Error: 'basic' command requires a config file via -c or a default 'config.json' must exist.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+
+            simulation_main(config_path)
         elif main_args.command == "analysis":
-            sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
-            analysis_main()
+            # This block replaces the logic in simulation_analysis.py's _parse_command_line_args
+            analysis_parser = argparse.ArgumentParser(
+                description="Run a simulation analysis."
+            )
+            analysis_subparsers = analysis_parser.add_subparsers(
+                dest="subcommand", help="Analysis commands"
+            )
+
+            analysis_subparsers.add_parser(
+                "example", help="Run analysis examples interactively"
+            )
+
+            retry_parser = analysis_subparsers.add_parser(
+                "retry", help="Retry failed AI analysis for existing reports."
+            )
+            retry_parser.add_argument(
+                "timestamp", type=str, help="Timestamp of the run to retry."
+            )
+
+            analysis_parser.add_argument(
+                "-c",
+                "--config",
+                type=str,
+                default=None,
+                help="Path to the JSON configuration file.",
+            )
+
+            analysis_args, _ = analysis_parser.parse_known_args(remaining_argv)
+
+            if analysis_args.subcommand == "retry":
+                retry_analysis(analysis_args.timestamp)
+                sys.exit(0)
+
+            if analysis_args.subcommand == "example":
+                import importlib.util
+
+                script_path = (
+                    Path(__file__).parent.parent
+                    / "script"
+                    / "example_runner"
+                    / "tricys_ana_runner.py"
+                )
+                spec = importlib.util.spec_from_file_location(
+                    "tricys_ana_runner", script_path
+                )
+                tricys_ana_runner = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(tricys_ana_runner)
+                tricys_ana_runner.main()
+                sys.exit(0)
+
+            config_path = analysis_args.config
+            if not config_path:
+                default_config_path = "config.json"
+                if os.path.exists(default_config_path):
+                    config_path = default_config_path
+                    print(
+                        "INFO: No config file specified for 'analysis' command, using default: config.json"
+                    )
+                else:
+                    print(
+                        "Error: 'analysis' command requires a config file via -c or a default 'config.json' must exist.",
+                        file=sys.stderr,
+                    )
+                    analysis_parser.print_help(sys.stderr)
+                    sys.exit(1)
+
+            analysis_main(config_path)
         elif main_args.command == "gui":
             sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
             gui_main()
@@ -115,8 +222,6 @@ def main():
         if os.path.exists("config.json"):
             print("INFO: No command or config specified, using default: config.json")
             config_path = "config.json"
-            # Reconstruct argv for downstream parsers that expect '-c'
-            sys.argv = [original_argv[0], "-c", config_path]
         else:
             # No command, no -c, no default config.json -> show help and exit
             parser.print_help(sys.stderr)
@@ -142,21 +247,16 @@ def main():
         "sensitivity_analysis", {}
     ).get("enabled", False)
 
-    # If -c was explicitly passed, the original argv is correct for the downstream parser.
-    # If we are using the default, we have already modified sys.argv.
-    if main_args.config:
-        sys.argv = original_argv
-
     if is_analysis:
         print(
             "INFO: Detected 'sensitivity_analysis' in config. Running analysis workflow."
         )
-        analysis_main()
+        analysis_main(config_path)
     else:
         print(
             "INFO: No 'sensitivity_analysis' detected in config. Running standard simulation workflow."
         )
-        simulation_main()
+        simulation_main(config_path)
     return
 
 

@@ -1,12 +1,9 @@
-import argparse
 import concurrent.futures
 import importlib
-import json
 import logging
 import os
 import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -31,9 +28,13 @@ from tricys.core.interceptor import integrate_interceptor_model
 from tricys.core.jobs import generate_simulation_jobs
 from tricys.core.modelica import (
     format_parameter_value,
-    get_model_default_parameters,
     get_om_session,
     load_modelica_package,
+)
+from tricys.utils.config_utils import (
+    analysis_prepare_config,
+    analysis_setup_analysis_cases_workspaces,
+    analysis_validate_config,
 )
 from tricys.utils.file_utils import get_unique_filename
 from tricys.utils.log_utils import (
@@ -43,411 +44,6 @@ from tricys.utils.log_utils import (
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
-
-
-def _validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
-    """Validate analysis_cases configuration format, supporting both list and single object formats
-
-    This function validates:
-    1. Basic structure and required fields of analysis_cases
-    2. Simulation parameters compatibility (single job requirement)
-    3. Required_TBR configuration completeness if used in dependent_variables
-
-    Args:
-        config: Configuration dictionary to validate
-
-    Returns:
-        bool: True if configuration is valid, False otherwise
-    """
-    if "sensitivity_analysis" not in config:
-        logger.error("Missing sensitivity_analysis")
-        return False
-
-    sensitivity_analysis = config["sensitivity_analysis"]
-    if "analysis_cases" not in sensitivity_analysis:
-        logger.error("Missing analysis_cases")
-        return False
-
-    analysis_cases = sensitivity_analysis["analysis_cases"]
-
-    # Support both single object and list formats
-    if isinstance(analysis_cases, dict):
-        # Single analysis_case object
-        cases_to_check = [analysis_cases]
-    elif isinstance(analysis_cases, list) and len(analysis_cases) > 0:
-        # analysis_cases list
-        cases_to_check = analysis_cases
-    else:
-        logger.error("analysis_cases must be a non-empty list or a single object")
-        return False
-
-    # Check required fields for each analysis_case
-    required_fields = ["name", "independent_variable", "independent_variable_sampling"]
-    for i, case in enumerate(cases_to_check):
-        if not isinstance(case, dict):
-            logger.error(f"analysis_cases[{i}] must be an object")
-            return False
-        for field in required_fields:
-            if field not in case:
-                logger.error(f"Missing required field '{field}' in analysis_cases[{i}]")
-                return False
-
-    # Check if top-level simulation_parameters are used, which is disallowed in analysis_cases mode
-    if config.get("simulation_parameters"):
-        logger.error(
-            "The top-level 'simulation_parameters' field cannot be used when 'analysis_cases' is defined. "
-            "Please move any shared or case-specific parameters into the 'simulation_parameters' field "
-            "inside each object within the 'analysis_cases' list."
-        )
-        return False
-
-    # Check Required_TBR configuration completeness if it exists in dependent_variables
-    metrics_definition = sensitivity_analysis.get("metrics_definition", {})
-    for i, case in enumerate(cases_to_check):
-        dependent_vars = case.get("dependent_variables", [])
-        if "Required_TBR" in dependent_vars:
-            # Check if Required_TBR exists in metrics_definition
-            if "Required_TBR" not in metrics_definition:
-                logger.error(
-                    f"Required_TBR is in dependent_variables of analysis_cases[{i}] but missing from metrics_definition"
-                )
-                return False
-
-            # Check if Required_TBR configuration is complete
-            required_tbr_config = metrics_definition["Required_TBR"]
-            required_fields = [
-                "method",
-                "parameter_to_optimize",
-                "search_range",
-                "tolerance",
-                "max_iterations",
-            ]
-            missing_fields = [
-                field for field in required_fields if field not in required_tbr_config
-            ]
-            if missing_fields:
-                logger.error(
-                    f"Required_TBR configuration in metrics_definition is incomplete. Missing fields: {missing_fields}"
-                )
-                return False
-
-    return True
-
-
-def _convert_relative_paths_to_absolute(
-    config: Dict[str, Any], base_dir: str
-) -> Dict[str, Any]:
-    """
-    Recursively traverse configuration data and convert relative paths to absolute paths based on the specified base directory
-
-    Args:
-        config: Configuration dictionary
-        base_dir: Base directory path
-
-    Returns:
-        Converted configuration dictionary
-    """
-
-    def _process_value(value, key_name="", parent_dict=None):
-        if isinstance(value, dict):
-            return {k: _process_value(v, k, value) for k, v in value.items()}
-        elif isinstance(value, list):
-            return [_process_value(item, parent_dict=parent_dict) for item in value]
-        elif isinstance(value, str):
-            # Check if it's a path-related key name (extended support for more path fields)
-            path_keys = [
-                "package_path",
-                "db_path",
-                "results_dir",
-                "temp_dir",
-                "log_dir",
-            ]
-
-            # Special case: when independent_variable="file", independent_variable_sampling is also a file path
-            is_file_sampling = (
-                key_name == "independent_variable_sampling"
-                and parent_dict is not None
-                and parent_dict.get("independent_variable") == "file"
-            )
-
-            if key_name.endswith("_path") or key_name in path_keys or is_file_sampling:
-                # If it's a relative path, convert to absolute path
-                if not os.path.isabs(value):
-                    abs_path = os.path.abspath(os.path.join(base_dir, value))
-                    logger.debug(
-                        f"Converted path: {key_name} '{value}' -> '{abs_path}'"
-                    )
-                    return abs_path
-            return value
-        else:
-            return value
-
-    return _process_value(config)
-
-
-def _create_standard_config_for_case(
-    base_config: Dict[str, Any], analysis_case: Dict[str, Any], i: int
-) -> Dict[str, Any]:
-    """Create a standard format configuration file for a single analysis case and handle path conversion"""
-    # This function is called after initialize_run, where paths have already been made absolute.
-    # The conversion here is for robustness, assuming it might be called in other contexts.
-    # We need to derive the original config directory from one of the absolute paths.
-    original_config_dir = os.path.dirname(
-        base_config.get("paths", {}).get("package_path", os.getcwd())
-    )
-
-    # First convert relative paths to absolute paths
-    absolute_config = _convert_relative_paths_to_absolute(
-        base_config, original_config_dir
-    )
-    # Deep copy the converted configuration
-    standard_config = json.loads(json.dumps(absolute_config))
-
-    # if analysis_case.get("name") == "SALib_Analysis":
-    if isinstance(analysis_case.get("independent_variable"), list) and isinstance(
-        analysis_case.get("independent_variable_sampling"), dict
-    ):
-        sensitivity_analysis = standard_config["sensitivity_analysis"]
-        if "analysis_cases" in sensitivity_analysis:
-            del sensitivity_analysis["analysis_cases"]
-        sensitivity_analysis["analysis_case"] = analysis_case.copy()
-        return standard_config
-
-    # Get independent variable and sampling from the current analysis case
-    independent_var = analysis_case["independent_variable"]
-    independent_sampling = analysis_case["independent_variable_sampling"]
-    logger.debug(f"independent_sampling configuration: {independent_sampling}")
-
-    # Ensure simulation_parameters exists at the top level
-    if "simulation_parameters" not in standard_config:
-        standard_config["simulation_parameters"] = {}
-
-    # If the specific analysis_case has its own simulation_parameters, merge them into the top-level ones
-    # This allows for case-specific parameter overrides or additions
-    if "simulation_parameters" in analysis_case:
-        case_sim_params = analysis_case.get("simulation_parameters", {})
-
-        # Identify and handle virtual parameters (e.g., Required_TBR) used for metric configuration
-        virtual_params = {
-            k: v
-            for k, v in case_sim_params.items()
-            if k.startswith("Required_") and isinstance(v, dict)
-        }
-
-        if virtual_params:
-            # Merge virtual parameter config into the case's metrics_definition
-            metrics_def = standard_config.setdefault(
-                "sensitivity_analysis", {}
-            ).setdefault("metrics_definition", {})
-            for key, value in virtual_params.items():
-                if key in metrics_def:
-                    metrics_def[key].update(value)
-                else:
-                    metrics_def[key] = value
-
-        # Get real parameters by excluding virtual ones
-        real_params = {
-            k: v for k, v in case_sim_params.items() if k not in virtual_params
-        }
-
-        # Update standard_config's simulation_parameters with only real parameters for job generation
-        standard_config["simulation_parameters"].update(real_params)
-
-    # Fetch default values for both independent and simulation parameters
-    omc = None
-    try:
-        # Get all sim params from the case, which may include virtual parameters
-        all_case_sim_params = analysis_case.get("simulation_parameters", {})
-        # Filter out virtual parameters before fetching default values
-        sim_param_keys = [
-            k
-            for k, v in all_case_sim_params.items()
-            if not (k.startswith("Required_") and isinstance(v, dict))
-        ]
-        # Ensure independent_var is a list for consistent processing, as it can be a list in SALib cases
-        ind_param_keys = (
-            [independent_var] if isinstance(independent_var, str) else independent_var
-        )
-
-        param_keys_to_fetch = sim_param_keys + ind_param_keys
-
-        if param_keys_to_fetch:
-            logger.info(
-                f"Fetching default values for parameters: {param_keys_to_fetch}"
-            )
-            omc = get_om_session()
-            if load_modelica_package(
-                omc, Path(standard_config["paths"]["package_path"]).as_posix()
-            ):
-                all_defaults = get_model_default_parameters(
-                    omc, standard_config["simulation"]["model_name"]
-                )
-
-                # Helper function to handle array access like 'param[1]'
-                def get_specific_default(key, defaults):
-                    if key in defaults:
-                        return defaults[key]
-                    if "[" in key and key.endswith("]"):
-                        try:
-                            base_name, index_str = key.rsplit("[", 1)
-                            # Modelica is 1-based, Python is 0-based
-                            index = int(index_str[:-1]) - 1
-                            if base_name in defaults:
-                                default_array = defaults[base_name]
-                                if isinstance(default_array, list) and 0 <= index < len(
-                                    default_array
-                                ):
-                                    return default_array[index]
-                        except (ValueError, IndexError):
-                            pass  # Malformed index or out of bounds
-                    return "N/A"
-
-                # Get defaults for simulation_parameters
-                default_sim_values = {
-                    p: get_specific_default(p, all_defaults) for p in sim_param_keys
-                }
-                analysis_case["default_simulation_values"] = default_sim_values
-
-                # Get defaults for independent_variable
-                default_ind_values = {
-                    p: get_specific_default(p, all_defaults) for p in ind_param_keys
-                }
-                analysis_case["default_independent_values"] = default_ind_values
-
-    except Exception as e:
-        logger.warning(
-            f"Could not fetch default parameter values. Defaults will be empty. Error: {e}"
-        )
-        analysis_case["default_simulation_values"] = {}
-        analysis_case["default_independent_values"] = {}
-    finally:
-        if omc:
-            omc.sendExpression("quit()")
-
-    # Add the primary independent_variable_sampling for the current analysis case
-    standard_config["simulation_parameters"][independent_var] = independent_sampling
-
-    # Update sensitivity_analysis configuration
-    sensitivity_analysis = standard_config["sensitivity_analysis"]
-
-    # Remove analysis_cases and replace with single analysis_case
-    if "analysis_cases" in sensitivity_analysis:
-        del sensitivity_analysis["analysis_cases"]
-
-    sensitivity_analysis["analysis_case"] = analysis_case.copy()
-
-    return standard_config
-
-
-def _setup_analysis_cases_workspaces(config: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """
-    Set up independent working directories and configuration files for multiple analysis_cases
-
-    This function will:
-    1. Create independent working directories for each analysis_case in the current working directory
-    2. Convert relative paths in the original configuration to absolute paths
-    3. Convert analysis_cases format to standard analysis_case format
-    4. Generate independent config.json files for each case
-
-    Args:
-        config: Original configuration dictionary containing analysis_cases
-
-    Returns:
-        List containing information for each case, each element contains:
-        - index: Case index
-        - workspace: Working directory path
-        - config_path: Configuration file path
-        - config: Configuration applicable to this case
-        - case_data: Original case data
-    """
-
-    analysis_cases_raw = config["sensitivity_analysis"]["analysis_cases"]
-
-    # Unified processing into list format
-    if isinstance(analysis_cases_raw, dict):
-        # Single analysis_case object
-        analysis_cases = [analysis_cases_raw]
-        logger.info(
-            "Detected single analysis_case object, converting to list format for processing"
-        )
-    else:
-        # Already in list format
-        analysis_cases = analysis_cases_raw
-
-    # The main run workspace is the timestamped directory, already created by initialize_run.
-    # We will create the case workspaces inside it.
-    run_workspace = os.path.abspath(config["run_timestamp"])
-
-    # Determine the main log file path to be shared with all cases
-    main_log_file_name = f"simulation_{config['run_timestamp']}.log"
-    main_log_path = os.path.join(run_workspace, main_log_file_name)
-
-    logger.info(
-        f"Detected {len(analysis_cases)} analysis cases, creating independent workspaces inside: {run_workspace}"
-    )
-
-    case_configs = []
-
-    for i, analysis_case in enumerate(analysis_cases):
-        try:
-            # Generate case working directory name
-            workspace_name = analysis_case.get("name", f"case_{i}")
-            # Create the case workspace directly inside the main run workspace
-            case_workspace = os.path.join(run_workspace, workspace_name)
-            os.makedirs(case_workspace, exist_ok=True)
-
-            # Create standard configuration
-            standard_config = _create_standard_config_for_case(config, analysis_case, i)
-
-            # Update paths in configuration to be relative to case working directory
-            case_config = standard_config.copy()
-            case_config["paths"]["results_dir"] = os.path.join(
-                case_workspace, "results"
-            )
-            case_config["paths"]["temp_dir"] = os.path.join(case_workspace, "temp")
-            case_config["paths"]["db_path"] = os.path.join(
-                case_workspace, "data", "parameters.db"
-            )
-
-            # If there's logging configuration, also update log directory
-            if "logging" in case_config and "log_dir" in case_config["logging"]:
-                case_config["logging"]["log_dir"] = os.path.join(case_workspace, "log")
-                # Inject the main log path for dual logging
-                case_config["logging"]["main_log_path"] = main_log_path
-
-            # Save standard configuration file to case working directory
-            config_file_path = os.path.join(case_workspace, "config.json")
-            with open(config_file_path, "w", encoding="utf-8") as f:
-                json.dump(standard_config, f, indent=4, ensure_ascii=False)
-
-            # Record case information
-            case_info = {
-                "index": i,
-                "workspace": case_workspace,
-                "config_path": config_file_path,
-                "config": case_config,
-                "case_data": analysis_case,
-            }
-            case_configs.append(case_info)
-
-            logger.info(
-                f"Workspace for case {i+1} created successfully",
-                extra={
-                    "case_index": i,
-                    "case_name": analysis_case.get("name", f"case_{i}"),
-                    "workspace": case_workspace,
-                    "config_path": config_file_path,
-                },
-            )
-
-        except Exception as e:
-            logger.error(f"✗ Error processing case {i}: {e}", exc_info=True)
-            continue
-
-    logger.info(
-        f"Successfully created independent working directories for {len(case_configs)} analysis cases"
-    )
-    return case_configs
 
 
 def _get_optimization_tasks(config: dict) -> List[str]:
@@ -465,51 +61,22 @@ def _get_optimization_tasks(config: dict) -> List[str]:
     optimization_tasks = []
     sensitivity_analysis = config.get("sensitivity_analysis", {})
     metrics_definition = sensitivity_analysis.get("metrics_definition", {})
-
-    analysis_case_or_cases = sensitivity_analysis.get(
-        "analysis_cases"
-    ) or sensitivity_analysis.get("analysis_case")
-    if not analysis_case_or_cases:
-        return []
-
-    cases = (
-        analysis_case_or_cases
-        if isinstance(analysis_case_or_cases, list)
-        else [analysis_case_or_cases]
-    )
-
-    for case in cases:
-        dependent_vars = case.get("dependent_variables", [])
-        for var in dependent_vars:
-            if var.startswith("Required_") and var not in optimization_tasks:
-                if var in metrics_definition:
-                    required_config = metrics_definition[var]
-                    required_fields = [
-                        "method",
-                        "parameter_to_optimize",
-                        "search_range",
-                        "tolerance",
-                        "max_iterations",
-                    ]
-                    if all(field in required_config for field in required_fields):
-                        optimization_tasks.append(var)
+    analysis_case = sensitivity_analysis.get("analysis_case", {})
+    dependent_vars = analysis_case.get("dependent_variables", [])
+    for var in dependent_vars:
+        if var.startswith("Required_") and var not in optimization_tasks:
+            if var in metrics_definition:
+                required_config = metrics_definition[var]
+                required_fields = [
+                    "method",
+                    "parameter_to_optimize",
+                    "search_range",
+                    "tolerance",
+                    "max_iterations",
+                ]
+                if all(field in required_config for field in required_fields):
+                    optimization_tasks.append(var)
     return optimization_tasks
-
-
-def _is_optimization_enabled(config: dict) -> bool:
-    """
-    Check if any optimization functionality is enabled.
-    An optimization is enabled if a dependent variable starts with "Required_"
-    and has a corresponding complete definition in metrics_definition.
-
-    Args:
-        config: Configuration dictionary
-
-    Returns:
-        bool: True if any optimization task is enabled, otherwise False.
-    """
-    optimization_tasks = _get_optimization_tasks(config)
-    return len(optimization_tasks) > 0
 
 
 def _run_sensitivity_analysis(
@@ -568,12 +135,14 @@ def _run_sensitivity_analysis(
             analysis_case,
         )
 
-        if summary_df.empty and not _is_optimization_enabled(config):
+        optimization_tasks = _get_optimization_tasks(config)
+
+        if summary_df.empty and not optimization_tasks:
             logger.warning("Sensitivity analysis did not produce any summary data.")
             return
-        elif not summary_df.empty and not _is_optimization_enabled(config):
+        elif not summary_df.empty and not optimization_tasks:
             df_to_save = summary_df
-        elif summary_df.empty and _is_optimization_enabled(config):
+        elif summary_df.empty and optimization_tasks:
             optimization_summary_path = os.path.join(
                 run_results_dir, "requierd_tbr_summary.csv"
             )
@@ -582,7 +151,7 @@ def _run_sensitivity_analysis(
                     "Optimization summary not found, saving analysis summary only."
                 )
             df_to_save = pd.read_csv(optimization_summary_path)
-        elif not summary_df.empty and _is_optimization_enabled(config):
+        elif not summary_df.empty and optimization_tasks:
             optimization_summary_path = os.path.join(
                 run_results_dir, "requierd_tbr_summary.csv"
             )
@@ -630,26 +199,6 @@ def _run_sensitivity_analysis(
 
     except Exception as e:
         logger.error(f"Automated sensitivity analysis failed: {e}", exc_info=True)
-
-
-def _save_optimization_summary(
-    config: dict, final_results: List[Dict[str, Any]]
-) -> None:
-    """
-    Save optimization results summary
-
-    Args:
-        config: Configuration dictionary
-        final_results: Optimization results list
-    """
-    if _is_optimization_enabled(config):
-        results_dir = os.path.abspath(config["paths"]["results_dir"])
-        os.makedirs(results_dir, exist_ok=True)
-        if final_results:
-            final_df = pd.DataFrame(final_results)
-            output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
-            final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
-            logger.info(f"Sweep optimization summary saved to: {output_path}")
 
 
 def _run_bisection_search_for_job(
@@ -1157,38 +706,37 @@ def _run_co_simulation(
         optimal_param = {}
         optimal_value = {}
         # Check if optimization is enabled, if so call _run_bisection_search_for_job for each task
-        if _is_optimization_enabled(config):
-            optimization_tasks = _get_optimization_tasks(config)
-            for optimization_metric_name in optimization_tasks:
-                logger.info(
-                    f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
-                )
-                job_config = config.copy()
-                job_config["paths"]["package_path"] = isolated_package_path
-                job_config["paths"]["temp_dir"] = base_temp_dir
-                job_config["simulation_parameters"] = job_params
-                job_config["simulation"]["model_name"] = intercepted_model_full_name
+        optimization_tasks = _get_optimization_tasks(config)
+        for optimization_metric_name in optimization_tasks:
+            logger.info(
+                f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
+            )
+            job_config = config.copy()
+            job_config["paths"]["package_path"] = isolated_package_path
+            job_config["paths"]["temp_dir"] = base_temp_dir
+            job_config["simulation_parameters"] = job_params
+            job_config["simulation"]["model_name"] = intercepted_model_full_name
 
-                # Use a unique prefix for each metric to avoid workspace collision
-                metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
+            # Use a unique prefix for each metric to avoid workspace collision
+            metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
 
-                (
-                    current_optimal_param,
-                    current_optimal_value,
-                ) = _run_bisection_search_for_job(
-                    job_config,
-                    job_id_prefix=metric_job_id_prefix,
-                    optimization_metric_name=optimization_metric_name,
-                )
+            (
+                current_optimal_param,
+                current_optimal_value,
+            ) = _run_bisection_search_for_job(
+                job_config,
+                job_id_prefix=metric_job_id_prefix,
+                optimization_metric_name=optimization_metric_name,
+            )
 
-                # Merge results from the current optimization task
-                optimal_param.update(current_optimal_param)
-                optimal_value.update(current_optimal_value)
+            # Merge results from the current optimization task
+            optimal_param.update(current_optimal_param)
+            optimal_value.update(current_optimal_value)
 
-                logger.info(
-                    f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
-                    f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
-                )
+            logger.info(
+                f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
+                f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
+            )
 
         # Return the path to the result file inside the temporary workspace
         return optimal_param, optimal_value, Path(default_result_path).as_posix()
@@ -1282,37 +830,36 @@ def _run_single_job(
         optimal_param = {}
         optimal_value = {}
         # Check if optimization is enabled, if so call _run_bisection_search_for_job for each task
-        if _is_optimization_enabled(config):
-            optimization_tasks = _get_optimization_tasks(config)
-            for optimization_metric_name in optimization_tasks:
-                logger.info(
-                    f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
-                )
-                job_config = config.copy()
-                job_config["paths"]["package_path"] = package_path
-                job_config["paths"]["temp_dir"] = base_temp_dir
-                job_config["simulation_parameters"] = job_params
+        optimization_tasks = _get_optimization_tasks(config)
+        for optimization_metric_name in optimization_tasks:
+            logger.info(
+                f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
+            )
+            job_config = config.copy()
+            job_config["paths"]["package_path"] = package_path
+            job_config["paths"]["temp_dir"] = base_temp_dir
+            job_config["simulation_parameters"] = job_params
 
-                # Use a unique prefix for each metric to avoid workspace collision
-                metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
+            # Use a unique prefix for each metric to avoid workspace collision
+            metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
 
-                (
-                    current_optimal_param,
-                    current_optimal_value,
-                ) = _run_bisection_search_for_job(
-                    job_config,
-                    job_id_prefix=metric_job_id_prefix,
-                    optimization_metric_name=optimization_metric_name,
-                )
+            (
+                current_optimal_param,
+                current_optimal_value,
+            ) = _run_bisection_search_for_job(
+                job_config,
+                job_id_prefix=metric_job_id_prefix,
+                optimization_metric_name=optimization_metric_name,
+            )
 
-                # Merge results from the current optimization task
-                optimal_param.update(current_optimal_param)
-                optimal_value.update(current_optimal_value)
+            # Merge results from the current optimization task
+            optimal_param.update(current_optimal_param)
+            optimal_value.update(current_optimal_value)
 
-                logger.info(
-                    f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
-                    f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
-                )
+            logger.info(
+                f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
+                f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
+            )
 
         return optimal_param, optimal_value, str(result_path)
     except Exception:
@@ -1403,29 +950,26 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                 result_paths.append(result_file_path)
 
                 job_final_optimizations = {}
-                if _is_optimization_enabled(config):
-                    optimization_tasks = _get_optimization_tasks(config)
-                    for optimization_metric_name in optimization_tasks:
-                        logger.info(
-                            f"Job {i+1}: Starting optimization for metric '{optimization_metric_name}'."
-                        )
-                        job_config = config.copy()
-                        job_config["simulation_parameters"] = job_params
+                optimization_tasks = _get_optimization_tasks(config)
+                for optimization_metric_name in optimization_tasks:
+                    logger.info(
+                        f"Job {i+1}: Starting optimization for metric '{optimization_metric_name}'."
+                    )
+                    job_config = config.copy()
+                    job_config["simulation_parameters"] = job_params
 
-                        # Use a unique prefix for each metric to avoid workspace collision
-                        metric_job_id_prefix = f"job_{i+1}_{optimization_metric_name}"
+                    # Use a unique prefix for each metric to avoid workspace collision
+                    metric_job_id_prefix = f"job_{i+1}_{optimization_metric_name}"
 
-                        (optimal_params, optimal_values) = (
-                            _run_bisection_search_for_job(
-                                job_config,
-                                job_id_prefix=metric_job_id_prefix,
-                                optimization_metric_name=optimization_metric_name,
-                            )
-                        )
+                    (optimal_params, optimal_values) = _run_bisection_search_for_job(
+                        job_config,
+                        job_id_prefix=metric_job_id_prefix,
+                        optimization_metric_name=optimization_metric_name,
+                    )
 
-                        # Merge results from the current optimization task
-                        job_final_optimizations.update(optimal_params)
-                        job_final_optimizations.update(optimal_values)
+                    # Merge results from the current optimization task
+                    job_final_optimizations.update(optimal_params)
+                    job_final_optimizations.update(optimal_values)
 
                 final_result_entry = job_params.copy()
                 final_result_entry.update(job_final_optimizations)
@@ -1436,7 +980,14 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                 result_paths.append("")
 
         # Summarize optimization results
-        _save_optimization_summary(config, final_results)
+        if _get_optimization_tasks(config):
+            results_dir = os.path.abspath(config["paths"]["results_dir"])
+            os.makedirs(results_dir, exist_ok=True)
+            if final_results:
+                final_df = pd.DataFrame(final_results)
+                output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
+                final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
+                logger.info(f"Sweep optimization summary saved to: {output_path}")
 
         return result_paths
     except Exception as e:
@@ -1549,8 +1100,7 @@ def _run_post_processing(
 def run_simulation(config: Dict[str, Any]):
     """Orchestrates the simulation execution, result handling, and cleanup."""
 
-    # --- START: Check if analysis_cases need to be processed ---
-
+    # 1. Split analysis_cases and determine salib_analysis_case
     has_analysis_cases = (
         "sensitivity_analysis" in config
         and "analysis_cases" in config["sensitivity_analysis"]
@@ -1584,7 +1134,7 @@ def run_simulation(config: Dict[str, Any]):
         )
 
         # Create independent working directories and configuration files for each analysis_case
-        case_configs = _setup_analysis_cases_workspaces(config)
+        case_configs = analysis_setup_analysis_cases_workspaces(config)
 
         if not case_configs:
             logger.error(
@@ -1690,6 +1240,9 @@ def run_simulation(config: Dict[str, Any]):
     elif has_salib_analysis_case:
         logger.info("Detected SALib analysis case, diverting to SALib workflow...")
         run_salib_analysis(config)
+        return  # SALib workflow is self-contained, so we exit here.
+
+    # 2. Core operational logic
     jobs = generate_simulation_jobs(config.get("simulation_parameters", {}))
 
     # --- START: Add baseline jobs based on default parameter values ---
@@ -1779,7 +1332,18 @@ def run_simulation(config: Dict[str, Any]):
                         final_result_entry.update(optimal_values)
                         final_results.append(final_result_entry)
 
-                _save_optimization_summary(config, final_results)
+                if _get_optimization_tasks(config):
+                    results_dir = os.path.abspath(config["paths"]["results_dir"])
+                    os.makedirs(results_dir, exist_ok=True)
+                    if final_results:
+                        final_df = pd.DataFrame(final_results)
+                        output_path = os.path.join(
+                            results_dir, "requierd_tbr_summary.csv"
+                        )
+                        final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
+                        logger.info(
+                            f"Sweep optimization summary saved to: {output_path}"
+                        )
             else:
                 logger.info("Starting simulation in SEQUENTIAL mode.")
                 result_paths = _run_sequential_sweep(config, jobs)
@@ -1866,11 +1430,18 @@ def run_simulation(config: Dict[str, Any]):
                         )
                     logger.info(f"--- Finished Sequential Job {job_id}/{len(jobs)} ---")
 
-            _save_optimization_summary(config, final_results)
+            if _get_optimization_tasks(config):
+                results_dir = os.path.abspath(config["paths"]["results_dir"])
+                os.makedirs(results_dir, exist_ok=True)
+                if final_results:
+                    final_df = pd.DataFrame(final_results)
+                    output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
+                    final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
+                    logger.info(f"Sweep optimization summary saved to: {output_path}")
     except Exception as e:
         raise RuntimeError(f"Failed to run simualtion: {e}")
 
-    # --- Result Handling ---
+    # 3. Data merging and processing
     run_results_dir = results_dir
     os.makedirs(run_results_dir, exist_ok=True)
 
@@ -1976,10 +1547,10 @@ def run_simulation(config: Dict[str, Any]):
             except Exception as e:
                 logger.error(f"Error generating sweep time series plot: {e}")
 
-    # --- Sensitivity Analysis ---
+    # 4. Sensitivity analysis
     _run_sensitivity_analysis(config, run_results_dir, jobs)
 
-    # --- Post-Processing ---
+    # 5. Post-processing
     if combined_df is not None:
         # Calculate the top-level post-processing directory
         top_level_run_workspace = os.path.abspath("post_processing")
@@ -1989,7 +1560,7 @@ def run_simulation(config: Dict[str, Any]):
             "No simulation results were generated, skipping post-processing."
         )
 
-    # --- Final Cleanup ---
+    # 6. Intermediate data cleaning
     if not config["simulation"].get("keep_temp_files", True):
         logger.info("Cleaning up temporary directory...")
         temp_dir_path = os.path.abspath(config["paths"].get("temp_dir", "temp"))
@@ -1999,116 +1570,6 @@ def run_simulation(config: Dict[str, Any]):
                 os.makedirs(temp_dir_path)  # Recreate for next run
             except OSError as e:
                 logger.error(f"Error cleaning up temp directory: {e}")
-
-
-def initialize_run() -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    Parses command-line arguments, loads the config file, and generates a run timestamp.
-    Returns a fully prepared configuration dictionary.
-    """
-    parser = argparse.ArgumentParser(
-        description="Run a unified simulation and co-simulation workflow in parallel."
-    )
-
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-
-    parser.add_argument(
-        "-c",
-        "--config",
-        type=str,
-        required=False,
-        default=None,
-        help="Path to the JSON configuration file.",
-    )
-
-    subparsers.add_parser("example", help="Run analysis examples interactively")
-    retry_parser = subparsers.add_parser(
-        "retry", help="Retry failed AI analysis for existing reports."
-    )
-    retry_parser.add_argument(
-        "timestamp",
-        type=str,
-        help="Timestamp of the analysis run to retry.",
-    )
-
-    args = parser.parse_args()
-
-    if args.command == "retry":
-        retry_analysis(args.timestamp)
-        sys.exit(0)
-
-    if args.command == "example":
-        import importlib.util
-
-        script_path = (
-            Path(__file__).parent.parent.parent
-            / "script"
-            / "example_runner"
-            / "tricys_ana_runner.py"
-        )
-        spec = importlib.util.spec_from_file_location("tricys_ana_runner", script_path)
-        tricys_ana_runner = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(tricys_ana_runner)
-        tricys_ana_runner.main()
-        sys.exit(0)
-
-    if not args.config:
-        default_config_path = "config.json"
-        if os.path.exists(default_config_path):
-            args.config = default_config_path
-            print(
-                f"INFO: No config file specified, using default: {default_config_path}"
-            )
-        else:
-            parser.error(
-                "the following arguments are required: -c/--config, or 'config.json' must exist in the current directory."
-            )
-
-    try:
-        config_path = os.path.abspath(args.config)
-        with open(config_path, "r") as f:
-            base_config = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(
-            f"ERROR: Failed to load or parse config file {args.config}: {e}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    # Correctly set the base directory for resolving relative paths to the config file's location
-    original_config_dir = os.path.dirname(config_path)
-
-    # First convert relative paths to absolute paths
-    absolute_config = _convert_relative_paths_to_absolute(
-        base_config, original_config_dir
-    )
-    # Deep copy the converted configuration
-    config = json.loads(json.dumps(absolute_config))
-
-    # Generate a single timestamp for the entire run and add it to the config
-    run_timestamp = (
-        args.timestamp
-        if args.command == "retry"
-        else datetime.now().strftime("%Y%m%d_%H%M%S")
-    )
-    config["run_timestamp"] = run_timestamp
-
-    # --- Create a self-contained workspace for this run ---
-    # The workspace is a directory named after the timestamp, created in the current working directory.
-    run_workspace = os.path.abspath(config["run_timestamp"])
-
-    # Ensure the 'paths' and 'logging' keys exist
-    if "paths" not in config:
-        config["paths"] = {}
-    if "logging" not in config:
-        config["logging"] = {}
-
-    # Override the paths in the config to point to the new workspace
-    config["logging"]["log_dir"] = run_workspace
-
-    # --- End of workspace creation ---
-
-    return config, base_config
 
 
 def retry_analysis(timestamp: str):
@@ -2133,10 +1594,10 @@ def retry_analysis(timestamp: str):
     )
 
     logger.info("Starting in AI analysis retry mode...")
-    if not _validate_analysis_cases_config(config):
+    if not analysis_validate_config(config):
         sys.exit(1)
 
-    case_configs = _setup_analysis_cases_workspaces(config)
+    case_configs = analysis_setup_analysis_cases_workspaces(config)
     if not case_configs:
         logger.error("Could not set up case workspaces for retry. Aborting.")
         sys.exit(1)
@@ -2147,37 +1608,31 @@ def retry_analysis(timestamp: str):
     logger.info("AI analysis retry and consolidation complete.")
 
 
-def main():
+def main(config_path: str):
     """Main function to run the simulation from the command line."""
-    config, original_config = initialize_run()
-
+    config, original_config = analysis_prepare_config(config_path)
     setup_logging(config, original_config)
-
-    config_path = None
+    logger.info(
+        "Loading configuration",
+        extra={
+            "config_path": os.path.abspath(config_path),
+        },
+    )
     try:
-        # Try to find the config path in sys.argv for logging
-        if "-c" in sys.argv:
-            config_idx = sys.argv.index("-c")
-            config_path = os.path.abspath(sys.argv[config_idx + 1])
-        elif "--config" in sys.argv:
-            config_idx = sys.argv.index("--config")
-            config_path = os.path.abspath(sys.argv[config_idx + 1])
-    except (ValueError, IndexError):
-        pass
-
-    if config_path:
-        logger.info(f"Loading configuration from: {config_path}")
-    else:
-        logger.info("Configuration loaded.")
-
-    if _validate_analysis_cases_config(config):
-        try:
-            run_simulation(config)
-            logger.info("Main execution completed successfully.")
-        except Exception as e:
-            logger.error(f"Main execution failed: {e}", exc_info=True)
-            sys.exit(1)
+        run_simulation(config)
+        logger.info("Main execution completed successfully")
+    except Exception as e:
+        logger.error(
+            "Main execution failed", exc_info=True, extra={"exception": str(e)}
+        )
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    # To allow running this script directly, we'll do a simplified arg parsing here.
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", type=str, default="config.json")
+    args = parser.parse_args()
+    main(args.config)
