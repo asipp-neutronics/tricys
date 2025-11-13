@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import re
 import time
 from typing import Optional
 
@@ -15,6 +16,139 @@ import seaborn as sns
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
+
+
+_english_glossary_map = {}
+_chinese_glossary_map = {}
+_use_chinese_labels = False
+
+# Add a dictionary for UI text translations
+_ui_text = {
+    "en": {
+        "overall_view": "Overall View (Data exceeding 2x initial value is hidden)",
+        "detailed_view": "Detailed View (t=0 to Post-Minimum)",
+        "time_days": "Time (days)",
+        "days": "days",
+        "kg": "kg",
+        "g": "g",
+        "hours": "hours",
+        "years": "years",
+        "y_label": "Tritium Inventory",
+        "overall_view_title": "Overall View",
+        "detailed_view_zoom_title": "Detailed View (Zoomed on '{detailed_var}' Self Sufficiency Point)",
+        "final_values_bar_chart_title": "Tritium Inventory in Each Submodule",
+        "final_value": "Tritium Inventory",
+    },
+    "cn": {
+        "overall_view": "全局视图 (超出初始值2倍的数据已隐藏)",
+        "detailed_view": "细节视图 (t=0到最小值后)",
+        "time_days": "时间 (天)",
+        "days": "天",
+        "kg": "千克",
+        "g": "克",
+        "hours": "小时",
+        "years": "年",
+        "y_label": "氚盘存量",
+        "overall_view_title": "全局视图",
+        "detailed_view_zoom_title": "细节视图 (放大“{detailed_var}”自持点)",
+        "final_values_bar_chart_title": "各子模块氚盘存量",
+        "final_value": "氚盘存量",
+    },
+}
+
+
+def _get_text(key: str) -> str:
+    """Helper to get text based on the current language setting."""
+    # Fallback to key itself if not found, useful for units from unit_map
+    lang = "cn" if _use_chinese_labels else "en"
+    return _ui_text[lang].get(key, key)
+
+
+def set_plot_language(lang: str = "en"):
+    """
+    Sets the preferred language for plot labels.
+    Args:
+        lang (str): 'en' for English (default), 'cn' for Chinese.
+    """
+    global _use_chinese_labels
+    _use_chinese_labels = lang.lower() == "cn"
+
+    if _use_chinese_labels:
+        # To display Chinese characters correctly, specify a list of fallback fonts.
+        plt.rcParams["font.sans-serif"] = ["SimHei"]  # 替换成你电脑上有的字体
+        plt.rcParams["axes.unicode_minus"] = False  # To display minus sign correctly.
+        plt.rcParams["font.family"] = "sans-serif"  # 确保字体家族设置生效
+    else:
+        # Restore default settings
+        plt.rcParams["font.sans-serif"] = plt.rcParamsDefault["font.sans-serif"]
+        plt.rcParams["axes.unicode_minus"] = plt.rcParamsDefault["axes.unicode_minus"]
+
+
+def load_glossary(glossary_path: str):
+    """
+    Loads glossary data from the specified CSV path into global dictionaries.
+    """
+    global _english_glossary_map, _chinese_glossary_map
+
+    if not glossary_path or not os.path.exists(glossary_path):
+        logger.warning(
+            f"Glossary file not found at {glossary_path}. No labels will be loaded."
+        )
+        _english_glossary_map = {}
+        _chinese_glossary_map = {}
+        return
+
+    try:
+        df = pd.read_csv(glossary_path)
+        if (
+            "模型参数 (Model Parameter)" in df.columns
+            and "英文术语 (English Term)" in df.columns
+            and "中文翻译 (Chinese Translation)" in df.columns
+        ):
+            df.dropna(subset=["模型参数 (Model Parameter)"], inplace=True)
+            _english_glossary_map = pd.Series(
+                df["英文术语 (English Term)"].values,
+                index=df["模型参数 (Model Parameter)"],
+            ).to_dict()
+            _chinese_glossary_map = pd.Series(
+                df["中文翻译 (Chinese Translation)"].values,
+                index=df["模型参数 (Model Parameter)"],
+            ).to_dict()
+            logger.info(f"Successfully loaded glossary from {glossary_path}.")
+        else:
+            logger.warning("Glossary CSV does not contain expected columns.")
+            _english_glossary_map = {}
+            _chinese_glossary_map = {}
+    except Exception as e:
+        logger.warning(f"Failed to load or parse glossary file. Error: {e}")
+        _english_glossary_map = {}
+        _chinese_glossary_map = {}
+
+
+def _format_label(label: str) -> str:
+    """
+    Formats a label for display. It first attempts to find a professional
+    term from the loaded glossary. If not found, it falls back to simple
+    string formatting.
+    """
+    global _english_glossary_map, _chinese_glossary_map, _use_chinese_labels
+
+    if not isinstance(label, str):
+        return label
+
+    glossary_map = (
+        _chinese_glossary_map if _use_chinese_labels else _english_glossary_map
+    )
+
+    if glossary_map and label in glossary_map:
+        term = glossary_map[label]
+        if pd.notna(term) and str(term).strip():
+            return str(term)
+
+    # Fallback to simple formatting
+    formatted_label = label.replace("_", " ")
+    formatted_label = re.sub(r"(?<!\d)\.|\.(?!\d)", " ", formatted_label)
+    return formatted_label
 
 
 def _calculate_startup_inventory(
@@ -98,20 +232,17 @@ def _calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float
 
 def _plot_time_series_with_zoom(df: pd.DataFrame, output_dir: str, **kwargs):
     """Helper to generate the time-series plot with a detailed zoom view."""
-    primary_y_var = kwargs.get("primary_y_var", "sds.I[1]")
-    title = kwargs.get("title", "Simulation Time-Series Analysis")
-    y_label = kwargs.get("y_label", "Values (Mixed Units)")
+    detailed_var = kwargs.get("detailed_var", "sds.I[1]")
     color_map = kwargs.get("color_map", {})
 
     time_days = df["time"] / 24
     all_plot_columns = sorted([col for col in df.columns if col != "time"])
     primary_var_columns = [
-        col for col in all_plot_columns if col.startswith(primary_y_var)
+        col for col in all_plot_columns if col.startswith(detailed_var)
     ]
 
     min_x_global = float("inf")
     if primary_var_columns:
-        # min_y_global = float("inf")
         # Find the column with the absolute minimum value among primary variables
         min_col = None
         min_val_for_col = float("inf")
@@ -127,90 +258,117 @@ def _plot_time_series_with_zoom(df: pd.DataFrame, output_dir: str, **kwargs):
         if min_col:
             y_data = df[min_col]
             min_idx = y_data.idxmin()
-            # min_y_global = df[min_col].loc[min_idx]
             min_x_global = time_days.loc[min_idx]
 
     sns.set_theme(style="whitegrid")
-    fig, (ax1, ax2) = plt.subplots(
-        2,
-        1,
-        figsize=kwargs.get("figsize", (14, 18)),
-        sharex=False,
-        gridspec_kw={"height_ratios": [2, 1]},
-    )
-    fig.suptitle(title, fontsize=16, fontweight="bold")
 
-    for column in all_plot_columns:
-        color = color_map.get(column, "blue")  # Default to blue if not in map
-        ax1.plot(
-            time_days, df[column], label=column, color=color, linewidth=1.2, alpha=0.85
-        )
-        ax2.plot(
-            time_days, df[column], label=column, color=color, linewidth=1.5, alpha=0.9
+    original_lang_is_chinese = _use_chinese_labels
+    for lang in ["en", "cn"]:
+        set_plot_language(lang)
+
+        y_label = kwargs.get("y_label", _get_text("y_label"))
+
+        fig, (ax1, ax2) = plt.subplots(
+            2,
+            1,
+            figsize=kwargs.get("figsize", (14, 18)),
+            sharex=False,
+            gridspec_kw={"height_ratios": [2, 1]},
         )
 
-    ax1.set_ylabel(y_label, fontsize=14)
-    ax1.set_title("Overall View", fontsize=12)
-    if len(all_plot_columns) <= 20:
-        ax1.legend(loc="best", fontsize="x-small")
-    ax1.grid(True)
-    ax1.set_xlabel("Time (days)", fontsize=14)
-
-    ax2.set_ylabel(y_label, fontsize=14)
-    ax2.set_title(
-        f"Detailed View (Zoomed on '{primary_y_var}' Turning Point)", fontsize=12
-    )
-    ax2.grid(True, linestyle="--")
-    ax2.set_xlabel("Time (days)", fontsize=14)
-    if len(all_plot_columns) <= 20:
-        ax2.legend(loc="best", fontsize="x-small")
-
-    if np.isfinite(min_x_global):
-        x1_zoom, x2_zoom = 0, min_x_global + 5
-        ax2.set_xlim(x1_zoom, x2_zoom)
-        y_min_in_range = (
-            df.loc[(time_days >= x1_zoom) & (time_days <= x2_zoom), all_plot_columns]
-            .min()
-            .min()
-        )
-        y_max_in_range = (
-            df.loc[(time_days >= x1_zoom) & (time_days <= x2_zoom), all_plot_columns]
-            .max()
-            .max()
-        )
-        y_padding = (y_max_in_range - y_min_in_range) * 0.1
-        ax2.set_ylim(y_min_in_range - y_padding, y_max_in_range + y_padding)
-        y1_ax1, y2_ax1 = ax1.get_ylim()
-        ax1.add_patch(
-            patches.Rectangle(
-                (x1_zoom, y1_ax1),
-                x2_zoom - x1_zoom,
-                y2_ax1 - y1_ax1,
-                linewidth=1,
-                edgecolor="r",
-                facecolor="red",
-                linestyle="--",
-                alpha=0.1,
+        for column in all_plot_columns:
+            color = color_map.get(column, "blue")  # Default to blue if not in map
+            ax1.plot(
+                time_days,
+                df[column],
+                label=_format_label(column),
+                color=color,
+                linewidth=1.2,
+                alpha=0.85,
             )
-        )
-    else:
-        logger.warning(
-            f"Could not determine a zoom range for the detailed view. "
-            f"The primary variable for zooming '{primary_y_var}' was not found or had no data. "
-            "The detailed view will be hidden."
-        )
-        ax2.set_visible(False)
+            ax2.plot(
+                time_days,
+                df[column],
+                label=_format_label(column),
+                color=color,
+                linewidth=1.5,
+                alpha=0.9,
+            )
 
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-    output_filename = kwargs.get(
-        "output_filename", "simulation_all_curves_detailed.svg"
-    )
-    save_path = os.path.join(output_dir, output_filename)
-    try:
-        plt.savefig(save_path, format="svg", bbox_inches="tight")
-        logger.info(f"Successfully generated plot with all curves: {save_path}")
-    finally:
-        plt.close(fig)
+        ax1.set_ylabel(_format_label(y_label), fontsize=14)
+        ax1.set_title(_get_text("overall_view_title"), fontsize=12)
+        if len(all_plot_columns) <= 20:
+            ax1.legend(loc="best", fontsize="x-small")
+        ax1.grid(True)
+        ax1.set_xlabel(_get_text("time_days"), fontsize=14)
+
+        ax2.set_ylabel(_format_label(y_label), fontsize=14)
+        detailed_view_title = _get_text("detailed_view_zoom_title").format(
+            detailed_var=_format_label(detailed_var)
+        )
+        ax2.set_title(detailed_view_title, fontsize=12)
+        ax2.grid(True, linestyle="--")
+        ax2.set_xlabel(_get_text("time_days"), fontsize=14)
+        if len(all_plot_columns) <= 20:
+            ax2.legend(loc="best", fontsize="x-small")
+
+        if np.isfinite(min_x_global):
+            x1_zoom, x2_zoom = 0, min_x_global + 5
+            ax2.set_xlim(x1_zoom, x2_zoom)
+            y_min_in_range = (
+                df.loc[
+                    (time_days >= x1_zoom) & (time_days <= x2_zoom), all_plot_columns
+                ]
+                .min()
+                .min()
+            )
+            y_max_in_range = (
+                df.loc[
+                    (time_days >= x1_zoom) & (time_days <= x2_zoom), all_plot_columns
+                ]
+                .max()
+                .max()
+            )
+            y_padding = (y_max_in_range - y_min_in_range) * 0.1
+            ax2.set_ylim(y_min_in_range - y_padding, y_max_in_range + y_padding)
+            y1_ax1, y2_ax1 = ax1.get_ylim()
+            ax1.add_patch(
+                patches.Rectangle(
+                    (x1_zoom, y1_ax1),
+                    x2_zoom - x1_zoom,
+                    y2_ax1 - y1_ax1,
+                    linewidth=1,
+                    edgecolor="r",
+                    facecolor="red",
+                    linestyle="--",
+                    alpha=0.1,
+                )
+            )
+        else:
+            logger.warning(
+                f"Could not determine a zoom range for the detailed view. "
+                f"The primary variable for zooming '{detailed_var}' was not found or had no data. "
+                "The detailed view will be hidden."
+            )
+            ax2.set_visible(False)
+
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        base_filename = kwargs.get(
+            "output_filename", "simulation_all_curves_detailed.svg"
+        )
+        name, ext = os.path.splitext(base_filename)
+        suffix = "_zh" if lang == "cn" else ""
+        output_filename = f"{name}{suffix}{ext}"
+
+        save_path = os.path.join(output_dir, output_filename)
+        try:
+            plt.rcParams["svg.fonttype"] = "path"
+            plt.savefig(save_path, format="svg", bbox_inches="tight")
+            logger.info(f"Successfully generated plot with all curves: {save_path}")
+        finally:
+            plt.close(fig)
+
+    set_plot_language("cn" if original_lang_is_chinese else "en")
 
 
 def _plot_final_values_bar_chart(df: pd.DataFrame, output_dir: str, **kwargs):
@@ -221,39 +379,52 @@ def _plot_final_values_bar_chart(df: pd.DataFrame, output_dir: str, **kwargs):
     # Create a list of colors ordered according to the sorted values
     bar_colors = [color_map.get(col, "blue") for col in last_values.index]
 
-    plt.style.use("seaborn-v0_8-whitegrid")
-    fig, ax = plt.subplots(figsize=kwargs.get("bar_chart_figsize", (12, 8)))
+    original_lang_is_chinese = _use_chinese_labels
+    for lang in ["en", "cn"]:
+        plt.style.use("seaborn-v0_8-whitegrid")
+        set_plot_language(lang)
 
-    sns.barplot(x=last_values.index, y=last_values.values, ax=ax, palette=bar_colors)
+        fig, ax = plt.subplots(figsize=kwargs.get("bar_chart_figsize", (12, 8)))
 
-    title = kwargs.get("bar_chart_title", "Final Values of All Variables")
-    ax.set_title(title, fontsize=16, fontweight="bold")
-    y_label = kwargs.get("y_label", "Final Value")
-    ax.set_ylabel(y_label, fontsize=12)
-    ax.set_xlabel("", fontsize=12)
+        x_labels = [_format_label(col) for col in last_values.index]
+        sns.barplot(x=x_labels, y=last_values.values, ax=ax, palette=bar_colors)
 
-    plt.xticks(rotation=45, ha="right", fontsize=10)
+        title = kwargs.get("bar_chart_title", _get_text("final_values_bar_chart_title"))
+        ax.set_title(_format_label(title), fontsize=16, fontweight="bold")
+        y_label = kwargs.get("y_label", _get_text("final_value"))
+        ax.set_ylabel(_format_label(y_label), fontsize=12)
+        ax.set_xlabel("", fontsize=12)
 
-    for p in ax.patches:
-        ax.annotate(
-            f"{p.get_height():.2e}",
-            (p.get_x() + p.get_width() / 2.0, p.get_height()),
-            ha="center",
-            va="center",
-            fontsize=9,
-            color="black",
-            xytext=(0, 5),
-            textcoords="offset points",
-        )
+        plt.xticks(rotation=45, ha="right", fontsize=10)
 
-    fig.tight_layout()
-    output_filename = kwargs.get("bar_chart_filename", "final_values_bar_chart.svg")
-    save_path = os.path.join(output_dir, output_filename)
-    try:
-        plt.savefig(save_path, format="svg", bbox_inches="tight")
-        logger.info(f"Successfully generated bar chart of final values: {save_path}")
-    finally:
-        plt.close(fig)
+        for p in ax.patches:
+            ax.annotate(
+                f"{p.get_height():.2e}",
+                (p.get_x() + p.get_width() / 2.0, p.get_height()),
+                ha="center",
+                va="center",
+                fontsize=9,
+                color="black",
+                xytext=(0, 5),
+                textcoords="offset points",
+            )
+
+        fig.tight_layout()
+        base_filename = kwargs.get("bar_chart_filename", "final_values_bar_chart.svg")
+        name, ext = os.path.splitext(base_filename)
+        suffix = "_zh" if lang == "cn" else ""
+        output_filename = f"{name}{suffix}{ext}"
+        save_path = os.path.join(output_dir, output_filename)
+        try:
+            plt.rcParams["svg.fonttype"] = "path"
+            plt.savefig(save_path, format="svg", bbox_inches="tight")
+            logger.info(
+                f"Successfully generated bar chart of final values: {save_path}"
+            )
+        finally:
+            plt.close(fig)
+
+    set_plot_language("cn" if original_lang_is_chinese else "en")
 
 
 def _call_openai_for_postprocess_analysis(
@@ -269,7 +440,7 @@ def _call_openai_for_postprocess_analysis(
     try:
         logger.info("Proceeding with LLM analysis for post-simulation report.")
 
-        primary_y_var = kwargs.get("primary_y_var", "sds.I[1]")
+        detailed_var = kwargs.get("detailed_var", "sds.I[1]")
 
         # --- New Prompt ---
         role_prompt = """**角色：** 你是一名聚变反应堆氚燃料循环领域的专家。
@@ -286,11 +457,11 @@ def _call_openai_for_postprocess_analysis(
 **分析要点：**
 
 1.  **总体趋势分析 (基于抽样数据和最终值):**
-    *   结合 **初始阶段**、**转折点阶段** 和 **结束阶段** 的抽样数据，描述主要变量（特别是 `{primary_y_var}` 和其他关键库存）随时间变化的总体趋势。
-    *   `{primary_y_var}` 的值是如何从初始阶段变化到转折点，再到结束阶段的？这揭示了什么物理过程？
+    *   结合 **初始阶段**、**转折点阶段** 和 **结束阶段** 的抽样数据，描述主要变量（特别是 `{detailed_var}` 和其他关键库存）随时间变化的总体趋势。
+    *   `{detailed_var}` 的值是如何从初始阶段变化到转折点，再到结束阶段的？这揭示了什么物理过程？
 
 2.  **关键事件分析 (基于转折点数据):**
-    *   详细分析 **转折点阶段数据**。`{primary_y_var}` 在这个阶段达到最小值，这个值大约是多少？对应的时间点是什么？
+    *   详细分析 **转折点阶段数据**。`{detailed_var}` 在这个阶段达到最小值，这个值大约是多少？对应的时间点是什么？
     *   这个转折点在氚燃料循环中通常意味着什么？（例如：它是否代表了系统从氚消耗主导转向氚增殖主导的时刻，即接近或达到氚自持？）
 
 3.  **关键性能指标分析 (基于关键性能指标数据表):**
@@ -359,13 +530,19 @@ def _generate_postprocess_report(df: pd.DataFrame, output_dir: str, **kwargs):
     """Generates a Markdown report for the post-simulation analysis."""
     try:
         logger.info("Starting to generate post-process report.")
-        # File paths for plots
-        time_series_plot_filename = kwargs.get(
+        # File paths for plots (point to Chinese versions for the Chinese report)
+        ts_filename_base = kwargs.get(
             "output_filename", "simulation_all_curves_detailed.svg"
         )
-        bar_chart_filename = kwargs.get(
+        ts_name, ts_ext = os.path.splitext(ts_filename_base)
+        time_series_plot_filename = f"{ts_name}_zh{ts_ext}"
+
+        bar_filename_base = kwargs.get(
             "bar_chart_filename", "final_values_bar_chart.svg"
         )
+        bar_name, bar_ext = os.path.splitext(bar_filename_base)
+        bar_chart_filename = f"{bar_name}_zh{bar_ext}"
+
         report_filename = kwargs.get(
             "report_filename", "baseline_condition_analysis_report.md"
         )
@@ -392,15 +569,15 @@ def _generate_postprocess_report(df: pd.DataFrame, output_dir: str, **kwargs):
 
         # --- Key Metrics Calculation ---
         report_lines.append("## 关键性能指标\n\n")
-        primary_y_var = kwargs.get("primary_y_var", "sds.I[1]")
+        detailed_var = kwargs.get("detailed_var", "sds.I[1]")
         primary_var_columns = sorted(
-            [col for col in df.columns if col.startswith(primary_y_var)]
+            [col for col in df.columns if col.startswith(detailed_var)]
         )
 
         metrics_data = []
         if not primary_var_columns:
             report_lines.append(
-                f"未找到与主要变量 '{primary_y_var}' 相关的列，无法计算关键指标。\n\n"
+                f"未找到与主要变量 '{detailed_var}' 相关的列，无法计算关键指标。\n\n"
             )
         else:
             for col in primary_var_columns:
@@ -458,9 +635,9 @@ def _generate_postprocess_report(df: pd.DataFrame, output_dir: str, **kwargs):
 
         # --- Data Sampling Section ---
         logger.info("Starting data sampling for the report.")
-        primary_y_var = kwargs.get("primary_y_var", "sds.I[1]")
+        detailed_var = kwargs.get("detailed_var", "sds.I[1]")
         primary_var_columns = [
-            col for col in df.columns if col.startswith(primary_y_var)
+            col for col in df.columns if col.startswith(detailed_var)
         ]
 
         min_idx = -1
@@ -499,12 +676,12 @@ def _generate_postprocess_report(df: pd.DataFrame, output_dir: str, **kwargs):
             turning_point_data = df.iloc[start_idx:end_idx:interval]
 
             report_lines.append(
-                f"### 2. 转折点阶段数据 (围绕 '{primary_y_var}' 的最小值)\n"
+                f"### 2. 转折点阶段数据 (围绕 '{detailed_var}' 的最小值)\n"
             )
             report_lines.append(turning_point_data.to_markdown(index=False) + "\n\n")
         else:
             report_lines.append(
-                f"### 2. 转折点阶段数据\n在提供的抽样中未找到 '{primary_y_var}' 的明确转折点。\n\n"
+                f"### 2. 转折点阶段数据\n在提供的抽样中未找到 '{detailed_var}' 的明确转折点。\n\n"
             )
 
         report_lines.append(f"### 3. 结束阶段数据 (后 {num_points} 个数据点)\n")
@@ -579,7 +756,7 @@ def generate_academic_report(output_dir: str, ai_model: str, **kwargs):
         plot_list_str = "\n".join([f"    *   `{plot}`" for plot in all_plots])
         instructions_prompt = f"""**指令：**
 
-1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `primary_y_var`）替换为术语表中对应的“中文翻译”或“英文术语”。例如，应将“`sds`的库存”表述为“储存与输送系统 (SDS) 的氚库存量 (Tritium Inventory)”。
+1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `detailed_var`）替换为术语表中对应的“中文翻译”或“英文术语”。例如，应将“`sds`的库存”表述为“储存与输送系统 (SDS) 的氚库存量 (Tritium Inventory)”。
 2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。避免使用“看起来”、“好像”等模糊词汇。
 3.  **图表和表格的呈现与引用：**
     *   **显示图表：** 在报告的“结果与讨论”部分，您**必须**使用Markdown语法 `![图表标题](图表文件名)` 来**直接嵌入**和显示初步报告中包含的所有图表。可用的图表文件如下：
@@ -682,6 +859,9 @@ def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs):
         logger.error("Plotting failed: 'time' column not found in results DataFrame.")
         return
 
+    if "glossary_path" in kwargs:
+        load_glossary(kwargs["glossary_path"])
+
     df = results_df.copy()
     # Remove duplicate rows before processing
     df.drop_duplicates(inplace=True)
@@ -769,13 +949,5 @@ def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs):
 # {
 #    "module": "tricys.postprocess.baseline_analysis",
 #    "function": "baseline_analysis",
-#    "params": {
-#        "output_filename": "my_simulation_plot.svg",
-#        "title": "Tritium Inventory vs. Time",
-#        "x_label": "Time (hours)",
-#        "y_label": "Tritium Inventory (g)",
-#        "bar_chart_title": "Final Tritium Inventory Distribution",
-#        "ai": true,
-#        "glossary_path": "./sheets.csv"
-#    }
+#    "detailed_var": "sds.inventory"
 # }
