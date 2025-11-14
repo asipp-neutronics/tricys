@@ -1,6 +1,7 @@
 import argparse
 import concurrent.futures
 import importlib
+import importlib.util
 import logging
 import os
 import shutil
@@ -240,10 +241,60 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
 
         interception_configs = []
         for co_sim_config in co_sim_configs:
-            handler_module = importlib.import_module(co_sim_config["handler_module"])
-            handler_function = getattr(
-                handler_module, co_sim_config["handler_function"]
-            )
+            handler_function_name = co_sim_config["handler_function"]
+            module = None
+
+            # New method: Load from a direct script path
+            if "handler_script_path" in co_sim_config:
+                script_path_str = co_sim_config["handler_script_path"]
+                script_path = Path(script_path_str).resolve()
+                module_name = script_path.stem
+
+                logger.info(
+                    "Loading co-simulation handler from script path",
+                    extra={
+                        "job_id": job_id,
+                        "script_path": str(script_path),
+                        "function": handler_function_name,
+                    },
+                )
+
+                if not script_path.is_file():
+                    raise FileNotFoundError(
+                        f"Co-simulation handler script not found at {script_path}"
+                    )
+
+                spec = importlib.util.spec_from_file_location(module_name, script_path)
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                else:
+                    raise ImportError(
+                        f"Could not create module spec from script {script_path}"
+                    )
+
+            # Old method: Load from module name (backward compatibility)
+            elif "handler_module" in co_sim_config:
+                module_name = co_sim_config["handler_module"]
+                logger.info(
+                    "Loading co-simulation handler from module",
+                    extra={
+                        "job_id": job_id,
+                        "module_name": module_name,
+                        "function": handler_function_name,
+                    },
+                )
+                module = importlib.import_module(module_name)
+
+            else:
+                raise KeyError(
+                    "Co-simulation config must contain either 'script_path' or 'handler_module'"
+                )
+
+            if not module:
+                raise ImportError("Failed to load co-simulation handler module.")
+
+            handler_function = getattr(module, handler_function_name)
             instance_name = co_sim_config["instance_name"]
 
             co_sim_output_filename = get_unique_filename(
@@ -284,9 +335,13 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
         intercepted_model_full_name = (
             f"{package_name}.{original_system_name}_Intercepted"
         )
-
         verif_mod = ModelicaSystem(
-            fileName=Path(isolated_package_path).as_posix(),
+            fileName=(
+                Path(intercepted_model_paths["system_model_path"]).as_posix()
+                if os.path.isfile(isolated_package_path)
+                and not original_package_path.endswith("package.mo")
+                else Path(isolated_package_path).as_posix()
+            ),
             modelName=intercepted_model_full_name,
             variableFilter=verif_config,
         )
@@ -335,7 +390,7 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
             omc.sendExpression("quit()")
             logger.info("Closed OMPython session", extra={"job_id": job_id})
 
-        if not sim_config.get("keep_temp_files", False):
+        if not sim_config.get("keep_temp_files", True):
             if os.path.exists(job_workspace):
                 shutil.rmtree(job_workspace)
                 logger.info(
@@ -536,6 +591,7 @@ def _run_post_processing(
 ):
     """
     Dynamically load and run post-processing modules based on configuration.
+    Supports loading from a module name or a direct script path.
     """
     post_processing_configs = config.get("post_processing")
     if not post_processing_configs:
@@ -553,24 +609,74 @@ def _run_post_processing(
 
     for i, task_config in enumerate(post_processing_configs):
         try:
-            module_name = task_config["module"]
             function_name = task_config["function"]
             params = task_config.get("params", {})
-            logger.info(
-                "Running post-processing task",
-                extra={
-                    "task_index": i + 1,
-                    "task_module": module_name,
-                    "function": function_name,
-                },
-            )
+            module = None
 
-            module = importlib.import_module(module_name)
-            post_processing_func = getattr(module, function_name)
+            # New method: Load from a direct script path
+            if "script_path" in task_config:
+                script_path_str = task_config["script_path"]
+                script_path = Path(script_path_str).resolve()
+                module_name = script_path.stem
 
-            post_processing_func(
-                results_df=results_df, output_dir=post_processing_dir, **params
-            )
+                logger.info(
+                    "Running post-processing task from script path",
+                    extra={
+                        "task_index": i + 1,
+                        "script_path": str(script_path),
+                        "function": function_name,
+                    },
+                )
+
+                if not script_path.is_file():
+                    logger.error(
+                        "Post-processing script not found",
+                        extra={"path": str(script_path)},
+                    )
+                    continue
+
+                spec = importlib.util.spec_from_file_location(module_name, script_path)
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                else:
+                    logger.error(
+                        "Could not create module spec from script",
+                        extra={"path": str(script_path)},
+                    )
+                    continue
+
+            # Old method: Load from module name (backward compatibility)
+            elif "module" in task_config:
+                module_name = task_config["module"]
+                logger.info(
+                    "Running post-processing task from module",
+                    extra={
+                        "task_index": i + 1,
+                        "module_name": module_name,
+                        "function": function_name,
+                    },
+                )
+                module = importlib.import_module(module_name)
+
+            else:
+                logger.warning(
+                    "Post-processing task is missing 'script_path' or 'module' key. Skipping.",
+                    extra={"task_index": i + 1},
+                )
+                continue
+
+            if module:
+                post_processing_func = getattr(module, function_name)
+                post_processing_func(
+                    results_df=results_df, output_dir=post_processing_dir, **params
+                )
+            else:
+                logger.error(
+                    "Failed to load post-processing module.",
+                    extra={"task_index": i + 1},
+                )
+
         except Exception:
             logger.error(
                 "Post-processing task failed",
