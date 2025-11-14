@@ -23,8 +23,8 @@ _ui_text = {
     "en": {
         "dependence_of_on": "Dependence of {y_label} on {x_label}",
         "constraint": "Constraint",
-        "overall_view": "Overall View (Data exceeding 2x initial value is hidden)",
-        "detailed_view": "Detailed View (t=0 to Post-Minimum)",
+        "overall_view": "Overall View",
+        "detailed_view": "Detailed View",
         "time_days": "Time (days)",
         "days": "days",
         "kg": "kg",
@@ -35,8 +35,8 @@ _ui_text = {
     "cn": {
         "dependence_of_on": "{y_label}与{x_label}的关系",
         "constraint": "约束",
-        "overall_view": "全局视图 (超出初始值2倍的数据已隐藏)",
-        "detailed_view": "细节视图 (t=0到最小值后)",
+        "overall_view": "全局视图",
+        "detailed_view": "细节视图",
         "time_days": "时间 (天)",
         "days": "天",
         "kg": "千克",

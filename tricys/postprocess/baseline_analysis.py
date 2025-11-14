@@ -37,7 +37,7 @@ _ui_text = {
         "overall_view_title": "Overall View",
         "detailed_view_zoom_title": "Detailed View (Zoomed on '{detailed_var}' Self Sufficiency Point)",
         "final_values_bar_chart_title": "Tritium Inventory in Each Submodule",
-        "final_value": "Tritium Inventory",
+        "final_value": "Tritium Inventory (g)",
     },
     "cn": {
         "overall_view": "全局视图 (超出初始值2倍的数据已隐藏)",
@@ -52,7 +52,7 @@ _ui_text = {
         "overall_view_title": "全局视图",
         "detailed_view_zoom_title": "细节视图 (放大“{detailed_var}”自持点)",
         "final_values_bar_chart_title": "各子模块氚盘存量",
-        "final_value": "氚盘存量",
+        "final_value": "氚盘存量 (g)",
     },
 }
 
@@ -947,7 +947,10 @@ def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs):
 
 
 # {
-#    "module": "tricys.postprocess.baseline_analysis",
-#    "function": "baseline_analysis",
-#    "detailed_var": "sds.inventory"
-# }
+# #   "module": "tricys.postprocess.baseline_analysis",
+# #   "function": "baseline_analysis",
+# #   "params": {
+# #        "detailed_var": "sds.I[1]",
+# #        "glossary_path": "./sheets.csv"
+# #    }
+# #}

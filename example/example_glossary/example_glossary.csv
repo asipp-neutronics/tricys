@@ -1,0 +1,85 @@
+模型参数 (Model Parameter),英文术语 (English Term),中文翻译 (Chinese Translation),别名 (Alias),说明 (Explanation)
+Pulse (脉冲发生器),,,,(无盘存量)
+pulseSource.amplitude,Pulse Amplitude,脉冲幅度,Tritium Consumption Rate (氚消耗率) / Source Strength,系统驱动：设定氚的消耗速率 (g/h)，并驱动包层增殖。
+pulseSource.period,Pulse Period,运行周期,Cycle Time / Repetition Period,模拟“运行-停机”的总循环时长。
+pulseSource.width,Availability Factor,占空比,Duty Cycle / Capacity Factor / Burn Time Fraction,反应堆运行时间占总周期的百分比（%），决定了年平均运行效率。
+Blanket (增殖包层),,,,
+blanket.I[1],Blanket Tritium Inventory,增殖包层,Breeding Zone Inventory / In-Vessel Inventory,增殖包层(Blanket)子部件的氚盘存量。
+blanket.T,Blanket Mean Residence Time,增殖包层 平均滞留时间,Extraction Delay / Purge Gas Residence Time,增殖包层(Blanket)中氚的平均滞留时间，主要的库存贡献者之一。
+blanket.decay_loss,Blanket Tritium Decay Loss,增殖包层 放射性衰变损失,Beta Decay / Half-life Loss,增殖包层(Blanket)中氚的物理衰变常数（半衰期12.3年）。
+blanket.TBR,Blanket Tritium Breeding Ratio,增殖包层 氚增殖比,TBR_actual / Breeding Performance,增殖包层(Blanket)的氚增殖比，燃料自持的关键 (必须 > 1)。
+blanket.to_CL_Fraction,Blanket Fraction to CL,增殖包层 输出到CL的比例,Permeation Rate / Leakage to Coolant,渗透损失：氚从增殖包层(Blanket)渗透到冷却剂的比例。
+blanket.to_TES_Fraction,Blanket Fraction to TES,增殖包层 输出到TES的比例,Extraction Efficiency / Recovery Fraction,主流路径：氚从增殖包层(Blanket)被成功提取的比例。
+Coolant_Pipe (冷却剂管道),,,,
+coolant_pipe.I[1],Coolant_Pipe Tritium Inventory,冷却剂管道,Coolant Inventory / HTO Inventory,冷却剂管道(Coolant_Pipe)子部件的氚盘存量。
+coolant_pipe.T,Coolant_Pipe Mean Residence Time,冷却剂管道 平均滞留时间,Loop Circulation Time,冷却剂在主回路(Coolant_Pipe)的循环时间，巨大的氚缓冲池。
+coolant_pipe.decay_loss,Coolant_Pipe Tritium Decay Loss,冷却剂管道 放射性衰变损失,-,冷却剂管道(Coolant_Pipe)中氚的物理衰变常数。
+coolant_pipe.to_WDS_Fraction,Coolant_Pipe Fraction to WDS,冷却剂管道 输出到WDS的比例,WDS Feed Rate / Detritiation Fraction,从冷却剂管道(Coolant_Pipe)送往水去氚系统的旁路流量。
+coolant_pipe.to_CPS_Fraction,Coolant_Pipe Fraction to CPS,冷却剂管道 输出到CPS的比例,CPS Slipstream Fraction / Purification Rate,从冷却剂管道(Coolant_Pipe)送往冷却剂净化系统的旁路流量。
+coolant_pipe.to_FW_Fraction,Coolant_Pipe Fraction to FW,冷却剂管道 输出到FW的比例,Flow Distribution,从冷却剂管道(Coolant_Pipe)分配至第一壁的冷却剂流量。
+CPS (冷却剂净化系统),,,,
+cps.I[1],CPS Tritium Inventory,冷却剂净化系统,CPS Bed Inventory,冷却剂净化系统(CPS)子部件的氚盘存量。
+cps.T,CPS Mean Residence Time,冷却剂净化系统 平均滞留时间,Processing Delay,冷却剂在冷却剂净化系统(CPS)的处理延迟，高库存部件。
+cps.threshold,CPS Threshold,冷却剂净化系统 铺底量,Minimum Hold-up / Bed Saturation Limit,冷却剂净化系统(CPS)启动运行所需的最小氚量。
+cps.to_ISS_O_Fraction,CPS Fraction to ISS_O,冷却剂净化系统 输出到ISS_O的比例,Separation Efficiency,净化效率：冷却剂净化系统(CPS)回收氚占总处理量的比例。
+cps.to_FW_Fraction,CPS Fraction to FW,冷却剂净化系统 输出到FW的比例,Recycle Ratio,从冷却剂净化系统(CPS)返回至第一壁的“清洁”冷却剂流量。
+DIV (偏滤器),,,,
+div.I[1],DIV Tritium Inventory,偏滤器,Divertor Retention / Trapped Inventory,偏滤器(DIV)子部件的氚盘存量。
+div.T,DIV Mean Residence Time,偏滤器 平均滞留时间,Permeation Time Constant,氚在偏滤器(DIV)中从等离子体侧渗透到冷却剂侧的特征时间。
+div.decay_loss,DIV Tritium Decay Loss,偏滤器 放射性衰变损失,-,偏滤器(DIV)中氚的物理衰变常数。
+Fueling_System (燃料注入系统),,,,
+FS.I[1],Fueling_System Tritium Inventory,燃料注入系统,Pellet Injector Inventory,燃料注入系统(Fueling_System)子部件的氚盘存量。
+FS.T,Fueling_System Mean Residence Time,燃料注入系统 平均滞留时间,Injection Delay / Holdup Time,燃料在燃料注入系统(Fueling_System)注入前的滞留时间，充当一级缓冲器。
+FS.decay_loss,Fueling_System Tritium Decay Loss,燃料注入系统 放射性衰变损失,-,燃料注入系统(Fueling_System)中氚的物理衰变常数。
+FW (第一壁),,,,
+fw.I[1],FW Tritium Inventory,第一壁,First Wall Retention / Wall Loading,第一壁(FW)子部件的氚盘存量。
+fw.T,FW Mean Residence Time,第一壁 平均滞留时间,Wall Permeation Time,氚在第一壁(FW)中从等离子体侧渗透到冷却剂侧的特征时间。
+fw.decay_loss,FW Tritium Decay Loss,第一壁 放射性衰变损失,-,第一壁(FW)中氚的物理衰变常数。
+I_ISS (同位素分离I路),,,,
+i_iss.I[1],I_ISS Tritium Inventory,同位素分离I路,Inner-Loop ISS Inventory / Cryogenic Distillation Inventory,同位素分离I路(I_ISS)子部件的氚盘存量。
+i_iss.T,I_ISS Mean Residence Time,同位素分离I路 平均滞留时间,Separation Time Constant,工艺延迟，I_ISS（低温精馏）是主要的库存持有者。
+i_iss.threshold,I_ISS Threshold,同位素分离I路 铺底量,Column Holdup / Liquid Inventory,关键启动库存，I_ISS精馏塔平衡所需的最小气体量。
+i_iss.to_WDS_Fraction,I_ISS Fraction to WDS,同位素分离I路 输出到WDS的比例,Waste Stream Fraction,从I_ISS分离出的含氚废水（或其他废料）比例。
+O_ISS (同位素分离O路),,,,
+o_iss.I[1],O_ISS Tritium Inventory,同位素分离O路,Outer-Loop ISS Inventory,同位素分离O路(O_ISS)子部件的氚盘存量。
+o_iss.T,O_ISS Mean Residence Time,同位素分离O路 平均滞留时间,Processing Time,工艺延迟，O_ISS处理来自冷却剂和包层的低浓度氚流。
+o_iss.threshold,O_ISS Threshold,同位素分离O路 铺底量,Minimum Operating Level,关键启动库存，O_ISS精馏塔平衡所需的最小气体量。
+Plasma (等离子体),,,,"(无盘存量, 为纯计算模型)"
+plasma.fb,Plasma Burn Fraction,等离子体 燃烧分数,Burn Efficiency / Fractional Burn-up,等离子体效率：注入燃料中实际聚变的比例。
+plasma.nf,Plasma Fueling Efficiency,等离子体 燃料效率,Fuelling Efficiency,注入燃料中实际进入芯部的比例。
+plasma.to_Div_fraction,Plasma Fraction to Divertor,等离子体 流向偏滤器的比例,Divertor Flux Fraction,渗透源头：未燃燃料撞击偏滤器的比例。
+plasma.to_FW_fraction,Plasma Fraction to First Wall,等离子体 流向第一壁的比例,Wall Flux Fraction,渗透源头：未燃燃料撞击第一壁的比例。
+plasma.He_yield,Plasma Helium Yield,等离子体 氦产额,Ash Production Rate,D-T聚变的化学计量常数（He/DT质量比）。
+Pump_System (真空泵系统),,,,
+pump_System.I[1],Pump_System Tritium Inventory,真空泵系统,Vacuum Pump Inventory / Cryopump Hold-up,真空泵系统(Pump_System)子部件的氚盘存量。
+pump_System.T,Pump_System Mean Residence Time,真空泵系统 平均滞留时间,Pumping Speed Equivalent,废气在真空泵系统(Pump_System)中的滞留时间。
+pump_System.threshold,Pump_System Threshold,真空泵系统 铺底量,Regeneration Limit,真空泵系统(Pump_System)或下游TEP启动运行所需的最小气体量。
+SDS (储存与输送系统),,,,
+sds.I[1],SDS Tritium Inventory,储存与输送系统,Storage Bed Inventory / Reserve Inventory,储存与输送系统(SDS)子部件的氚盘存量。
+sds.decay_loss,SDS Tritium Decay Loss,储存与输送系统 放射性衰变损失,Storage Decay,储存与输送系统(SDS)这一中央库存的衰变损失。
+TEP_FCU (氚工厂-最终处理),,,,
+tep_fcu.I[1],TEP_FCU Tritium Inventory,氚工厂-最终处理,TEP Final Stage Inventory,氚工厂-最终处理(TEP_FCU)子部件的氚盘存量。
+tep_fcu.T,TEP_FCU Mean Residence Time,氚工厂-最终处理 平均滞留时间,Purification Delay,废气在TEP_FCU（最终净化）阶段的工艺延迟。
+TEP_FEP (氚工厂-前端处理),,,,
+tep_fep.I[1],TEP_FEP Tritium Inventory,氚工厂-前端处理,Front-End Inventory,氚工厂-前端处理(TEP_FEP)子部件的氚盘存量。
+tep_fep.T,TEP_FEP Mean Residence Time,氚工厂-前端处理 平均滞留时间,Clean-up Delay,废气在TEP_FEP（前端处理）阶段的工艺延迟。
+tep_fep.to_SDS_Fraction,Direct Internal Recycling Fraction,直接内部循环比例,DIR Ratio / Bypass Fraction,旁路设计：从TEP_FEP可直接返回SDS的流量比例。
+TEP_IP (氚工厂-中间处理),,,,
+tep_ip.I[1],TEP_IP Tritium Inventory,氚工厂-中间处理,Impurity Processing Inventory,氚工厂-中间处理(TEP_IP)子部件的氚盘存量。
+tep_ip.T,TEP_IP Mean Residence Time,氚工厂-中间处理 平均滞留时间,Reaction Time,废气在TEP_IP（中间处理）阶段的工艺延迟。
+TES (氚提取系统-包层),,,,
+tes.I[1],TES Tritium Inventory,氚提取系统,TES Bed Inventory,氚提取系统(TES)子部件的氚盘存量。
+tes.T,TES Mean Residence Time,氚提取系统 平均滞留时间,Extraction Time Constant,包层吹扫气体在氚提取系统(TES)中的处理延迟。
+tes.threshold,TES Threshold,氚提取系统 铺底量,TES Saturation Limit,氚提取系统(TES)（如吸附床）启动运行所需的最小氚量。
+tes.to_O_ISS_Fraction,TES Fraction to O_ISS,氚提取系统 输出到O_ISS的比例,Recovery Efficiency,回收的氚从氚提取系统(TES)送往O_ISS的比例。
+tes.to_BZ_Fraction,TES Fraction to BZ (Blanket),氚提取系统 输出到BZ的比例,Recirculation Fraction,“贫氚”吹扫气体从TES返回包层(BZ)的再循环比例。
+WDS (水去氚系统),,,,
+wds.I[1],WDS Tritium Inventory,水去氚系统,WDS Liquid Inventory / Water Distillation Inventory,水去氚系统(WDS)子部件的氚盘存量。
+wds.T,WDS Mean Residence Time,水去氚系统 平均滞留时间,Detritiation Delay,最慢环节之一，水去氚系统(WDS)的工艺（如水精馏）延迟长。
+wds.threshold,WDS Threshold,水去氚系统 铺底量,Column Liquid Hold-up,极高的启动库存，WDS精馏塔建立平衡所需的水量。
+分析指标 (Analysis Indicators),,,,
+Startup_Inventory,Start up Inventory,启动库存,Initial Loading / Day-0 Inventory,反应堆首次启动前必须提供的初始氚库存量。模型中的SDS.inventory(start=...)是其初始猜测值。
+Required_TBR,Required Tritium Breeding Ratio,所需氚增殖比,TBR_req / Critical TBR,为实现氚自持（补偿衰变、处理损失并满足倍增时间需求）所必须达到的最低TBR。
+Doubling_Time,Doubling Time,(库存)倍增时间,t_d / Inventory Doubling Time,一个反应堆产生足够启动另一个新反应堆所需氚库存的时间，是评估聚变能部署速度的指标。
+Self_Sufficiency_Time,Self Sufficiency Time,(氚)自持时间,Breakeven Time / Turnaround Time,氚库存由下降趋势转变为上升趋势时即拐点的时间
+..._for_Required_TBR,... for Required Tritium Breeding Ratio,满足所需TBR所达到的...,-,在约束条件下（比如倍增时间）满足所需TBR时的实际条件（倍增时间）

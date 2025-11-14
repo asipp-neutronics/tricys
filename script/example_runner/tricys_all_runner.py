@@ -159,18 +159,14 @@ class TricysAllTestRunner:
 
             shutil.copytree(source_path, self.test_example_dir)
 
-            # Also copy the 'example_model' and 'example_aspenbkp' directories
-            model_src = self.workspace_dir / "example" / "example_model"
-            model_dst = self.test_example_base_dir / "example_model"
-            if model_dst.exists():
-                shutil.rmtree(model_dst)
-            shutil.copytree(model_src, model_dst)
-
-            aspen_src = self.workspace_dir / "example" / "example_aspenbkp"
-            aspen_dst = self.test_example_base_dir / "example_aspenbkp"
-            if aspen_dst.exists():
-                shutil.rmtree(aspen_dst)
-            shutil.copytree(aspen_src, aspen_dst)
+            # Also copy all 'example_*' subdirectories from the 'example' directory
+            example_root = self.workspace_dir / "example"
+            for item in example_root.glob("example_*"):
+                if item.is_dir():
+                    dest_path = self.test_example_base_dir / item.name
+                    if dest_path.exists():
+                        shutil.rmtree(dest_path)
+                    shutil.copytree(item, dest_path)
 
             config_file = self.test_example_dir / example_info["config"]
             if not config_file.exists():

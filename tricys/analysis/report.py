@@ -265,8 +265,23 @@ def generate_sensitivity_academic_report(
                 + ", ".join([f"`{v}`" for v in dependent_variables])
             )
 
-        # Find all plots to instruct the LLM to include them
-        all_plots = [f for f in os.listdir(results_dir) if f.endswith((".svg", ".png"))]
+        # Find all plots to instruct the LLM to include them, prioritizing Chinese versions
+        all_files = [f for f in os.listdir(results_dir) if f.endswith((".svg", ".png"))]
+
+        plot_map = {}
+        # Handle SVGs, prioritizing _zh versions
+        svg_plots = sorted([f for f in all_files if f.endswith(".svg")], reverse=True)
+        for plot in svg_plots:
+            base_name = plot.replace("_zh.svg", ".svg")
+            if base_name not in plot_map:
+                plot_map[base_name] = plot
+
+        # Add PNGs (which are not bilingual)
+        png_plots = [f for f in all_files if f.endswith(".png")]
+        for plot in png_plots:
+            plot_map[plot] = plot  # Use plot name as key for uniqueness
+
+        all_plots = list(plot_map.values())
         plot_list_str = "\n".join([f"    *   `{plot}`" for plot in all_plots])
 
         # Dynamically build the "Results and Discussion" section for the prompt
@@ -464,7 +479,19 @@ def generate_prompt_templates(
             summary_df = pd.read_csv(summary_csv_path)
             independent_variable = case_data.get("independent_variable", "燃烧率")
 
-            all_plots = [f for f in os.listdir(case_results_dir) if f.endswith(".svg")]
+            # Use a dictionary to ensure we only get one version of each plot, prioritizing Chinese
+            all_plots_all_langs = [
+                f for f in os.listdir(case_results_dir) if f.endswith(".svg")
+            ]
+            plot_map = {}
+            for plot in sorted(
+                all_plots_all_langs, reverse=True
+            ):  # Process _zh.svg first
+                base_name = plot.replace("_zh.svg", ".svg")
+                if base_name not in plot_map:
+                    plot_map[base_name] = plot
+
+            all_plots = list(plot_map.values())
             sweep_plots = [f for f in all_plots if f.startswith("sweep_")]
             combined_plots = [f for f in all_plots if f.startswith("combined_")]
             multi_metric_plots = [
@@ -608,9 +635,8 @@ def generate_prompt_templates(
                         f"![SDS Inventory 的时间曲线图]({plot})\n\n",
                     ]
                 )
-                if "default_simulation_values" in case_data and any(
-                    isinstance(value, list)
-                    for value in case_data.get("default_simulation_values").values()
+                if "default_simulation_values" in case_data and case_data.get(
+                    "default_simulation_values"
                 ):
                     default_values_str = json.dumps(
                         case_data["default_simulation_values"],

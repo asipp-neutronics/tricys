@@ -1292,7 +1292,7 @@ def run_simulation(config: Dict[str, Any]):
         sys.exit(1)
 
     simulation_results = {}
-    use_concurrent = config["simulation"].get("concurrent", True)
+    use_concurrent = config["simulation"].get("concurrent", False)
 
     try:
         if config.get("co_simulation") is None:
