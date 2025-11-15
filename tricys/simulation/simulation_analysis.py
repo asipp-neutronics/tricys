@@ -47,8 +47,8 @@ logger = logging.getLogger(__name__)
 
 
 def _get_optimization_tasks(config: dict) -> List[str]:
-    """
-    Identifies all valid optimization tasks from the configuration.
+    """Identifies all valid optimization tasks from the configuration.
+
     A valid optimization task is a dependent variable that starts with "Required_",
     is defined in metrics_definition, and has all the necessary fields for bisection search.
 
@@ -57,6 +57,10 @@ def _get_optimization_tasks(config: dict) -> List[str]:
 
     Returns:
         A list of valid optimization metric names.
+
+    Note:
+        Required fields for bisection search: method, parameter_to_optimize, search_range,
+        tolerance, max_iterations. Only checks dependent_variables in analysis_case.
     """
     optimization_tasks = []
     sensitivity_analysis = config.get("sensitivity_analysis", {})
@@ -82,20 +86,22 @@ def _get_optimization_tasks(config: dict) -> List[str]:
 def _run_sensitivity_analysis(
     config: Dict[str, Any], run_results_dir: str, jobs: List[Dict[str, Any]]
 ) -> None:
-    """
-    Execute the complete workflow of sensitivity analysis
+    """Executes the sensitivity analysis workflow.
 
-    This function is responsible for:
-    1. Checking if sensitivity analysis is enabled
-    2. Extracting metrics from merged result data
-    3. Merging optimization results (if they exist)
-    4. Saving summary data
-    5. Generating analysis charts
+    This function orchestrates the post-simulation analysis. It checks if
+    sensitivity analysis is enabled, loads the merged simulation results,
+    extracts summary metrics, merges any optimization results, saves the
+    final summary data to a CSV, and generates analysis plots.
 
     Args:
-        config: Configuration dictionary containing sensitivity analysis related configuration
-        run_results_dir: Results save directory
-        jobs: Simulation job list
+        config: The configuration dictionary for the run.
+        run_results_dir: The directory where results are stored and will be saved.
+        jobs: The list of simulation jobs that were executed.
+
+    Note:
+        Only runs if sensitivity_analysis.enabled is True. Loads sweep_results.csv,
+        extracts metrics using metrics_definition, merges optimization results if
+        present, and generates plots. Saves summary to summary_metrics.csv.
     """
     if not config.get("sensitivity_analysis", {}).get("enabled", False):
         return
@@ -204,20 +210,31 @@ def _run_sensitivity_analysis(
 def _run_bisection_search_for_job(
     config: Dict[str, Any], job_id_prefix: str, optimization_metric_name: str
 ) -> tuple[Dict[str, float], Dict[str, float]]:
-    """
-    Execute bisection search for a single job configuration and return results.
-    Reads optimization parameters dynamically based on the provided optimization_metric_name.
-    If `metric_max_value` is a list, it performs a search for each value.
+    """Performs a bisection search to find an optimal parameter value.
+
+    This function reads optimization parameters from the configuration and uses a
+    bisection search (binary search) algorithm to find the value of a specified
+    parameter that causes a target metric (e.g., 'Self_Sufficiency_Time') to
+    fall below a given threshold. It supports searching for multiple threshold
+    values if `metric_max_value` is a list.
 
     Args:
-        config: Specific job configuration containing fixed parameters.
-        job_id_prefix: Prefix for creating unique IDs for subtasks.
-        optimization_metric_name: The name of the "Required_***" metric to be optimized.
+        config: The configuration for the specific job.
+        job_id_prefix: A prefix for creating unique IDs for sub-tasks.
+        optimization_metric_name: The name of the 'Required_***' metric that defines
+            the optimization task.
 
     Returns:
         A tuple containing two dictionaries:
-        - A dictionary of optimal parameter values, e.g., {"Required_TBR": 1.15}.
-        - A dictionary of optimal metric values, e.g., {"Required_Self_Sufficiency_Time": 987}.
+        - The first maps the required metric name(s) to the found optimal parameter value(s).
+        - The second maps the resulting metric name(s) to the metric value(s) achieved
+          with the optimal parameter.
+
+    Note:
+        Uses binary search algorithm with configurable tolerance and max_iterations.
+        Reuses single OMPython session for all search iterations. Supports multiple
+        threshold values via metric_max_value list. Falls back to stop_time if
+        metric_max_value not specified.
     """
     # Read the specific optimization configuration from sensitivity_analysis
     sensitivity_analysis = config.get("sensitivity_analysis", {})
@@ -457,8 +474,24 @@ def _run_bisection_search_for_job(
 def _run_co_simulation(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
-    """
-    Runs the full co-simulation workflow in an isolated directory to ensure thread safety.
+    """Runs a full co-simulation workflow and any subsequent optimizations.
+
+    This function orchestrates a complete co-simulation job in an isolated,
+    thread-safe directory. After the co-simulation completes, it checks if
+    any bisection search optimizations are configured and runs them for the
+    completed job.
+
+    Args:
+        config (dict): The main configuration dictionary.
+        job_params (dict): A dictionary of parameters specific to this job.
+        job_id (int): A unique identifier for the job.
+
+    Returns:
+        A tuple containing:
+        - A dictionary of optimal parameter values found during optimization.
+        - A dictionary of the metric values achieved with those optimal parameters.
+        - The path to the final co-simulation result file, or an empty string
+          on failure.
     """
     paths_config = config["paths"]
     sim_config = config["simulation"]
@@ -513,9 +546,14 @@ def _run_co_simulation(
         results_dir = os.path.abspath(paths_config["results_dir"])
         os.makedirs(results_dir, exist_ok=True)
 
-        co_sim_configs = config["co_simulation"]
-        if not isinstance(co_sim_configs, list):
-            co_sim_configs = [co_sim_configs]
+        # Parse co_simulation config - new format with mode at top level
+        co_sim_config = config["co_simulation"]
+        mode = co_sim_config.get("mode", "interceptor")  # Get mode from top level
+        handlers = co_sim_config.get("handlers", [])  # Get handlers array
+
+        # Validate that handlers is a list
+        if not isinstance(handlers, list):
+            handlers = [handlers]
 
         model_name = sim_config["model_name"]
         stop_time = sim_config["stop_time"]
@@ -528,10 +566,10 @@ def _run_co_simulation(
             )
 
         # Handle copying of any additional asset directories specified with a '_path' suffix
-        for co_sim_config in co_sim_configs:
-            if "params" in co_sim_config:
+        for handler_config in handlers:
+            if "params" in handler_config:
                 # Iterate over a copy of items since we are modifying the dict
-                for param_key, param_value in list(co_sim_config["params"].items()):
+                for param_key, param_value in list(handler_config["params"].items()):
                     if isinstance(param_value, str) and param_key.endswith("_path"):
                         original_asset_path_str = param_value
 
@@ -559,15 +597,15 @@ def _run_co_simulation(
 
                         # Update the path in the config to point to the new location
                         new_asset_path = dest_dir / original_asset_path.name
-                        co_sim_config["params"][param_key] = new_asset_path.as_posix()
+                        handler_config["params"][param_key] = new_asset_path.as_posix()
                         logger.info(
-                            f"Updated parameter '{param_key}' for job {job_id} to '{co_sim_config['params'][param_key]}'"
+                            f"Updated parameter '{param_key}' for job {job_id} to '{handler_config['params'][param_key]}'"
                         )
 
         all_input_vars = []
-        for co_sim_config in co_sim_configs:
-            submodel_name = co_sim_config["submodel_name"]
-            instance_name = co_sim_config["instance_name"]
+        for handler_config in handlers:
+            submodel_name = handler_config["submodel_name"]
+            instance_name = handler_config["instance_name"]
             logger.info(f"Identifying input ports for submodel '{submodel_name}'...")
             components = omc.sendExpression(f"getComponents({submodel_name})")
             input_ports = [
@@ -624,13 +662,13 @@ def _run_co_simulation(
                 )
 
         interception_configs = []
-        for co_sim_config in co_sim_configs:
-            handler_function_name = co_sim_config["handler_function"]
+        for handler_config in handlers:
+            handler_function_name = handler_config["handler_function"]
             module = None
 
             # New method: Load from a direct script path
-            if "handler_script_path" in co_sim_config:
-                script_path_str = co_sim_config["handler_script_path"]
+            if "handler_script_path" in handler_config:
+                script_path_str = handler_config["handler_script_path"]
                 script_path = Path(script_path_str).resolve()
                 module_name = script_path.stem
 
@@ -658,8 +696,8 @@ def _run_co_simulation(
                     )
 
             # Old method: Load from module name (backward compatibility)
-            elif "handler_module" in co_sim_config:
-                module_name = co_sim_config["handler_module"]
+            elif "handler_module" in handler_config:
+                module_name = handler_config["handler_module"]
                 logger.info(
                     "Loading co-simulation handler from module",
                     extra={
@@ -672,14 +710,14 @@ def _run_co_simulation(
 
             else:
                 raise KeyError(
-                    "Co-simulation config must contain either 'script_path' or 'handler_module'"
+                    "Handler config must contain either 'script_path' or 'handler_module'"
                 )
 
             if not module:
                 raise ImportError("Failed to load co-simulation handler module.")
 
             handler_function = getattr(module, handler_function_name)
-            instance_name = co_sim_config["instance_name"]
+            instance_name = handler_config["instance_name"]
 
             co_sim_output_filename = get_unique_filename(
                 isolated_temp_dir, f"{instance_name}_outputs.csv"
@@ -688,17 +726,20 @@ def _run_co_simulation(
             output_placeholder = handler_function(
                 temp_input_csv=primary_result_filename,
                 temp_output_csv=co_sim_output_filename,
-                **co_sim_config.get("params", {}),
+                **handler_config.get("params", {}),
             )
 
-            interception_configs.append(
-                {
-                    "submodel_name": co_sim_config["submodel_name"],
-                    "instance_name": co_sim_config["instance_name"],
-                    "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
-                    "output_placeholder": output_placeholder,
-                }
-            )
+            interception_config = {
+                "submodel_name": handler_config["submodel_name"],
+                "instance_name": handler_config["instance_name"],
+                "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
+                "output_placeholder": output_placeholder,
+            }
+
+            # Add mode from top-level co_simulation config
+            interception_config["mode"] = mode
+
+            interception_configs.append(interception_config)
 
         intercepted_model_paths = integrate_interceptor_model(
             package_path=isolated_package_path,
@@ -709,25 +750,35 @@ def _run_co_simulation(
         verif_config = config["simulation"]["variableFilter"]
         logger.info("Proceeding with Final simulation.")
 
-        for model_path in intercepted_model_paths["interceptor_model_paths"]:
-            omc.sendExpression(f"""loadFile(\"{Path(model_path).as_posix()}\")""")
-        omc.sendExpression(
-            f"""loadFile(\"{Path(intercepted_model_paths["system_model_path"]).as_posix()}\")"""
-        )
+        # Use mode from top-level config
+        if mode == "replacement":
+            # For direct replacement, the system model name stays the same
+            logger.info(
+                "Using direct replacement mode, system model unchanged",
+                extra={"job_id": job_id},
+            )
+            final_model_name = model_name
+            final_model_file = isolated_package_path
+        else:
+            # For interceptor mode, load the interceptor models and use modified system
+            for model_path in intercepted_model_paths["interceptor_model_paths"]:
+                omc.sendExpression(f"""loadFile("{Path(model_path).as_posix()}")""")
+            omc.sendExpression(
+                f"""loadFile("{Path(intercepted_model_paths["system_model_path"]).as_posix()}")"""
+            )
 
-        package_name, original_system_name = model_name.split(".")
-        intercepted_model_full_name = (
-            f"{package_name}.{original_system_name}_Intercepted"
-        )
-
-        verif_mod = ModelicaSystem(
-            fileName=(
+            package_name, original_system_name = model_name.split(".")
+            final_model_name = f"{package_name}.{original_system_name}_Intercepted"
+            final_model_file = (
                 Path(intercepted_model_paths["system_model_path"]).as_posix()
                 if os.path.isfile(isolated_package_path)
                 and not original_package_path.endswith("package.mo")
                 else Path(isolated_package_path).as_posix()
-            ),
-            modelName=intercepted_model_full_name,
+            )
+
+        verif_mod = ModelicaSystem(
+            fileName=final_model_file,
+            modelName=final_model_name,
             variableFilter=verif_config,
         )
         verif_mod.setSimulationOptions(
@@ -770,7 +821,7 @@ def _run_co_simulation(
             job_config["paths"]["package_path"] = isolated_package_path
             job_config["paths"]["temp_dir"] = base_temp_dir
             job_config["simulation_parameters"] = job_params
-            job_config["simulation"]["model_name"] = intercepted_model_full_name
+            job_config["simulation"]["model_name"] = final_model_name
 
             # Use a unique prefix for each metric to avoid workspace collision
             metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
@@ -817,7 +868,23 @@ def _run_co_simulation(
 def _run_single_job(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
-    """Executes a single simulation job in an isolated workspace."""
+    """Executes a single simulation job and any subsequent optimizations.
+
+    This function runs a standard simulation in an isolated workspace. After the
+    simulation completes, it checks if any bisection search optimizations are
+    configured and runs them for the completed job.
+
+    Args:
+        config (dict): The main configuration dictionary.
+        job_params (dict): A dictionary of parameters specific to this job.
+        job_id (int): A unique identifier for the job.
+
+    Returns:
+        A tuple containing:
+        - A dictionary of optimal parameter values found during optimization.
+        - A dictionary of the metric values achieved with those optimal parameters.
+        - The path to the simulation result file, or an empty string on failure.
+    """
     paths_config = config["paths"]
     sim_config = config["simulation"]
 
@@ -926,9 +993,20 @@ def _run_single_job(
 
 
 def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
-    """
-    Executes a parameter sweep sequentially, reusing the OM session for efficiency.
-    Saves intermediate results to the timestamped temporary directory.
+    """Executes a parameter sweep sequentially, including optimizations.
+
+    This function runs a series of simulation jobs one after another, reusing
+    the same OpenModelica session. For each job, it also runs any configured
+    bisection search optimizations and saves a summary of the optimization
+    results.
+
+    Args:
+        config (dict): The main configuration dictionary.
+        jobs (List[Dict[str, Any]]): A list of job parameter dictionaries to execute.
+
+    Returns:
+        List[str]: A list of paths to the result files for each job. Failed jobs
+                   will have an empty string as their path.
     """
     paths_config = config["paths"]
     sim_config = config["simulation"]
@@ -1054,10 +1132,25 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
 
 
 def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
-    """
-    Executes a single analysis case. Designed to be run in a separate process.
-    It changes the working directory, sets up logging, and calls run_simulation.
-    Inner concurrency is disabled to prevent nested process pools.
+    """Executes a single analysis case in a separate process.
+
+    This function is designed to be run in a dedicated process. It changes the
+    working directory to the case's workspace, sets up logging for that
+    process, and calls the main `run_simulation` orchestrator. Inner
+    concurrency is disabled to prevent nested process pools.
+
+    Args:
+        case_info: A dictionary containing all information for the case, including
+            its index, workspace path, configuration, and original case data.
+
+    Returns:
+        True if the case executed successfully, False otherwise.
+
+    Note:
+        Changes working directory to case workspace for duration of execution.
+        Sets up separate logging for the process. Forces concurrent=False in simulation
+        config to prevent nested process pools. Restores original working directory
+        in finally block.
     """
     case_index = case_info["index"]
     case_workspace = case_info["workspace"]
@@ -1112,10 +1205,24 @@ def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
 
 def _run_post_processing(
     config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
-):
-    """
-    Dynamically load and run post-processing modules based on configuration.
-    Supports loading from a module name or a direct script path.
+) -> None:
+    """Dynamically loads and runs post-processing modules.
+
+    This function iterates through the post-processing tasks defined in the
+    configuration. For each task, it dynamically loads the specified module
+    (from a module name or a script path) and executes the target function,
+    passing the results DataFrame and other parameters to it.
+
+    Args:
+        config: The main configuration dictionary.
+        results_df: The combined DataFrame of simulation results.
+        post_processing_output_dir: The directory to save any output from the tasks.
+
+    Note:
+        Supports two loading methods: 'script_path' for direct .py files, or 'module'
+        for installed packages. Creates output_dir if it doesn't exist. Passes results_df,
+        output_dir, and user-specified params to each task function. Logs errors for
+        failed tasks but continues with remaining tasks.
     """
     post_processing_configs = config.get("post_processing")
     if not post_processing_configs:
@@ -1210,8 +1317,27 @@ def _run_post_processing(
     logger.info("Post-processing phase ended")
 
 
-def run_simulation(config: Dict[str, Any]):
-    """Orchestrates the simulation execution, result handling, and cleanup."""
+def run_simulation(config: Dict[str, Any]) -> None:
+    """Orchestrates the simulation analysis workflow.
+
+    This is the main orchestrator for a simulation analysis run. It handles
+    different execution paths based on the configuration:
+    - If 'analysis_cases' are defined, it sets up and executes each case,
+      potentially in parallel.
+    - If a SALib analysis is defined, it delegates to the SALib workflow.
+    - Otherwise, it runs a standard parameter sweep, merges results,
+      generates plots, and triggers sensitivity analysis and post-processing.
+
+    Args:
+        config: The main configuration dictionary for the run.
+
+    Note:
+        Supports three modes: multi-case analysis (analysis_cases), SALib analysis
+        (independent_variable as list with analyzer), or standard parameter sweep.
+        For multi-case mode, creates isolated workspaces and can run cases in parallel
+        with ProcessPoolExecutor. Generates summary reports and handles AI analysis retries
+        if configured.
+    """
 
     # 1. Split analysis_cases and determine salib_analysis_case
     has_analysis_cases = (
@@ -1685,9 +1811,15 @@ def run_simulation(config: Dict[str, Any]):
                 logger.error(f"Error cleaning up temp directory: {e}")
 
 
-def retry_analysis(timestamp: str):
-    """
-    Retries a failed AI analysis for a given analysis run timestamp.
+def retry_analysis(timestamp: str) -> None:
+    """Retries a failed AI analysis for a given run timestamp.
+
+    This function restores the configuration from the log file of a previous
+    run and re-triggers the AI-dependent parts of the analysis, including
+    report generation and consolidation.
+
+    Args:
+        timestamp (str): The timestamp of the run to retry (e.g., "20230101_120000").
     """
     config, original_config = restore_configs_from_log(timestamp)
     if not config or not original_config:
@@ -1721,8 +1853,15 @@ def retry_analysis(timestamp: str):
     logger.info("AI analysis retry and consolidation complete.")
 
 
-def main(config_path: str):
-    """Main function to run the simulation from the command line."""
+def main(config_path: str) -> None:
+    """Main entry point for a simulation analysis run.
+
+    This function prepares the configuration for an analysis run, sets up
+    logging, and calls the main `run_simulation` orchestrator for analysis.
+
+    Args:
+        config_path (str): The path to the JSON configuration file.
+    """
     config, original_config = analysis_prepare_config(config_path)
     setup_logging(config, original_config)
     logger.info(

@@ -18,7 +18,11 @@ def get_om_session() -> OMCSessionZMQ:
     """Initializes and returns a new OMCSessionZMQ session.
 
     Returns:
-        OMCSessionZMQ: An active OpenModelica session object.
+        An active OpenModelica session object.
+
+    Note:
+        Creates a new ZMQ-based connection to OpenModelica Compiler. Each call
+        creates an independent session that should be properly closed after use.
     """
     logger.debug("Initializing new OMCSessionZMQ session")
     return OMCSessionZMQ()
@@ -28,11 +32,15 @@ def load_modelica_package(omc: OMCSessionZMQ, package_path: str) -> bool:
     """Loads a Modelica package into the OpenModelica session.
 
     Args:
-        omc (OMCSessionZMQ): The active OpenModelica session object.
-        package_path (str): The file path to the Modelica package (`package.mo`).
+        omc: The active OpenModelica session object.
+        package_path: The file path to the Modelica package (`package.mo`).
 
     Returns:
-        bool: True if the package was loaded successfully, False otherwise.
+        True if the package was loaded successfully, False otherwise.
+
+    Note:
+        Uses sendExpression('loadFile(...)') command. Logs error if loading fails.
+        The package must be a valid Modelica package file.
     """
     logger.info("Loading package", extra={"package_path": package_path})
     load_result = omc.sendExpression(f'loadFile("{package_path}")')
@@ -46,11 +54,17 @@ def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
     """Parses and returns all subcomponent parameter names for a given model.
 
     Args:
-        omc (OMCSessionZMQ): The active OpenModelica session object.
-        model_name (str): The full name of the model (e.g., 'example.Cycle').
+        omc: The active OpenModelica session object.
+        model_name: The full name of the model (e.g., 'example.Cycle').
 
     Returns:
-        List[str]: A list of all available parameter names (e.g., ['blanket.TBR']).
+        A list of all available parameter names in hierarchical format
+        (e.g., ['blanket.TBR', 'divertor.heatLoad']).
+
+    Note:
+        Only traverses components whose type starts with the package name.
+        Returns empty list if model is not found or has no components. Uses
+        getComponents() and getParameterNames() OMC API calls.
     """
     logger.info("Getting parameter names for model", extra={"model_name": model_name})
     all_params = []
@@ -88,15 +102,23 @@ def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
 
 
 def _recursive_get_parameters(
-    omc: OMCSessionZMQ, class_name: str, path_prefix: str, params_list: list
-):
+    omc: OMCSessionZMQ,
+    class_name: str,
+    path_prefix: str,
+    params_list: List[Dict[str, Any]],
+) -> None:
     """A private helper function to recursively traverse a model and collect parameters.
 
     Args:
-        omc (OMCSessionZMQ): The active OpenModelica session object.
-        class_name (str): The name of the class/model to inspect.
-        path_prefix (str): The hierarchical path prefix for the current component.
-        params_list (list): The list to which parameter details are appended.
+        omc: The active OpenModelica session object.
+        class_name: The name of the class/model to inspect.
+        path_prefix: The hierarchical path prefix for the current component.
+        params_list: The list to which parameter details are appended (modified in-place).
+
+    Note:
+        Recursively explores models and blocks that belong to the same package.
+        Collects parameter name, type, default value, comment, and dimensions.
+        Only descends into components from the same package (checked by prefix matching).
     """
     logger.debug(
         "Recursively exploring model",
@@ -168,12 +190,19 @@ def get_all_parameters_details(
     """Recursively retrieves detailed information for all parameters in a given model.
 
     Args:
-        omc (OMCSessionZMQ): The active OpenModelica session object.
-        model_name (str): The full name of the model.
+        omc: The active OpenModelica session object.
+        model_name: The full name of the model.
 
     Returns:
-        List[Dict[str, Any]]: A list of dictionaries, where each dictionary
-            contains the detailed information of a single parameter.
+        A list of dictionaries, where each dictionary contains the detailed
+        information of a single parameter including name, type, defaultValue,
+        comment, and dimensions.
+
+    Note:
+        Uses _recursive_get_parameters() to traverse the model hierarchy.
+        Returns empty list if model is not found or on error. Each parameter
+        dict includes 'name' (hierarchical), 'type', 'defaultValue', 'comment',
+        and 'dimensions' fields.
     """
     logger.info(
         "Getting detailed parameters via recursion", extra={"model_name": model_name}
@@ -202,11 +231,16 @@ def format_parameter_value(name: str, value: Any) -> str:
     """Formats a parameter value into a string recognized by OpenModelica.
 
     Args:
-        name (str): The name of the parameter.
-        value (Any): The value of the parameter.
+        name: The name of the parameter.
+        value: The value of the parameter (can be number, string, list, or bool).
 
     Returns:
-        str: A formatted string for use in simulation overrides (e.g., "p=1.0").
+        A formatted string for use in simulation overrides (e.g., "p=1.0",
+        "name={1,2,3}", or 'path="value"').
+
+    Note:
+        Lists are formatted as {v1,v2,...}. Strings are quoted with double quotes.
+        Numbers and booleans use direct string conversion.
     """
     if isinstance(value, list):
         # Format lists as {v1,v2,...}
@@ -219,7 +253,19 @@ def format_parameter_value(name: str, value: Any) -> str:
 
 
 def _parse_om_value(value_str: str) -> Any:
-    """Parses a string value from OpenModelica into a Python type."""
+    """Parses a string value from OpenModelica into a Python type.
+
+    Args:
+        value_str: The string value from OpenModelica to parse.
+
+    Returns:
+        Parsed value as appropriate Python type (float, bool, str, list, or original).
+
+    Note:
+        Handles OpenModelica formats: arrays "{v1,v2,...}", booleans "true"/"false",
+        quoted strings '"..."', and numeric values. Recursively parses array elements.
+        Returns original value if not a string or if parsing fails.
+    """
     if not isinstance(value_str, str):
         return value_str  # Already parsed or not a string
 
@@ -252,21 +298,24 @@ def _parse_om_value(value_str: str) -> Any:
 
 
 def get_model_default_parameters(omc: OMCSessionZMQ, model_name: str) -> Dict[str, Any]:
-    """Retrieves the default values for all parameters in a given model,
-    parsing them into appropriate Python types.
+    """Retrieves the default values for all parameters in a given model.
 
     This function leverages get_all_parameters_details to fetch detailed
     parameter information and then extracts and parses the name and default value
     into a dictionary.
 
     Args:
-        omc (OMCSessionZMQ): The active OpenModelica session object.
-        model_name (str): The full name of the model.
+        omc: The active OpenModelica session object.
+        model_name: The full name of the model.
 
     Returns:
-        Dict[str, Any]: A dictionary mapping parameter names to their
-            default values (e.g., float, list, bool, str). Returns an empty
-            dictionary if the model is not found or has no parameters.
+        A dictionary mapping parameter names to their default values
+        (e.g., float, list, bool, str). Returns an empty dictionary if
+        the model is not found or has no parameters.
+
+    Note:
+        Values are parsed from OpenModelica string format to Python types using
+        _parse_om_value(). Handles arrays, booleans, strings, and numeric values.
     """
     logger.info(
         "Getting and parsing default parameter values", extra={"model_name": model_name}
@@ -297,14 +346,18 @@ def get_model_default_parameters(omc: OMCSessionZMQ, model_name: str) -> Dict[st
     return default_params
 
 
-def _clear_stale_init_xml(mod: ModelicaSystem, model_name: str):
-    """
-    Find the working directory of ModelicaSystem and delete the residual <model_name>_init.xml file to prevent GUID mismatch errors.
+def _clear_stale_init_xml(mod: ModelicaSystem, model_name: str) -> None:
+    """Find and delete residual <model_name>_init.xml file to prevent GUID mismatch errors.
 
     Args:
         mod: An instance object of OMPython.ModelicaSystem.
         model_name: The name of the model (e.g., "CFEDR.Cycle").
-        logger: A logging.Logger object for logging.
+
+    Note:
+        Locates ModelicaSystem's working directory and removes stale initialization
+        XML files that can cause GUID errors. Tries getWorkDirectory() method first,
+        falls back to _workDir attribute. Errors are logged but not raised as they
+        may not be critical.
     """
     try:
         work_dir = ""

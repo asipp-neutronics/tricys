@@ -12,8 +12,13 @@ from tricys.simulation.simulation_gui import main as gui_main
 from tricys.utils.file_utils import archive_run, unarchive_run
 
 
-def run_example_runner():
-    """Finds and executes the tricys_all_runner.py script."""
+def run_example_runner() -> None:
+    """Finds and executes the tricys_all_runner.py script.
+
+    This function locates the main example runner script within the project
+    and executes it in a separate subprocess. It handles errors if the
+    script is not found.
+    """
     try:
         python_executable = sys.executable
         main_py_path = Path(__file__).resolve()
@@ -42,8 +47,14 @@ def run_example_runner():
         sys.exit(1)
 
 
-def main():
-    """Main entry point for the tricys command-line interface."""
+def main() -> None:
+    """Main entry point for the tricys command-line interface.
+
+    Parses command-line arguments to dispatch tasks. It can run a standard
+    simulation, a simulation analysis, launch the GUI, or handle utility
+    commands like archiving runs. The behavior is determined by subcommands
+    or the content of a specified configuration file.
+    """
     # Main parser
     parser = argparse.ArgumentParser(
         description="Tricys - TRitium Integrated CYcle Simulation Framework",

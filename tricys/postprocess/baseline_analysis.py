@@ -5,7 +5,8 @@ import logging
 import os
 import re
 import time
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Tuple
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -58,17 +59,32 @@ _ui_text = {
 
 
 def _get_text(key: str) -> str:
-    """Helper to get text based on the current language setting."""
+    """Helper to get text based on the current language setting.
+
+    Args:
+        key: The text key to retrieve.
+
+    Returns:
+        The translated text string, or the key itself if not found.
+
+    Note:
+        Falls back to the key if translation not found. Useful for dynamic keys
+        from unit_map that may not be in _ui_text dictionary.
+    """
     # Fallback to key itself if not found, useful for units from unit_map
     lang = "cn" if _use_chinese_labels else "en"
     return _ui_text[lang].get(key, key)
 
 
-def set_plot_language(lang: str = "en"):
-    """
-    Sets the preferred language for plot labels.
+def set_plot_language(lang: str = "en") -> None:
+    """Sets the preferred language for plot labels.
+
     Args:
-        lang (str): 'en' for English (default), 'cn' for Chinese.
+        lang: 'en' for English (default), 'cn' for Chinese.
+
+    Note:
+        For Chinese, sets font to SimHei and adjusts unicode_minus. For English,
+        restores matplotlib defaults. Changes apply globally to all subsequent plots.
     """
     global _use_chinese_labels
     _use_chinese_labels = lang.lower() == "cn"
@@ -84,9 +100,16 @@ def set_plot_language(lang: str = "en"):
         plt.rcParams["axes.unicode_minus"] = plt.rcParamsDefault["axes.unicode_minus"]
 
 
-def load_glossary(glossary_path: str):
-    """
-    Loads glossary data from the specified CSV path into global dictionaries.
+def load_glossary(glossary_path: str) -> None:
+    """Loads glossary data from the specified CSV path into global dictionaries.
+
+    Args:
+        glossary_path: Path to the glossary CSV file.
+
+    Note:
+        Expected columns: "模型参数 (Model Parameter)", "英文术语 (English Term)",
+        "中文翻译 (Chinese Translation)". Clears existing glossaries on error.
+        Updates global _english_glossary_map and _chinese_glossary_map.
     """
     global _english_glossary_map, _chinese_glossary_map
 
@@ -126,10 +149,18 @@ def load_glossary(glossary_path: str):
 
 
 def _format_label(label: str) -> str:
-    """
-    Formats a label for display. It first attempts to find a professional
-    term from the loaded glossary. If not found, it falls back to simple
-    string formatting.
+    """Formats a label for display using glossary or simple formatting.
+
+    Args:
+        label: The raw label string to format.
+
+    Returns:
+        The formatted label string.
+
+    Note:
+        First checks glossary for professional term (language-specific). If not found,
+        replaces underscores with spaces and removes dots (except in numbers). Returns
+        non-string inputs unchanged.
     """
     global _english_glossary_map, _chinese_glossary_map, _use_chinese_labels
 
@@ -230,7 +261,7 @@ def _calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float
         return np.nan
 
 
-def _plot_time_series_with_zoom(df: pd.DataFrame, output_dir: str, **kwargs):
+def _plot_time_series_with_zoom(df: pd.DataFrame, output_dir: str, **kwargs) -> None:
     """Helper to generate the time-series plot with a detailed zoom view."""
     detailed_var = kwargs.get("detailed_var", "sds.I[1]")
     color_map = kwargs.get("color_map", {})
@@ -371,7 +402,7 @@ def _plot_time_series_with_zoom(df: pd.DataFrame, output_dir: str, **kwargs):
     set_plot_language("cn" if original_lang_is_chinese else "en")
 
 
-def _plot_final_values_bar_chart(df: pd.DataFrame, output_dir: str, **kwargs):
+def _plot_final_values_bar_chart(df: pd.DataFrame, output_dir: str, **kwargs) -> None:
     """Helper to generate a bar chart of the final values for each column."""
     last_values = df.drop(columns=["time"]).iloc[-1].sort_values(ascending=False)
     color_map = kwargs.get("color_map", {})
@@ -433,7 +464,7 @@ def _call_openai_for_postprocess_analysis(
     ai_model: str,
     report_content: str,
     **kwargs,
-):
+) -> Optional[str]:
     """
     Constructs a prompt for post-simulation analysis, calls the OpenAI API, and returns the result.
     """
@@ -526,7 +557,9 @@ def _call_openai_for_postprocess_analysis(
         return None
 
 
-def _generate_postprocess_report(df: pd.DataFrame, output_dir: str, **kwargs):
+def _generate_postprocess_report(
+    df: pd.DataFrame, output_dir: str, **kwargs
+) -> Tuple[Optional[str], Optional[str]]:
     """Generates a Markdown report for the post-simulation analysis."""
     try:
         logger.info("Starting to generate post-process report.")
@@ -701,7 +734,7 @@ def _generate_postprocess_report(df: pd.DataFrame, output_dir: str, **kwargs):
         return None, None
 
 
-def generate_academic_report(output_dir: str, ai_model: str, **kwargs):
+def generate_academic_report(output_dir: str, ai_model: str, **kwargs) -> None:
     """
     Generates a professional academic analysis summary by sending the existing report
     and a glossary of terms to an LLM.
@@ -843,17 +876,24 @@ def generate_academic_report(output_dir: str, ai_model: str, **kwargs):
         )
 
 
-def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs):
-    """
-    Generates two plots:
-    1. A time-series plot with an overall view and a detailed zoom.
-    2. A bar chart showing the final values of all variables, sorted.
-    3. An optional Markdown report with AI analysis.
+def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs) -> None:
+    """Generates baseline analysis plots and reports.
+
+    Creates three outputs:
+    1. A time-series plot with overall view and detailed zoom around turning point
+    2. A bar chart showing final values of all variables, sorted
+    3. An optional Markdown report with AI analysis (if 'ai' flag is True)
 
     Args:
-        results_df (pd.DataFrame): The combined DataFrame of simulation results.
-        output_dir (str): The directory to save the plots and report.
-        **kwargs: Additional parameters from the config, including an 'ai' flag for analysis.
+        results_df: The combined DataFrame of simulation results.
+        output_dir: The directory to save the plots and report.
+        **kwargs: Additional parameters from config, including 'ai' flag, 'detailed_var',
+            'glossary_path', and AI model settings.
+
+    Note:
+        Removes duplicate rows before processing. Creates bilingual plots (English and
+        Chinese). If AI analysis enabled, requires API_KEY, BASE_URL, and AI_MODELS/AI_MODEL
+        environment variables. Generates both initial LLM analysis and academic summary.
     """
     if "time" not in results_df.columns:
         logger.error("Plotting failed: 'time' column not found in results DataFrame.")
@@ -861,6 +901,11 @@ def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs):
 
     if "glossary_path" in kwargs:
         load_glossary(kwargs["glossary_path"])
+
+    os.removedirs(output_dir) if os.path.exists(output_dir) else None
+    p = Path(output_dir)
+    output_dir = p.parent / "report"
+    os.makedirs(output_dir, exist_ok=True)
 
     df = results_df.copy()
     # Remove duplicate rows before processing
@@ -913,7 +958,7 @@ def baseline_analysis(results_df: pd.DataFrame, output_dir: str, **kwargs):
             ).rstrip()
 
             model_report_filename = (
-                f"baseline_condition_analysis_report_{sanitized_model_name}.md"
+                f"analysis_report_baseline_condition_{sanitized_model_name}.md"
             )
             model_report_path = os.path.join(output_dir, model_report_filename)
 

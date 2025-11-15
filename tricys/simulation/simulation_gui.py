@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
+from typing import Any
 
 from tricys.core.modelica import (
     get_all_parameters_details,
@@ -28,14 +29,35 @@ logger = logging.getLogger(__name__)
 
 
 class GUILogHandler(logging.Handler):
-    """Custom log handler that sends log messages to a GUI window."""
+    """Custom log handler that sends log messages to a GUI window.
 
-    def __init__(self, log_queue):
+    Attributes:
+        log_queue: A queue to which log messages are sent for GUI display.
+
+    Note:
+        Prevents logging errors from breaking the application by catching all
+        exceptions in emit(). Thread-safe via queue communication.
+    """
+
+    def __init__(self, log_queue: queue.Queue) -> None:
+        """Initializes the log handler.
+
+        Args:
+            log_queue: A queue to which log messages will be sent.
+        """
         super().__init__()
         self.log_queue = log_queue
 
-    def emit(self, record):
-        """Emit a log record to the queue for GUI display."""
+    def emit(self, record: logging.LogRecord) -> None:
+        """Emits a log record to the queue for GUI display.
+
+        Args:
+            record: The log record to be emitted.
+
+        Note:
+            Silently catches all exceptions to prevent logging errors from breaking
+            the application. Uses queue.put() for thread-safe communication.
+        """
         try:
             msg = self.format(record)
             self.log_queue.put(msg)
@@ -45,16 +67,32 @@ class GUILogHandler(logging.Handler):
 
 
 class LogWindow:
-    """A separate window for displaying log messages in real-time."""
+    """A separate window for displaying log messages in real-time.
 
-    def __init__(self, parent):
+    Attributes:
+        parent: The parent tkinter widget.
+        log_window: The Toplevel window for logs.
+        log_queue: Queue for receiving log messages from the handler.
+        log_handler: GUILogHandler instance attached to the root logger.
+
+    Note:
+        Updates log display every 100ms via Tkinter's after() mechanism.
+        Supports log clearing and copying. Handles window lifecycle safely.
+    """
+
+    def __init__(self, parent: tk.Widget) -> None:
+        """Initializes the LogWindow.
+
+        Args:
+            parent: The parent tkinter widget.
+        """
         self.parent = parent
         self.log_window = None
         self.log_queue = queue.Queue()
         self.log_handler = None
 
-    def create_window(self):
-        """Create and show the log window."""
+    def create_window(self) -> None:
+        """Creates and shows the log window."""
         if self.log_window is not None and self.log_window.winfo_exists():
             # Window already exists, just bring it to front
             self.log_window.lift()
@@ -102,8 +140,8 @@ class LogWindow:
         # Start processing log messages
         self.process_log_queue()
 
-    def start_logging(self):
-        """Start capturing log messages."""
+    def start_logging(self) -> None:
+        """Starts capturing log messages by adding a custom handler to the root logger."""
         # Create and add the GUI log handler
         self.log_handler = GUILogHandler(self.log_queue)
         formatter = logging.Formatter(
@@ -115,15 +153,15 @@ class LogWindow:
         root_logger = logging.getLogger()
         root_logger.addHandler(self.log_handler)
 
-    def stop_logging(self):
-        """Stop capturing log messages."""
+    def stop_logging(self) -> None:
+        """Stops capturing log messages by removing the custom handler."""
         if self.log_handler:
             root_logger = logging.getLogger()
             root_logger.removeHandler(self.log_handler)
             self.log_handler = None
 
-    def process_log_queue(self):
-        """Process log messages from the queue and display them."""
+    def process_log_queue(self) -> None:
+        """Processes log messages from the queue and displays them in the text widget."""
         try:
             while True:
                 try:
@@ -139,8 +177,12 @@ class LogWindow:
         if self.log_window and self.log_window.winfo_exists():
             self.log_window.after(100, self.process_log_queue)
 
-    def add_log_message(self, message):
-        """Add a log message to the text widget."""
+    def add_log_message(self, message) -> None:
+        """Adds a formatted log message to the text widget.
+
+        Args:
+            message (str): The log message string to add.
+        """
         if not self.log_window or not self.log_window.winfo_exists():
             return
 
@@ -166,14 +208,14 @@ class LogWindow:
         if lines > 1000:  # Keep only last 1000 lines
             self.log_text.delete("1.0", f"{lines-1000}.0")
 
-    def clear_logs(self):
-        """Clear all log messages from the display."""
+    def clear_logs(self) -> None:
+        """Clears all log messages from the display."""
         if self.log_text:
             self.log_text.delete("1.0", tk.END)
             messagebox.showinfo("Success", "The log has been cleared.")
 
-    def copy_all_logs(self):
-        """Copy all log text to clipboard."""
+    def copy_all_logs(self) -> None:
+        """Copies all log text to the system clipboard."""
         if self.log_text:
             content = self.log_text.get("1.0", tk.END)
             self.log_window.clipboard_clear()
@@ -182,8 +224,8 @@ class LogWindow:
                 "Success", "The log content has been copied to the clipboard."
             )
 
-    def on_window_close(self):
-        """Handle window close event."""
+    def on_window_close(self) -> None:
+        """Handles the window close event by stopping logging and destroying the window."""
         self.stop_logging()
         if self.log_window:
             self.log_window.destroy()
@@ -193,7 +235,12 @@ class LogWindow:
 class InteractiveSimulationUI:
     """A GUI for managing simulation parameters and settings, runnable from any directory."""
 
-    def __init__(self, root: tk.Tk):
+    def __init__(self, root: tk.Tk) -> None:
+        """Initializes the main application UI.
+
+        Args:
+            root (tk.Tk): The root tkinter window.
+        """
         self.root = root
         self.original_title = "Tricys Interactive Simulation Runner"
         self.root.title(self.original_title)
@@ -216,22 +263,36 @@ class InteractiveSimulationUI:
         # Delay database check and logging setup until after mainloop starts
         self.root.after(100, self._delayed_initialization)
 
-    def _delayed_initialization(self):
-        """Perform initialization that requires the main loop to be running."""
+    def _delayed_initialization(self) -> None:
+        """Performs initialization that requires the main loop to be running."""
         self.setup_logging()
         self.db_path_updated()
         self.load_parameters()
 
     def _get_abs_path(self, path: str) -> str:
-        """Resolves a path against the workspace directory if it's not absolute."""
+        """Resolves a path against the workspace directory if it's not absolute.
+
+        Args:
+            path (str): The path to resolve.
+
+        Returns:
+            str: The absolute path.
+        """
         if os.path.isabs(path):
             return path
         return Path(
             os.path.join(Path(self.workspace_path_var.get()).as_posix(), path)
         ).as_posix()
 
-    def _convert_relative_paths_to_absolute(self, config_data):
-        """Recursively convert relative paths ending with '*_path' in the configuration to absolute paths."""
+    def _convert_relative_paths_to_absolute(self, config_data) -> Any:
+        """Recursively converts relative paths in the configuration to absolute paths.
+
+        Args:
+            config_data: The configuration data (dict or list) to traverse.
+
+        Returns:
+            Any: The configuration data with paths converted.
+        """
         if isinstance(config_data, dict):
             converted_config = {}
             for key, value in config_data.items():
@@ -256,8 +317,8 @@ class InteractiveSimulationUI:
         else:
             return config_data
 
-    def create_settings_vars(self):
-        """Initializes all Tkinter StringVars for configuration settings with default values."""
+    def create_settings_vars(self) -> None:
+        """Initializes all Tkinter StringVars for configuration settings."""
         # Path and Model Settings
         self.package_path_var = tk.StringVar(value="example_model/package.mo")
         self.db_path_var = tk.StringVar(value="data/parameters.db")
@@ -284,7 +345,8 @@ class InteractiveSimulationUI:
         self.enable_co_simulation_var = tk.BooleanVar(value=False)
         self.co_sim_config_path_var = tk.StringVar(value="")
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
+        """Creates the main frames and widgets for the GUI layout."""
         self.main_frame = ttk.Frame(self.root, padding="10")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -297,8 +359,13 @@ class InteractiveSimulationUI:
         self.create_settings_widgets(top_frame)
         self.create_params_widgets(bottom_frame)
 
-    def _set_widget_state(self, parent, state):
-        """Recursively set the state of all child widgets."""
+    def _set_widget_state(self, parent, state) -> None:
+        """Recursively sets the state of all child widgets.
+
+        Args:
+            parent: The parent widget.
+            state (str): The state to set (e.g., 'disabled', 'normal').
+        """
         for widget in parent.winfo_children():
             try:
                 # Exclude scrollbars as disabling them can look odd.
@@ -309,8 +376,12 @@ class InteractiveSimulationUI:
                 pass
             self._set_widget_state(widget, state)
 
-    def _toggle_ui_lock(self, locked: bool):
-        """Disable or enable the entire UI for long-running tasks."""
+    def _toggle_ui_lock(self, locked: bool) -> None:
+        """Disables or enables the entire UI for long-running tasks.
+
+        Args:
+            locked (bool): If True, lock the UI; otherwise, unlock it.
+        """
         if locked:
             self.root.title(f"Executing... - {self.original_title}")
             self._set_widget_state(self.main_frame, "disabled")
@@ -318,7 +389,12 @@ class InteractiveSimulationUI:
             self.root.title(self.original_title)
             self._set_widget_state(self.main_frame, "normal")
 
-    def create_settings_widgets(self, parent: ttk.Frame):
+    def create_settings_widgets(self, parent: ttk.Frame) -> None:
+        """Creates and arranges the widgets for the settings sections.
+
+        Args:
+            parent (ttk.Frame): The parent frame to contain the settings widgets.
+        """
         settings_frame = ttk.LabelFrame(parent, text="Settings", padding="10")
         settings_frame.pack(fill=tk.X, expand=True)
 
@@ -470,7 +546,7 @@ class InteractiveSimulationUI:
         log_frame.columnconfigure(1, weight=1)
         log_frame.columnconfigure(4, weight=0)  # Keep button column fixed width
 
-    def select_co_sim_config(self):
+    def select_co_sim_config(self) -> None:
         """Opens a dialog to select a co-simulation configuration file."""
         config_file = filedialog.askopenfilename(
             title="Select Co-simulation Configuration File",
@@ -497,11 +573,11 @@ class InteractiveSimulationUI:
         else:
             messagebox.showinfo("Cancel", "No file selected")
 
-    def show_log_window(self):
-        """Display the log window."""
+    def show_log_window(self) -> None:
+        """Displays the log window."""
         self.log_window.create_window()
 
-    def select_workspace(self):
+    def select_workspace(self) -> None:
         """Opens a dialog to select a new workspace directory."""
         initial_dir = self.workspace_path_var.get()
         new_workspace = filedialog.askdirectory(
@@ -520,7 +596,12 @@ class InteractiveSimulationUI:
         else:
             messagebox.showinfo("Cancel", "No directory selected")
 
-    def create_params_widgets(self, parent: ttk.Frame):
+    def create_params_widgets(self, parent: ttk.Frame) -> None:
+        """Creates the toolbar and scrollable frame for displaying model parameters.
+
+        Args:
+            parent (ttk.Frame): The parent frame to contain the parameters widgets.
+        """
         params_frame = ttk.LabelFrame(parent, text="Parameters", padding="10")
         params_frame.pack(fill=tk.BOTH, expand=True)
         toolbar = ttk.Frame(params_frame)
@@ -603,7 +684,7 @@ class InteractiveSimulationUI:
         for col, min_width in enumerate(min_widths):
             self.scrollable_frame.grid_columnconfigure(col, minsize=min_width)
 
-    def setup_logging(self):
+    def setup_logging(self) -> None:
         """Configures the logging module based on settings from the GUI."""
         try:
             log_level_str = self.log_level_var.get().upper()
@@ -661,7 +742,14 @@ class InteractiveSimulationUI:
         except Exception as e:
             messagebox.showerror("Logging Error", f"Failed to configure logger: {e}")
 
-    def db_path_updated(self, event=None):
+    def db_path_updated(self, event=None) -> None:
+        """Handles the event when the database path is updated.
+
+        Checks for model and database existence and loads parameters accordingly.
+
+        Args:
+            event: The event object (optional).
+        """
         package_path = self._get_abs_path(self.package_path_var.get())
         if not os.path.exists(package_path):
             self.load_parameters()
@@ -683,8 +771,8 @@ class InteractiveSimulationUI:
             create_parameters_table(self.db_path)
             self.load_model_to_db_thread()
 
-    def load_model_to_db_thread(self):
-        """Load model parameters to database in a separate thread with UI feedback."""
+    def load_model_to_db_thread(self) -> None:
+        """Loads model parameters to the database in a separate thread."""
         # Get values from UI in main thread before starting background thread
         package_path = self._get_abs_path(self.package_path_var.get())
         model_name = self.model_name_var.get()
@@ -701,8 +789,14 @@ class InteractiveSimulationUI:
             daemon=True,
         ).start()
 
-    def execute_load_model_to_db(self, package_path, model_name, db_path):
-        """Execute model loading in background thread with pre-fetched parameters."""
+    def execute_load_model_to_db(self, package_path, model_name, db_path) -> None:
+        """Executes model loading in a background thread.
+
+        Args:
+            package_path (str): Path to the Modelica package.
+            model_name (str): The name of the model.
+            db_path (str): Path to the SQLite database.
+        """
         logger.info("=" * 50)
         logger.info("Starting to load model parameters into the database.")
         logger.info("=" * 50)
@@ -757,8 +851,8 @@ class InteractiveSimulationUI:
             # Always unlock UI from main thread
             self.root.after(0, self._toggle_ui_lock, False)
 
-    def refresh_parameters_from_db(self):
-        """Refresh parameters from database when user clicks the button."""
+    def refresh_parameters_from_db(self) -> None:
+        """Refreshes parameters from the database when the user clicks the button."""
         try:
             self.load_parameters()
             # Only show message if this is called directly by button click
@@ -775,8 +869,8 @@ class InteractiveSimulationUI:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to refresh parameters:{e}")
 
-    def load_parameters(self):
-        """Load parameters from database and display them in the UI."""
+    def load_parameters(self) -> None:
+        """Loads parameters from the database and displays them in the UI."""
         for widget in self.scrollable_frame.winfo_children():
             if widget.grid_info()["row"] > 0:
                 widget.destroy()
@@ -865,7 +959,8 @@ class InteractiveSimulationUI:
             self.scrollable_frame.update_idletasks()
             logger.error(f"Could not load parameters from database: {e}")
 
-    def save_sweep_parameters(self):
+    def save_sweep_parameters(self) -> None:
+        """Collects and saves the sweep values from the UI to the database."""
         params_to_save = {}
         for name, widgets in self.params_widgets.items():
             sweep_value = widgets["sweep_var"].get()
@@ -887,8 +982,8 @@ class InteractiveSimulationUI:
             messagebox.showerror("Error", f"Database not found at {self.db_path}.")
             logger.info(f"Database not found at {self.db_path}.")
 
-    def run_simulation_thread(self):
-        """Start simulation in a separate thread with UI feedback."""
+    def run_simulation_thread(self) -> None:
+        """Starts the simulation in a separate thread with UI feedback."""
         # Show log window when starting simulation
         self.show_log_window()
 
@@ -996,8 +1091,17 @@ class InteractiveSimulationUI:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to prepare simulation: {e}")
 
-    def execute_simulation(self, paths_config, sim_config, sim_params, co_sim_config):
-        """Execute simulation in background thread with pre-fetched parameters."""
+    def execute_simulation(
+        self, paths_config, sim_config, sim_params, co_sim_config
+    ) -> None:
+        """Executes the simulation in a background thread.
+
+        Args:
+            paths_config (dict): Configuration for paths.
+            sim_config (dict): Configuration for the simulation.
+            sim_params (dict): Simulation parameters for the sweep.
+            co_sim_config (dict): Configuration for co-simulation, if enabled.
+        """
         # Lock the UI from the main thread
         self.root.after(0, self._toggle_ui_lock, True)
         self.root.after(
@@ -1054,7 +1158,7 @@ class InteractiveSimulationUI:
             self.root.after(0, self._toggle_ui_lock, False)
 
 
-def main():
+def main() -> None:
     """Main function to initialize and run the GUI."""
     root = tk.Tk()
     InteractiveSimulationUI(root)

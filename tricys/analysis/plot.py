@@ -48,17 +48,33 @@ _ui_text = {
 
 
 def _get_text(key: str) -> str:
-    """Helper to get text based on the current language setting."""
+    """Gets UI text based on the current language setting.
+
+    Args:
+        key: The key for the text to retrieve.
+
+    Returns:
+        The translated text string, or the key itself if not found.
+
+    Note:
+        Falls back to the key itself if translation not found, which is useful
+        for units from unit_map that may not be in the predefined _ui_text dictionary.
+    """
     # Fallback to key itself if not found, useful for units from unit_map
     lang = "cn" if _use_chinese_labels else "en"
     return _ui_text[lang].get(key, key)
 
 
-def set_plot_language(lang: str = "en"):
-    """
-    Sets the preferred language for plot labels.
+def set_plot_language(lang: str = "en") -> None:
+    """Sets the preferred language for plot labels and text.
+
     Args:
-        lang (str): 'en' for English (default), 'cn' for Chinese.
+        lang: The language to set. 'en' for English (default), 'cn' for Chinese.
+
+    Note:
+        For Chinese language, sets font to SimHei and adjusts unicode_minus handling.
+        For English, restores matplotlib default settings. Changes apply to all
+        subsequent plots until called again.
     """
     global _use_chinese_labels
     _use_chinese_labels = lang.lower() == "cn"
@@ -74,9 +90,19 @@ def set_plot_language(lang: str = "en"):
         plt.rcParams["axes.unicode_minus"] = plt.rcParamsDefault["axes.unicode_minus"]
 
 
-def load_glossary(glossary_path: str):
-    """
-    Loads glossary data from the specified CSV path into global dictionaries.
+def load_glossary(glossary_path: str) -> None:
+    """Loads glossary data from a CSV file.
+
+    The CSV file should contain columns for the model parameter, the English
+    term, and the Chinese translation. This data is used to format plot labels.
+
+    Args:
+        glossary_path: The path to the glossary CSV file.
+
+    Note:
+        Expected CSV columns: "模型参数 (Model Parameter)", "英文术语 (English Term)",
+        and "中文翻译 (Chinese Translation)". Prints warning if file not found or
+        columns missing. Clears existing glossary maps on error.
     """
     global _english_glossary_map, _chinese_glossary_map
 
@@ -116,10 +142,22 @@ def load_glossary(glossary_path: str):
 
 
 def _format_label(label: str) -> str:
-    """
-    Formats a label for display. It first attempts to find a professional
-    term from the loaded glossary. If not found, it falls back to simple
-    string formatting.
+    """Formats a label for display using the loaded glossary.
+
+    It first attempts to find a professional term from the glossary. If not
+    found, it falls back to simple string formatting (replacing underscores
+    and dots with spaces).
+
+    Args:
+        label: The raw label string to format.
+
+    Returns:
+        The formatted label.
+
+    Note:
+        Checks glossary for current language (English or Chinese). If not found
+        or glossary not loaded, replaces underscores with spaces and removes dots
+        (except in numbers). Non-string inputs are returned unchanged.
     """
     global _english_glossary_map, _chinese_glossary_map, _use_chinese_labels
 
@@ -142,11 +180,23 @@ def _format_label(label: str) -> str:
 
 
 def _find_unit_config(var_name: str, unit_map: dict) -> dict | None:
-    """
-    Finds the unit configuration for a variable name from the unit_map.
-    1. Checks for an exact match.
-    2. Checks if the last part of a dot-separated name matches.
-    3. Checks for a simple substring containment as a fallback, matching longest keys first.
+    """Finds the unit configuration for a variable name from the unit_map.
+
+    Uses a three-step matching strategy:
+    1. Checks for an exact match
+    2. Checks if the last part of a dot-separated name matches
+    3. Checks for substring containment (longest keys first)
+
+    Args:
+        var_name: The variable name to look up.
+        unit_map: Dictionary mapping variable names to unit configurations.
+
+    Returns:
+        The unit configuration dict if found, None otherwise.
+
+    Note:
+        Unit config typically contains 'unit' and 'conversion_factor' keys.
+        Step 3 uses longest-first matching to prefer more specific matches.
     """
     if not unit_map or not var_name:
         return None
@@ -170,16 +220,25 @@ def _find_unit_config(var_name: str, unit_map: dict) -> dict | None:
     return None
 
 
-def _format_number_for_display(value):
-    """
-    Format a number for display with appropriate decimal places:
-    - If the value is a whole number, show no decimal places
-    - If the absolute value is >= 100, show 1 decimal place
-    - If the absolute value is >= 10, show 2 decimal places
-    - If the absolute value is >= 1, show 3 decimal places
-    - If the absolute value is >= 0.1, show 4 decimal places
-    - If the absolute value is < 0.1, show 5 decimal places
-    - If the value is very small (< 0.0001), use scientific notation
+def _format_number_for_display(value: float) -> str:
+    """Format a number for display with appropriate decimal places.
+
+    Formatting rules based on absolute value:
+    - 0: shows "0"
+    - >= 100: 1 decimal place
+    - >= 10: 2 decimal places
+    - >= 1: 3 decimal places
+    - < 1: scientific notation (2 significant digits)
+
+    Args:
+        value: The numeric value to format.
+
+    Returns:
+        Formatted string representation of the value.
+
+    Note:
+        Returns string representation for NaN and infinity values.
+        Uses scientific notation for very small values to maintain readability.
     """
     if np.isnan(value) or np.isinf(value):
         return str(value)
@@ -202,14 +261,30 @@ def _format_number_for_display(value):
 def _generate_multi_required_plot(
     summary_df: pd.DataFrame,
     case: dict,
-    required_cols: list,
+    required_cols: list[str],
     base_metric_name: str,
     save_dir: str,
     unit_map: dict = None,
-) -> list:
-    """
-    Generates a figure with subplots for 'Required_***' metrics,
-    where each subplot corresponds to a unique combination of simulation parameters (hue_vars).
+) -> list[str]:
+    """Generates a figure with subplots for 'Required_***' metrics.
+
+    Each subplot corresponds to a unique combination of simulation parameters (hue_vars).
+
+    Args:
+        summary_df: Summary DataFrame containing metrics and parameters.
+        case: Analysis case configuration dictionary.
+        required_cols: List of column names for Required metrics to plot.
+        base_metric_name: Base name of the Required metric.
+        save_dir: Directory to save the generated plots.
+        unit_map: Optional unit configuration mapping. Defaults to None.
+
+    Returns:
+        List of paths to saved plot files (English and Chinese versions).
+
+    Note:
+        Generates bilingual plots (English and Chinese). Creates subplots grouped by
+        simulation parameter combinations. Each subplot shows multiple lines for different
+        constraint values. Uses viridis color palette for line coloring.
     """
     plot_paths = []
     original_lang_is_chinese = _use_chinese_labels
@@ -364,9 +439,9 @@ def generate_analysis_plots(
     save_dir: str,
     unit_map: dict = None,
     glossary_path: str = None,
-) -> list:
-    """
-    Generates and saves plots based on the sensitivity analysis summary.
+) -> list[str]:
+    """Generates and saves plots based on the sensitivity analysis summary.
+
     This function first generates dedicated plots for all 'Required_***' metrics,
     then handles plotting for all other standard metrics.
 
@@ -374,11 +449,16 @@ def generate_analysis_plots(
         summary_df: DataFrame containing the summarized analysis results.
         analysis_case: Configuration for the analysis cases.
         save_dir: Directory to save the plot images.
-        unit_map: Optional dictionary for unit conversion and labeling.
+        unit_map: Optional dictionary for unit conversion and labeling. Defaults to None.
         glossary_path: Optional path to the glossary CSV file for professional labels.
 
     Returns:
         A list of paths to the saved plot images.
+
+    Note:
+        Handles Required_*** metrics separately with multi-subplot layouts. Standard
+        metrics can be combined or plotted individually based on case configuration.
+        Returns empty list if summary_df is empty. Loads glossary if path provided.
     """
     if glossary_path:
         load_glossary(glossary_path)
@@ -515,16 +595,31 @@ def generate_analysis_plots(
 
 def _generate_combined_plots(
     summary_df: pd.DataFrame,
-    valid_plots: list,
+    valid_plots: list[dict],
     save_dir: str,
     line_colors: list,
     unit_map: dict = None,
-) -> list:
-    """
-    Generate a single combined figure with multiple subplots.
+) -> list[str]:
+    """Generate a single combined figure with multiple subplots.
+
     Layout rules:
-    - Max 2 plots per row.
-    - For odd numbers of plots > 1, the last plot is centered and spans the full width.
+    - Max 2 plots per row
+    - For odd numbers of plots > 1, the last plot is centered and spans the full width
+
+    Args:
+        summary_df: DataFrame containing plot data.
+        valid_plots: List of plot configuration dictionaries.
+        save_dir: Directory to save plots.
+        line_colors: List of colors for plot lines.
+        unit_map: Optional unit configuration dictionary. Defaults to None.
+
+    Returns:
+        List of paths to saved plot files.
+
+    Note:
+        Delegates to _generate_individual_plots for single plot case. Creates bilingual
+        plots (English and Chinese). Uses grid layout with special handling for odd
+        number of plots where the last plot spans full width.
     """
     n_plots = len(valid_plots)
     if n_plots == 0:
@@ -616,13 +711,27 @@ def _generate_combined_plots(
 
 def _generate_individual_plots(
     summary_df: pd.DataFrame,
-    valid_plots: list,
+    valid_plots: list[dict],
     save_dir: str,
     line_colors: list,
     unit_map: dict = None,
-) -> list:
-    """
-    Generate individual plot files (original behavior).
+) -> list[str]:
+    """Generate individual plot files (original behavior).
+
+    Args:
+        summary_df: DataFrame containing plot data.
+        valid_plots: List of plot configuration dictionaries.
+        save_dir: Directory to save plots.
+        line_colors: List of colors for plot lines.
+        unit_map: Optional unit configuration dictionary. Defaults to None.
+
+    Returns:
+        List of paths to saved plot files.
+
+    Note:
+        Creates separate SVG files for each plot configuration. Generates bilingual
+        versions (English and Chinese) with _zh suffix for Chinese. Each plot is
+        saved as {plot_type}_{y_var}_vs_{x_var}[_zh].svg.
     """
     plot_paths = []
     original_lang_is_chinese = _use_chinese_labels
@@ -675,8 +784,7 @@ def _create_subplot(
     plot_index: int,
     unit_map: dict = None,
 ) -> None:
-    """
-    Creates and beautifies a single subplot for sensitivity analysis results.
+    """Creates and beautifies a single subplot for sensitivity analysis results.
 
     This function handles plotting one dependent variable against an independent
     variable. If 'hue_vars' are provided in plot_config, it will draw
@@ -688,7 +796,12 @@ def _create_subplot(
         ax: Matplotlib axes object to draw the plot on.
         line_colors: A list of colors to use for the plot lines.
         plot_index: The index of the plot, used to select a color.
-        unit_map: Optional dictionary for unit conversion and labeling.
+        unit_map: Optional dictionary for unit conversion and labeling. Defaults to None.
+
+    Note:
+        Applies unit conversions from unit_map if provided. Creates multi-line plots
+        with different styles for hue variables. Annotates data points when number of
+        curves <= 4 for readability. Uses viridis palette for multi-curve plots.
     """
     x_var = plot_config["x_var"]
     y_var = plot_config["y_var"]
@@ -829,23 +942,29 @@ def plot_sweep_time_series(
     default_params: Dict[str, Any] = None,
     glossary_path: str = None,
 ) -> List[str]:
-    """
-    Generates a single figure with two subplots: an overall time-series view and a
-    zoomed-in view around the minimum point of the curves. The time axis is in days.
-    The overall view hides data points for a curve if they exceed twice its initial value.
+    """Generates a single figure with two subplots: an overall time-series view and a zoomed-in view.
+
+    The time axis is in days. The overall view hides data points for a curve if
+    they exceed twice its initial value.
 
     Args:
-        csv_path (str): Path to the scan result CSV file.
-        save_dir (str): Directory to save the image.
-        y_var_name (Union[str, List[str]]): Name(s) of the Y-axis variable(s).
-        independent_var_name (str): Full name of the scan parameter.
-        independent_var_alias (str): Alias for the scan parameter for cleaner plot titles.
-        default_params (Dict[str, Any], optional): A dictionary of default parameters.
-            If provided, only curves matching these parameters will be plotted.
-        glossary_path (str, optional): Path to the glossary file for professional labels.
+        csv_path: Path to the scan result CSV file.
+        save_dir: Directory to save the image.
+        y_var_name: Name(s) of the Y-axis variable(s).
+        independent_var_name: Full name of the scan parameter.
+        independent_var_alias: Alias for the scan parameter for cleaner plot titles.
+        default_params: A dictionary of default parameters. If provided, only curves
+            matching these parameters will be plotted.
+        glossary_path: Path to the glossary file for professional labels.
 
     Returns:
         A list of paths to the saved plot images, or an empty list on failure.
+
+    Note:
+        Converts time from hours to days. Generates bilingual plots (English and Chinese).
+        Overall view masks data exceeding 2x initial value. Zoomed view shows region from
+        t=0 to 2 days past minimum, with red rectangle indicator on overall view. Data is
+        converted from grams to kilograms for display.
     """
     if glossary_path:
         load_glossary(glossary_path)

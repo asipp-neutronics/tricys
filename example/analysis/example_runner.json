@@ -31,6 +31,12 @@
       "description": "运行LATIN不确定性分析示例，该配置包括基于LATIN方法的不确定性分析",
       "path": "5_latin_uncertainty_analysis",
       "config": "latin_uncertainty_analysis.json"
+    },
+    {
+      "name": "ANALYSIS - 大模型API报告生成",
+      "description": "运行大模型API报告生成示例，该配置包括基于大模型API的分析报告生成, 需提前配置大模型API的环境变量(.env)",
+      "path": "6_llm_report_generation",
+      "config": "llm_report_generation.json"
     }
   ]
 }

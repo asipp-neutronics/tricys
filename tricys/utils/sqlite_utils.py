@@ -19,10 +19,15 @@ def create_parameters_table(db_path: str) -> None:
     """Creates the parameters table in the database if it does not exist.
 
     Args:
-        db_path (str): The path to the SQLite database file.
+        db_path: The path to the SQLite database file.
 
     Raises:
         sqlite3.Error: If a database error occurs during table creation.
+
+    Note:
+        Creates parent directories if they don't exist. Table schema includes:
+        name (TEXT PRIMARY KEY), type, default_value, sweep_values, description, dimensions.
+        Uses CREATE TABLE IF NOT EXISTS for safe repeated calls.
     """
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     logger.debug(f"Ensuring 'parameters' table exists in {db_path}")
@@ -51,12 +56,17 @@ def store_parameters_in_db(db_path: str, params_data: List[Dict[str, Any]]) -> N
     """Stores or replaces a list of parameter details in the database.
 
     Args:
-        db_path (str): The path to the SQLite database file.
-        params_data (List[Dict[str, Any]]): A list of dictionaries, where each
-            dictionary contains details for a single parameter.
+        db_path: The path to the SQLite database file.
+        params_data: A list of dictionaries, where each dictionary contains
+            details for a single parameter.
 
     Raises:
         sqlite3.Error: If a database error occurs during insertion.
+
+    Note:
+        Uses INSERT OR REPLACE for upsert behavior. JSON-encodes defaultValue
+        and stores dimensions with '()' default. Skips parameters without names.
+        Expected param dict keys: name, type, defaultValue, comment, dimensions.
     """
     logger.info(f"Storing {len(params_data)} parameters into '{db_path}'")
     if not params_data:
@@ -101,12 +111,17 @@ def update_sweep_values_in_db(db_path: str, param_sweep: Dict[str, Any]) -> None
     """Updates the 'sweep_values' for specified parameters in the database.
 
     Args:
-        db_path (str): The path to the SQLite database file.
-        param_sweep (Dict[str, Any]): A dictionary where keys are parameter names
-            and values are the corresponding sweep values (e.g., a list).
+        db_path: The path to the SQLite database file.
+        param_sweep: A dictionary where keys are parameter names and values are
+            the corresponding sweep values (e.g., a list).
 
     Raises:
         sqlite3.Error: If a database error occurs during the update.
+
+    Note:
+        Converts numpy arrays to lists before JSON encoding. Warns if parameter
+        not found in database. Uses UPDATE statement so parameters must exist
+        before calling this function.
     """
     logger.info(f"Updating sweep values in '{db_path}'")
     if not param_sweep:
@@ -144,11 +159,15 @@ def get_parameters_from_db(db_path: str) -> List[Dict[str, Any]]:
     """Retrieves parameter details from the database.
 
     Args:
-        db_path (str): The path to the SQLite database file.
+        db_path: The path to the SQLite database file.
 
     Returns:
-        List[Dict[str, Any]]: A list of parameter dictionaries, each containing
-        the name, default_value, description, and sweep_values.
+        A list of parameter dictionaries, each containing the name, default_value,
+        description, and sweep_values.
+
+    Note:
+        JSON-decodes stored values. Returns empty string for sweep_values if None.
+        Result dict keys: name, default_value, description, sweep_values.
     """
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()

@@ -27,22 +27,36 @@ logger = logging.getLogger(__name__)
 
 
 class TricysSALibAnalyzer:
-    """
-    Integrated SALib's Tricys Sensitivity Analyzer
+    """Integrated SALib's Tricys Sensitivity Analyzer.
 
     Supported Analysis Methods:
     - Sobol: Variance-based global sensitivity analysis
     - Morris: Screening-based sensitivity analysis
     - FAST: Fourier Amplitude Sensitivity Test
     - LHS: Latin Hypercube Sampling uncertainty analysis
+
+    Attributes:
+        base_config: Copy of the Tricys base configuration.
+        problem: SALib problem definition dictionary.
+        parameter_samples: Generated parameter samples array.
+        simulation_results: Results from simulations.
+        sensitivity_results: Dictionary storing sensitivity analysis results by method.
+
+    Note:
+        Automatically sets up Chinese font support and validates Tricys configuration
+        on initialization. Supports multiple sensitivity analysis methods with appropriate
+        sampling strategies.
     """
 
-    def __init__(self, base_config: Dict[str, Any]):
-        """
-        Initialize the analyzer
+    def __init__(self, base_config: Dict[str, Any]) -> None:
+        """Initialize the analyzer.
 
         Args:
-            base_config: Tricys base configuration dictionary
+            base_config: Tricys base configuration dictionary.
+
+        Note:
+            Creates a deep copy of base_config. Initializes problem, samples, and results
+            to None. Calls _setup_chinese_font() and _validate_tricys_config() automatically.
         """
         self.base_config = base_config.copy()
         self.problem = None
@@ -53,8 +67,14 @@ class TricysSALibAnalyzer:
         self._setup_chinese_font()
         self._validate_tricys_config()
 
-    def _setup_chinese_font(self):
-        """Set the Chinese font to ensure proper display of Chinese characters in the chart"""
+    def _setup_chinese_font(self) -> None:
+        """Set the Chinese font to ensure proper display of Chinese characters in charts.
+
+        Note:
+            Tries multiple Chinese fonts in order of preference. Falls back to default
+            if no Chinese font found. Also sets axes.unicode_minus to False for proper
+            minus sign display. Logs warnings if font setup fails.
+        """
         try:
             import matplotlib.font_manager as fm
 
@@ -139,7 +159,8 @@ class TricysSALibAnalyzer:
                 )
         return Y
 
-    def _validate_tricys_config(self):
+    def _validate_tricys_config(self) -> None:
+        """Validate the Tricys configuration for required sections and keys."""
         required_keys = {
             "paths": ["package_path"],
             "simulation": ["model_name", "stop_time"],
@@ -199,16 +220,19 @@ class TricysSALibAnalyzer:
         param_bounds: Dict[str, Tuple[float, float]],
         param_distributions: Dict[str, str] = None,
     ) -> Dict[str, Any]:
-        """
-        Define SALib problem space
+        """Define SALib problem space.
 
         Args:
-            param_bounds: Parameter bounds dictionary {'param_name': (min_val, max_val)}
-            param_distributions: Parameter distribution type dictionary {'param_name': 'unif'/'norm'/etc}
-                                Valid distribution types: 'unif', 'triang', 'norm', 'truncnorm', 'lognorm'
+            param_bounds: Parameter bounds dictionary {'param_name': (min_val, max_val)}.
+            param_distributions: Parameter distribution type dictionary {'param_name': 'unif'/'norm'/etc}.
+                Valid distribution types: 'unif', 'triang', 'norm', 'truncnorm', 'lognorm'.
 
         Returns:
-            SALib problem definition dictionary
+            SALib problem definition dictionary.
+
+        Note:
+            Defaults to 'unif' distribution if not specified. Validates distribution types
+            and warns if invalid. Logs parameter definitions including bounds and distributions.
         """
         if param_distributions is None:
             param_distributions = {name: "unif" for name in param_bounds.keys()}
@@ -255,16 +279,22 @@ class TricysSALibAnalyzer:
     def generate_samples(
         self, method: str = "sobol", N: int = 1024, **kwargs
     ) -> np.ndarray:
-        """
-        Generate parameter samples
+        """Generate parameter samples.
 
         Args:
-            method: Sampling method ('sobol', 'morris', 'fast', 'latin')
-            N: Number of samples (for Sobol this is the base sample count, actual sample count is N*(2*D+2))
-            **kwargs: Method-specific parameters
+            method: Sampling method ('sobol', 'morris', 'fast', 'latin').
+            N: Number of samples (for Sobol this is the base sample count, actual count is N*(2*D+2)).
+            **kwargs: Method-specific parameters.
 
         Returns:
-            Parameter sample array (n_samples, n_params)
+            Parameter sample array (n_samples, n_params).
+
+        Raises:
+            ValueError: If problem not defined or unsupported method.
+
+        Note:
+            Sobol generates N*(2*D+2) samples. Morris generates N trajectories. Samples are
+            rounded to 5 decimal places. Stores last sampling method for compatibility checking.
         """
         if self.problem is None:
             raise ValueError(
@@ -1314,7 +1344,7 @@ class TricysSALibAnalyzer:
         save_dir: str = None,
         figsize: Tuple[int, int] = (12, 8),
         metric_names: List[str] = None,
-    ):
+    ) -> None:
         """Plot Sobol analysis results"""
         if "sobol" not in self.sensitivity_results:
             raise ValueError("No analysis results for the Sobol method were found.")
@@ -1381,7 +1411,7 @@ class TricysSALibAnalyzer:
         save_dir: str = None,
         figsize: Tuple[int, int] = (12, 8),
         metric_names: List[str] = None,
-    ):
+    ) -> None:
         """Plot the Morris analysis results"""
         if "morris" not in self.sensitivity_results:
             raise ValueError("No analysis results were found for the Morris method.")
@@ -1452,7 +1482,7 @@ class TricysSALibAnalyzer:
         save_dir: str = None,
         figsize: Tuple[int, int] = (12, 8),
         metric_names: List[str] = None,
-    ):
+    ) -> None:
         """Plot FAST analysis results"""
         if "fast" not in self.sensitivity_results:
             raise ValueError("No analysis results found for the FAST method")
@@ -1522,7 +1552,7 @@ class TricysSALibAnalyzer:
         save_dir: str = None,
         figsize: Tuple[int, int] = (12, 8),
         metric_names: List[str] = None,
-    ):
+    ) -> None:
         """Plot LHS (Latin Hypercube Sampling) uncertainty analysis results"""
         if "latin" not in self.sensitivity_results:
             raise ValueError("No analysis results found for the LHS method")
@@ -1610,7 +1640,7 @@ class TricysSALibAnalyzer:
 
     def save_results(
         self, save_dir: str = None, format: str = "csv", metric_names: List[str] = None
-    ):
+    ) -> None:
         """
         Save sensitivity analysis results
 
@@ -1958,8 +1988,16 @@ def call_llm_for_academic_report(
         return None, None
 
 
-def run_salib_analysis(config: Dict[str, Any]):
+def run_salib_analysis(config: Dict[str, Any]) -> None:
+    """
+    Orchestrates the SALib sensitivity analysis workflow.
 
+    This function extracts the necessary configuration, defines the problem
+    space for SALib, and then runs the analysis.
+
+    Args:
+        config: The main configuration dictionary.
+    """
     # 1. Extract sensitivity analysis configuration
     sa_config = config.get("sensitivity_analysis")
     if not sa_config or not sa_config.get("enabled"):

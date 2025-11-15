@@ -1,0 +1,30 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  
+      - pages
+
+permissions:
+  contents: write 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11 
+
+      - name: Install dependencies
+        run: pip install mkdocs mkdocs-autorefs mkdocs-get-deps mkdocs-material mkdocs-material-extensions mkdocs-mermaid2-plugin mkdocs-static-i18n mkdocstrings mkdocstrings-python 
+
+      - name: Deploy
+        run: mkdocs gh-deploy --force --clean

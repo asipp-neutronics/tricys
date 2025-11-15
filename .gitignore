@@ -19,6 +19,7 @@ dist/
 # IDE and Editor files
 .vscode/
 .idea/
+.cache/
 
 # Configured output and data directories
 data/
@@ -40,5 +41,7 @@ test_example/
 
 # Ignore cfedr directories
 cfedr*/
-
 cfedr/*
+
+# Ignore mkdocs site directory
+site/

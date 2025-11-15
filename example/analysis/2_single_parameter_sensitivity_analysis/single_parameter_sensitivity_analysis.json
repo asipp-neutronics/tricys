@@ -106,7 +106,7 @@
             "Required_TBR": {
                 "source_column": "sds.I[1]",
                 "method": "bisection_search",
-                "parameter_to_optimize": "bz.TBR",
+                "parameter_to_optimize": "blanket.TBR",
                 "search_range": [1,1.5],
                 "tolerance": 0.005,
                 "max_iterations": 10

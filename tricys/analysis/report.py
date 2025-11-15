@@ -4,7 +4,7 @@ import os
 import re
 import shutil
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import openai
 import pandas as pd
@@ -23,10 +23,30 @@ def call_openai_analysis_api(
     report_content: str,
     original_config: dict,
     case_data: dict,
-    reference_col_for_turning_point: str = None,  # NEW PARAMETER
-):
-    """
-    Constructs a text-only prompt, calls the OpenAI API for analysis, and returns the result string.
+    reference_col_for_turning_point: str = None,
+) -> Optional[str]:
+    """Constructs a text-only prompt, calls the OpenAI API for analysis, and returns the result string.
+
+    Args:
+        case_name: Name of the analysis case.
+        df: DataFrame containing summary data.
+        api_key: OpenAI API key.
+        base_url: Base URL for the OpenAI API.
+        ai_model: Model name to use for analysis.
+        independent_variable: Name of the independent variable.
+        report_content: The report content to analyze.
+        original_config: Original configuration dictionary.
+        case_data: Case-specific data dictionary.
+        reference_col_for_turning_point: Optional reference column for turning point analysis.
+
+    Returns:
+        The combined prompt and LLM analysis result, or None if failed.
+
+    Note:
+        Constructs dynamic prompts based on case configuration. Includes sections for
+        global sensitivity analysis, interaction effects (if simulation parameters present),
+        and dynamic process analysis (if reference column provided). Retries up to 3 times
+        on failure with 5-second delays.
     """
     try:
         logger.info(f"Proceeding with LLM analysis for case {case_name}.")
@@ -165,10 +185,25 @@ def generate_sensitivity_academic_report(
     case_data: dict,
     ai_model: str,
     report_path: str,
-):
-    """
-    Generates a professional academic analysis summary for a sensitivity analysis case
-    by sending the existing report and a glossary of terms to an LLM.
+) -> None:
+    """Generates a professional academic analysis summary for a sensitivity analysis case.
+
+    Sends the existing report and a glossary of terms to an LLM for academic formatting.
+
+    Args:
+        case_name: Name of the analysis case.
+        case_workspace: Path to the case workspace directory.
+        independent_variable: Name of the independent variable.
+        original_config: Original configuration dictionary.
+        case_data: Case-specific data dictionary.
+        ai_model: Model name to use for generating the report.
+        report_path: Path to the existing report file.
+
+    Note:
+        Requires report file and glossary file to exist. Loads API credentials from
+        environment variables. Generates academic report with proper structure including
+        title, abstract, introduction, methodology, results & discussion, and conclusion.
+        Retries up to 3 times on API failure. Saves result to academic_report_{case_name}_{model}.md.
     """
     try:
         logger.info(
@@ -415,8 +450,20 @@ def generate_sensitivity_academic_report(
 
 def generate_prompt_templates(
     case_configs: List[Dict[str, Any]], original_config: Dict[str, Any]
-):
-    """Generate detailed Markdown analysis reports for each analysis case."""
+) -> None:
+    """Generate detailed Markdown analysis reports for each analysis case.
+
+    Args:
+        case_configs: List of case configuration dictionaries containing case data and workspace info.
+        original_config: Original configuration dictionary with sensitivity analysis settings.
+
+    Note:
+        Skips SALib cases (those with analyzer.method defined). For each case, generates
+        a detailed Markdown report including configuration details, optimization configs,
+        time-series plots, performance metric plots, and data tables. Supports AI-enhanced
+        reporting if API credentials are available. Creates bilingual plots prioritizing
+        Chinese versions (_zh suffix).
+    """
 
     def _find_unit_config(var_name: str, unit_map: dict) -> dict | None:
         """
@@ -1092,7 +1139,9 @@ def generate_prompt_templates(
         logger.error(f"Error generating detailed analysis reports: {e}", exc_info=True)
 
 
-def _retry_salib_case(case_info: Dict[str, Any], original_config: Dict[str, Any]):
+def _retry_salib_case(
+    case_info: Dict[str, Any], original_config: Dict[str, Any]
+) -> None:
     """Retries AI analysis for a single SALib case."""
     from tricys.analysis.salib import (
         call_llm_for_academic_report,
@@ -1248,7 +1297,9 @@ def _retry_salib_case(case_info: Dict[str, Any], original_config: Dict[str, Any]
         )
 
 
-def _retry_standard_case(case_info: Dict[str, Any], original_config: Dict[str, Any]):
+def _retry_standard_case(
+    case_info: Dict[str, Any], original_config: Dict[str, Any]
+) -> None:
     """Retries AI analysis for a single standard case."""
     case_data = case_info["case_data"]
     case_workspace = case_info["workspace"]
@@ -1382,11 +1433,20 @@ def _retry_standard_case(case_info: Dict[str, Any], original_config: Dict[str, A
 
 def retry_ai_analysis(
     case_configs: List[Dict[str, Any]], original_config: Dict[str, Any]
-):
-    """
-    Retries AI analysis for cases where it might have failed due to network issues.
-    It checks for existing reports and re-runs only the AI-dependent parts if they are missing.
+) -> None:
+    """Retries AI analysis for cases where it might have failed due to network issues.
+
+    Checks for existing reports and re-runs only the AI-dependent parts if they are missing.
     This function can be triggered by setting an environment variable.
+
+    Args:
+        case_configs: List of case configuration dictionaries.
+        original_config: Original configuration dictionary.
+
+    Note:
+        Routes to _retry_salib_case for SALib cases or _retry_standard_case for standard cases.
+        Only regenerates missing AI analysis and academic reports. Does not re-run simulations.
+        Logs all retry attempts and failures.
     """
     logger.info("Starting AI analysis retry process...")
     try:
@@ -1402,9 +1462,17 @@ def retry_ai_analysis(
 
 def consolidate_reports(
     case_configs: List[Dict[str, Any]], original_config: Dict[str, Any]
-):
-    """
-    Consolidates generated reports and their images into a 'report' directory for each case.
+) -> None:
+    """Consolidates generated reports and their images into a 'report' directory for each case.
+
+    Args:
+        case_configs: List of case configuration dictionaries.
+        original_config: Original configuration dictionary.
+
+    Note:
+        Moves analysis reports, academic reports, and plot images from results directory
+        to report directory. Uses move operation (not copy). Creates report directory
+        if it doesn't exist. Skips cases where source directory not found.
     """
     logger.info("Consolidating analysis reports...")
     try:
@@ -1451,9 +1519,19 @@ def consolidate_reports(
 
 def generate_analysis_cases_summary(
     case_configs: List[Dict[str, Any]], original_config: Dict[str, Any]
-):
+) -> None:
+    """Generate summary report for analysis_cases.
+
+    Args:
+        case_configs: List of case configuration dictionaries.
+        original_config: Original configuration dictionary containing run timestamp.
+
+    Note:
+        Creates an execution report with basic information, case details, and status.
+        Saves report to {run_timestamp}/execution_report_{run_timestamp}.md in current
+        working directory. Also triggers generate_prompt_templates and consolidate_reports.
+        Logs summary of successfully executed cases.
     """
-    Generate summary report for analysis_cases"""
     try:
         run_timestamp = original_config["run_timestamp"]
         # Generate report in current working directory

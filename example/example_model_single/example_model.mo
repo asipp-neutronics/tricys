@@ -701,7 +701,7 @@ for i in 1:5 loop
     connect(tep_fep.to_SDS, sds.from_TEP_FEP) annotation(
       Line(points = {{-90, -38}, {-90, -20}, {-10, -20}, {-10, -2}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
     connect(pulseSource.y, blanket.pulseInput) annotation(
-      Line(points = {{-159, 10}, {10, 118}}, color = {255, 0, 0}, pattern = LinePattern.Dash, thickness = 1, arrow = {Arrow.None, Arrow.Open}));
+      Line(points = {{-159, 10}, {-159, 66}, {9.75, 66}, {9.75, 118}, {10, 118}}, color = {255, 0, 0}, pattern = LinePattern.Dash, thickness = 1, arrow = {Arrow.None, Arrow.Open}));
     connect(coolant_pipe.to_DIV, div.from_CL) annotation(
       Line(points = {{-42, 126}, {-66, 126}, {-66, 96}, {-78, 96}}, color = {0, 0, 127}, thickness = 0.5, smooth = Smooth.Bezier));
     connect(div.to_CL, coolant_pipe.from_DIV) annotation(

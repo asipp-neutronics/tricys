@@ -10,7 +10,6 @@
     },
     "sensitivity_analysis": {
         "enabled": true,
-        "concurrent_cases":true,
         "analysis_cases": [
             {
                 "name": "DIR_PLASMA_Analysis",

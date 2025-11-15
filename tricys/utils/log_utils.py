@@ -4,14 +4,14 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from pythonjsonlogger import jsonlogger
 
 logger = logging.getLogger(__name__)
 
 
-def delete_old_logs(log_path: str, max_files: int):
+def delete_old_logs(log_path: str, max_files: int) -> None:
     """Deletes the oldest log files in a directory to meet a specified limit.
 
     Checks the number of `.log` files in the given directory and removes the
@@ -19,8 +19,12 @@ def delete_old_logs(log_path: str, max_files: int):
     `max_files` limit.
 
     Args:
-        log_path (str): The path to the directory containing log files.
-        max_files (int): The maximum number of `.log` files to retain.
+        log_path: The path to the directory containing log files.
+        max_files: The maximum number of `.log` files to retain.
+
+    Note:
+        Only processes files with .log extension. Sorts by modification time
+        (oldest first) before deletion. Does nothing if current count <= max_files.
     """
     log_files = [
         os.path.join(log_path, f) for f in os.listdir(log_path) if f.endswith(".log")
@@ -38,8 +42,21 @@ def delete_old_logs(log_path: str, max_files: int):
             os.remove(log_files[i])
 
 
-def setup_logging(config: Dict[str, Any], original_config: Dict[str, Any] = None):
-    """Configures the logging module based on the application configuration."""
+def setup_logging(
+    config: Dict[str, Any], original_config: Dict[str, Any] = None
+) -> None:
+    """Configures the logging module based on the application configuration.
+
+    Args:
+        config: The main configuration dictionary containing logging settings.
+        original_config: Optional original configuration for additional logging.
+
+    Note:
+        Sets up JSON formatted logging to console and/or file. Manages log file rotation
+        via delete_old_logs(). Supports main_log_path for analysis cases. Logs both
+        runtime and original configurations in compact JSON format. Clears existing
+        handlers to prevent duplicates.
+    """
     log_config = config.get("logging", {})
     log_level_str = log_config.get("log_level", "INFO").upper()
     log_level = getattr(logging, log_level_str, logging.INFO)
@@ -105,8 +122,19 @@ def setup_logging(config: Dict[str, Any], original_config: Dict[str, Any] = None
             )
 
 
-def log_execution_time(func):
-    """A decorator to log the execution time of a function."""
+def log_execution_time(func: Callable) -> Callable:
+    """A decorator to log the execution time of a function.
+
+    Args:
+        func: The function to be decorated.
+
+    Returns:
+        The wrapped function that logs execution time.
+
+    Note:
+        Measures execution time using time.perf_counter(). Logs function name,
+        module, and duration in milliseconds. Uses structured logging with extra fields.
+    """
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -131,8 +159,18 @@ def log_execution_time(func):
 def restore_configs_from_log(
     timestamp: str,
 ) -> tuple[Dict[str, Any] | None, Dict[str, Any] | None]:
-    """
-    Finds the log file for a given timestamp and restores the runtime and original configurations.
+    """Finds the log file for a given timestamp and restores configurations.
+
+    Args:
+        timestamp: The timestamp directory name to search for log files.
+
+    Returns:
+        A tuple of (runtime_config, original_config) or (None, None) if not found.
+
+    Note:
+        Searches in timestamp/simulation_{timestamp}.log and timestamp/log/ directory.
+        Parses JSON log entries to find "Runtime Configuration" and "Original Configuration"
+        messages. Returns parsed configurations as dictionaries.
     """
     log_file_path = None
     # Define potential locations for the log file

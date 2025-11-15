@@ -7,8 +7,18 @@ import pandas as pd
 def get_final_value(
     series: pd.Series, time_series: Optional[pd.Series] = None
 ) -> float:
-    """
-    Returns the final value of a time series.
+    """Gets the final value of a time series.
+
+    Args:
+        series: The time series data.
+        time_series: The corresponding time data (unused).
+
+    Returns:
+        The last value in the series.
+
+    Note:
+        The time_series parameter is kept for interface consistency but is not used
+        in the calculation. Only the series data is required.
     """
     return series.iloc[-1]
 
@@ -16,9 +26,22 @@ def get_final_value(
 def calculate_startup_inventory(
     series: pd.Series, time_series: Optional[pd.Series] = None
 ) -> float:
-    """
-    Calculates the startup inventory as the difference between the initial
+    """Calculates the startup inventory.
+
+    The startup inventory is calculated as the difference between the initial
     inventory and the minimum inventory (the turning point).
+
+    Args:
+        series: The inventory time series data.
+        time_series: The corresponding time data (unused).
+
+    Returns:
+        The calculated startup inventory.
+
+    Note:
+        The time_series parameter is provided for interface consistency but is not
+        used in the calculation. The startup inventory represents the amount of
+        inventory consumed before reaching the minimum point.
     """
     initial_inventory = series.iloc[0]
     minimum_inventory = series.min()
@@ -26,14 +49,29 @@ def calculate_startup_inventory(
 
 
 def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
-    """
-    Finds the time of the turning point (minimum value) in the series.
-    This represents the self-sufficiency time.
-    To handle noisy data, it first smooths the series to determine if an
-    overall turning point exists. If the minimum of the smoothed trend is at
-    the beginning or end of the series (indicating a monotonic trend),
-    it returns NaN. Otherwise, it returns the time of the minimum value from
-    the original, unsmoothed data.
+    """Finds the time of the turning point (minimum value) in a series.
+
+    This function identifies the time corresponding to the minimum value in the
+    series, which often represents the self-sufficiency time in tritium inventory
+    simulations. To handle noisy data, it first smooths the series to find the
+    general trend's minimum. If the smoothed minimum is not at the boundaries,
+    it returns the time of the absolute minimum from the original data.
+
+    Args:
+        series: The time series data to analyze.
+        time_series: The corresponding time data.
+
+    Returns:
+        The time of the turning point, or NaN if the trend is monotonic.
+
+    Raises:
+        ValueError: If time_series is None.
+
+    Note:
+        Uses a rolling window (0.1% of data length) for smoothing to identify the
+        general trend. If the smoothed minimum is within the last 30% of the series,
+        the trend is considered monotonic and NaN is returned. Otherwise, returns
+        the time of the absolute minimum in the original data.
     """
 
     print(
@@ -68,8 +106,26 @@ def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
 
 
 def calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float:
-    """
-    Calculates the time it takes for the inventory to double its initial value.
+    """Calculates the time it takes for the inventory to double its initial value.
+
+    This function finds the first time point, after the inventory's minimum
+    (turning point), where the inventory level reaches or exceeds twice its
+    initial value.
+
+    Args:
+        series: The inventory time series data.
+        time_series: The corresponding time data.
+
+    Returns:
+        The doubling time, or NaN if the inventory never doubles.
+
+    Raises:
+        ValueError: If time_series is None.
+
+    Note:
+        Only considers the portion of the series after the turning point (minimum).
+        Returns NaN if the inventory never reaches twice the initial value in the
+        post-turning-point region.
     """
     if time_series is None:
         raise ValueError("time_series must be provided for calculate_doubling_time")
@@ -98,17 +154,27 @@ def extract_metrics(
     metrics_definition: Dict[str, Any],
     analysis_case: Dict[str, Any],
 ) -> pd.DataFrame:
-    """
-    Extracts summary metrics from the detailed simulation results DataFrame.
+    """Extracts summary metrics from detailed simulation results.
+
+    This function processes a DataFrame from a parameter sweep, calculates
+    various metrics for each run based on a definitions dictionary, and
+    pivots the results into a summary DataFrame where each row corresponds
+    to a unique parameter combination.
 
     Args:
-        results_df: DataFrame from the combined sweep_results.csv.
-        metrics_definition: Dictionary defining how to calculate metrics.
-        analysis_case: analysis case to identify independent variables.
+        results_df: DataFrame from the combined sweep results.
+        metrics_definition: Dictionary defining how to calculate each metric
+            (e.g., source column, method).
+        analysis_case: The analysis case configuration, used to identify
+            dependent variables.
 
     Returns:
-        A pivoted DataFrame where index are the parameters, columns are metric names,
-        and values are the calculated metric values.
+        A pivoted DataFrame with parameters as the index and metric names as columns.
+
+    Note:
+        Parses column names in format "variable&param1=value1&param2=value2" to extract
+        parameter values. Skips metrics with "bisection_search" method. Returns empty
+        DataFrame if no valid metrics are found or if pivoting fails.
     """
 
     analysis_results = []

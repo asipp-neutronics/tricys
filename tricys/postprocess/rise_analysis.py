@@ -7,15 +7,24 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def analyze_rise_dip(results_df: pd.DataFrame, output_dir: str, **kwargs):
-    """
-    Analyzes the combined results of a parameter sweep and reports the curves
-    that fail to exhibit the 'dip and rise' feature.
+def analyze_rise_dip(results_df: pd.DataFrame, output_dir: str, **kwargs) -> None:
+    """Analyzes parameter sweep results to identify curves that fail to exhibit 'dip and rise' feature.
+
+    A curve exhibits the 'dip and rise' feature if:
+    1. It has a clear minimum point (not at boundaries)
+    2. Values at both start and end are higher than the minimum (with tolerance)
 
     Args:
-        results_df (pd.DataFrame): The combined DataFrame of simulation results, including time and multiple parameter combinations.
-        output_dir (str): The directory to save the analysis report.
-        **kwargs: Additional parameters from the config, e.g., 'output_filename'.
+        results_df: The combined DataFrame of simulation results, including time and
+            multiple parameter combinations.
+        output_dir: The directory to save the analysis report.
+        **kwargs: Additional parameters from config, e.g., 'output_filename'.
+
+    Note:
+        Uses 0.1% smoothing window to handle noisy data. Column names expected in
+        format 'variable&param1=v1&param2=v2'. Logs ERROR for each curve without
+        the feature. Always generates rise_report.json with analysis results for
+        all curves, including 'rises' boolean flag.
     """
     logger.info("Starting post-processing: Analyzing curve rise/dip features...")
     all_curves_info = []

@@ -28,8 +28,27 @@ logger = logging.getLogger(__name__)
 
 
 def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
-    """
-    Runs the full co-simulation workflow in an isolated directory to ensure thread safety.
+    """Runs the full co-simulation workflow in an isolated directory.
+
+    This function sets up a self-contained workspace for a single co-simulation
+    job to ensure thread safety. It copies the model package, handles asset
+    files, generates an interceptor model, and executes a two-stage
+    simulation: first to get primary inputs, and second to run the final
+    simulation with the intercepted model.
+
+    Args:
+        config: The main configuration dictionary.
+        job_params: A dictionary of parameters specific to this job.
+        job_id: A unique identifier for the job, used for workspace naming. Defaults to 0.
+
+    Returns:
+        The path to the final simulation result file, or an empty string if the simulation failed.
+
+    Note:
+        Creates isolated workspace in temp_dir/job_{job_id}. Supports both single-file
+        and multi-file Modelica packages. Handles external interceptor handlers. Cleans
+        up workspace after completion. Two-stage simulation: stage 1 generates input CSV,
+        stage 2 runs with interceptor model.
     """
     paths_config = config["paths"]
     sim_config = config["simulation"]
@@ -97,9 +116,14 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
         results_dir = os.path.abspath(paths_config["results_dir"])
         os.makedirs(results_dir, exist_ok=True)
 
-        co_sim_configs = config["co_simulation"]
-        if not isinstance(co_sim_configs, list):
-            co_sim_configs = [co_sim_configs]
+        # Parse co_simulation config - new format with mode at top level
+        co_sim_config = config["co_simulation"]
+        mode = co_sim_config.get("mode", "interceptor")  # Get mode from top level
+        handlers = co_sim_config.get("handlers", [])  # Get handlers array
+
+        # Validate that handlers is a list
+        if not isinstance(handlers, list):
+            handlers = [handlers]
 
         model_name = sim_config["model_name"]
         stop_time = sim_config["stop_time"]
@@ -112,10 +136,10 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
             )
 
         # Handle copying of any additional asset directories specified with a '_path' suffix
-        for co_sim_config in co_sim_configs:
-            if "params" in co_sim_config:
+        for handler_config in handlers:
+            if "params" in handler_config:
                 # Iterate over a copy of items since we are modifying the dict
-                for param_key, param_value in list(co_sim_config["params"].items()):
+                for param_key, param_value in list(handler_config["params"].items()):
                     if isinstance(param_value, str) and param_key.endswith("_path"):
                         original_asset_path_str = param_value
 
@@ -148,20 +172,20 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
 
                         # Update the path in the config to point to the new location
                         new_asset_path = dest_dir / original_asset_path.name
-                        co_sim_config["params"][param_key] = new_asset_path.as_posix()
+                        handler_config["params"][param_key] = new_asset_path.as_posix()
                         logger.info(
                             "Updated asset parameter path",
                             extra={
                                 "job_id": job_id,
                                 "parameter_key": param_key,
-                                "new_path": co_sim_config["params"][param_key],
+                                "new_path": handler_config["params"][param_key],
                             },
                         )
 
         all_input_vars = []
-        for co_sim_config in co_sim_configs:
-            submodel_name = co_sim_config["submodel_name"]
-            instance_name = co_sim_config["instance_name"]
+        for handler_config in handlers:
+            submodel_name = handler_config["submodel_name"]
+            instance_name = handler_config["instance_name"]
             logger.info(
                 "Identifying input ports for submodel",
                 extra={
@@ -240,13 +264,13 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                 )
 
         interception_configs = []
-        for co_sim_config in co_sim_configs:
-            handler_function_name = co_sim_config["handler_function"]
+        for handler_config in handlers:
+            handler_function_name = handler_config["handler_function"]
             module = None
 
             # New method: Load from a direct script path
-            if "handler_script_path" in co_sim_config:
-                script_path_str = co_sim_config["handler_script_path"]
+            if "handler_script_path" in handler_config:
+                script_path_str = handler_config["handler_script_path"]
                 script_path = Path(script_path_str).resolve()
                 module_name = script_path.stem
 
@@ -274,8 +298,8 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                     )
 
             # Old method: Load from module name (backward compatibility)
-            elif "handler_module" in co_sim_config:
-                module_name = co_sim_config["handler_module"]
+            elif "handler_module" in handler_config:
+                module_name = handler_config["handler_module"]
                 logger.info(
                     "Loading co-simulation handler from module",
                     extra={
@@ -288,14 +312,14 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
 
             else:
                 raise KeyError(
-                    "Co-simulation config must contain either 'script_path' or 'handler_module'"
+                    "Handler config must contain either 'script_path' or 'handler_module'"
                 )
 
             if not module:
                 raise ImportError("Failed to load co-simulation handler module.")
 
             handler_function = getattr(module, handler_function_name)
-            instance_name = co_sim_config["instance_name"]
+            instance_name = handler_config["instance_name"]
 
             co_sim_output_filename = get_unique_filename(
                 isolated_temp_dir, f"{instance_name}_outputs.csv"
@@ -304,17 +328,20 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
             output_placeholder = handler_function(
                 temp_input_csv=primary_result_filename,
                 temp_output_csv=co_sim_output_filename,
-                **co_sim_config.get("params", {}),
+                **handler_config.get("params", {}),
             )
 
-            interception_configs.append(
-                {
-                    "submodel_name": co_sim_config["submodel_name"],
-                    "instance_name": co_sim_config["instance_name"],
-                    "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
-                    "output_placeholder": output_placeholder,
-                }
-            )
+            interception_config = {
+                "submodel_name": handler_config["submodel_name"],
+                "instance_name": handler_config["instance_name"],
+                "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
+                "output_placeholder": output_placeholder,
+            }
+
+            # Add mode from top-level co_simulation config
+            interception_config["mode"] = mode
+
+            interception_configs.append(interception_config)
 
         intercepted_model_paths = integrate_interceptor_model(
             package_path=isolated_package_path,
@@ -325,24 +352,35 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
         verif_config = config["simulation"]["variableFilter"]
         logger.info("Proceeding with Final simulation.", extra={"job_id": job_id})
 
-        for model_path in intercepted_model_paths["interceptor_model_paths"]:
-            omc.sendExpression(f"""loadFile("{Path(model_path).as_posix()}")""")
-        omc.sendExpression(
-            f"""loadFile("{Path(intercepted_model_paths["system_model_path"]).as_posix()}")"""
-        )
+        # Use mode from top-level config
+        if mode == "replacement":
+            # For direct replacement, the system model name stays the same
+            logger.info(
+                "Using direct replacement mode, system model unchanged",
+                extra={"job_id": job_id},
+            )
+            final_model_name = model_name
+            final_model_file = isolated_package_path
+        else:
+            # For interceptor mode, load the interceptor models and use modified system
+            for model_path in intercepted_model_paths["interceptor_model_paths"]:
+                omc.sendExpression(f"""loadFile("{Path(model_path).as_posix()}")""")
+            omc.sendExpression(
+                f"""loadFile("{Path(intercepted_model_paths["system_model_path"]).as_posix()}")"""
+            )
 
-        package_name, original_system_name = model_name.split(".")
-        intercepted_model_full_name = (
-            f"{package_name}.{original_system_name}_Intercepted"
-        )
-        verif_mod = ModelicaSystem(
-            fileName=(
+            package_name, original_system_name = model_name.split(".")
+            final_model_name = f"{package_name}.{original_system_name}_Intercepted"
+            final_model_file = (
                 Path(intercepted_model_paths["system_model_path"]).as_posix()
                 if os.path.isfile(isolated_package_path)
                 and not original_package_path.endswith("package.mo")
                 else Path(isolated_package_path).as_posix()
-            ),
-            modelName=intercepted_model_full_name,
+            )
+
+        verif_mod = ModelicaSystem(
+            fileName=final_model_file,
+            modelName=final_model_name,
             variableFilter=verif_config,
         )
         verif_mod.setSimulationOptions(
@@ -400,7 +438,25 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
 
 
 def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
-    """Executes a single simulation job in an isolated workspace."""
+    """Executes a single standard simulation job in an isolated workspace.
+
+    This function sets up a dedicated workspace for one simulation run,
+    initializes an OpenModelica session, sets the specified model parameters,
+    runs the simulation, and cleans up the result file.
+
+    Args:
+        config: The main configuration dictionary.
+        job_params: A dictionary of parameters specific to this job.
+        job_id: A unique identifier for the job. Defaults to 0.
+
+    Returns:
+        The path to the simulation result file, or an empty string on failure.
+
+    Note:
+        Creates isolated workspace in temp_dir/job_{job_id}. Cleans result file by
+        removing duplicate/NaN time values. Cleans up workspace unless keep_temp_files
+        is True. Uses CSV output format with configurable stopTime and stepSize.
+    """
     paths_config = config["paths"]
     sim_config = config["simulation"]
 
@@ -480,9 +536,24 @@ def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
 
 
 def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
-    """
-    Executes a parameter sweep sequentially, reusing the OM session for efficiency.
-    Saves intermediate results to the timestamped temporary directory.
+    """Executes a parameter sweep sequentially.
+
+    This function runs a series of simulation jobs one after another, reusing
+    the same OpenModelica session for efficiency. Intermediate results for each
+    job are saved to a dedicated job workspace.
+
+    Args:
+        config: The main configuration dictionary.
+        jobs: A list of job parameter dictionaries to execute.
+
+    Returns:
+        A list of paths to the result files for each job. Failed jobs will have
+        an empty string as their path.
+
+    Note:
+        Reuses single OMPython session for all jobs. Cleans result files by removing
+        duplicate/NaN time values. Cleans up workspaces unless keep_temp_files is True.
+        More efficient than parallel mode for small job counts.
     """
     paths_config = config["paths"]
     sim_config = config["simulation"]
@@ -588,10 +659,24 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
 
 def _run_post_processing(
     config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
-):
-    """
-    Dynamically load and run post-processing modules based on configuration.
-    Supports loading from a module name or a direct script path.
+) -> None:
+    """Dynamically loads and runs post-processing modules.
+
+    This function iterates through the post-processing tasks defined in the
+    configuration. For each task, it dynamically loads the specified module
+    (from a module name or a script path) and executes the target function,
+    passing the results DataFrame and other parameters to it.
+
+    Args:
+        config: The main configuration dictionary.
+        results_df: The combined DataFrame of simulation results.
+        post_processing_output_dir: The directory to save any output from the tasks.
+
+    Note:
+        Supports two loading methods: 'script_path' for direct .py files, or 'module'
+        for installed packages. Creates output_dir if it doesn't exist. Passes results_df,
+        output_dir, and user-specified params to each task function. Logs errors for
+        failed tasks but continues with remaining tasks.
     """
     post_processing_configs = config.get("post_processing")
     if not post_processing_configs:
@@ -686,8 +771,23 @@ def _run_post_processing(
     logger.info("Post-processing phase ended")
 
 
-def run_simulation(config: Dict[str, Any]):
-    """Orchestrates the simulation execution, result handling, and cleanup."""
+def run_simulation(config: Dict[str, Any]) -> None:
+    """Orchestrates the main simulation workflow.
+
+    This function serves as the primary orchestrator for running simulations.
+    It generates jobs from parameters, executes them (concurrently or sequentially,
+    as standard or co-simulations), merges the results into a single DataFrame,
+    and triggers any configured post-processing steps.
+
+    Args:
+        config: The main configuration dictionary for the run.
+
+    Note:
+        Supports concurrent (ThreadPoolExecutor) and sequential execution modes.
+        Co-simulations use ProcessPoolExecutor for better isolation. Merges all job
+        results into single CSV with parameter-labeled columns. Triggers post-processing
+        tasks if configured. Results saved to paths.results_dir.
+    """
     jobs = generate_simulation_jobs(config.get("simulation_parameters", {}))
 
     try:
@@ -956,8 +1056,15 @@ def run_simulation(config: Dict[str, Any]):
                 )
 
 
-def main(config_path: str):
-    """Main function to run the simulation from the command line."""
+def main(config_path: str) -> None:
+    """Main entry point for a standard simulation run.
+
+    This function prepares the configuration, sets up logging, and calls
+    the main `run_simulation` orchestrator.
+
+    Args:
+        config_path (str): The path to the JSON configuration file.
+    """
     config, original_config = basic_prepare_config(config_path)
     setup_logging(config, original_config)
     logger.info(

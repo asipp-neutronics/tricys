@@ -20,11 +20,15 @@ def get_unique_filename(base_path: str, filename: str) -> str:
     """Generates a unique filename by appending a counter if the file already exists.
 
     Args:
-        base_path (str): The directory path where the file will be saved.
-        filename (str): The desired filename, including the extension.
+        base_path: The directory path where the file will be saved.
+        filename: The desired filename, including the extension.
 
     Returns:
-        str: A unique, non-existing file path.
+        A unique, non-existing file path.
+
+    Note:
+        Appends _1, _2, etc. before the extension until a non-existing filename is found.
+        Example: if "data.csv" exists, returns "data_1.csv", then "data_2.csv", etc.
     """
     base_name, ext = os.path.splitext(filename)
     counter = 0
@@ -39,8 +43,17 @@ def get_unique_filename(base_path: str, filename: str) -> str:
     return new_filepath
 
 
-def archive_run(timestamp: str):
-    """Archives a run (simulation or analysis) based on its configuration."""
+def archive_run(timestamp: str) -> None:
+    """Archives a run (simulation or analysis) based on its configuration.
+
+    Args:
+        timestamp: The timestamp directory name of the run to archive.
+
+    Note:
+        Determines run type (analysis vs simulation) from configuration. Delegates
+        to _archive_run() with appropriate run_type. Extracts configuration from
+        log files using restore_configs_from_log().
+    """
 
     configs = restore_configs_from_log(timestamp)
     if not configs:
@@ -58,9 +71,17 @@ def archive_run(timestamp: str):
         _archive_run(timestamp, "simulation")
 
 
-def _archive_run(timestamp: str, run_type: str):
-    """
-    Internal implementation to archive a run by collecting all necessary files and compressing them.
+def _archive_run(timestamp: str, run_type: str) -> None:
+    """Internal implementation to archive a run by collecting all necessary files.
+
+    Args:
+        timestamp: The timestamp directory name to archive.
+        run_type: Type of run ("analysis" or "simulation").
+
+    Note:
+        Creates temporary 'archive' directory, copies assets and workspace, updates
+        paths in configuration, and creates zip archive. For analysis runs, ignores
+        temp and *.tmp files. Cleans up temporary directory after completion.
     """
     logging.basicConfig(
         level=logging.INFO,
@@ -124,10 +145,19 @@ def _archive_run(timestamp: str, run_type: str):
             logger.info(f"Cleaned up temporary archive directory: {archive_root}")
 
 
-def unarchive_run(zip_file: str):
-    """
-    Unarchives a simulation run from a zip file.
-    Extracts to a new folder if the current directory is not empty.
+def unarchive_run(zip_file: str) -> None:
+    """Unarchives a simulation run from a zip file.
+
+    Args:
+        zip_file: Path to the zip file to extract.
+
+    Raises:
+        SystemExit: If zip file not found or extraction fails.
+
+    Note:
+        Extracts to current directory if empty, otherwise creates new directory
+        named after the zip file. Sets up basic logging for the unarchive process.
+        Handles BadZipFile exceptions gracefully.
     """
     # Basic logging setup for unarchive command
     logging.basicConfig(
@@ -167,10 +197,20 @@ def unarchive_run(zip_file: str):
         sys.exit(1)
 
 
-def _copy_and_update_paths(runtime_node, final_node, archive_root, logger):
-    """
-    Recursively traverses runtime_node and final_node. Finds asset paths in runtime_node,
-    copies them to the archive, and updates the corresponding path in final_node.
+def _copy_and_update_paths(runtime_node, final_node, archive_root, logger) -> None:
+    """Recursively traverses nodes to find asset paths and copy them to archive.
+
+    Args:
+        runtime_node: Source configuration node with absolute paths.
+        final_node: Target configuration node to update with relative paths.
+        archive_root: Root directory of the archive.
+        logger: Logger instance for logging operations.
+
+    Note:
+        Handles special case for independent_variable_sampling when independent_variable
+        is "file". Copies files/directories for path keys (ending with '_path' or in
+        path_keys list). Updates final_node with relative paths. Processes package_path
+        differently for single files vs directories.
     """
     if not isinstance(runtime_node, type(final_node)):
         return

@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+from dotenv import load_dotenv
+
 from tricys.core.modelica import (
     get_model_default_parameters,
     get_om_session,
@@ -17,6 +19,68 @@ from tricys.core.modelica import (
 
 # Standard logger setup
 logger = logging.getLogger(__name__)
+
+
+def _search_dict(d: Any, key: str, value: Any) -> bool:
+    """Recursively search for a key-value pair in a dictionary or list."""
+    if isinstance(d, dict):
+        for k, v in d.items():
+            if k == key and v == value:
+                return True
+            if isinstance(v, (dict, list)):
+                if _search_dict(v, key, value):
+                    return True
+    elif isinstance(d, list):
+        for item in d:
+            if _search_dict(item, key, value):
+                return True
+    return False
+
+
+def check_ai_config(config: Dict[str, Any]) -> None:
+    """
+    Checks for AI-related environment variables if 'ai: true' is found in the config.
+
+    Args:
+        config: The configuration dictionary.
+
+    Raises:
+        SystemExit: If AI is enabled in the config but required environment
+                    variables are missing.
+
+    Note:
+        If any part of the configuration contains `"ai": true`, this function verifies
+        that `API_KEY`, `BASE_URL`, and either `AI_MODEL` or `AI_MODELS` are set as
+        environment variables.
+    """
+    if _search_dict(config, "ai", True):
+        logger.info(
+            "AI feature enabled in config, checking for required environment variables..."
+        )
+        load_dotenv()
+        api_key = os.environ.get("API_KEY")
+        base_url = os.environ.get("BASE_URL")
+        ai_model = os.environ.get("AI_MODEL")
+        ai_models = os.environ.get("AI_MODELS")
+
+        missing_vars = []
+        if not api_key:
+            missing_vars.append("API_KEY")
+        if not base_url:
+            missing_vars.append("BASE_URL")
+        if not ai_model and not ai_models:
+            missing_vars.append("AI_MODEL or AI_MODELS")
+
+        if missing_vars:
+            print(
+                f"ERROR: 'ai: true' is set in the configuration, but the following required environment variables are missing: {', '.join(missing_vars)}. "
+                "Please set them in your environment or a .env file.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        else:
+            logger.info("All required AI environment variables are present.")
+
 
 # Define the structure of required configuration keys and their expected types
 BASIC_REQUIRED_CONFIG_KEYS = {
@@ -51,15 +115,19 @@ ANALYSIS_REQUIRED_CONFIG_KEYS = {
 def convert_relative_paths_to_absolute(
     config: Dict[str, Any], base_dir: str
 ) -> Dict[str, Any]:
-    """
-    Recursively traverse configuration data and convert relative paths to absolute paths based on the specified base directory
+    """Recursively converts relative paths to absolute paths in configuration.
 
     Args:
-        config: Configuration dictionary
-        base_dir: Base directory path
+        config: Configuration dictionary to process.
+        base_dir: Base directory path for resolving relative paths.
 
     Returns:
-        Converted configuration dictionary
+        Configuration dictionary with converted absolute paths.
+
+    Note:
+        Processes path keys including package_path, db_path, results_dir, temp_dir,
+        log_dir, glossary_path, and any key ending with '_path'. Converts relative
+        paths to absolute using base_dir. Handles nested dictionaries and lists recursively.
     """
 
     def _process_value(value, key_name="", parent_dict=None):
@@ -102,11 +170,21 @@ def basic_validate_config(
     config: Dict[str, Any],
     required_keys: Dict = BASIC_REQUIRED_CONFIG_KEYS,
     parent_key: str = "",
-):
-    """
-    Recursively validates the configuration.
-    - Checks for required keys and types.
-    - Performs specific value validations (e.g., path existence, string formats).
+) -> None:
+    """Recursively validates the configuration against required structure.
+
+    Args:
+        config: Configuration dictionary to validate.
+        required_keys: Dictionary defining required keys and their expected types.
+        parent_key: Parent key path for nested validation (used internally).
+
+    Raises:
+        SystemExit: If validation fails (exits with code 1).
+
+    Note:
+        Performs structural validation (required keys and types) and value validation
+        (path existence, variableFilter format). Uses regex to validate variableFilter
+        against Modelica identifier patterns. Only validates values on top-level call.
     """
     # --- Structural Validation ---
     for key, expected_type_or_dict in required_keys.items():
@@ -175,9 +253,26 @@ def basic_validate_config(
                     )
                     sys.exit(1)
 
+        check_ai_config(config)
+
 
 def basic_prepare_config(config_path: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """Loads and prepares the configuration from the given path."""
+    """Loads and prepares the configuration from the given path.
+
+    Args:
+        config_path: Path to the JSON configuration file.
+
+    Returns:
+        A tuple of (runtime_config, original_config).
+
+    Raises:
+        SystemExit: If config file loading/parsing fails or validation fails.
+
+    Note:
+        Converts relative paths to absolute, validates config structure, adds run_timestamp,
+        creates workspace directories, and processes variableFilter for regex escaping.
+        Sets up log_dir, temp_dir, and results_dir within run workspace.
+    """
     try:
         config_path = os.path.abspath(config_path)
         with open(config_path, "r") as f:
@@ -230,7 +325,7 @@ def basic_prepare_config(config_path: str) -> tuple[Dict[str, Any], Dict[str, An
 
 
 def analysis_validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
-    """Validate analysis_cases configuration format, supporting both list and single object formats
+    """Validates analysis_cases configuration format supporting both list and single object.
 
     This function validates:
     1. Basic structure and required fields of analysis_cases
@@ -238,10 +333,15 @@ def analysis_validate_analysis_cases_config(config: Dict[str, Any]) -> bool:
     3. Required_TBR configuration completeness if used in dependent_variables
 
     Args:
-        config: Configuration dictionary to validate
+        config: Configuration dictionary to validate.
 
     Returns:
-        bool: True if configuration is valid, False otherwise
+        True if configuration is valid, False otherwise.
+
+    Note:
+        Supports both single analysis_case dict or list of cases. Required fields per case:
+        name, independent_variable, independent_variable_sampling. Validates simulation_parameters
+        contain only single job (no sweep). Checks Required_TBR completeness in metrics_definition.
     """
     if "sensitivity_analysis" not in config:
         logger.error("Missing sensitivity_analysis")
@@ -322,7 +422,7 @@ def analysis_validate_config(
     config: Dict[str, Any],
     required_keys: Dict = ANALYSIS_REQUIRED_CONFIG_KEYS,
     parent_key: str = "",
-):
+) -> None:
     """
     Recursively validates the configuration's structure and values.
     """
@@ -410,6 +510,8 @@ def analysis_validate_config(
                         file=sys.stderr,
                     )
                     sys.exit(1)
+
+        check_ai_config(config)
 
 
 def analysis_setup_analysis_cases_workspaces(

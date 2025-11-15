@@ -1,38 +1,39 @@
 {
     "paths": {
-        "package_path": "../../example_model_single/example_model.mo"
+        "package_path": "../../example_model/package.mo"
     },
     "simulation": {
         "model_name": "example_model.Cycle",
         "variableFilter": "time|sds.I[1]",
-        "stop_time": 2000.0,
+        "stop_time": 100.0,
         "step_size": 0.5
     },
     "simulation_parameters": {
-        "tep_fep.to_SDS_Fraction[1]":[0.1,0.5,0.8]
+        "tep_fep.to_SDS_Fraction[1]":0.1
     },
-    "co_simulation": [
-        {
-            "submodel_name": "example_model.DIV",
-            "instance_name": "div",
-            "handler_module": "tricys.handlers.div_handler",
-            "handler_function": "run_div_simulation",
-            "params": {
-                "description": "This is a dummy handler for DIV.",
-                "dummy_value": 123.45
+    "co_simulation": {
+        "mode": "replacement",
+        "handlers":[
+            {
+                "submodel_name": "example_model.I_ISS",
+                "instance_name": "i_iss",
+                "handler_module": "tricys.handlers.i_iss_handler",
+                "handler_function": "run_dummy_simulation",
+                "params": {
+                    "description": "This is a dummy handler for i_iss.",
+                    "dummy_value": 123.45
+                }
+            },
+            {
+                "submodel_name": "example_model.DIV",
+                "instance_name": "div",
+                "handler_module": "tricys.handlers.div_handler",
+                "handler_function": "run_div_simulation",
+                "params": {
+                    "description": "This is a dummy handler for i_iss.",
+                    "dummy_value": 123.45
+                }
             }
-        },
-        {
-            "submodel_name": "example_model.I_ISS",
-            "instance_name": "i_iss",
-            "handler_module": "tricys.handlers.i_iss_handler",
-            "handler_function": "run_aspen_simulation",
-            "params": {
-                "bkp_path": "../../example_aspenbkp/T2-Threetowers4.bkp",
-                "base": 20,
-                "retime": 60,
-                "time_step": 3
-            }
-        }
-    ]
+        ]
+    }
 }

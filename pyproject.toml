@@ -53,6 +53,18 @@ win = [
     "pre-commit"
 ]
 
+docs = [
+    "mkdocs",
+    "mkdocs-autorefs",
+    "mkdocs-get-deps",
+    "mkdocs-material",
+    "mkdocs-material-extensions",
+    "mkdocs-mermaid2-plugin",
+    "mkdocs-static-i18n",
+    "mkdocstrings",
+    "mkdocstrings-python"
+]
+
 [tool.setuptools]
 packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess"]
 
