@@ -118,9 +118,10 @@ def parse_parameter_value(value: Any) -> List[Any]:
         if prefix == "file":
             # Handle file paths that may contain colons (e.g., Windows C:\...)
             try:
-                # Check if there's a column name specified
-                if ":" in args_str:
-                    file_path, column_name = args_str.rsplit(":", 1)
+                parts = args_str.rsplit(":", 1)
+                # A column is present if there are two parts and the second part does not contain path separators.
+                if len(parts) == 2 and not any(c in parts[1] for c in "/\\"):
+                    file_path, column_name = parts
                     if not os.path.isabs(file_path.strip()):
                         abs_file_path = os.path.abspath(
                             os.path.join(os.getcwd(), file_path.strip())
@@ -130,8 +131,10 @@ def parse_parameter_value(value: Any) -> List[Any]:
                     df = pd.read_csv(abs_file_path)
                     return df[column_name.strip()].tolist()
                 else:
+                    # No column name or it's part of the path
+                    file_path = args_str
                     # Return the file path for later processing
-                    return [args_str.strip()]
+                    return [file_path.strip()]
             except (ValueError, FileNotFoundError, KeyError):
                 # Re-raise to be caught by the outer try-except block
                 raise

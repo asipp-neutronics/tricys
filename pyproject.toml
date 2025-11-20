@@ -27,6 +27,7 @@ dependencies = [
     "python-dotenv",
     "SALib",
     "python-json-logger",
+    "tabulate"
 ]
 
 [project.urls]

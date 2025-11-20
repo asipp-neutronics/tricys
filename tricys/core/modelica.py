@@ -7,6 +7,7 @@ simulation.
 
 import logging
 import os
+import re
 from typing import Any, Dict, List
 
 from OMPython import ModelicaSystem, OMCSessionZMQ
@@ -243,12 +244,23 @@ def format_parameter_value(name: str, value: Any) -> str:
         Numbers and booleans use direct string conversion.
     """
     if isinstance(value, list):
-        # Format lists as {v1,v2,...}
-        return f"{name}={{{','.join(map(str, value))}}}"
+        # In Modelica, strings in records should be quoted.
+        # This regex checks if the string is already quoted.
+        def format_element(elem):
+            if isinstance(elem, str):
+                if re.match(r'^".*"$', elem):
+                    return elem
+                else:
+                    return f'"{elem}"'
+            return str(elem)
+
+        return f"{name}={{{','.join(map(format_element, value))}}}"
+    elif isinstance(value, bool):
+        return f"{name}={str(value).lower()}"
     elif isinstance(value, str):
         # Format strings as "value"
         return f'{name}="{value}"'
-    # For numbers and booleans, direct string conversion is fine
+    # For numbers, direct string conversion is fine
     return f"{name}={value}"
 
 

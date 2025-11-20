@@ -1,5 +1,6 @@
 import gc
 import json
+import logging
 import os
 import shutil
 import sqlite3
@@ -13,10 +14,9 @@ from tricys.utils.sqlite_utils import (
     update_sweep_values_in_db,
 )
 
-# Define an output directory and DB path based on the test file's name
-OUTPUT_DIR = os.path.splitext(__file__)[0]
-DB_PATH = os.path.join(OUTPUT_DIR, "test.db")
-
+# Define a temporary directory and DB path for testing
+TEST_DIR = "temp_test_dir"
+DB_PATH = os.path.join(TEST_DIR, "test.db")
 
 # Sample data for testing
 SAMPLE_PARAMS = [
@@ -37,28 +37,23 @@ SAMPLE_PARAMS = [
 ]
 
 
-def setup_and_teardown(request):
-    """Fixture to create and cleanup the test output directory for each test."""
-    if os.path.exists(OUTPUT_DIR):
-        shutil.rmtree(OUTPUT_DIR)
-    os.makedirs(OUTPUT_DIR)
-
-    def cleanup():
-        if getattr(request.node, "test_passed", False):
-            print(f"\nTest passed. Cleaning up test directory: {OUTPUT_DIR}")
-            gc.collect()  # Ensure all file handles are released
-            if os.path.exists(OUTPUT_DIR):
-                shutil.rmtree(OUTPUT_DIR)
-        else:
-            print(f"\nTest failed. Intermediate files kept at: {OUTPUT_DIR}")
-
-    request.addfinalizer(cleanup)
+@pytest.fixture(autouse=True)
+def test_dir_cleanup():
+    """Fixture to create and cleanup the test directory for each test."""
+    if os.path.exists(TEST_DIR):
+        shutil.rmtree(TEST_DIR)
+    os.makedirs(TEST_DIR)
+    yield
+    logging.shutdown()
+    logging.basicConfig(force=True)
+    gc.collect()  # Ensure all file handles are released
+    if os.path.exists(TEST_DIR):
+        shutil.rmtree(TEST_DIR)
 
 
 @pytest.mark.build_test
-def test_create_parameters_table(request):
+def test_create_parameters_table():
     """Tests the creation of the parameters table."""
-    setup_and_teardown(request)
     try:
         create_parameters_table(DB_PATH)
         assert os.path.exists(DB_PATH)
@@ -72,13 +67,11 @@ def test_create_parameters_table(request):
             ), "The 'parameters' table was not created."
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")
-    request.node.test_passed = True
 
 
 @pytest.mark.build_test
-def test_store_and_get_parameters(request):
+def test_store_and_get_parameters():
     """Tests storing and retrieving parameters."""
-    setup_and_teardown(request)
     try:
         create_parameters_table(DB_PATH)
         store_parameters_in_db(DB_PATH, SAMPLE_PARAMS)
@@ -92,13 +85,11 @@ def test_store_and_get_parameters(request):
         assert params_dict["coolant_pipe.to_FW_Fraction"]["default_value"] == "0.6"
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")
-    request.node.test_passed = True
 
 
 @pytest.mark.build_test
-def test_update_sweep_values(request):
+def test_update_sweep_values():
     """Tests updating sweep values for a parameter."""
-    setup_and_teardown(request)
     try:
         create_parameters_table(DB_PATH)
         store_parameters_in_db(DB_PATH, SAMPLE_PARAMS)
@@ -119,4 +110,3 @@ def test_update_sweep_values(request):
             assert json.loads(result[0]) == sweep_values
     except sqlite3.OperationalError as e:
         pytest.fail(f"Database error occurred: {e}")
-    request.node.test_passed = True

@@ -14,8 +14,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-_english_glossary_map = {}
-_chinese_glossary_map = {}
 _use_chinese_labels = False
 
 # Add a dictionary for UI text translations
@@ -90,7 +88,7 @@ def set_plot_language(lang: str = "en") -> None:
         plt.rcParams["axes.unicode_minus"] = plt.rcParamsDefault["axes.unicode_minus"]
 
 
-def load_glossary(glossary_path: str) -> None:
+def load_glossary(glossary_path: str) -> tuple[dict, dict]:
     """Loads glossary data from a CSV file.
 
     The CSV file should contain columns for the model parameter, the English
@@ -99,20 +97,17 @@ def load_glossary(glossary_path: str) -> None:
     Args:
         glossary_path: The path to the glossary CSV file.
 
-    Note:
-        Expected CSV columns: "模型参数 (Model Parameter)", "英文术语 (English Term)",
-        and "中文翻译 (Chinese Translation)". Prints warning if file not found or
-        columns missing. Clears existing glossary maps on error.
+    Returns:
+        A tuple containing two dictionaries: (english_glossary_map, chinese_glossary_map)
     """
-    global _english_glossary_map, _chinese_glossary_map
+    english_glossary_map = {}
+    chinese_glossary_map = {}
 
     if not glossary_path or not os.path.exists(glossary_path):
         print(
             f"Warning: Glossary file not found at {glossary_path}. No labels will be loaded."
         )
-        _english_glossary_map = {}
-        _chinese_glossary_map = {}
-        return
+        return english_glossary_map, chinese_glossary_map
 
     try:
         df = pd.read_csv(glossary_path)
@@ -122,26 +117,24 @@ def load_glossary(glossary_path: str) -> None:
             and "中文翻译 (Chinese Translation)" in df.columns
         ):
             df.dropna(subset=["模型参数 (Model Parameter)"], inplace=True)
-            _english_glossary_map = pd.Series(
+            english_glossary_map = pd.Series(
                 df["英文术语 (English Term)"].values,
                 index=df["模型参数 (Model Parameter)"],
             ).to_dict()
-            _chinese_glossary_map = pd.Series(
+            chinese_glossary_map = pd.Series(
                 df["中文翻译 (Chinese Translation)"].values,
                 index=df["模型参数 (Model Parameter)"],
             ).to_dict()
             print(f"Successfully loaded glossary from {glossary_path}.")
         else:
             print("Warning: Glossary CSV does not contain expected columns.")
-            _english_glossary_map = {}
-            _chinese_glossary_map = {}
     except Exception as e:
         print(f"Warning: Failed to load or parse glossary file. Error: {e}")
-        _english_glossary_map = {}
-        _chinese_glossary_map = {}
+
+    return english_glossary_map, chinese_glossary_map
 
 
-def _format_label(label: str) -> str:
+def _format_label(label: str, glossary_maps: tuple[dict, dict]) -> str:
     """Formats a label for display using the loaded glossary.
 
     It first attempts to find a professional term from the glossary. If not
@@ -150,6 +143,7 @@ def _format_label(label: str) -> str:
 
     Args:
         label: The raw label string to format.
+        glossary_maps: A tuple containing the English and Chinese glossary maps.
 
     Returns:
         The formatted label.
@@ -159,14 +153,12 @@ def _format_label(label: str) -> str:
         or glossary not loaded, replaces underscores with spaces and removes dots
         (except in numbers). Non-string inputs are returned unchanged.
     """
-    global _english_glossary_map, _chinese_glossary_map, _use_chinese_labels
+    english_glossary_map, chinese_glossary_map = glossary_maps
 
     if not isinstance(label, str):
         return label
 
-    glossary_map = (
-        _chinese_glossary_map if _use_chinese_labels else _english_glossary_map
-    )
+    glossary_map = chinese_glossary_map if _use_chinese_labels else english_glossary_map
 
     if glossary_map and label in glossary_map:
         term = glossary_map[label]
@@ -265,6 +257,7 @@ def _generate_multi_required_plot(
     base_metric_name: str,
     save_dir: str,
     unit_map: dict = None,
+    glossary_maps: tuple[dict, dict] = ({}, {}),
 ) -> list[str]:
     """Generates a figure with subplots for 'Required_***' metrics.
 
@@ -277,6 +270,7 @@ def _generate_multi_required_plot(
         base_metric_name: Base name of the Required metric.
         save_dir: Directory to save the generated plots.
         unit_map: Optional unit configuration mapping. Defaults to None.
+        glossary_maps: Optional tuple of glossary maps.
 
     Returns:
         List of paths to saved plot files (English and Chinese versions).
@@ -296,8 +290,8 @@ def _generate_multi_required_plot(
         case_sim_params = case.get("default_simulation_values", {})
         hue_vars = sorted(list(case_sim_params.keys()))
 
-        x_var_label = _format_label(x_var)
-        base_metric_name_label = _format_label(base_metric_name)
+        x_var_label = _format_label(x_var, glossary_maps)
+        base_metric_name_label = _format_label(base_metric_name, glossary_maps)
 
         # Apply units to labels if unit_map is provided
         if unit_map:
@@ -460,8 +454,7 @@ def generate_analysis_plots(
         metrics can be combined or plotted individually based on case configuration.
         Returns empty list if summary_df is empty. Loads glossary if path provided.
     """
-    if glossary_path:
-        load_glossary(glossary_path)
+    glossary_maps = load_glossary(glossary_path) if glossary_path else ({}, {})
 
     if summary_df.empty:
         return []
@@ -508,6 +501,7 @@ def generate_analysis_plots(
                 req_var,
                 save_dir,
                 unit_map=unit_map,
+                glossary_maps=glossary_maps,
             )
             plot_paths.extend(multi_plot_paths)
         elif len(matching_cols) == 1:
@@ -522,7 +516,12 @@ def generate_analysis_plots(
                 ),
             }
             single_plot_path = _generate_individual_plots(
-                summary_df, [plot_config], save_dir, line_colors, unit_map=unit_map
+                summary_df,
+                [plot_config],
+                save_dir,
+                line_colors,
+                unit_map=unit_map,
+                glossary_maps=glossary_maps,
             )
             plot_paths.extend(single_plot_path)
 
@@ -578,6 +577,7 @@ def generate_analysis_plots(
                 save_dir,
                 line_colors,
                 unit_map=unit_map,
+                glossary_maps=glossary_maps,
             )
         else:
             # If not combining, plot them individually anyway
@@ -587,6 +587,7 @@ def generate_analysis_plots(
                 save_dir,
                 line_colors,
                 unit_map=unit_map,
+                glossary_maps=glossary_maps,
             )
         plot_paths.extend(generated_paths)
 
@@ -599,6 +600,7 @@ def _generate_combined_plots(
     save_dir: str,
     line_colors: list,
     unit_map: dict = None,
+    glossary_maps: tuple[dict, dict] = ({}, {}),
 ) -> list[str]:
     """Generate a single combined figure with multiple subplots.
 
@@ -612,6 +614,7 @@ def _generate_combined_plots(
         save_dir: Directory to save plots.
         line_colors: List of colors for plot lines.
         unit_map: Optional unit configuration dictionary. Defaults to None.
+        glossary_maps: Optional tuple of glossary maps.
 
     Returns:
         List of paths to saved plot files.
@@ -629,7 +632,12 @@ def _generate_combined_plots(
     # which is optimized for a single, larger plot.
     if n_plots == 1:
         return _generate_individual_plots(
-            summary_df, valid_plots, save_dir, line_colors, unit_map=unit_map
+            summary_df,
+            valid_plots,
+            save_dir,
+            line_colors,
+            unit_map=unit_map,
+            glossary_maps=glossary_maps,
         )
 
     plot_paths = []
@@ -677,7 +685,13 @@ def _generate_combined_plots(
         for idx, plot_config in enumerate(valid_plots):
             ax = axes_list[idx]
             _create_subplot(
-                summary_df, plot_config, ax, line_colors, idx, unit_map=unit_map
+                summary_df,
+                plot_config,
+                ax,
+                line_colors,
+                idx,
+                unit_map=unit_map,
+                glossary_maps=glossary_maps,
             )
 
         # Hide any unused axes (only relevant for even-number layouts)
@@ -715,6 +729,7 @@ def _generate_individual_plots(
     save_dir: str,
     line_colors: list,
     unit_map: dict = None,
+    glossary_maps: tuple[dict, dict] = ({}, {}),
 ) -> list[str]:
     """Generate individual plot files (original behavior).
 
@@ -724,6 +739,7 @@ def _generate_individual_plots(
         save_dir: Directory to save plots.
         line_colors: List of colors for plot lines.
         unit_map: Optional unit configuration dictionary. Defaults to None.
+        glossary_maps: Optional tuple of glossary maps.
 
     Returns:
         List of paths to saved plot files.
@@ -745,7 +761,13 @@ def _generate_individual_plots(
             fig.patch.set_facecolor("white")
 
             _create_subplot(
-                summary_df, plot_config, ax, line_colors, idx, unit_map=unit_map
+                summary_df,
+                plot_config,
+                ax,
+                line_colors,
+                idx,
+                unit_map=unit_map,
+                glossary_maps=glossary_maps,
             )
 
             # Adjust layout
@@ -783,6 +805,7 @@ def _create_subplot(
     line_colors: list,
     plot_index: int,
     unit_map: dict = None,
+    glossary_maps: tuple[dict, dict] = ({}, {}),
 ) -> None:
     """Creates and beautifies a single subplot for sensitivity analysis results.
 
@@ -797,6 +820,7 @@ def _create_subplot(
         line_colors: A list of colors to use for the plot lines.
         plot_index: The index of the plot, used to select a color.
         unit_map: Optional dictionary for unit conversion and labeling. Defaults to None.
+        glossary_maps: Optional tuple of glossary maps.
 
     Note:
         Applies unit conversions from unit_map if provided. Creates multi-line plots
@@ -808,8 +832,8 @@ def _create_subplot(
     hue_vars = plot_config.get("hue_vars", [])
 
     # Format labels for display
-    x_var_label = _format_label(x_var)
-    y_var_display = _format_label(y_var)
+    x_var_label = _format_label(x_var, glossary_maps)
+    y_var_display = _format_label(y_var, glossary_maps)
 
     # Create a local copy for plotting to avoid changing the original DataFrame
     plot_vars = [x_var, y_var] + hue_vars
@@ -928,7 +952,8 @@ def _create_subplot(
         if legend:
             original_title = legend.get_title().get_text()
             legend.set_title(
-                _format_label(original_title), prop={"size": 10, "weight": "bold"}
+                _format_label(original_title, glossary_maps),
+                prop={"size": 10, "weight": "bold"},
             )
             plt.setp(legend.get_texts(), fontsize=10)
 
@@ -966,8 +991,7 @@ def plot_sweep_time_series(
         t=0 to 2 days past minimum, with red rectangle indicator on overall view. Data is
         converted from grams to kilograms for display.
     """
-    if glossary_path:
-        load_glossary(glossary_path)
+    glossary_maps = load_glossary(glossary_path) if glossary_path else ({}, {})
 
     try:
         df = pd.read_csv(csv_path)
@@ -1061,7 +1085,7 @@ def plot_sweep_time_series(
         fig, (ax1, ax2) = plt.subplots(
             2, 1, figsize=(12, 16), sharex=False, gridspec_kw={"height_ratios": [2, 1]}
         )
-        y_var_names_formatted = [_format_label(y) for y in y_var_names]
+        y_var_names_formatted = [_format_label(y, glossary_maps) for y in y_var_names]
 
         min_y_global = float("inf")
         min_x_global = float("inf")
@@ -1100,7 +1124,7 @@ def plot_sweep_time_series(
 
         ax1.set_ylabel(y_label, fontsize=12)
         ax1.set_title(_get_text("overall_view"), fontsize=12)
-        ax1.legend(loc="best", title=_format_label(independent_var_name))
+        ax1.legend(loc="best", title=_format_label(independent_var_name, glossary_maps))
         ax1.grid(True)
 
         # --- Subplot 2: Zoomed-in View (uses original data) ---

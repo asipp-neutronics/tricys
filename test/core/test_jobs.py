@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -86,14 +84,21 @@ def test_parse_rand_string():
 
 
 @pytest.mark.build_test
-def test_parse_file_string(tmpdir):
+def test_parse_file_string_column(tmpdir):
     p = tmpdir.mkdir("sub").join("data.csv")
-    df = pd.DataFrame({"voltage": [1.1, 2.2, 3.3]})
+    df = pd.DataFrame({"voltage": [1.1, 2.2, 3.3], "current": [10, 20, 30]})
     df.to_csv(p, index=False)
-    # Use os.path.normpath to ensure path separators are correct for the OS
-    file_path_str = os.path.normpath(str(p))
-    result = parse_parameter_value(f"file:{file_path_str}:voltage")
+    result = parse_parameter_value(f"file:{p}:voltage")
     assert result == [1.1, 2.2, 3.3]
+
+
+@pytest.mark.build_test
+def test_parse_file_string_no_column(tmpdir):
+    p = tmpdir.mkdir("sub").join("sampling.csv")
+    df = pd.DataFrame({"p1": [1, 2], "p2": [3, 4]})
+    df.to_csv(p, index=False)
+    result = parse_parameter_value(f"file:{p}")
+    assert result == [str(p)]
 
 
 @pytest.mark.build_test
@@ -156,3 +161,14 @@ def test_generate_jobs_with_array_and_sweeps():
 @pytest.mark.build_test
 def test_generate_jobs_empty():
     assert generate_simulation_jobs({}) == [{}]
+
+
+@pytest.mark.build_test
+def test_generate_jobs_from_file(tmpdir):
+    p = tmpdir.mkdir("sub").join("data.csv")
+    df = pd.DataFrame({"p1": [1, 2], "p2": ["a", "b"]})
+    df.to_csv(p, index=False)
+    params = {"file": str(p), "p3": 10}
+    expected = [{"p1": 1, "p2": "a", "p3": 10}, {"p1": 2, "p2": "b", "p3": 10}]
+    jobs = generate_simulation_jobs(params)
+    assert jobs == expected

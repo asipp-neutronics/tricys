@@ -43,16 +43,6 @@ def run_div_simulation(temp_input_csv: str, temp_output_csv: str, **kwargs) -> d
         "div.to_CL[4]",
         "div.to_CL[5]",
     ]
-
-    if not all(col in source_df.columns for col in columns_to_select):
-        missing_cols = [
-            col for col in columns_to_select if col not in source_df.columns
-        ]
-        raise ValueError(
-            f"The source file {source_csv_path} is missing required columns: "
-            f"{missing_cols}"
-        )
-
     output_df = source_df[columns_to_select].copy()
 
     output_df.to_csv(temp_output_csv, index=False)
