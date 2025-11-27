@@ -2,7 +2,7 @@
 Pulse (脉冲发生器),,,,(无盘存量)
 pulseSource.amplitude,Pulse Amplitude,脉冲幅度,Tritium Consumption Rate (氚消耗率) / Source Strength,系统驱动：设定氚的消耗速率 (g/h)，并驱动包层增殖。
 pulseSource.period,Pulse Period,运行周期,Cycle Time / Repetition Period,模拟“运行-停机”的总循环时长。
-pulseSource.width,Duty Cycle,占空比,Burn Time Fraction,单个脉冲周期内维持等离子体燃烧的时间占比（%），用于衡量脉冲运行效率。
+pulseSource.width,Availability Factor,占空比,Duty Factor / Capacity Factor / Burn Time Fraction,反应堆运行时间占总周期的百分比（%），决定了年平均运行效率。
 Blanket (增殖包层),,,,
 blanket.I[1],Blanket Tritium Inventory,增殖包层氚盘存量,Breeding Zone Inventory / In-Vessel Inventory,增殖包层(Blanket)子部件的氚盘存量。
 blanket.T,Blanket Mean Residence Time,增殖包层 平均滞留时间,Extraction Delay / Purge Gas Residence Time,增殖包层(Blanket)中氚的平均滞留时间，主要的库存贡献者之一。
