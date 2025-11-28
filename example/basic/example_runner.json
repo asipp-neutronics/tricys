@@ -3,43 +3,34 @@
   "version": "1.0", 
   "examples": [
     {
-      "name": "BASIC - 并发仿真",
-      "description": "运行并发仿真示例",
-      "path": "simulation_concurrent",
-      "config": "example_config.json",
-      "command": "tricys"
+      "name": "BASIC - 基础配置",
+      "description": "运行基础配置示例，该配置包括必须的基础配置",
+      "path": "1_basic_configuration",
+      "config": "basic_configuration.json"
     },
     {
-      "id": "simulation_non_concurrent",
-      "name": "BASIC - 非并发仿真",
-      "description": "运行非并发仿真示例",
-      "path": "simulation_non_concurrent",
-      "config": "example_config.json", 
-      "command": "tricys"
+      "name": "BASIC - 参数扫描",
+      "description": "运行参数扫描示例，该配置包括多个参数的扫描设置",
+      "path": "2_parameter_sweep",
+      "config": "parameter_sweep.json"
     },
     {
-      "id": "co_simulation_concurrent",
-      "name": "BASIC - 并发协同仿真",
-      "description": "运行并发协同仿真示例",
-      "path": "co_simulation_concurrent",
-      "config": "example_config.json",
-      "command": "tricys"
+      "name": "BASIC - 并发运行",
+      "description": "运行并发操作示例，该配置展示了如何进行并发仿真",
+      "path": "3_concurrent_operation",
+      "config": "concurrent_operation.json"
     },
     {
-      "id": "co_simulation_non_concurrent", 
-      "name": "BASIC - 非并发协同仿真",
-      "description": "运行非并发协同仿真示例",
-      "path": "co_simulation_non_concurrent",
-      "config": "example_config.json",
-      "command": "tricys"
+      "name": "BASIC - 后处理模块",
+      "description": "运行后处理模块示例，该配置展示了如何进行仿真结果的后处理",
+      "path": "4_post_processing_module",
+      "config": "post_processing_module.json"
     },
     {
-      "id": "post_process",
-      "name": "BASIC - 后处理",
-      "description": "运行后处理示例",
-      "path": "post_process",
-      "config": "example_config.json",
-      "command": "tricys"
+      "name": "BASIC - 协同仿真模块",
+      "description": "运行协同仿真模块示例，该配置展示了如何进行多模型协同仿真(静态集成)",
+      "path": "5_co_simulation_module",
+      "config": "co_simulation_module.json"
     }
   ]
 }

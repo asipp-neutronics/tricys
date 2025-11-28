@@ -10,16 +10,24 @@ logger = logging.getLogger(__name__)
 
 def check_thresholds(
     results_df: pd.DataFrame, output_dir: str, rules: List[Dict[str, Any]], **kwargs
-):
-    """
-    Analyze the simulation results to check if the specified columns fall within the defined threshold range.
-    This function supports both single tasks (column name as 'var') and parameter sweep tasks (column name as 'var&param=value').
+) -> None:
+    """Analyzes simulation results to check if specified columns fall within threshold ranges.
+
+    Supports both single tasks (column name as 'var') and parameter sweep tasks
+    (column name as 'var&param=value').
 
     Args:
-        results_df (pd.DataFrame): Merged simulation results DataFrame.
-        output_dir (str): Directory for saving alert reports.
-        rules (List[Dict[str, Any]]): List of rules, where each rule defines a column and its min/max thresholds.
-        **kwargs: Additional parameters from the configuration, such as 'output_filename'.
+        results_df: Merged simulation results DataFrame.
+        output_dir: Directory for saving alert reports.
+        rules: List of rules, where each rule defines columns and their min/max thresholds.
+            Format: [{"columns": ["var1", "var2"], "min": value, "max": value}, ...]
+        **kwargs: Additional parameters from configuration, such as 'output_filename'.
+
+    Note:
+        Logs ERROR for each threshold violation with peak/dip values. Generates
+        alarm_report.json with parsed parameter information and 'has_alarm' flags.
+        For columns matching 'base_col_name&param=value', extracts parameters into
+        separate fields in the report. Reports total alarm count in logs.
     """
     logger.info("Starting post-processing: Checking thresholds...")
 

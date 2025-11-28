@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tricys"
-version = "0.1.0"
+version = "1.0.0"
 authors = [
   { name="asipp-neutronics", email="guilong@ie.ah.cn" },
 ]
@@ -26,6 +26,8 @@ dependencies = [
     "openai",
     "python-dotenv",
     "SALib",
+    "python-json-logger",
+    "tabulate"
 ]
 
 [project.urls]
@@ -33,9 +35,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/asipp-neutronics/tricys"
 
 [project.scripts]
-tricys-gui = "tricys.simulation_gui:main"
-tricys-ana = "tricys.simulation_analysis:main"
-tricys = "tricys.simulation:main"
+tricys = "tricys.main:main"
 
 
 [project.optional-dependencies]
@@ -54,8 +54,20 @@ win = [
     "pre-commit"
 ]
 
+docs = [
+    "mkdocs",
+    "mkdocs-autorefs",
+    "mkdocs-get-deps",
+    "mkdocs-material",
+    "mkdocs-material-extensions",
+    "mkdocs-mermaid2-plugin",
+    "mkdocs-static-i18n",
+    "mkdocstrings",
+    "mkdocstrings-python"
+]
+
 [tool.setuptools]
-packages = ["tricys","tricys.utils"]
+packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess"]
 
 [tool.black]
 line-length = 88

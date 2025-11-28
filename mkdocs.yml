@@ -1,0 +1,170 @@
+site_name: TRitium Integrated CYcle Simulation
+
+repo_url: "https://github.com/asipp-neutronics/tricys"
+repo_name: "TRICYS"
+
+dev_addr: '127.0.0.1:18000'
+
+theme:
+  name: material
+  language: "zh"
+  icon:
+    repo: fontawesome/brands/git-alt
+  palette:
+    # 浅色模式
+    - scheme: default
+      primary: blue
+      accent: deep-orange
+
+  features:
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - navigation.tabs
+    - content.code.copy
+    - content.code.annotate
+
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - toc:
+      permalink: true
+  - attr_list
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - md_in_html
+  - pymdownx.details    
+  - pymdownx.superfences 
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            paths: [ "." ]
+
+  - i18n:
+      docs_structure: folder
+      default_language: "zh"
+      fallback_to_default: true
+      languages:
+        - locale: en
+          name: English
+          build: true
+          link: '/tricys/en/'
+          nav_translations:
+            # 顶层
+            '主页': 'Home'
+            '入门指南': 'Getting Started'
+            '常见问题': 'FAQ'
+            'API 参考': 'API Reference'
+            '原理解说': 'Explanation'
+            '更新日志': 'Changelog'
+            '开源许可': 'License'
+            
+            '氚燃料循环0维系统模型': 'Tritium Fuel Cycle 0D System Model'
+
+            # “入门指南”的子项
+            '快速开始': 'Quick Start'
+            '模型概述': 'Model Overview'
+            '基础仿真（TRICYS BASIC）': 'Basic Simulation (TRICYS BASIC)'
+            '自动分析（TRICYS ANALYSIS)': 'Automated Analysis (TRICYS ANALYSIS)'
+
+            # “基础仿真”的子项
+            '基础配置': 'Basic Configuration'
+            '参数扫描': 'Parameter Sweep'
+            '并发运行': 'Concurrent Operation' 
+            '后处理模块': 'Post-processing Module'
+            '协同仿真模块': 'Co-simulation Module'
+
+            # “自动分析”的子项
+            '通用介绍': 'Introduction & Common Config'
+            '基准工况分析': 'Baseline Condition Analysis'
+            '单参数敏感性分析': 'Single Parameter Sensitivity Analysis'
+            '多参数敏感性分析': 'Multi-parameter Sensitivity Analysis'
+            'SOBOL全局敏感性分析': 'SOBOL Global Sensitivity Analysis'
+            'Latin不确定性量化分析': 'Latin Uncertainty Analysis'
+
+            # “常见问题”的子项
+            '🚀 安装环境': '🚀 Installation & Environment'
+            '⚙️ 配置运行': '⚙️ Configuration & Execution'
+            '🔬 高级功能': '🔬 Advanced Features'
+            '🐛 故障排除': '🐛 Troubleshooting'
+            '💡 最佳实践': '💡 Best Practices'
+
+            # “原理解说”的子项
+            '系统架构设计': 'System Architecture'
+            '仿真执行流程': 'Simulation Flow'
+            '协同仿真原理': 'Co-simulation Principle'
+            '并发计算模式': 'Concurrency Model'
+            '自动分析流程': 'Analysis Flow'
+            '生成分析报告': 'Generating Analysis Reports'
+            'SALIB集成方法': 'SALIB Integration Methods'
+            '核心性能指标': 'Core Performance Metrics'
+
+        - locale: zh
+          default: true
+          name: 简体中文
+          build: true
+          link: '/tricys/'
+          site_name: "氚燃料循环集成仿真平台"
+  - offline
+
+nav:
+  - '主页': 'index.md'
+  - '入门指南':
+    - '快速开始': 'guides/quickstart.md'
+    - '模型概述':
+      - '氚燃料循环0维系统模型': 'guides/models/cycle.md'
+    - '基础仿真（TRICYS BASIC）': 
+      - '基础配置': 'guides/tricys_basic/basic_configuration.md'
+      - '参数扫描': 'guides/tricys_basic/parameter_sweep.md'
+      - '并发运行': 'guides/tricys_basic/concurrent_operation.md'
+      - '后处理模块': 'guides/tricys_basic/post_processing_module.md'
+      - '协同仿真模块': 'guides/tricys_basic/co_simulation_module.md'
+    - '自动分析（TRICYS ANALYSIS)': 
+      - '通用介绍': 'guides/tricys_analysis/index.md'
+      - '基准工况分析': 'guides/tricys_analysis/baseline_condition_analysis.md'
+      - '单参数敏感性分析': 'guides/tricys_analysis/single_parameter_sensitivity_analysis.md'
+      - '多参数敏感性分析': 'guides/tricys_analysis/multi_parameter_sensitivity_analysis.md'
+      - 'SOBOL全局敏感性分析': 'guides/tricys_analysis/sobol_global_sensitivity_analysis.md'
+      - 'Latin不确定性量化分析': 'guides/tricys_analysis/latin_uncertainty_analysis.md'
+  - '原理解说': 
+    - '系统架构设计': 'explanation/architecture.md'
+    - '基础仿真（TRICYS BASIC）':
+      - '仿真执行流程': 'explanation/tricys_basic/simulation_flow.md'
+      - '协同仿真原理': 'explanation/tricys_basic/co_simulation.md'
+      - '并发计算模式': 'explanation/tricys_basic/concurrency.md'
+    - '自动分析（TRICYS ANALYSIS)':
+      - '自动分析流程': 'explanation/tricys_analysis/analysis_flow.md'
+      - '核心性能指标': 'explanation/tricys_analysis/performance_metrics.md'
+      - '生成分析报告': 'explanation/tricys_analysis/analysis_report.md'
+      - 'SALIB集成方法': 'explanation/tricys_analysis/salib_integration.md'
+  - 'API 参考': 
+    - 'tricys.simulation': 'api/tricys_simulation.md'
+    - 'tricys.core': 'api/tricys_core.md'
+    - 'tricys.utils': 'api/tricys_utils.md'
+    - 'tricys.analysis': 'api/tricys_analysis.md'
+    - 'tricys.postprocess': 'api/tricys_postprocess.md'
+    - 'tricys.handlers': 'api/tricys_handlers.md'
+  - '常见问题':
+    - '🚀 安装环境': 'questions/installation.md'
+    - '⚙️ 配置运行': 'questions/configuration.md'
+    - '🔬 高级功能': 'questions/advanced_features.md'
+    - '🐛 故障排除': 'questions/troubleshooting.md'
+    - '💡 最佳实践': 'questions/best_practices.md'
+  - '更新日志': 'changelog.md'
+  - '开源许可': 'license.md'

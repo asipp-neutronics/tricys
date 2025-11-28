@@ -74,7 +74,7 @@ class TricysTestRunner:
                     "name": example_config["name"],
                     "path": example_config["path"],
                     "config": example_config["config"],
-                    "command": example_config["command"],
+                    "command": example_config.get("command", "tricys"),
                     "description": example_config["description"],
                 }
 
@@ -105,7 +105,6 @@ class TricysTestRunner:
                 print(f"  {key}. {example['name']}")
                 print(f"     描述: {example['description']}")
                 print(f"     配置: {example['config']}")
-                print(f"     命令: {example['command']}")
                 print()
 
         print("  0. 退出程序")
@@ -156,18 +155,14 @@ class TricysTestRunner:
 
             shutil.copytree(source_path, self.test_example_dir)
 
-            # Also copy the 'example_model' and 'example_aspenbkp' directories
-            model_src = self.workspace_dir / "example" / "example_model"
-            model_dst = self.test_example_base_dir / "example_model"
-            if model_dst.exists():
-                shutil.rmtree(model_dst)
-            shutil.copytree(model_src, model_dst)
-
-            aspen_src = self.workspace_dir / "example" / "example_aspenbkp"
-            aspen_dst = self.test_example_base_dir / "example_aspenbkp"
-            if aspen_dst.exists():
-                shutil.rmtree(aspen_dst)
-            shutil.copytree(aspen_src, aspen_dst)
+            # Also copy all 'example_*' subdirectories from the 'example' directory
+            example_root = self.workspace_dir / "example"
+            for item in example_root.glob("example_*"):
+                if item.is_dir():
+                    dest_path = self.test_example_base_dir / item.name
+                    if dest_path.exists():
+                        shutil.rmtree(dest_path)
+                    shutil.copytree(item, dest_path)
 
             # Verify if key files exist
             config_file = self.test_example_dir / example_info["config"]
@@ -198,18 +193,17 @@ class TricysTestRunner:
         """
         try:
             config_path = self.test_example_dir / example_info["config"]
-            command = example_info["command"]
 
-            # Check if configuration file exists
             if not config_path.exists():
                 print(f"❌ 配置文件不存在: {config_path}")
                 return False
 
-            # Build command
-            cmd = [command, "-c", str(config_path)]
+            # The main 'tricys' command automatically detects the workflow from the config file.
+            cmd = ["tricys", "-c", str(config_path)]
 
             print("─" * 50)
             print(f"📂 工作目录: {self.test_example_dir}")
+            print(f"🏃‍ 执行命令: {' '.join(cmd)}")
             print("─" * 50)
 
             # Record start time
@@ -236,7 +230,7 @@ class TricysTestRunner:
                 return False
 
         except FileNotFoundError:
-            print(f"❌ 找不到命令 '{command}'")
+            print("❌ 找不到命令 'tricys'")
             print("💡 请确保已正确安装Tricys:")
             print("   pip install -e .")
             print("   或者")
@@ -286,16 +280,11 @@ class TricysTestRunner:
 ════════════════════════════════════════════════════════════
 
   使用说明:
-    1. 选择要运行的BASIC示例编号 (1-4)
-    2. 程序会自动复制示例文件到 test_example 目录
-    3. 执行相应的 tricys 命令
-    4. 查看运行结果和日志输出
-
-  BASIC示例类型说明:
-    • 并发仿真: 使用多线程并行执行多个仿真任务
-    • 非并发仿真: 串行执行仿真任务
-    • 协同仿真: 集成外部仿真软件的联合仿真
-    • 并发协同仿真: 并行执行多个协同仿真任务
+    1. 选择要运行的BASIC示例编号。
+    2. 程序会自动复制示例文件到 test_example 目录。
+    3. 执行 `tricys -c <配置文件>` 命令。
+    4. 程序会自动识别为 basic 工作流并执行。
+    5. 查看运行结果和日志输出。
 
   BASIC功能特性:
     • 参数扫描: 支持多维参数扫描和批量仿真
@@ -304,9 +293,9 @@ class TricysTestRunner:
     • 并发控制: 可配置并发度和执行策略
 
   注意事项:
-    • 确保已正确安装 Tricys 和相关依赖
-    • 运行前会清理 test_example 目录
-    • 结果文件保存在 test_example 目录中
+    • 确保已正确安装 Tricys 和相关依赖 (`pip install -e .`)。
+    • 运行前会清理 test_example 目录。
+    • 结果文件保存在 test_example 目录中。
     • BASIC模式通常适用于批量仿真和自动化任务
 
   快捷键:
@@ -315,7 +304,7 @@ class TricysTestRunner:
     • Ctrl+C: 强制退出
 
 ════════════════════════════════════════════════════════════
-        """
+        """.strip()
         print(help_text)
 
     def main(self):
@@ -342,13 +331,10 @@ class TricysTestRunner:
                             .strip()
                             .lower()
                         )
-                        if continue_choice in ["y", "yes", "是", "Y"]:
+                        if continue_choice in ["y", "yes", "是", "Y", ""]:
                             break
                         elif continue_choice in ["n", "no", "否", "N"]:
                             return
-                        else:
-                            continue_choice = "y"
-                            break
                 elif choice.lower() == "h":
                     self.show_help()
                 elif choice.lower() == "s":

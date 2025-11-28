@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Makefile for Python Project
 #
-.PHONY: help clean install dev-install lint format check test
+.PHONY: help clean install dev-install lint format check test docs-install docs-serve docs-build
 
 # 默认目标：当只输入 `make` 时，会执行此命令，显示帮助信息。
 help:
@@ -10,6 +10,9 @@ help:
 	@echo "Available commands:"
 	@echo "  install       Install the project in editable mode for regular use."
 	@echo "  dev-install   Install the project with all development dependencies."
+	@echo "  docs-install  Install dependencies for building documentation."
+	@echo "  docs-serve    Serve the documentation site locally for development."
+	@echo "  docs-build    Build the documentation site."
 	@echo "  clean         Remove all build artifacts, cache files, and logs."
 	@echo "  lint          Check code style and potential errors (report only, do not modify)."
 	@echo "  format        Automatically format and repair code."
@@ -32,6 +35,22 @@ dev-install:
 	pip install -e ".[dev]"
 	omc ./script/modelica_install/install.mos 
 	@echo "--> Development installation complete."
+
+# Install documentation dependencies
+docs-install:
+	@echo "--> Installing documentation dependencies..."
+	pip install -e ".[docs]"
+	@echo "--> Documentation dependencies installed."
+
+# Serve the documentation site locally
+docs-serve:
+	@echo "--> Starting local documentation server..."
+	mkdocs serve
+
+# Build the documentation site
+docs-build:
+	@echo "--> Building documentation..."
+	mkdocs build
 
 
 # 清理项目，删除所有自动生成的文件和目录。

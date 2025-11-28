@@ -42,6 +42,9 @@ echo   check         Combine commands: format first, then check to make sure the
 echo   test          Perform one-click tests.
 echo   uninstall     Uninstall the project.
 echo   reinstall     Re-install the project (uninstall , clean and install).
+echo   docs-install  Install documentation dependencies.
+echo   docs-serve    Serve documentation site locally for development.
+echo   docs-build    Build documentation site.
 echo   help          Show this help message.
 goto :eof
 
@@ -58,6 +61,22 @@ echo --^> Installing project with development dependencies...
 call pip install -e ".[dev]"
 call pre-commit install
 echo --^> Development installation complete.
+goto :eof
+
+:docs-install
+echo --^> Installing documentation dependencies...
+call pip install -e ".[docs]"
+echo --^> Documentation dependencies installed.
+goto :eof
+
+:docs-serve
+echo --^> Starting local documentation server...
+call mkdocs serve
+goto :eof
+
+:docs-build
+echo --^> Building documentation...
+call mkdocs build
 goto :eof
 
 :win-install

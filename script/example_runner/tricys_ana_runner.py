@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Tricys Analysis Example Runner
-Specially designed for running tricys-ana command example configurations
+Specially designed for running tricys analysis command example configurations
 """
 import json
 import shutil
@@ -74,7 +74,7 @@ class TricysAnaTestRunner:
                     "name": example_config["name"],
                     "path": example_config["path"],
                     "config": example_config["config"],
-                    "command": example_config["command"],
+                    "command": example_config.get("command", "tricys"),
                     "description": example_config["description"],
                 }
 
@@ -105,7 +105,6 @@ class TricysAnaTestRunner:
                 print(f"  {key}. {example['name']}")
                 print(f"     描述: {example['description']}")
                 print(f"     配置: {example['config']}")
-                print(f"     命令: {example['command']}")
                 print()
 
         print("  0. 退出程序")
@@ -156,18 +155,14 @@ class TricysAnaTestRunner:
             print(f"   从: {source_path}")
             print(f"   到: {self.test_example_dir}")
 
-            # Also copy the 'example_model' and 'example_aspenbkp' directories
-            model_src = self.workspace_dir / "example" / "example_model"
-            model_dst = self.test_example_base_dir / "example_model"
-            if model_dst.exists():
-                shutil.rmtree(model_dst)
-            shutil.copytree(model_src, model_dst)
-
-            aspen_src = self.workspace_dir / "example" / "example_aspenbkp"
-            aspen_dst = self.test_example_base_dir / "example_aspenbkp"
-            if aspen_dst.exists():
-                shutil.rmtree(aspen_dst)
-            shutil.copytree(aspen_src, aspen_dst)
+            # Also copy all 'example_*' subdirectories from the 'example' directory
+            example_root = self.workspace_dir / "example"
+            for item in example_root.glob("example_*"):
+                if item.is_dir():
+                    dest_path = self.test_example_base_dir / item.name
+                    if dest_path.exists():
+                        shutil.rmtree(dest_path)
+                    shutil.copytree(item, dest_path)
 
             shutil.copytree(source_path, self.test_example_dir)
 
@@ -189,7 +184,7 @@ class TricysAnaTestRunner:
 
     def run_command(self, example_info):
         """
-        Run tricys-ana command
+        Run tricys analysis command
 
         Args:
             example_info: Example information dictionary
@@ -199,18 +194,17 @@ class TricysAnaTestRunner:
         """
         try:
             config_path = self.test_example_dir / example_info["config"]
-            command = example_info["command"]
 
-            # Check if configuration file exists
             if not config_path.exists():
                 print(f"❌ 配置文件不存在: {config_path}")
                 return False
 
-            # Build command
-            cmd = [command, "-c", str(config_path)]
+            # The main 'tricys' command automatically detects the workflow from the config file.
+            cmd = ["tricys", "-c", str(config_path)]
 
             print("─" * 50)
             print(f"📂 工作目录: {self.test_example_dir}")
+            print(f"🏃‍ 执行命令: {' '.join(cmd)}")
             print("─" * 50)
 
             # Record start time
@@ -237,7 +231,7 @@ class TricysAnaTestRunner:
                 return False
 
         except FileNotFoundError:
-            print(f"❌ 找不到命令 '{command}'")
+            print("❌ 找不到命令 'tricys'")
             print("💡 请确保已正确安装Tricys:")
             print("   pip install -e .")
             print("   或者")
@@ -287,16 +281,11 @@ class TricysAnaTestRunner:
 ════════════════════════════════════════════════════════════
 
   使用说明:
-    1. 选择要运行的分析示例编号 (1-4)
-    2. 程序会自动复制示例文件到 test_example 目录
-    3. 执行相应的 tricys-ana 命令
-    4. 查看运行结果和日志输出
-
-  分析示例类型说明:
-    • 单一配置: 单个分析案例的简单配置
-    • 普通配置: 标准分析配置，包含敏感性分析
-    • 组合配置: 多个分析案例的组合配置
-    • 文件配置: 从文件读取参数的配置示例
+    1. 选择要运行的分析示例编号。
+    2. 程序会自动复制示例文件到 test_example 目录。
+    3. 执行 `tricys -c <配置文件>` 命令。
+    4. 程序会自动识别为 analysis 工作流并执行。
+    5. 查看运行结果和日志输出。
 
   分析功能特性:
     • 敏感性分析: Sobol、Morris、FAST等方法
@@ -305,19 +294,19 @@ class TricysAnaTestRunner:
     • 多分析指标: 支持Startup_Inventory等多种指标
 
   注意事项:
-    • 确保已正确安装 Tricys 和相关依赖
-    • 运行前会清理 test_example 目录
-    • 结果文件保存在 test_example 目录中
-    • 分析模式通常需要更长的运行时间
+    • 确保已正确安装 Tricys 和相关依赖 (`pip install -e .`)。
+    • 运行前会清理 test_example 目录。
+    • 结果文件保存在 test_example 目录中。
+    • 分析模式通常需要更长的运行时间。
 
   快捷键:
     • h: 显示此帮助信息
-    • r: 查看最近运行结果
+    • s: 重新扫描示例目录
     • 0: 退出程序
     • Ctrl+C: 强制退出
 
 ════════════════════════════════════════════════════════════
-        """
+        """.strip()
         print(help_text)
 
     def main(self):
@@ -344,13 +333,10 @@ class TricysAnaTestRunner:
                             .strip()
                             .lower()
                         )
-                        if continue_choice in ["y", "yes", "是", "Y"]:
+                        if continue_choice in ["y", "yes", "是", "Y", ""]:
                             break
                         elif continue_choice in ["n", "no", "否", "N"]:
                             return
-                        else:
-                            continue_choice = "y"
-                            break
                 elif choice.lower() == "h":
                     self.show_help()
                 elif choice.lower() == "s":
@@ -363,7 +349,7 @@ class TricysAnaTestRunner:
                         print("❌ 未发现任何示例")
                 else:
                     print(
-                        "\n❌ 无效的选择，请输入 0-{}、h、r 或 s".format(
+                        "\n❌ 无效的选择，请输入 0-{}、h 或 s".format(
                             len(self.examples)
                         )
                     )
