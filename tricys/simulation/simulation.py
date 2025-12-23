@@ -7,7 +7,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 import pandas as pd
 from OMPython import ModelicaSystem
@@ -27,7 +27,7 @@ from tricys.utils.log_utils import setup_logging
 logger = logging.getLogger(__name__)
 
 
-def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
+def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> str:
     """Runs the full co-simulation workflow in an isolated directory.
 
     This function sets up a self-contained workspace for a single co-simulation
@@ -437,7 +437,7 @@ def _run_co_simulation(config: dict, job_params: dict, job_id: int = 0) -> str:
                 )
 
 
-def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
+def run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
     """Executes a single standard simulation job in an isolated workspace.
 
     This function sets up a dedicated workspace for one simulation run,
@@ -535,7 +535,11 @@ def _run_single_job(config: dict, job_params: dict, job_id: int = 0) -> str:
             omc.sendExpression("quit()")
 
 
-def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
+def run_sequential_sweep(
+    config: dict,
+    jobs: List[Dict[str, Any]],
+    post_job_callback: Callable[[int, Dict[str, Any], str], None] = None,
+) -> List[str]:
     """Executes a parameter sweep sequentially.
 
     This function runs a series of simulation jobs one after another, reusing
@@ -642,6 +646,16 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
                     },
                 )
                 result_paths.append(result_file_path)
+
+                if post_job_callback:
+                    try:
+                        post_job_callback(i, job_params, result_file_path)
+                    except Exception as e:
+                        logger.error(
+                            "Post-job callback failed",
+                            exc_info=True,
+                            extra={"job_index": i + 1, "error": str(e)},
+                        )
             except Exception:
                 logger.error(
                     "Sequential job failed", exc_info=True, extra={"job_index": i + 1}
@@ -657,7 +671,7 @@ def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]
             omc.sendExpression("quit()")
 
 
-def _run_post_processing(
+def run_post_processing(
     config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
 ) -> None:
     """Dynamically loads and runs post-processing modules.
@@ -815,7 +829,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
                 ) as executor:
                     future_to_job = {
                         executor.submit(
-                            _run_single_job, config, job_params, i + 1
+                            run_single_job, config, job_params, i + 1
                         ): job_params
                         for i, job_params in enumerate(jobs)
                     }
@@ -834,7 +848,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
                             )
             else:
                 logger.info("Starting simulation", extra={"mode": "SEQUENTIAL"})
-                result_paths = _run_sequential_sweep(config, jobs)
+                result_paths = run_sequential_sweep(config, jobs)
                 for i, result_path in enumerate(result_paths):
                     if result_path:
                         simulation_results[tuple(sorted(jobs[i].items()))] = result_path
@@ -853,7 +867,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
                 ) as executor:
                     future_to_job = {
                         executor.submit(
-                            _run_co_simulation, config, job_params, job_id=i + 1
+                            run_co_simulation_job, config, job_params, job_id=i + 1
                         ): job_params
                         for i, job_params in enumerate(jobs)
                     }
@@ -899,7 +913,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
                         },
                     )
                     try:
-                        result_path = _run_co_simulation(
+                        result_path = run_co_simulation_job(
                             config, job_params, job_id=job_id
                         )
                         if result_path:
@@ -1027,7 +1041,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
         top_level_post_processing_dir = os.path.join(
             top_level_run_workspace, "post_processing"
         )
-        _run_post_processing(config, combined_df, top_level_post_processing_dir)
+        run_post_processing(config, combined_df, top_level_post_processing_dir)
     else:
         logger.warning("No simulation results generated, skipping post-processing")
 

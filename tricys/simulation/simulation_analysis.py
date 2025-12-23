@@ -1,5 +1,4 @@
 import concurrent.futures
-import importlib
 import logging
 import os
 import shutil
@@ -24,12 +23,17 @@ from tricys.analysis.report import (
     retry_ai_analysis,
 )
 from tricys.analysis.salib import run_salib_analysis
-from tricys.core.interceptor import integrate_interceptor_model
 from tricys.core.jobs import generate_simulation_jobs
 from tricys.core.modelica import (
     format_parameter_value,
     get_om_session,
     load_modelica_package,
+)
+from tricys.simulation.simulation import (
+    run_co_simulation_job,
+    run_post_processing,
+    run_sequential_sweep,
+    run_single_job,
 )
 from tricys.utils.config_utils import (
     analysis_prepare_config,
@@ -471,664 +475,205 @@ def _run_bisection_search_for_job(
     return all_optimal_params, all_optimal_values
 
 
-def _run_co_simulation(
-    config: dict, job_params: dict, job_id: int = 0
-) -> tuple[Dict[str, float], Dict[str, float], str]:
-    """Runs a full co-simulation workflow and any subsequent optimizations.
+def _resolve_isolated_package_path(
+    job_workspace: str, original_package_path: str
+) -> str:
+    """Helper to determine the path of the copied package in the isolated workspace."""
+    if os.path.isfile(original_package_path) and not original_package_path.endswith(
+        "package.mo"
+    ):
+        return os.path.join(job_workspace, os.path.basename(original_package_path))
+    else:
+        if os.path.isfile(original_package_path):
+            original_dir = os.path.dirname(original_package_path)
+            base_name = os.path.basename(original_package_path)
+            dir_name = os.path.basename(original_dir)
+            return os.path.join(job_workspace, dir_name, base_name)
+        else:
+            dir_name = os.path.basename(original_package_path)
+            return os.path.join(job_workspace, dir_name, "package.mo")
 
-    This function orchestrates a complete co-simulation job in an isolated,
-    thread-safe directory. After the co-simulation completes, it checks if
-    any bisection search optimizations are configured and runs them for the
-    completed job.
 
-    Args:
-        config (dict): The main configuration dictionary.
-        job_params (dict): A dictionary of parameters specific to this job.
-        job_id (int): A unique identifier for the job.
-
-    Returns:
-        A tuple containing:
-        - A dictionary of optimal parameter values found during optimization.
-        - A dictionary of the metric values achieved with those optimal parameters.
-        - The path to the final co-simulation result file, or an empty string
-          on failure.
-    """
-    paths_config = config["paths"]
-    sim_config = config["simulation"]
-
-    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
-
-    job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
-    os.makedirs(job_workspace, exist_ok=True)
-
-    omc = None
+def _run_optimization_tasks(
+    config: dict, job_params: dict, job_id: int, package_path_override: str = None
+) -> tuple[Dict[str, float], Dict[str, float]]:
+    """Runs all configured bisection search optimization tasks for a job."""
     optimal_param = {}
     optimal_value = {}
 
+    optimization_tasks = _get_optimization_tasks(config)
+    paths_config = config["paths"]
+    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
+
+    # Determine the package path to use for optimization
+    package_path = (
+        package_path_override
+        if package_path_override
+        else os.path.abspath(paths_config["package_path"])
+    )
+
+    for optimization_metric_name in optimization_tasks:
+        logger.info(
+            f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
+        )
+        job_config = config.copy()
+        job_config["paths"] = config["paths"].copy()
+        job_config["paths"]["package_path"] = package_path
+        job_config["paths"]["temp_dir"] = base_temp_dir
+        job_config["simulation_parameters"] = job_params
+        # Note: model_name logic was specific in co-sim (using final_model_name).
+        # But _run_bisection_search_for_job uses sim_config["model_name"].
+        # We need to ensure job_config["simulation"]["model_name"] is correct.
+        # However, _run_bisection_search_for_job uses config["simulation"]["model_name"].
+        # In co-simulation, the model name changes to ..._Intercepted.
+        # We should pass the correct model name if it changed.
+
+        # Unique prefix
+        metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
+
+        (
+            current_optimal_param,
+            current_optimal_value,
+        ) = _run_bisection_search_for_job(
+            job_config,
+            job_id_prefix=metric_job_id_prefix,
+            optimization_metric_name=optimization_metric_name,
+        )
+
+        optimal_param.update(current_optimal_param)
+        optimal_value.update(current_optimal_value)
+
+        logger.info(
+            f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
+            f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
+        )
+
+    return optimal_param, optimal_value
+
+
+def _run_co_simulation(
+    config: dict, job_params: dict, job_id: int = 0
+) -> tuple[Dict[str, float], Dict[str, float], str]:
+    """Runs a full co-simulation workflow and any subsequent optimizations."""
+
+    # Force keep_temp_files to True so we can use the workspace for optimization
+    original_keep = config["simulation"].get("keep_temp_files", True)
+    config["simulation"]["keep_temp_files"] = True
+
+    result_path = ""
     try:
-        original_package_path = os.path.abspath(paths_config["package_path"])
-
-        # Determine if it's a single-file or multi-file package and copy accordingly.
-        if os.path.isfile(original_package_path) and not original_package_path.endswith(
-            "package.mo"
-        ):
-            # SINGLE-FILE: Copy the single .mo file into the root of the job_workspace.
-            isolated_package_path = os.path.join(
-                job_workspace, os.path.basename(original_package_path)
-            )
-            shutil.copy(original_package_path, isolated_package_path)
-            logger.info(f"Copied single-file package to: {isolated_package_path}")
-        else:
-            # MULTI-FILE: Copy the entire package directory.
-            # This handles both a directory path and a path to a package.mo file.
-            if os.path.isfile(original_package_path):
-                original_package_dir = os.path.dirname(original_package_path)
-            else:  # It's a directory
-                original_package_dir = original_package_path
-
-            package_dir_name = os.path.basename(original_package_dir)
-            isolated_package_dir = os.path.join(job_workspace, package_dir_name)
-
-            if os.path.exists(isolated_package_dir):
-                shutil.rmtree(isolated_package_dir)
-            shutil.copytree(original_package_dir, isolated_package_dir)
-
-            # Reconstruct the path to the main package file inside the new isolated directory
-            if os.path.isfile(original_package_path):
-                isolated_package_path = os.path.join(
-                    isolated_package_dir, os.path.basename(original_package_path)
-                )
-            else:  # path was a directory, so we assume package.mo
-                isolated_package_path = os.path.join(isolated_package_dir, "package.mo")
-
-            logger.info(f"Copied multi-file package to: {isolated_package_dir}")
-        isolated_temp_dir = job_workspace
-        results_dir = os.path.abspath(paths_config["results_dir"])
-        os.makedirs(results_dir, exist_ok=True)
-
-        # Parse co_simulation config - new format with mode at top level
-        co_sim_config = config["co_simulation"]
-        mode = co_sim_config.get("mode", "interceptor")  # Get mode from top level
-        handlers = co_sim_config.get("handlers", [])  # Get handlers array
-
-        # Validate that handlers is a list
-        if not isinstance(handlers, list):
-            handlers = [handlers]
-
-        model_name = sim_config["model_name"]
-        stop_time = sim_config["stop_time"]
-        step_size = sim_config["step_size"]
-
-        omc = get_om_session()
-        if not load_modelica_package(omc, Path(isolated_package_path).as_posix()):
-            raise RuntimeError(
-                f"Failed to load Modelica package at {isolated_package_path}"
-            )
-
-        # Handle copying of any additional asset directories specified with a '_path' suffix
-        for handler_config in handlers:
-            if "params" in handler_config:
-                # Iterate over a copy of items since we are modifying the dict
-                for param_key, param_value in list(handler_config["params"].items()):
-                    if isinstance(param_value, str) and param_key.endswith("_path"):
-                        original_asset_path_str = param_value
-
-                        # Paths in config are relative to project root. We need the absolute path.
-                        original_asset_path = Path(
-                            os.path.abspath(original_asset_path_str)
-                        )
-                        original_asset_dir = original_asset_path.parent
-
-                        if not original_asset_dir.exists():
-                            logger.warning(
-                                f"Asset directory '{original_asset_dir}' for parameter '{param_key}' not found. Skipping copy."
-                            )
-                            continue
-
-                        asset_dir_name = original_asset_dir.name
-                        dest_dir = Path(job_workspace) / asset_dir_name
-
-                        # Copy the directory only if it hasn't been copied already
-                        if not dest_dir.exists():
-                            shutil.copytree(original_asset_dir, dest_dir)
-                            logger.info(
-                                f"Copied asset directory '{original_asset_dir}' to '{dest_dir}' for job {job_id}"
-                            )
-
-                        # Update the path in the config to point to the new location
-                        new_asset_path = dest_dir / original_asset_path.name
-                        handler_config["params"][param_key] = new_asset_path.as_posix()
-                        logger.info(
-                            f"Updated parameter '{param_key}' for job {job_id} to '{handler_config['params'][param_key]}'"
-                        )
-
-        all_input_vars = []
-        for handler_config in handlers:
-            submodel_name = handler_config["submodel_name"]
-            instance_name = handler_config["instance_name"]
-            logger.info(f"Identifying input ports for submodel '{submodel_name}'...")
-            components = omc.sendExpression(f"getComponents({submodel_name})")
-            input_ports = [
-                {"name": c[1], "dim": int(c[11][0]) if c[11] else 1}
-                for c in components
-                if c[0] == "Modelica.Blocks.Interfaces.RealInput"
-            ]
-            if not input_ports:
-                logger.warning(f"No RealInput ports found in {submodel_name}.")
-                continue
-
-            logger.info(
-                f"Found input ports for {instance_name}: {[p['name'] for p in input_ports]}"
-            )
-            for port in input_ports:
-                full_name = f"{instance_name}.{port['name']}".replace(".", "\\.")
-                if port["dim"] > 1:
-                    full_name += f"\\[[1-{port['dim']}]\\]"
-                all_input_vars.append(full_name)
-
-        variable_filter = "time|" + "|".join(all_input_vars)
-
-        mod = ModelicaSystem(
-            fileName=Path(isolated_package_path).as_posix(),
-            modelName=model_name,
-            variableFilter=variable_filter,
-        )
-        mod.setSimulationOptions(
-            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
-        )
-
-        param_settings = [
-            format_parameter_value(name, value) for name, value in job_params.items()
-        ]
-        if param_settings:
-            logger.info(f"Applying parameters for job {job_id}: {param_settings}")
-            mod.setParameters(param_settings)
-
-        primary_result_filename = get_unique_filename(
-            isolated_temp_dir, "primary_inputs.csv"
-        )
-        mod.simulate(resultfile=Path(primary_result_filename).as_posix())
-
-        # Clean up the simulation result file
-        if os.path.exists(primary_result_filename):
-            try:
-                df = pd.read_csv(primary_result_filename)
-                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
-                df.dropna(subset=["time"], inplace=True)
-                df.to_csv(primary_result_filename, index=False)
-            except Exception as e:
-                logger.warning(
-                    f"Failed to clean result file {primary_result_filename}: {e}"
-                )
-
-        interception_configs = []
-        for handler_config in handlers:
-            handler_function_name = handler_config["handler_function"]
-            module = None
-
-            # New method: Load from a direct script path
-            if "handler_script_path" in handler_config:
-                script_path_str = handler_config["handler_script_path"]
-                script_path = Path(script_path_str).resolve()
-                module_name = script_path.stem
-
-                logger.info(
-                    "Loading co-simulation handler from script path",
-                    extra={
-                        "job_id": job_id,
-                        "script_path": str(script_path),
-                        "function": handler_function_name,
-                    },
-                )
-
-                if not script_path.is_file():
-                    raise FileNotFoundError(
-                        f"Co-simulation handler script not found at {script_path}"
-                    )
-
-                spec = importlib.util.spec_from_file_location(module_name, script_path)
-                if spec and spec.loader:
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-                else:
-                    raise ImportError(
-                        f"Could not create module spec from script {script_path}"
-                    )
-
-            # Old method: Load from module name (backward compatibility)
-            elif "handler_module" in handler_config:
-                module_name = handler_config["handler_module"]
-                logger.info(
-                    "Loading co-simulation handler from module",
-                    extra={
-                        "job_id": job_id,
-                        "module_name": module_name,
-                        "function": handler_function_name,
-                    },
-                )
-                module = importlib.import_module(module_name)
-
-            else:
-                raise KeyError(
-                    "Handler config must contain either 'script_path' or 'handler_module'"
-                )
-
-            if not module:
-                raise ImportError("Failed to load co-simulation handler module.")
-
-            handler_function = getattr(module, handler_function_name)
-            instance_name = handler_config["instance_name"]
-
-            co_sim_output_filename = get_unique_filename(
-                isolated_temp_dir, f"{instance_name}_outputs.csv"
-            )
-
-            output_placeholder = handler_function(
-                temp_input_csv=primary_result_filename,
-                temp_output_csv=co_sim_output_filename,
-                **handler_config.get("params", {}),
-            )
-
-            interception_config = {
-                "submodel_name": handler_config["submodel_name"],
-                "instance_name": handler_config["instance_name"],
-                "csv_uri": Path(os.path.abspath(co_sim_output_filename)).as_posix(),
-                "output_placeholder": output_placeholder,
-            }
-
-            # Add mode from top-level co_simulation config
-            interception_config["mode"] = mode
-
-            interception_configs.append(interception_config)
-
-        intercepted_model_paths = integrate_interceptor_model(
-            package_path=isolated_package_path,
-            model_name=model_name,
-            interception_configs=interception_configs,
-        )
-
-        verif_config = config["simulation"]["variableFilter"]
-        logger.info("Proceeding with Final simulation.")
-
-        # Use mode from top-level config
-        if mode == "replacement":
-            # For direct replacement, the system model name stays the same
-            logger.info(
-                "Using direct replacement mode, system model unchanged",
-                extra={"job_id": job_id},
-            )
-            final_model_name = model_name
-            final_model_file = isolated_package_path
-        else:
-            # For interceptor mode, load the interceptor models and use modified system
-            for model_path in intercepted_model_paths["interceptor_model_paths"]:
-                omc.sendExpression(f"""loadFile("{Path(model_path).as_posix()}")""")
-            omc.sendExpression(
-                f"""loadFile("{Path(intercepted_model_paths["system_model_path"]).as_posix()}")"""
-            )
-
-            package_name, original_system_name = model_name.split(".")
-            final_model_name = f"{package_name}.{original_system_name}_Intercepted"
-            final_model_file = (
-                Path(intercepted_model_paths["system_model_path"]).as_posix()
-                if os.path.isfile(isolated_package_path)
-                and not original_package_path.endswith("package.mo")
-                else Path(isolated_package_path).as_posix()
-            )
-
-        verif_mod = ModelicaSystem(
-            fileName=final_model_file,
-            modelName=final_model_name,
-            variableFilter=verif_config,
-        )
-        verif_mod.setSimulationOptions(
-            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
-        )
-        if param_settings:
-            verif_mod.setParameters(param_settings)
-
-        default_result_path = get_unique_filename(
-            job_workspace, "co_simulation_results.csv"
-        )
-        verif_mod.simulate(resultfile=Path(default_result_path).as_posix())
-
-        # Clean up the simulation result file
-        if os.path.exists(default_result_path):
-            try:
-                df = pd.read_csv(default_result_path)
-                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
-                df.dropna(subset=["time"], inplace=True)
-                df.to_csv(default_result_path, index=False)
-            except Exception as e:
-                logger.warning(
-                    f"Failed to clean result file {default_result_path}: {e}"
-                )
-
-        if not os.path.exists(default_result_path):
-            raise FileNotFoundError(
-                f"Simulation for job {job_id} failed to produce a result file at {default_result_path}"
-            )
-
-        optimal_param = {}
-        optimal_value = {}
-        # Check if optimization is enabled, if so call _run_bisection_search_for_job for each task
-        optimization_tasks = _get_optimization_tasks(config)
-        for optimization_metric_name in optimization_tasks:
-            logger.info(
-                f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
-            )
-            job_config = config.copy()
-            job_config["paths"]["package_path"] = isolated_package_path
-            job_config["paths"]["temp_dir"] = base_temp_dir
-            job_config["simulation_parameters"] = job_params
-            job_config["simulation"]["model_name"] = final_model_name
-
-            # Use a unique prefix for each metric to avoid workspace collision
-            metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
-
-            (
-                current_optimal_param,
-                current_optimal_value,
-            ) = _run_bisection_search_for_job(
-                job_config,
-                job_id_prefix=metric_job_id_prefix,
-                optimization_metric_name=optimization_metric_name,
-            )
-
-            # Merge results from the current optimization task
-            optimal_param.update(current_optimal_param)
-            optimal_value.update(current_optimal_value)
-
-            logger.info(
-                f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
-                f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
-            )
-
-        # Return the path to the result file inside the temporary workspace
-        return optimal_param, optimal_value, Path(default_result_path).as_posix()
-    except Exception:
-        logger.error(
-            "Co-simulation workflow failed", exc_info=True, extra={"job_id": job_id}
-        )
-        return optimal_param, optimal_value, ""
+        result_path = run_co_simulation_job(config, job_params, job_id)
+    except Exception as e:
+        logger.error(f"Co-simulation failed: {e}", exc_info=True)
+        # Ensure we restore the config even if failed
     finally:
-        if omc:
-            omc.sendExpression("quit()")
-            logger.info("Closed OMPython session", extra={"job_id": job_id})
+        config["simulation"]["keep_temp_files"] = original_keep
 
-        if not sim_config.get("keep_temp_files", True):
+    if not result_path:
+        # If run_co_simulation_job failed, it might have kept the files. We should clean up if needed.
+        if not original_keep:
+            paths_config = config["paths"]
+            base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
+            job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
             if os.path.exists(job_workspace):
                 shutil.rmtree(job_workspace)
-                logger.info(
-                    "Cleaned up job workspace",
-                    extra={"job_id": job_id, "workspace": job_workspace},
-                )
+        return {}, {}, ""
+
+    # Run Optimization
+    paths_config = config["paths"]
+    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
+    job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
+    original_package_path = os.path.abspath(paths_config["package_path"])
+
+    isolated_package_path = _resolve_isolated_package_path(
+        job_workspace, original_package_path
+    )
+
+    # Identify final model name logic (duplicated from simulation.py logic technically,
+    # but we need it to set the correct model name for optimization)
+    # The interceptor logic changes the model name.
+    co_sim_config = config.get("co_simulation", {})
+    mode = co_sim_config.get("mode", "interceptor")
+    model_name = config["simulation"]["model_name"]
+
+    if mode == "replacement":
+        final_model_name = model_name
+    else:
+        package_name, original_system_name = model_name.split(".")
+        final_model_name = f"{package_name}.{original_system_name}_Intercepted"
+
+    # We need to temporarily update the model name in config for optimization
+    original_model_name = config["simulation"]["model_name"]
+    config["simulation"]["model_name"] = final_model_name
+
+    try:
+        optimal_params, optimal_values = _run_optimization_tasks(
+            config, job_params, job_id, package_path_override=isolated_package_path
+        )
+    finally:
+        # Restore model name
+        config["simulation"]["model_name"] = original_model_name
+
+        # Cleanup if needed
+        if not original_keep and os.path.exists(job_workspace):
+            shutil.rmtree(job_workspace)
+            logger.info(f"Cleaned up job workspace {job_workspace}")
+
+    return optimal_params, optimal_values, result_path
 
 
 def _run_single_job(
     config: dict, job_params: dict, job_id: int = 0
 ) -> tuple[Dict[str, float], Dict[str, float], str]:
-    """Executes a single simulation job and any subsequent optimizations.
+    """Executes a single simulation job and any subsequent optimizations."""
+    result_path = run_single_job(config, job_params, job_id)
 
-    This function runs a standard simulation in an isolated workspace. After the
-    simulation completes, it checks if any bisection search optimizations are
-    configured and runs them for the completed job.
+    if not result_path:
+        return {}, {}, ""
 
-    Args:
-        config (dict): The main configuration dictionary.
-        job_params (dict): A dictionary of parameters specific to this job.
-        job_id (int): A unique identifier for the job.
+    optimal_params, optimal_values = _run_optimization_tasks(config, job_params, job_id)
 
-    Returns:
-        A tuple containing:
-        - A dictionary of optimal parameter values found during optimization.
-        - A dictionary of the metric values achieved with those optimal parameters.
-        - The path to the simulation result file, or an empty string on failure.
-    """
-    paths_config = config["paths"]
-    sim_config = config["simulation"]
-
-    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
-    job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
-    os.makedirs(job_workspace, exist_ok=True)
-
-    logger.info(
-        "Starting single job",
-        extra={"job_id": job_id, "job_params": job_params},
-    )
-    omc = None
-    optimal_param = {}
-    optimal_value = {}
-    try:
-        omc = get_om_session()
-        package_path = os.path.abspath(paths_config["package_path"])
-        if not load_modelica_package(omc, Path(package_path).as_posix()):
-            raise RuntimeError(f"Job {job_id}: Failed to load Modelica package.")
-
-        mod = ModelicaSystem(
-            fileName=Path(package_path).as_posix(),
-            modelName=sim_config["model_name"],
-            variableFilter=sim_config["variableFilter"],
-        )
-        mod.setSimulationOptions(
-            [
-                f"stopTime={sim_config['stop_time']}",
-                "tolerance=1e-6",
-                "outputFormat=csv",
-                f"stepSize={sim_config['step_size']}",
-            ]
-        )
-        param_settings = [
-            format_parameter_value(name, value) for name, value in job_params.items()
-        ]
-        if param_settings:
-            mod.setParameters(param_settings)
-
-        default_result_file = f"job_{job_id}_simulation_results.csv"
-        result_path = Path(job_workspace) / default_result_file
-
-        mod.simulate(resultfile=Path(result_path).as_posix())
-
-        # Clean up the simulation result file
-        if result_path.is_file():
-            try:
-                df = pd.read_csv(result_path)
-                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
-                df.dropna(subset=["time"], inplace=True)
-                df.to_csv(result_path, index=False)
-            except Exception as e:
-                logger.warning(f"Failed to clean result file {result_path}: {e}")
-
-        if not result_path.is_file():
-            raise FileNotFoundError(
-                f"Simulation for job {job_id} failed to produce result file at {result_path}"
-            )
-
-        logger.info(
-            "Job finished successfully",
-            extra={"job_id": job_id, "result_path": str(result_path)},
-        )
-
-        optimal_param = {}
-        optimal_value = {}
-        # Check if optimization is enabled, if so call _run_bisection_search_for_job for each task
-        optimization_tasks = _get_optimization_tasks(config)
-        for optimization_metric_name in optimization_tasks:
-            logger.info(
-                f"Job {job_id}: Starting optimization for metric '{optimization_metric_name}'."
-            )
-            job_config = config.copy()
-            job_config["paths"]["package_path"] = package_path
-            job_config["paths"]["temp_dir"] = base_temp_dir
-            job_config["simulation_parameters"] = job_params
-
-            # Use a unique prefix for each metric to avoid workspace collision
-            metric_job_id_prefix = f"job_{job_id}_{optimization_metric_name}"
-
-            (
-                current_optimal_param,
-                current_optimal_value,
-            ) = _run_bisection_search_for_job(
-                job_config,
-                job_id_prefix=metric_job_id_prefix,
-                optimization_metric_name=optimization_metric_name,
-            )
-
-            # Merge results from the current optimization task
-            optimal_param.update(current_optimal_param)
-            optimal_value.update(current_optimal_value)
-
-            logger.info(
-                f"Job {job_id} optimization for '{optimization_metric_name}' complete. "
-                f"Optimal params: {current_optimal_param}, Optimal values: {current_optimal_value}"
-            )
-
-        return optimal_param, optimal_value, str(result_path)
-    except Exception:
-        logger.error("Job failed", exc_info=True, extra={"job_id": job_id})
-        return optimal_param, optimal_value, ""
-    finally:
-        if omc:
-            omc.sendExpression("quit()")
+    return optimal_params, optimal_values, result_path
 
 
 def _run_sequential_sweep(config: dict, jobs: List[Dict[str, Any]]) -> List[str]:
-    """Executes a parameter sweep sequentially, including optimizations.
+    """Executes a parameter sweep sequentially, including optimizations."""
 
-    This function runs a series of simulation jobs one after another, reusing
-    the same OpenModelica session. For each job, it also runs any configured
-    bisection search optimizations and saves a summary of the optimization
-    results.
+    final_results = []
 
-    Args:
-        config (dict): The main configuration dictionary.
-        jobs (List[Dict[str, Any]]): A list of job parameter dictionaries to execute.
+    def post_job_callback(index: int, params: Dict[str, Any], result_path: str):
+        if not result_path:
+            return
 
-    Returns:
-        List[str]: A list of paths to the result files for each job. Failed jobs
-                   will have an empty string as their path.
-    """
-    paths_config = config["paths"]
-    sim_config = config["simulation"]
+        logger.info(f"Starting optimization for sequential job {index+1}")
+        try:
+            optimal_params, optimal_values = _run_optimization_tasks(
+                config, params, index + 1
+            )
 
-    base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
-    os.makedirs(base_temp_dir, exist_ok=True)
+            final_result_entry = params.copy()
+            final_result_entry.update(optimal_params)
+            final_result_entry.update(optimal_values)
+            final_results.append(final_result_entry)
+        except Exception as e:
+            logger.error(
+                f"Optimization failed for sequential job {index+1}: {e}", exc_info=True
+            )
 
-    logger.info(
-        f"Running sweep sequentially. Intermediate files will be in: {base_temp_dir}"
+    result_paths = run_sequential_sweep(
+        config, jobs, post_job_callback=post_job_callback
     )
 
-    omc = None
-    result_paths = []
-    try:
-        omc = get_om_session()
-        package_path = os.path.abspath(paths_config["package_path"])
-        if not load_modelica_package(omc, Path(package_path).as_posix()):
-            raise RuntimeError("Failed to load Modelica package for sequential sweep.")
+    # Summarize optimization results
+    if final_results and _get_optimization_tasks(config):
+        results_dir = os.path.abspath(config["paths"]["results_dir"])
+        os.makedirs(results_dir, exist_ok=True)
+        final_df = pd.DataFrame(final_results)
+        output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
+        final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
+        logger.info(f"Sweep optimization summary saved to: {output_path}")
 
-        mod = ModelicaSystem(
-            fileName=Path(package_path).as_posix(),
-            modelName=sim_config["model_name"],
-            variableFilter=sim_config["variableFilter"],
-        )
-        mod.setSimulationOptions(
-            [
-                f"stopTime={sim_config['stop_time']}",
-                "tolerance=1e-6",
-                "outputFormat=csv",
-                f"stepSize={sim_config['step_size']}",
-            ]
-        )
-
-        # _clear_stale_init_xml(mod,sim_config["model_name"])
-
-        # mod.buildModel()
-
-        final_results = []
-
-        for i, job_params in enumerate(jobs):
-            try:
-                logger.info(
-                    f"Running sequential job {i+1}/{len(jobs)} with parameters: {job_params}"
-                )
-                param_settings = [
-                    format_parameter_value(name, value)
-                    for name, value in job_params.items()
-                ]
-                if param_settings:
-                    mod.setParameters(param_settings)
-
-                job_workspace = os.path.join(base_temp_dir, f"job_{i+1}")
-                os.makedirs(job_workspace, exist_ok=True)
-                result_filename = f"job_{i+1}_simulation_results.csv"
-                result_file_path = os.path.join(job_workspace, result_filename)
-
-                mod.simulate(resultfile=Path(result_file_path).as_posix())
-
-                # Clean up the simulation result file
-                if os.path.exists(result_file_path):
-                    try:
-                        df = pd.read_csv(result_file_path)
-                        df.drop_duplicates(subset=["time"], keep="last", inplace=True)
-                        df.dropna(subset=["time"], inplace=True)
-                        df.to_csv(result_file_path, index=False)
-                    except Exception as e:
-                        logger.warning(
-                            f"Failed to clean result file {result_file_path}: {e}"
-                        )
-
-                logger.info(
-                    f"Sequential job {i+1} finished. Results at {result_file_path}"
-                )
-                result_paths.append(result_file_path)
-
-                job_final_optimizations = {}
-                optimization_tasks = _get_optimization_tasks(config)
-                for optimization_metric_name in optimization_tasks:
-                    logger.info(
-                        f"Job {i+1}: Starting optimization for metric '{optimization_metric_name}'."
-                    )
-                    job_config = config.copy()
-                    job_config["simulation_parameters"] = job_params
-
-                    # Use a unique prefix for each metric to avoid workspace collision
-                    metric_job_id_prefix = f"job_{i+1}_{optimization_metric_name}"
-
-                    (optimal_params, optimal_values) = _run_bisection_search_for_job(
-                        job_config,
-                        job_id_prefix=metric_job_id_prefix,
-                        optimization_metric_name=optimization_metric_name,
-                    )
-
-                    # Merge results from the current optimization task
-                    job_final_optimizations.update(optimal_params)
-                    job_final_optimizations.update(optimal_values)
-
-                final_result_entry = job_params.copy()
-                final_result_entry.update(job_final_optimizations)
-                final_results.append(final_result_entry)
-
-            except Exception as e:
-                logger.error(f"Sequential job {i+1} failed: {e}", exc_info=True)
-                result_paths.append("")
-
-        # Summarize optimization results
-        if _get_optimization_tasks(config):
-            results_dir = os.path.abspath(config["paths"]["results_dir"])
-            os.makedirs(results_dir, exist_ok=True)
-            if final_results:
-                final_df = pd.DataFrame(final_results)
-                output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
-                final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
-                logger.info(f"Sweep optimization summary saved to: {output_path}")
-
-        return result_paths
-    except Exception as e:
-        logger.error(f"Sequential sweep failed during setup: {e}", exc_info=True)
-        return [""] * len(jobs)
-    finally:
-        if omc:
-            omc.sendExpression("quit()")
+    return result_paths
 
 
 def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
@@ -1206,115 +751,8 @@ def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
 def _run_post_processing(
     config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
 ) -> None:
-    """Dynamically loads and runs post-processing modules.
-
-    This function iterates through the post-processing tasks defined in the
-    configuration. For each task, it dynamically loads the specified module
-    (from a module name or a script path) and executes the target function,
-    passing the results DataFrame and other parameters to it.
-
-    Args:
-        config: The main configuration dictionary.
-        results_df: The combined DataFrame of simulation results.
-        post_processing_output_dir: The directory to save any output from the tasks.
-
-    Note:
-        Supports two loading methods: 'script_path' for direct .py files, or 'module'
-        for installed packages. Creates output_dir if it doesn't exist. Passes results_df,
-        output_dir, and user-specified params to each task function. Logs errors for
-        failed tasks but continues with remaining tasks.
-    """
-    post_processing_configs = config.get("post_processing")
-    if not post_processing_configs:
-        logger.info("No post-processing task configured, skipping this step.")
-        return
-
-    logger.info("Starting post-processing phase")
-
-    post_processing_dir = post_processing_output_dir
-    os.makedirs(post_processing_dir, exist_ok=True)
-    logger.info(
-        "Post-processing report will be saved",
-        extra={"output_dir": post_processing_dir},
-    )
-
-    for i, task_config in enumerate(post_processing_configs):
-        try:
-            function_name = task_config["function"]
-            params = task_config.get("params", {})
-            module = None
-
-            # New method: Load from a direct script path
-            if "script_path" in task_config:
-                script_path_str = task_config["script_path"]
-                script_path = Path(script_path_str).resolve()
-                module_name = script_path.stem
-
-                logger.info(
-                    "Running post-processing task from script path",
-                    extra={
-                        "task_index": i + 1,
-                        "script_path": str(script_path),
-                        "function": function_name,
-                    },
-                )
-
-                if not script_path.is_file():
-                    logger.error(
-                        "Post-processing script not found",
-                        extra={"path": str(script_path)},
-                    )
-                    continue
-
-                spec = importlib.util.spec_from_file_location(module_name, script_path)
-                if spec and spec.loader:
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-                else:
-                    logger.error(
-                        "Could not create module spec from script",
-                        extra={"path": str(script_path)},
-                    )
-                    continue
-
-            # Old method: Load from module name (backward compatibility)
-            elif "module" in task_config:
-                module_name = task_config["module"]
-                logger.info(
-                    "Running post-processing task from module",
-                    extra={
-                        "task_index": i + 1,
-                        "module_name": module_name,
-                        "function": function_name,
-                    },
-                )
-                module = importlib.import_module(module_name)
-
-            else:
-                logger.warning(
-                    "Post-processing task is missing 'script_path' or 'module' key. Skipping.",
-                    extra={"task_index": i + 1},
-                )
-                continue
-
-            if module:
-                post_processing_func = getattr(module, function_name)
-                post_processing_func(
-                    results_df=results_df, output_dir=post_processing_dir, **params
-                )
-            else:
-                logger.error(
-                    "Failed to load post-processing module.",
-                    extra={"task_index": i + 1},
-                )
-
-        except Exception:
-            logger.error(
-                "Post-processing task failed",
-                exc_info=True,
-                extra={"task_index": i + 1},
-            )
-    logger.info("Post-processing phase ended")
+    """Wrapper for simulation.run_post_processing."""
+    run_post_processing(config, results_df, post_processing_output_dir)
 
 
 def run_simulation(config: Dict[str, Any]) -> None:
