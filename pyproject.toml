@@ -27,7 +27,11 @@ dependencies = [
     "python-dotenv",
     "SALib",
     "python-json-logger",
-    "tabulate"
+    "tabulate",
+    "tables",
+    "dash",
+    "dash-bootstrap-components",
+    "pywin32; sys_platform == 'win32'"
 ]
 
 [project.urls]
@@ -40,24 +44,9 @@ tricys = "tricys.main:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest",  # 用于测试
-    "ruff",    # 用于代码检查和格式化
+    "pytest",  
+    "ruff",    
     "black",
-    "pre-commit"
-]
-
-visualizer = [
-    "dash",
-    "dash-bootstrap-components",
-    "pandas",
-    "tables"
-]
-
-win = [
-    "pytest",  # 用于测试
-    "ruff",    # 用于代码检查和格式化
-    "black",
-    "pywin32",
     "pre-commit"
 ]
 

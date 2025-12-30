@@ -45,9 +45,7 @@ echo   reinstall     Re-install the project (uninstall , clean and install).
 echo   docs-install  Install documentation dependencies.
 echo   docs-serve    Serve documentation site locally for development.
 echo   docs-build    Build documentation site.
-echo   install-viz   Install the project with visualizer dependencies.
-echo   install-all   Install the project with ALL dependencies (dev, docs, viz).
-echo   build         Build the package (source and wheel).
+echo   install-all   Install the project with ALL dependencies (dev, docs).
 echo   help          Show this help message.
 goto :eof
 
@@ -55,6 +53,7 @@ goto :eof
 :install
 echo --^> Installing project in editable mode...
 call pip install -e .
+call omc ./script/modelica_install/install.mos
 echo --^> Installation complete.
 goto :eof
 
@@ -63,6 +62,7 @@ goto :eof
 echo --^> Installing project with development dependencies...
 call pip install -e ".[dev]"
 call pre-commit install
+call omc ./script/modelica_install/install.mos
 echo --^> Development installation complete.
 goto :eof
 
@@ -82,36 +82,13 @@ echo --^> Building documentation...
 call mkdocs build
 goto :eof
 
-:win-install
-echo --^> Installing project with development dependencies...
-call pip install -e ".[win]"
-call pre-commit install
-echo --^> Development installation complete.
-goto :eof
-
-
-:install-viz
-echo --^> Installing project with visualizer dependencies...
-call pip install -e ".[visualizer]"
-echo --^> Visualizer installation complete.
-goto :eof
-
-
 :install-all
 echo --^> Installing project with ALL dependencies...
-call pip install -e ".[dev,visualizer,docs,win]"
+call pip install -e ".[dev,docs]"
 call pre-commit install
+call omc ./script/modelica_install/install.mos
 echo --^> Full installation complete.
 goto :eof
-
-
-:build
-echo --^> Building package...
-call pip install build
-call python -m build
-echo --^> Build complete.
-goto :eof
-
 
 
 :clean
@@ -183,7 +160,7 @@ goto :eof
 echo --^> Re-installing project...
 call :uninstall
 call :clean
-call :win-install
+call :dev-install
 echo --^> Re-installation complete.
 goto :eof
 
