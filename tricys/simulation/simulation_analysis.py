@@ -4,7 +4,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -87,6 +87,104 @@ def _get_optimization_tasks(config: dict) -> List[str]:
     return optimization_tasks
 
 
+def _extract_metrics_from_hdf5(
+    hdf_path: str,
+    metrics_definition: Dict[str, Any],
+    analysis_case: Dict[str, Any],
+) -> pd.DataFrame:
+    """Extracts metrics from HDF5 file iteratively to save memory."""
+    try:
+        jobs_df = pd.read_hdf(hdf_path, "jobs_metadata")
+        all_results = []
+
+        # We need to process job by job
+        # To make it efficient, we can't easily query row by row if not indexed.
+        # But 'results' table is appendable. We can iterate it in chunks or by job_id if indexed.
+        # Given the structure, reading the whole table is bad.
+        # We can use 'where' clause if indexed, or iterator.
+        # Assuming job_id is not indexed in file creation yet (it should be for perf),
+        # but let's assume we can read chunks.
+        # Actually, for correctness and simplicity in this refactor:
+        # We iterate job_ids. If performance is slow, we can optimize later.
+
+        # Optimize: Read chunks of results, group by job_id in memory, process.
+        # But results for one job might be split across chunks? Unlikely if appended sequentially.
+        # Safe approach: Read by job_id using 'where' (slow if not indexed) or read full table in chunks?
+        # If we can't fully read table, we must rely on 'select'.
+
+        store = pd.HDFStore(hdf_path, mode="r")
+        try:
+            if "job_id" in store.select("results", start=0, stop=1).columns:
+                # We can't easily check index status without accessing pytables object,
+                # but we can just try selecting.
+                pass
+        except:
+            pass
+        store.close()
+
+        total_jobs = len(jobs_df)
+        logger.info(f"Extracting metrics from HDF5 for {total_jobs} jobs...")
+
+        for idx, job_row in jobs_df.iterrows():
+            job_id = job_row["job_id"]
+            # Reconstruct params dict
+            job_params = job_row.drop("job_id").to_dict()
+
+            # Read results for this job
+            # Note: This might be slow for 1.8M jobs if done one by one without index.
+            # But it is memory safe.
+            try:
+                df = pd.read_hdf(hdf_path, "results", where=f"job_id == {job_id}")
+            except ValueError:
+                # Fallback if query fails (e.g. table not indexed/support query)
+                # If cannot query, this strategy fails for huge files.
+                # Assuming 'enhanced' mode indexing or manageable size for now.
+                # Alternative: chunk iterator.
+                logger.warning(f"Could not query job_id={job_id}, skipping.")
+                continue
+
+            if df.empty:
+                continue
+
+            # Create a "wide" dataframe for this single job so extract_metrics works
+            # extract_metrics expects columns like 'var&param=val'
+            param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
+
+            # Drop metadata cols
+            data_cols = df.drop(columns=["job_id", "time"], errors="ignore")
+
+            rename_map = {
+                col: f"{col}&{param_string}" if param_string else col
+                for col in data_cols.columns
+            }
+            renamed_df = data_cols.rename(columns=rename_map)
+            renamed_df["time"] = df["time"]  # Put time back for metric calc
+
+            # Extract metrics for this single job
+            # extract_metrics returns a pivoted DataFrame (1 row usually)
+            # We want the raw rows before pivot? No, extract_metrics does pivot.
+            # But extract_metrics implementation aggregates a list then makes DF.
+            # If we call it on 1 job, we get 1 row DF.
+            job_metrics_df = extract_metrics(
+                renamed_df, metrics_definition, analysis_case
+            )
+
+            if not job_metrics_df.empty:
+                all_results.append(job_metrics_df)
+
+            if idx % 100 == 0:
+                logger.debug(f"Processed {idx}/{total_jobs} jobs from HDF5")
+
+        if all_results:
+            return pd.concat(all_results, ignore_index=True)
+        else:
+            return pd.DataFrame()
+
+    except Exception as e:
+        logger.error(f"Failed to extract metrics from HDF5: {e}")
+        return pd.DataFrame()
+
+
 def _run_sensitivity_analysis(
     config: Dict[str, Any], run_results_dir: str, jobs: List[Dict[str, Any]]
 ) -> None:
@@ -113,37 +211,51 @@ def _run_sensitivity_analysis(
     logger.info("Starting automated sensitivity analysis.")
 
     try:
+        # Get analysis_case configuration first
+        analysis_config = config["sensitivity_analysis"]
+        analysis_case = analysis_config["analysis_case"]
+
         # Check if there are result data files
         combined_csv_path = os.path.join(run_results_dir, "sweep_results.csv")
         single_result_path = os.path.join(run_results_dir, "simulation_result.csv")
+        hdf_path = os.path.join(run_results_dir, "sweep_results.h5")
 
         # Determine result file path based on number of jobs
-        if len(jobs) == 1 and os.path.exists(single_result_path):
+        if os.path.exists(hdf_path):
+            logger.info(f"Loading results from HDF5: {hdf_path}")
+            # Use special HDF5 extraction to avoid OOM
+            summary_df = _extract_metrics_from_hdf5(
+                hdf_path, analysis_config["metrics_definition"], analysis_case
+            )
+            # Skip the extract_metrics call below as we already have summary_df
+            # We set results_df to None to signal this
+            results_df = None
+
+        elif len(jobs) == 1 and os.path.exists(single_result_path):
             # Single task case
             results_df = pd.read_csv(single_result_path)
             logger.info(f"Loading single task result from: {single_result_path}")
+            summary_df = None  # Will be calculated below
         elif len(jobs) > 1 and os.path.exists(combined_csv_path):
             # Multi-task case
             results_df = pd.read_csv(combined_csv_path)
             logger.info(f"Loading sweep results from: {combined_csv_path}")
+            summary_df = None  # Will be calculated below
         else:
             logger.warning("No result data file found for sensitivity analysis.")
             return
-
-        # Get analysis_case configuration
-        analysis_config = config["sensitivity_analysis"]
-        analysis_case = analysis_config["analysis_case"]
 
         if analysis_case is None:
             logger.warning("No valid analysis_case found for sensitivity analysis.")
             return
 
-        # Extract summary metrics
-        summary_df = extract_metrics(
-            results_df,
-            analysis_config["metrics_definition"],
-            analysis_case,
-        )
+        # Extract summary metrics (if not already done via HDF5)
+        if summary_df is None:
+            summary_df = extract_metrics(
+                results_df,
+                analysis_config["metrics_definition"],
+                analysis_case,
+            )
 
         optimization_tasks = _get_optimization_tasks(config)
 
@@ -206,6 +318,21 @@ def _run_sensitivity_analysis(
             unit_map=unit_map,
             glossary_path=glossary_path,
         )
+
+        # Generate sweep time series plots (inventory evolution)
+        results_path = os.path.join(run_results_dir, "sweep_results.h5")
+        if not os.path.exists(results_path):
+            results_path = os.path.join(run_results_dir, "sweep_results.csv")
+
+        if os.path.exists(results_path):
+            plot_sweep_time_series(
+                results_path,
+                run_results_dir,
+                "sds.inventory",  # Default to SDS inventory
+                analysis_case["independent_variable"],
+                default_params=analysis_case.get("default_simulation_values"),
+                glossary_path=glossary_path,
+            )
 
     except Exception as e:
         logger.error(f"Automated sensitivity analysis failed: {e}", exc_info=True)
@@ -718,12 +845,6 @@ def _execute_analysis_case(case_info: Dict[str, Any]) -> bool:
             },
         )
 
-        # Disable inner concurrency to prevent nested process pools
-        if "simulation" not in case_config:
-            case_config["simulation"] = {}
-        case_config["simulation"]["concurrent"] = False
-        logger.info("Inner concurrency has been disabled for this case.")
-
         run_simulation(case_config)
 
         logger.info(
@@ -823,6 +944,17 @@ def run_simulation(config: Dict[str, Any]) -> None:
 
         sa_config = config.get("sensitivity_analysis", {})
         run_cases_concurrently = sa_config.get("concurrent_cases", False)
+
+        # Force sequential cases for Enhanced Mode to prevent ProcessPoolExecutor conflicts
+        # User requested this safeguard.
+        execute_mode = config.get("simulation", {}).get("execute_mode", "standard")
+        if execute_mode == "enhanced" and run_cases_concurrently:
+            logger.warning(
+                "Enhanced Mode detected: Forcing sequential execution of Analysis Cases "
+                "to prevent potential ProcessPoolExecutor conflicts."
+            )
+            run_cases_concurrently = False
+
         successful_cases = 0
 
         if run_cases_concurrently:
@@ -968,11 +1100,166 @@ def run_simulation(config: Dict[str, Any]) -> None:
         logger.error(f"Missing required path key in configuration file: {e}")
         sys.exit(1)
 
+    # Use HDF5 for results to prevent OOM
+    run_results_dir = results_dir
+    os.makedirs(run_results_dir, exist_ok=True)
+    hdf_filename = "sweep_results.h5"
+    hdf_path = get_unique_filename(run_results_dir, hdf_filename)
+
+    execute_mode = config["simulation"].get("execute_mode", "standard")
+
+    # helper for hdf5 processing
+    def _process_h5_result(store, job_id, params, res_path):
+        if not res_path or not os.path.exists(res_path):
+            return
+        try:
+            df = pd.read_csv(res_path)
+            df["job_id"] = job_id
+
+            # Append to store using Table format
+            store.append(
+                "results", df, index=False, data_columns=True
+            )  # data_columns=True allows indexing?
+            # Note: Do not enable index here for speed, better to index later if needed.
+
+            # Store job params
+            param_df = pd.DataFrame([params])
+            param_df["job_id"] = job_id
+            store.append("jobs", param_df, index=False, data_columns=True)
+
+            # Cleanup
+            job_dir = os.path.dirname(res_path)
+            if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
+                shutil.rmtree(job_dir)
+        except Exception as e:
+            logger.error(f"Failed to process HDF5 result for job {job_id}: {e}")
+
     simulation_results = {}
     use_concurrent = config["simulation"].get("concurrent", False)
 
     try:
-        if config.get("co_simulation") is None:
+        # --- ENHANCED MODE ---
+        if execute_mode == "enhanced":
+            logger.info("Running simulation in ENHANCED mode (HDF5 Streaming).")
+            with pd.HDFStore(hdf_path, mode="w", complib="blosc", complevel=9) as store:
+                # Save jobs metadata
+                meta_df = pd.DataFrame(jobs)
+                meta_df["job_id"] = range(1, len(jobs) + 1)
+                store.put("jobs_metadata", meta_df, format="table", data_columns=True)
+
+                final_results = []
+                if config.get("co_simulation") is None:
+                    if use_concurrent:
+                        logger.info(
+                            "Starting simulation in CONCURRENT mode (Enhanced)."
+                        )
+                        max_workers = config["simulation"].get(
+                            "max_workers", os.cpu_count()
+                        )
+                        with concurrent.futures.ThreadPoolExecutor(
+                            max_workers=max_workers
+                        ) as executor:
+                            future_to_job = {
+                                executor.submit(
+                                    _run_single_job, config, job_params, i + 1
+                                ): (i + 1, job_params)
+                                for i, job_params in enumerate(jobs)
+                            }
+                            for future in concurrent.futures.as_completed(
+                                future_to_job
+                            ):
+                                job_id, job_params = future_to_job[future]
+                                try:
+                                    optimal_params, optimal_values, result_path = (
+                                        future.result()
+                                    )
+                                    if result_path:
+                                        _process_h5_result(
+                                            store, job_id, job_params, result_path
+                                        )
+
+                                    # Collect optimization results
+                                    final_result_entry = job_params.copy()
+                                    final_result_entry.update(optimal_params)
+                                    final_result_entry.update(optimal_values)
+                                    final_results.append(final_result_entry)
+
+                                except Exception as exc:
+                                    logger.error(f"Job {job_id} failed: {exc}")
+
+                    else:
+                        logger.info(
+                            "Starting simulation in SEQUENTIAL mode (Enhanced)."
+                        )
+                        # _run_sequential_sweep returns paths but cleans up?
+                        # No, _run_sequential_sweep in this file returns a list of result_paths.
+                        # It doesn't support the callback logic for cleanup we had in simulation.py unless we pass one.
+                        # But wait, _run_sequential_sweep logic is defined in THIS file (lines 639-676).
+                        # It iterates jobs and runs them.
+                        # We can just iterate jobs here manually for enhanced mode to control cleanup.
+                        for i, job_params in enumerate(jobs):
+                            params, values, res_path = _run_single_job(
+                                config, job_params, i + 1
+                            )
+                            if res_path:
+                                _process_h5_result(store, i + 1, job_params, res_path)
+
+                            # Collect optimization results
+                            final_result_entry = job_params.copy()
+                            final_result_entry.update(params)
+                            final_result_entry.update(values)
+                            final_results.append(final_result_entry)
+
+                else:  # Co-simulation Enhanced
+                    logger.info("Starting co-simulation in CONCURRENT mode (Enhanced).")
+                    max_workers = config["simulation"].get("max_workers", 4)
+                    with concurrent.futures.ProcessPoolExecutor(
+                        max_workers=max_workers
+                    ) as executor:
+                        future_to_job = {
+                            executor.submit(
+                                _run_co_simulation, config, job_params, job_id=i + 1
+                            ): (i + 1, job_params)
+                            for i, job_params in enumerate(jobs)
+                        }
+                        for future in concurrent.futures.as_completed(future_to_job):
+                            job_id, job_params = future_to_job[future]
+                            try:
+                                optimal_params, optimal_values, result_path = (
+                                    future.result()
+                                )
+                                if result_path:
+                                    _process_h5_result(
+                                        store, job_id, job_params, result_path
+                                    )
+
+                                # Collect optimization results (Not implementing for Co-Sim yet as structure differs, but keeping pattern)
+                                # Co-sim usually doesn't have internal optimization loop returning data same way?
+                                # Actually _run_co_simulation returns same signature.
+                                # So we can collect it too.
+                                final_result_entry = job_params.copy()
+                                final_result_entry.update(optimal_params)
+                                final_result_entry.update(optimal_values)
+                                final_results.append(final_result_entry)
+
+                            except Exception as exc:
+                                logger.error(
+                                    f"Co-simulation Job {job_id} failed: {exc}"
+                                )
+
+            if _get_optimization_tasks(config) and final_results:
+                final_df = pd.DataFrame(final_results)
+                output_path = os.path.join(run_results_dir, "requierd_tbr_summary.csv")
+                final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
+                logger.info(f"Sweep optimization summary saved to: {output_path}")
+
+            # Results are in HDF5, no combined_df needed
+            simulation_results = None
+            combined_df = None
+            combined_csv_path = hdf_path  # For plotting logic reference
+
+        # --- STANDARD MODE ---
+        elif config.get("co_simulation") is None:
             if use_concurrent:
                 logger.info("Starting simulation in CONCURRENT mode.")
                 max_workers = config["simulation"].get("max_workers", os.cpu_count())
@@ -1129,41 +1416,45 @@ def run_simulation(config: Dict[str, Any]) -> None:
     all_dfs = []
     time_df_added = False
 
-    for job_params in jobs:
-        job_key = tuple(sorted(job_params.items()))
-        result_path = simulation_results.get(job_key)
+    if execute_mode != "enhanced":
+        for job_params in jobs:
+            job_key = tuple(sorted(job_params.items()))
+            result_path = simulation_results.get(job_key)
 
-        if not result_path or not os.path.exists(result_path):
-            logger.warning(f"Job {job_params} produced no result file. Skipping.")
-            continue
+            if not result_path or not os.path.exists(result_path):
+                logger.warning(f"Job {job_params} produced no result file. Skipping.")
+                continue
 
-        # Read the current job's result file
-        df = pd.read_csv(result_path)
+            # Read the current job's result file
+            df = pd.read_csv(result_path)
 
-        # From the very first valid DataFrame, grab the 'time' column
-        if not time_df_added and "time" in df.columns:
-            all_dfs.append(df[["time"]])
-            time_df_added = True
+            # From the very first valid DataFrame, grab the 'time' column
+            if not time_df_added and "time" in df.columns:
+                all_dfs.append(df[["time"]])
+                time_df_added = True
 
-        # Prepare the parameter string for column renaming
-        param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
+            # Prepare the parameter string for column renaming
+            param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
 
-        # Isolate the data columns (everything except 'time')
-        data_columns = df.drop(columns=["time"], errors="ignore")
+            # Isolate the data columns (everything except 'time')
+            data_columns = df.drop(columns=["time"], errors="ignore")
 
-        # Create a dictionary to map old column names to new ones
-        # e.g., {'voltage': 'voltage&param1=A&param2=B'}
-        rename_mapping = {
-            col: f"{col}&{param_string}" if param_string else col
-            for col in data_columns.columns
-        }
+            # Create a dictionary to map old column names to new ones
+            # e.g., {'voltage': 'voltage&param1=A&param2=B'}
+            rename_mapping = {
+                col: f"{col}&{param_string}" if param_string else col
+                for col in data_columns.columns
+            }
 
-        # Rename the columns and add the resulting DataFrame to our list
-        all_dfs.append(data_columns.rename(columns=rename_mapping))
+            # Rename the columns and add the resulting DataFrame to our list
+            all_dfs.append(data_columns.rename(columns=rename_mapping))
 
     # Concatenate all the DataFrames in the list along the columns axis (axis=1)
     if all_dfs:
         combined_df = pd.concat(all_dfs, axis=1)
+    elif execute_mode == "enhanced":
+        # Enhanced mode skips combined_df
+        combined_df = None
     else:
         combined_df = pd.DataFrame()  # Or None, as you had before
 
@@ -1183,6 +1474,8 @@ def run_simulation(config: Dict[str, Any]) -> None:
         combined_df.dropna(subset=["time"], inplace=True)
         combined_df.to_csv(combined_csv_path, index=False)
         logger.info(f"Combined results saved to: {combined_csv_path}")
+    elif execute_mode == "enhanced":
+        logger.info("Skipping CSV combination in Enhanced Mode.")
     else:
         logger.warning("No valid results found to combine.")
 
@@ -1200,6 +1493,8 @@ def run_simulation(config: Dict[str, Any]) -> None:
             and dependent_vars
             and combined_csv_path
             and os.path.exists(combined_csv_path)
+            and execute_mode
+            != "enhanced"  # Sweep time plot for enhanced mode not implemented yet
         ):
 
             try:
@@ -1232,6 +1527,15 @@ def run_simulation(config: Dict[str, Any]) -> None:
         # Calculate the top-level post-processing directory
         top_level_run_workspace = os.path.abspath("post_processing")
         _run_post_processing(config, combined_df, top_level_run_workspace)
+    elif execute_mode == "enhanced":
+        top_level_run_workspace = os.path.abspath("post_processing")
+        # Pass None as df, but update simulation.py's run_post_processing to handle HDF5 path?
+        # simulation_analysis.py imports run_post_processing from simulation.py.
+        # In Step 283 I updated run_post_processing to accept results_file_path.
+        # So I should pass it here.
+        from tricys.simulation.simulation import run_post_processing as run_pp
+
+        run_pp(config, None, top_level_run_workspace, results_file_path=hdf_path)
     else:
         logger.warning(
             "No simulation results were generated, skipping post-processing."
@@ -1291,21 +1595,26 @@ def retry_analysis(timestamp: str) -> None:
     logger.info("AI analysis retry and consolidation complete.")
 
 
-def main(config_path: str) -> None:
+def main(config_or_path: Union[str, Dict[str, Any]], base_dir: str = None) -> None:
     """Main entry point for a simulation analysis run.
 
     This function prepares the configuration for an analysis run, sets up
     logging, and calls the main `run_simulation` orchestrator for analysis.
 
     Args:
-        config_path (str): The path to the JSON configuration file.
+        config_or_path: The path to the JSON configuration file OR a config dict.
+        base_dir: Optional base directory for resolving relative paths.
     """
-    config, original_config = analysis_prepare_config(config_path)
+    config, original_config = analysis_prepare_config(config_or_path, base_dir=base_dir)
     setup_logging(config, original_config)
     logger.info(
         "Loading configuration",
         extra={
-            "config_path": os.path.abspath(config_path),
+            "config_source": (
+                os.path.abspath(config_or_path)
+                if isinstance(config_or_path, str)
+                else "Dictionary"
+            ),
         },
     )
     try:

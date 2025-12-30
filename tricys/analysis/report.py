@@ -515,7 +515,6 @@ def generate_prompt_templates(
             summary_csv_path = os.path.join(
                 case_results_dir, "sensitivity_analysis_summary.csv"
             )
-            sweep_csv_path = os.path.join(case_results_dir, "sweep_results.csv")
 
             if not os.path.exists(summary_csv_path):
                 logger.warning(
@@ -525,6 +524,13 @@ def generate_prompt_templates(
 
             summary_df = pd.read_csv(summary_csv_path)
             independent_variable = case_data.get("independent_variable", "燃烧率")
+
+            # Check for sweep results (CSV or HDF5)
+            sweep_results_path = os.path.join(case_results_dir, "sweep_results.csv")
+            if not os.path.exists(sweep_results_path):
+                h5_path = os.path.join(case_results_dir, "sweep_results.h5")
+                if os.path.exists(h5_path):
+                    sweep_results_path = h5_path
 
             # Use a dictionary to ensure we only get one version of each plot, prioritizing Chinese
             all_plots_all_langs = [
@@ -882,10 +888,17 @@ def generate_prompt_templates(
                 return "\n".join(all_markdown_lines)
 
             reference_col_for_turning_point = None
-            if case_data.get("sweep_time") and os.path.exists(sweep_csv_path):
+            if case_data.get("sweep_time") and os.path.exists(sweep_results_path):
                 try:
-                    logger.info("Loading sweep_results.csv for dynamic slicing.")
-                    sweep_df = pd.read_csv(sweep_csv_path)
+                    logger.info("Loading sweep results for dynamic slicing.")
+                    if sweep_results_path.endswith(".h5"):
+                        # Read sample for column detection and slicing
+                        sweep_df = pd.read_hdf(
+                            sweep_results_path, "results", stop=10000
+                        )
+                    else:
+                        sweep_df = pd.read_csv(sweep_results_path)
+
                     if "time" in sweep_df.columns and len(sweep_df.columns) > 1:
                         reference_col_for_turning_point = sweep_df.columns[
                             len(sweep_df.columns) // 2

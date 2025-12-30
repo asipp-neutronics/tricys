@@ -46,6 +46,13 @@ dev = [
     "pre-commit"
 ]
 
+visualizer = [
+    "dash",
+    "dash-bootstrap-components",
+    "pandas",
+    "tables"
+]
+
 win = [
     "pytest",  # 用于测试
     "ruff",    # 用于代码检查和格式化

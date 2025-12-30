@@ -1,13 +1,16 @@
 import argparse
 import concurrent.futures
+import glob
 import importlib
 import importlib.util
+import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 
 import pandas as pd
 from OMPython import ModelicaSystem
@@ -672,7 +675,10 @@ def run_sequential_sweep(
 
 
 def run_post_processing(
-    config: Dict[str, Any], results_df: pd.DataFrame, post_processing_output_dir: str
+    config: Dict[str, Any],
+    results_df: pd.DataFrame,
+    post_processing_output_dir: str,
+    results_file_path: str = None,
 ) -> None:
     """Dynamically loads and runs post-processing modules.
 
@@ -685,6 +691,7 @@ def run_post_processing(
         config: The main configuration dictionary.
         results_df: The combined DataFrame of simulation results.
         post_processing_output_dir: The directory to save any output from the tasks.
+        results_file_path: Path to the HDF5 results file (optional).
 
     Note:
         Supports two loading methods: 'script_path' for direct .py files, or 'module'
@@ -748,6 +755,24 @@ def run_post_processing(
             # Old method: Load from module name (backward compatibility)
             elif "module" in task_config:
                 module_name = task_config["module"]
+
+                # Auto-redirect to HDF5 version if applicable
+                if (
+                    results_file_path
+                    and "tricys.postprocess" in module_name
+                    and "hdf5" not in module_name
+                ):
+                    base_name = module_name.split(".")[-1]
+                    potential_hdf5_module = f"tricys.postprocess.hdf5.{base_name}"
+                    try:
+                        importlib.util.find_spec(potential_hdf5_module)
+                        module_name = potential_hdf5_module
+                        logger.info(
+                            f"Redirecting to HDF5 post-processing module: {module_name}"
+                        )
+                    except ImportError:
+                        pass  # Fallback to original
+
                 logger.info(
                     "Running post-processing task from module",
                     extra={
@@ -767,9 +792,18 @@ def run_post_processing(
 
             if module:
                 post_processing_func = getattr(module, function_name)
-                post_processing_func(
-                    results_df=results_df, output_dir=post_processing_dir, **params
-                )
+                if results_file_path:
+                    # Pass HDF5 path instead of DataFrame
+                    post_processing_func(
+                        results_file_path=results_file_path,
+                        output_dir=post_processing_dir,
+                        **params,
+                    )
+                else:
+                    # Pass DataFrame (Legacy)
+                    post_processing_func(
+                        results_df=results_df, output_dir=post_processing_dir, **params
+                    )
             else:
                 logger.error(
                     "Failed to load post-processing module.",
@@ -785,6 +819,151 @@ def run_post_processing(
     logger.info("Post-processing phase ended")
 
 
+def _build_model_only(config: dict) -> tuple[str, str, str]:
+    """
+    Simulates "Compile Once" strategy.
+    Builds the model once and returns paths to the executable and init xml.
+    """
+    paths_config = config["paths"]
+    sim_config = config["simulation"]
+
+    # Use a dedicated build directory to keep things clean
+    build_dir = os.path.abspath(
+        os.path.join(paths_config.get("temp_dir", "temp"), "build")
+    )
+    os.makedirs(build_dir, exist_ok=True)
+
+    logger.info(f"Building model in {build_dir}...")
+
+    omc = get_om_session()
+    try:
+        omc.sendExpression(f'cd("{Path(build_dir).as_posix()}")')
+
+        package_path = os.path.abspath(paths_config["package_path"])
+        if not load_modelica_package(omc, Path(package_path).as_posix()):
+            raise RuntimeError("Failed to load Modelica package during build.")
+
+        model_name = sim_config["model_name"]
+        build_result = omc.sendExpression(f"buildModel({model_name})")
+
+        if not build_result or len(build_result) < 2:
+            err = omc.sendExpression("getErrorString()")
+            raise RuntimeError(f"Model build failed: {err}")
+
+        exe_name = build_result[0] + ".exe"
+        xml_name = build_result[1]
+        exe_path = os.path.join(build_dir, exe_name)
+        xml_path = os.path.join(build_dir, xml_name)
+
+        om_home = omc.sendExpression("getInstallationDirectoryPath()")
+        om_bin_path = os.path.join(om_home, "bin")
+
+        logger.info(f"Model built successfully: {exe_path}")
+        return exe_path, xml_path, om_bin_path
+
+    finally:
+        omc.sendExpression("quit()")
+
+
+def _run_fast_subprocess_job(
+    job_params: dict,
+    job_id: int,
+    exe_source: str,
+    xml_source: str,
+    om_bin_path: str,
+    base_temp_dir: str,
+    sim_config: dict,
+    variable_filter: str = None,
+    inplace_execution: bool = False,
+) -> str:
+    """
+    Executes a single simulation job using the pre-compiled executable.
+    """
+    job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
+    os.makedirs(job_workspace, exist_ok=True)
+
+    run_cwd = ""
+    run_exe_path = ""
+
+    if inplace_execution:
+        # In-place: Run directly from build dir (Sequential optimization)
+        run_cwd = os.path.dirname(exe_source)
+        run_exe_path = exe_source
+        result_filename = os.path.abspath(
+            os.path.join(job_workspace, f"job_{job_id}_res.csv")
+        )
+    else:
+        # Isolated: Copy exe to job dir (Concurrent safe)
+        run_cwd = job_workspace
+        build_dir = os.path.dirname(exe_source)
+        model_prefix = os.path.splitext(os.path.basename(exe_source))[0]
+        artifacts = glob.glob(os.path.join(build_dir, f"{model_prefix}*"))
+        ignored_extensions = {".c", ".h", ".o", ".cpp", ".log", ".makefile", ".libs"}
+
+        run_exe_path = ""
+        try:
+            for src_file in artifacts:
+                if not os.path.isfile(src_file):
+                    continue
+                _, ext = os.path.splitext(src_file)
+                if ext.lower() in ignored_extensions:
+                    continue
+
+                dst_file = os.path.join(job_workspace, os.path.basename(src_file))
+                shutil.copy(src_file, dst_file)
+                if os.path.basename(exe_source) == os.path.basename(src_file):
+                    run_exe_path = dst_file
+        except IOError as e:
+            logger.error(f"Job {job_id}: Copy failed: {e}")
+            return ""
+
+        result_filename = os.path.abspath(
+            os.path.join(job_workspace, f"job_{job_id}_res.csv")
+        )
+
+    if not run_exe_path:
+        return ""
+
+    override_pairs = [f"{k}={v}" for k, v in job_params.items()]
+    override_pairs.append(f"stopTime={sim_config['stop_time']}")
+    override_pairs.append(f"stepSize={sim_config['step_size']}")
+    override_pairs.append("outputFormat=csv")
+    if variable_filter:
+        override_pairs.append(f"variableFilter={variable_filter}")
+    override_str = ",".join(override_pairs)
+
+    cmd = [run_exe_path, "-override", override_str, "-r", result_filename]
+
+    env = os.environ.copy()
+    if sys.platform == "win32":
+        env["PATH"] = om_bin_path + os.pathsep + env["PATH"]
+
+    try:
+        subprocess.run(
+            cmd,
+            env=env,
+            cwd=run_cwd,
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+
+        if os.path.exists(result_filename):
+            try:
+                df = pd.read_csv(result_filename)
+                df.drop_duplicates(subset=["time"], keep="last", inplace=True)
+                df.to_csv(result_filename, index=False)
+                return result_filename
+            except Exception:
+                return result_filename
+        else:
+            return ""
+
+    except Exception as e:
+        logger.error(f"Job {job_id} failed: {e}")
+        return ""
+
+
 def run_simulation(config: Dict[str, Any]) -> None:
     """Orchestrates the main simulation workflow.
 
@@ -797,7 +976,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
         config: The main configuration dictionary for the run.
 
     Note:
-        Supports concurrent (ThreadPoolExecutor) and sequential execution modes.
+        Supports concurrent (ProcessPoolExecutor) and sequential execution modes.
         Co-simulations use ProcessPoolExecutor for better isolation. Merges all job
         results into single CSV with parameter-labeled columns. Triggers post-processing
         tasks if configured. Results saved to paths.results_dir.
@@ -810,48 +989,181 @@ def run_simulation(config: Dict[str, Any]) -> None:
         logger.error(f"Missing required path key in configuration file: {e}")
         sys.exit(1)
 
+    # Use HDF5 for results to prevent OOM
+    run_results_dir = results_dir
+    os.makedirs(run_results_dir, exist_ok=True)
+    hdf_filename = "sweep_results.h5"
+    hdf_path = get_unique_filename(run_results_dir, hdf_filename)
+
+    # Helper to process a single result
+    def process_result(store, job_id, params, res_path):
+        if not res_path or not os.path.exists(res_path):
+            return
+
+        try:
+            df = pd.read_csv(res_path)
+
+            # Add job_id column for linkage
+            df["job_id"] = job_id
+
+            # Store result in 'results' table
+            store.append(
+                "results", df, format="table", index=False, data_columns=["job_id"]
+            )
+
+            # Store parameters in 'jobs' table
+            param_row = params.copy()
+            param_row["job_id"] = job_id
+            param_df = pd.DataFrame([param_row])
+
+            store.append(
+                "jobs", param_df, format="table", index=False, data_columns=["job_id"]
+            )
+
+            # Immediate cleanup of the entire job directory to save space
+            try:
+                job_dir = os.path.dirname(res_path)
+                if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
+                    shutil.rmtree(job_dir)
+            except OSError as e:
+                logger.warning(f"Failed to clean up job directory {job_dir}: {e}")
+
+        except Exception as e:
+            logger.error(f"Failed to process result for Job {job_id}: {e}")
+
     simulation_results = {}
     use_concurrent = config["simulation"].get("concurrent", False)
 
     try:
         max_workers = config["simulation"].get("max_workers", os.cpu_count())
+
+        # HDF5 path is prepared but only used in enhanced mode
+
         if config.get("co_simulation") is None:
-            if use_concurrent:
+            # Check for enhanced execution mode
+            execute_mode = config["simulation"].get("execute_mode", "standard")
+            if config["simulation"].get("excute_mode"):
+                execute_mode = config["simulation"]["excute_mode"]
+
+            if execute_mode == "enhanced":
                 logger.info(
-                    "Starting simulation",
-                    extra={
-                        "mode": "CONCURRENT",
-                        "max_workers": max_workers,
-                    },
+                    "Starting Standard Simulation (Enhanced Mode: Compile Once)"
                 )
-                with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=max_workers
-                ) as executor:
-                    future_to_job = {
-                        executor.submit(
-                            run_single_job, config, job_params, i + 1
-                        ): job_params
-                        for i, job_params in enumerate(jobs)
-                    }
-                    for future in concurrent.futures.as_completed(future_to_job):
-                        job_params = future_to_job[future]
-                        try:
-                            result_path = future.result()
-                            if result_path:
-                                simulation_results[
-                                    tuple(sorted(job_params.items()))
-                                ] = result_path
-                        except Exception as exc:
-                            logger.error(
-                                f"Job for {job_params} generated an exception: {exc}",
-                                exc_info=True,
+
+                # Initialize HDFStore for streaming results (Enhanced Mode Only)
+                with pd.HDFStore(
+                    hdf_path, mode="w", complib="blosc", complevel=9
+                ) as store:
+                    # Save configuration
+                    try:
+                        config_df = pd.DataFrame({"config_json": [json.dumps(config)]})
+                        store.put("config", config_df, format="fixed")
+                    except Exception as e:
+                        logger.warning(f"Failed to save config to HDF5: {e}")
+
+                    # 1. Compile Once
+                    master_exe, master_xml, om_bin = _build_model_only(config)
+                    temp_dir = os.path.abspath(config["paths"].get("temp_dir", "temp"))
+
+                    # 2. Run Many
+                    if use_concurrent:
+                        logger.info(
+                            "Running jobs concurrently (Enhanced HDF5 Streaming)"
+                        )
+                        with concurrent.futures.ProcessPoolExecutor(
+                            max_workers=max_workers
+                        ) as executor:
+                            future_to_job = {
+                                executor.submit(
+                                    _run_fast_subprocess_job,
+                                    job_params,
+                                    i + 1,
+                                    master_exe,
+                                    master_xml,
+                                    om_bin,
+                                    temp_dir,
+                                    config["simulation"],
+                                    variable_filter=config["simulation"].get(
+                                        "variableFilter"
+                                    ),
+                                    inplace_execution=True,
+                                ): (i + 1, job_params)
+                                for i, job_params in enumerate(jobs)
+                            }
+                            for future in concurrent.futures.as_completed(
+                                future_to_job
+                            ):
+                                job_id, job_params = future_to_job[future]
+                                try:
+                                    result_path = future.result()
+                                    process_result(
+                                        store, job_id, job_params, result_path
+                                    )
+                                except Exception as exc:
+                                    logger.error(f"Job failed: {exc}")
+                    else:
+                        logger.info(
+                            "Running jobs sequentially (Enhanced HDF5 Streaming)"
+                        )
+                        for i, job_params in enumerate(jobs):
+                            result_path = _run_fast_subprocess_job(
+                                job_params,
+                                i + 1,
+                                master_exe,
+                                master_xml,
+                                om_bin,
+                                temp_dir,
+                                config["simulation"],
+                                variable_filter=config["simulation"].get(
+                                    "variableFilter"
+                                ),
+                                inplace_execution=True,
                             )
+                            process_result(store, i + 1, job_params, result_path)
+
+                # Mark that we used HDF5 so we skip the legacy aggregation
+                simulation_results = None
+
             else:
-                logger.info("Starting simulation", extra={"mode": "SEQUENTIAL"})
-                result_paths = run_sequential_sweep(config, jobs)
-                for i, result_path in enumerate(result_paths):
-                    if result_path:
-                        simulation_results[tuple(sorted(jobs[i].items()))] = result_path
+                # Legacy Logic (Standard) - NO HDFStore active
+                if use_concurrent:
+                    logger.info(
+                        "Starting simulation",
+                        extra={
+                            "mode": "CONCURRENT",
+                            "max_workers": max_workers,
+                        },
+                    )
+                    with concurrent.futures.ProcessPoolExecutor(
+                        max_workers=max_workers
+                    ) as executor:
+                        future_to_job = {
+                            executor.submit(
+                                run_single_job, config, job_params, i + 1
+                            ): job_params
+                            for i, job_params in enumerate(jobs)
+                        }
+                        for future in concurrent.futures.as_completed(future_to_job):
+                            job_params = future_to_job[future]
+                            try:
+                                result_path = future.result()
+                                if result_path:
+                                    simulation_results[
+                                        tuple(sorted(job_params.items()))
+                                    ] = result_path
+                            except Exception as exc:
+                                logger.error(
+                                    f"Job for {job_params} generated an exception: {exc}",
+                                    exc_info=True,
+                                )
+                else:
+                    logger.info("Starting simulation", extra={"mode": "SEQUENTIAL"})
+                    result_paths = run_sequential_sweep(config, jobs)
+                    for i, result_path in enumerate(result_paths):
+                        if result_path:
+                            simulation_results[tuple(sorted(jobs[i].items()))] = (
+                                result_path
+                            )
         else:
             if use_concurrent:
                 logger.info(
@@ -948,6 +1260,7 @@ def run_simulation(config: Dict[str, Any]) -> None:
                             "job_index": f"{job_id}/{len(jobs)}",
                         },
                     )
+
     except Exception as e:
         raise RuntimeError("Failed to run simulation", e)
 
@@ -966,84 +1279,139 @@ def run_simulation(config: Dict[str, Any]) -> None:
     )
     combined_df = None
 
-    all_dfs = []
-    time_df_added = False
+    if simulation_results is not None:
+        all_dfs = []
+        time_df_added = False
 
-    for job_params in jobs:
-        job_key = tuple(sorted(job_params.items()))
-        result_path = simulation_results.get(job_key)
+        for job_params in jobs:
+            job_key = tuple(sorted(job_params.items()))
+            result_path = simulation_results.get(job_key)
 
-        if not result_path or not os.path.exists(result_path):
-            logger.warning(
-                "Job produced no result file",
+            if not result_path or not os.path.exists(result_path):
+                logger.warning(
+                    "Job produced no result file",
+                    extra={
+                        "job_params": job_params,
+                    },
+                )
+                continue
+
+            # Read the current job's result file
+            df = pd.read_csv(result_path)
+
+            # From the very first valid DataFrame, grab the 'time' column
+            if not time_df_added and "time" in df.columns:
+                all_dfs.append(df[["time"]])
+                time_df_added = True
+
+            # Prepare the parameter string for column renaming
+            param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
+
+            # Isolate the data columns (everything except 'time')
+            data_columns = df.drop(columns=["time"], errors="ignore")
+
+            # Create a dictionary to map old column names to new ones
+            # e.g., {'voltage': 'voltage&param1=A&param2=B'}
+            rename_mapping = {
+                col: f"{col}&{param_string}" if param_string else col
+                for col in data_columns.columns
+            }
+
+            # Rename the columns and add the resulting DataFrame to our list
+            all_dfs.append(data_columns.rename(columns=rename_mapping))
+
+        # Concatenate all the DataFrames in the list along the columns axis (axis=1)
+        if all_dfs:
+            combined_df = pd.concat(all_dfs, axis=1)
+        else:
+            combined_df = pd.DataFrame()  # Or None, as you had before
+
+        if combined_df is not None and not combined_df.empty:
+            if len(jobs) == 1:
+                # For single job, save as simulation_result.csv
+                combined_csv_path = get_unique_filename(
+                    run_results_dir, "simulation_result.csv"
+                )
+            else:
+                # For multiple jobs, save as sweep_results.csv
+                combined_csv_path = get_unique_filename(
+                    run_results_dir, "sweep_results.csv"
+                )
+
+            combined_df.to_csv(combined_csv_path, index=False)
+            logger.info(
+                "Combined results saved",
                 extra={
-                    "job_params": job_params,
+                    "file_path": combined_csv_path,
                 },
             )
-            continue
-
-        # Read the current job's result file
-        df = pd.read_csv(result_path)
-
-        # From the very first valid DataFrame, grab the 'time' column
-        if not time_df_added and "time" in df.columns:
-            all_dfs.append(df[["time"]])
-            time_df_added = True
-
-        # Prepare the parameter string for column renaming
-        param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
-
-        # Isolate the data columns (everything except 'time')
-        data_columns = df.drop(columns=["time"], errors="ignore")
-
-        # Create a dictionary to map old column names to new ones
-        # e.g., {'voltage': 'voltage&param1=A&param2=B'}
-        rename_mapping = {
-            col: f"{col}&{param_string}" if param_string else col
-            for col in data_columns.columns
-        }
-
-        # Rename the columns and add the resulting DataFrame to our list
-        all_dfs.append(data_columns.rename(columns=rename_mapping))
-
-    # Concatenate all the DataFrames in the list along the columns axis (axis=1)
-    if all_dfs:
-        combined_df = pd.concat(all_dfs, axis=1)
-    else:
-        combined_df = pd.DataFrame()  # Or None, as you had before
-
-    if combined_df is not None and not combined_df.empty:
-        if len(jobs) == 1:
-            # For single job, save as simulation_result.csv
-            combined_csv_path = get_unique_filename(
-                run_results_dir, "simulation_result.csv"
-            )
         else:
-            # For multiple jobs, save as sweep_results.csv
-            combined_csv_path = get_unique_filename(
-                run_results_dir, "sweep_results.csv"
-            )
-
-        combined_df.to_csv(combined_csv_path, index=False)
-        logger.info(
-            "Combined results saved",
-            extra={
-                "file_path": combined_csv_path,
-            },
-        )
-    else:
-        logger.warning("No valid results found to combine")
+            logger.warning("No valid results found to combine")
 
     # --- Post-Processing ---
-    if combined_df is not None:
+    # Enhanced mode (HDF5) or Legacy (DataFrame)
+    if (combined_df is not None and not combined_df.empty) or (
+        simulation_results is None and os.path.exists(hdf_path)
+    ):
         # Calculate the top-level post-processing directory
         top_level_run_workspace = os.path.abspath(config["run_timestamp"])
         top_level_post_processing_dir = os.path.join(
             top_level_run_workspace, "post_processing"
         )
-        run_post_processing(config, combined_df, top_level_post_processing_dir)
+
+        # Determine if we're using HDF5 path (Enhanced mode implies simulation_results is None)
+        path_to_pass = hdf_path if simulation_results is None else None
+
+        run_post_processing(
+            config,
+            combined_df,
+            top_level_post_processing_dir,
+            results_file_path=path_to_pass,
+        )
     else:
         logger.warning("No simulation results generated, skipping post-processing")
+
+    # --- Save Logs to HDF5 ---
+    if os.path.exists(hdf_path):
+        try:
+            # Flush logs to ensure everything is written to disk
+            for handler in logging.getLogger().handlers:
+                handler.flush()
+
+            log_dir_path = config.get("paths", {}).get("log_dir")
+            run_timestamp = config.get("run_timestamp")
+
+            if log_dir_path and run_timestamp:
+                abs_log_dir = os.path.abspath(log_dir_path)
+                log_file_path = os.path.join(
+                    abs_log_dir, f"simulation_{run_timestamp}.log"
+                )
+
+                if os.path.exists(log_file_path):
+                    log_content = []
+                    # Read log file safely
+                    with open(
+                        log_file_path, "r", encoding="utf-8", errors="ignore"
+                    ) as f:
+                        # Parse each line as JSON
+                        for line in f:
+                            try:
+                                log_content.append(json.loads(line.strip()))
+                            except json.JSONDecodeError:
+                                # Fallback for non-JSON lines if any
+                                log_content.append({"raw_message": line.strip()})
+
+                    if log_content:
+                        with pd.HDFStore(
+                            hdf_path, mode="a", complib="blosc", complevel=9
+                        ) as store:
+                            log_df = pd.DataFrame(
+                                {"log_json": [json.dumps(log_content)]}
+                            )
+                            store.put("log", log_df, format="fixed")
+                        logger.info("Logs saved to HDF5")
+        except Exception as e:
+            logger.warning(f"Failed to save logs to HDF5: {e}")
 
     # --- Final Cleanup ---
     # The primary cleanup of job workspaces is handled by the `finally` block in `_run_co_simulation`.
@@ -1070,21 +1438,26 @@ def run_simulation(config: Dict[str, Any]) -> None:
                 )
 
 
-def main(config_path: str) -> None:
-    """Main entry point for a standard simulation run.
+def main(config_or_path: Union[str, Dict[str, Any]], base_dir: str = None) -> None:
+    """Main entry point for the simulation runner.
 
-    This function prepares the configuration, sets up logging, and calls
+    This function prepares the configuration, sets up logging, and invokes
     the main `run_simulation` orchestrator.
 
     Args:
-        config_path (str): The path to the JSON configuration file.
+        config_or_path: The path to the JSON configuration file OR a config dict.
+        base_dir: Optional base directory for resolving relative paths if a dict is passed.
     """
-    config, original_config = basic_prepare_config(config_path)
+    config, original_config = basic_prepare_config(config_or_path, base_dir=base_dir)
     setup_logging(config, original_config)
     logger.info(
         "Loading configuration",
         extra={
-            "config_path": os.path.abspath(config_path),
+            "config_source": (
+                os.path.abspath(config_or_path)
+                if isinstance(config_or_path, str)
+                else "Dictionary"
+            ),
         },
     )
     try:

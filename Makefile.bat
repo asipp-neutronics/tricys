@@ -45,6 +45,9 @@ echo   reinstall     Re-install the project (uninstall , clean and install).
 echo   docs-install  Install documentation dependencies.
 echo   docs-serve    Serve documentation site locally for development.
 echo   docs-build    Build documentation site.
+echo   install-viz   Install the project with visualizer dependencies.
+echo   install-all   Install the project with ALL dependencies (dev, docs, viz).
+echo   build         Build the package (source and wheel).
 echo   help          Show this help message.
 goto :eof
 
@@ -85,6 +88,30 @@ call pip install -e ".[win]"
 call pre-commit install
 echo --^> Development installation complete.
 goto :eof
+
+
+:install-viz
+echo --^> Installing project with visualizer dependencies...
+call pip install -e ".[visualizer]"
+echo --^> Visualizer installation complete.
+goto :eof
+
+
+:install-all
+echo --^> Installing project with ALL dependencies...
+call pip install -e ".[dev,visualizer,docs,win]"
+call pre-commit install
+echo --^> Full installation complete.
+goto :eof
+
+
+:build
+echo --^> Building package...
+call pip install build
+call python -m build
+echo --^> Build complete.
+goto :eof
+
 
 
 :clean
