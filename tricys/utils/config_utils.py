@@ -7,7 +7,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from dotenv import load_dotenv
 
@@ -256,11 +256,15 @@ def basic_validate_config(
         check_ai_config(config)
 
 
-def basic_prepare_config(config_path: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """Loads and prepares the configuration from the given path.
+def basic_prepare_config(
+    config_or_path: Union[str, Dict[str, Any]], base_dir: str = None
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Loads and prepares the configuration from the given path or dictionary.
 
     Args:
-        config_path: Path to the JSON configuration file.
+        config_or_path: Path to the JSON configuration file OR a config dictionary.
+        base_dir: Optional base directory for resolving relative paths if a dict is passed.
+                  If string path is passed, its parent dir is used.
 
     Returns:
         A tuple of (runtime_config, original_config).
@@ -274,18 +278,22 @@ def basic_prepare_config(config_path: str) -> tuple[Dict[str, Any], Dict[str, An
         Sets up log_dir, temp_dir, and results_dir within run workspace.
     """
     try:
-        config_path = os.path.abspath(config_path)
-        with open(config_path, "r") as f:
-            base_config = json.load(f)
+        if isinstance(config_or_path, str):
+            config_path = os.path.abspath(config_or_path)
+            with open(config_path, "r") as f:
+                base_config = json.load(f)
+            original_config_dir = os.path.dirname(config_path)
+        else:
+            base_config = config_or_path
+            original_config_dir = base_dir if base_dir else os.getcwd()
+
     except (FileNotFoundError, json.JSONDecodeError) as e:
         # Logger is not set up yet, so print directly to stderr
         print(
-            f"ERROR: Failed to load or parse config file {config_path}: {e}",
+            f"ERROR: Failed to load or parse config: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
-
-    original_config_dir = os.path.dirname(config_path)
 
     absolute_config = convert_relative_paths_to_absolute(
         base_config, original_config_dir
@@ -782,20 +790,26 @@ def analysis_setup_analysis_cases_workspaces(
     return case_configs
 
 
-def analysis_prepare_config(config_path: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
-    """Loads, validates, and prepares the configuration from the given path."""
+def analysis_prepare_config(
+    config_or_path: Union[str, Dict[str, Any]], base_dir: str = None
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Loads, validates, and prepares the configuration from the given path or dictionary."""
     try:
-        config_path = os.path.abspath(config_path)
-        with open(config_path, "r") as f:
-            base_config = json.load(f)
+        if isinstance(config_or_path, str):
+            config_path = os.path.abspath(config_or_path)
+            with open(config_path, "r") as f:
+                base_config = json.load(f)
+            original_config_dir = os.path.dirname(config_path)
+        else:
+            base_config = config_or_path
+            original_config_dir = base_dir if base_dir else os.getcwd()
+
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(
-            f"ERROR: Failed to load or parse config file {config_path}: {e}",
+            f"ERROR: Failed to load or parse config: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
-
-    original_config_dir = os.path.dirname(config_path)
     absolute_config = convert_relative_paths_to_absolute(
         base_config, original_config_dir
     )

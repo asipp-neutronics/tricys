@@ -13,11 +13,14 @@ help:
 	@echo "  docs-install  Install dependencies for building documentation."
 	@echo "  docs-serve    Serve the documentation site locally for development."
 	@echo "  docs-build    Build the documentation site."
+	@echo "  install-all   Install the project with ALL dependencies (dev, docs)."
 	@echo "  clean         Remove all build artifacts, cache files, and logs."
 	@echo "  lint          Check code style and potential errors (report only, do not modify)."
 	@echo "  format        Automatically format and repair code."
 	@echo "  check         Combine commands: format first, then check to make sure the codebase is clean."
 	@echo "  test          Perform one-click tests."
+	@echo "  uninstall     Uninstall the project."
+	@echo "  reinstall     Re-install the project (clean and install)."
 	@echo "  help          Show this help message."
 
 # 安装项目的核心依赖，用于常规使用或部署。
@@ -51,6 +54,23 @@ docs-serve:
 docs-build:
 	@echo "--> Building documentation..."
 	mkdocs build
+
+# Install all dependencies
+install-all:
+	@echo "--> Installing project with ALL dependencies..."
+	pip install -e ".[dev,docs]"
+	omc ./script/modelica_install/install.mos
+	@echo "--> Full installation complete."
+
+# Uninstall project
+uninstall:
+	@echo "--> Uninstalling project..."
+	pip uninstall tricys -y
+	@echo "--> Uninstallation complete."
+
+# Reinstall project
+reinstall: uninstall clean install
+	@echo "--> Re-installation complete."
 
 
 # 清理项目，删除所有自动生成的文件和目录。

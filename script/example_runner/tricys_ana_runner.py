@@ -45,9 +45,12 @@ class TricysAnaTestRunner:
             with open(config_file, "r", encoding="utf-8") as f:
                 config_data = json.load(f)
 
-            print("\n" + "=" * 60 + "\n")
+            print("\n" + "=" * 60)
+            print("🔄 正在扫描 ANALYSIS 示例目录...")
+            print("=" * 60 + "\n")
 
-            print(f"📄 正在读取分析示例配置: {config_data.get('description', '')}")
+            print(f"📦 [ANALYSIS] {config_data.get('description', '')}")
+            print("-" * 60)
 
             examples_list = config_data.get("examples", [])
             counter = 1
@@ -55,9 +58,7 @@ class TricysAnaTestRunner:
             for example_config in examples_list:
                 # Check if example is enabled
                 if not example_config.get("enabled", True):
-                    print(
-                        f"  ⏸️  跳过禁用的示例: {example_config.get('name', 'Unknown')}"
-                    )
+                    # print(f"  ⏸️  [跳过] {example_config.get('name', 'Unknown')}")
                     continue
 
                 # Check if configuration file exists
@@ -65,9 +66,7 @@ class TricysAnaTestRunner:
                 config_path = example_path / example_config["config"]
 
                 if not config_path.exists():
-                    print(
-                        f"  ⚠️  跳过缺失配置文件的示例: {example_config['name']} ({config_path})"
-                    )
+                    print(f"  ⚠️  [缺失] {example_config['name']} ({config_path})")
                     continue
 
                 examples[str(counter)] = {
@@ -78,10 +77,12 @@ class TricysAnaTestRunner:
                     "description": example_config["description"],
                 }
 
-                print(f"  ✅ 加载示例: {example_config['name']}")
+                print(f"  ✅ {counter}. {example_config['name']}")
                 counter += 1
 
-            print(f"🎉 成功加载 {len(examples)} 个分析示例")
+            print("-" * 60)
+            print(f"🎉 扫描完成: 共加载 {len(examples)} 个 ANALYSIS 示例")
+            print("=" * 60 + "\n")
 
         except json.JSONDecodeError as e:
             print(f"❌ JSON解析错误: {e}")
@@ -94,7 +95,7 @@ class TricysAnaTestRunner:
     def show_menu(self):
         """Display available example menu"""
         print("\n" + "=" * 60)
-        print("         TRICYS ANALYSIS 示例运行器")
+        print(f"{'TRICYS ANALYSIS 示例运行器':^56}")
         print("=" * 60 + "\n")
 
         if not self.examples:
@@ -103,14 +104,12 @@ class TricysAnaTestRunner:
         else:
             for key, example in self.examples.items():
                 print(f"  {key}. {example['name']}")
-                print(f"     描述: {example['description']}")
-                print(f"     配置: {example['config']}")
-                print()
+                print(f"     📝 {example['description']}")
+                print("-" * 60)
 
-        print("  0. 退出程序")
-        print("  h. 显示帮助信息")
-        print("  s. 重新扫描示例目录\n")
-        print("=" * 60)
+        print("\n" + "-" * 60)
+        print("  0. 退出程序  |  h. 显示帮助  |  s. 重新扫描")
+        print("-" * 60 + "\n")
 
     def copy_example(self, example_info):
         """
@@ -150,10 +149,11 @@ class TricysAnaTestRunner:
             self.test_example_base_dir.mkdir(exist_ok=True)
 
             # Copy entire example directory
-            print("─" * 50)
-            print("📋 正在复制示例目录...")
-            print(f"   从: {source_path}")
-            print(f"   到: {self.test_example_dir}")
+            print("\n" + "=" * 60)
+            print("📋 正在准备环境...")
+            print("-" * 60)
+            print(f"   📂 源目录: {source_path}")
+            print(f"   🎯 目标目录: {self.test_example_dir}")
 
             # Also copy all 'example_*' subdirectories from the 'example' directory
             example_root = self.workspace_dir / "example"
@@ -182,12 +182,13 @@ class TricysAnaTestRunner:
             print(f"❌ 复制示例文件失败: {e}")
             return False
 
-    def run_command(self, example_info):
+    def run_command(self, example_info, use_enhanced=False):
         """
         Run tricys analysis command
 
         Args:
             example_info: Example information dictionary
+            use_enhanced: Whether to enable enhanced mode
 
         Returns:
             bool: Whether command execution is successful
@@ -202,10 +203,18 @@ class TricysAnaTestRunner:
             # The main 'tricys' command automatically detects the workflow from the config file.
             cmd = ["tricys", "-c", str(config_path)]
 
-            print("─" * 50)
+            if use_enhanced:
+                cmd.append("--enhanced")
+
+            print("\n" + "=" * 60)
+            print("🚀 开始执行仿真命令")
+            print("=" * 60)
             print(f"📂 工作目录: {self.test_example_dir}")
-            print(f"🏃‍ 执行命令: {' '.join(cmd)}")
-            print("─" * 50)
+            print(f"💻 执行命令: {' '.join(cmd)}")
+            print(
+                f"⚡ 运行模式: {'🔥 Enhanced (Compile Once)' if use_enhanced else '🐢 Standard'}"
+            )
+            print("=" * 60 + "\n")
 
             # Record start time
             start_time = time.time()
@@ -220,7 +229,7 @@ class TricysAnaTestRunner:
 
             # Calculate execution time
 
-            print("─" * 50)
+            print("\n" + "=" * 60)
 
             if result.returncode == 0:
                 execution_time = time.time() - start_time
@@ -257,12 +266,21 @@ class TricysAnaTestRunner:
 
         example_info = self.examples[choice]
 
+        # Ask for enhanced mode
+        print("\n" + "-" * 30)
+        enhanced_input = (
+            input("是否启用 Enhanced 模式 (Compile Once)? (y/n, 默认y): ")
+            .strip()
+            .lower()
+        )
+        use_enhanced = enhanced_input in ["", "y", "yes", "是"]
+
         # 1. Copy example files
         if not self.copy_example(example_info):
             return False
 
         # 2. Run command
-        success = self.run_command(example_info)
+        success = self.run_command(example_info, use_enhanced=use_enhanced)
 
         if success:
             print(f"\n✅ 示例 '{example_info['name']}' 运行完成")

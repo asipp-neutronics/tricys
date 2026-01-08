@@ -66,6 +66,11 @@ def main() -> None:
     parser.add_argument(
         "-h", "--help", action="store_true", help="Show this help message and exit."
     )
+    parser.add_argument(
+        "--enhanced",
+        action="store_true",
+        help="Run in enhanced mode (sets execute_mode='enhanced' in config).",
+    )
 
     # Subparsers for explicit commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -78,6 +83,10 @@ def main() -> None:
 
     subparsers.add_parser(
         "example", help="Run the interactive example runner.", add_help=False
+    )
+
+    subparsers.add_parser(
+        "hdf5", help="Launch the HDF5 results visualizer.", add_help=False
     )
 
     archive_parser = subparsers.add_parser(
@@ -221,6 +230,23 @@ def main() -> None:
             gui_main()
         elif main_args.command == "example":
             run_example_runner()
+        elif main_args.command == "hdf5":
+            try:
+                from tricys.visualizer.main import start as visualizer_main
+
+                # Reconstruct argv for the visualizer's argument parser
+                sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
+                visualizer_main()
+            except ImportError:
+                print(
+                    "Error: The visualizer feature requires additional packages.",
+                    file=sys.stderr,
+                )
+                print(
+                    'Please install them by running: pip install "tricys[visualizer]"',
+                    file=sys.stderr,
+                )
+                sys.exit(1)
         elif main_args.command == "archive":
             archive_run(main_args.timestamp)
         elif main_args.command == "unarchive":
@@ -246,11 +272,16 @@ def main() -> None:
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             config_data = json.load(f)
-    except (json.JSONDecodeError, IOError) as e:
+    except (json.JSONDecodeError, IOError, UnicodeDecodeError) as e:
         print(
             f"Error reading or parsing config file '{config_path}': {e}",
             file=sys.stderr,
         )
+        if isinstance(e, UnicodeDecodeError):
+            print(
+                "The file appears to be a binary file, not a text/JSON file.",
+                file=sys.stderr,
+            )
         sys.exit(1)
 
     # Decide which main to call based on config content
@@ -258,16 +289,28 @@ def main() -> None:
         "sensitivity_analysis", {}
     ).get("enabled", False)
 
+    # 4. Handle --enhanced override
+    if main_args.enhanced:
+        if "simulation" not in config_data:
+            config_data["simulation"] = {}
+        config_data["simulation"]["execute_mode"] = "enhanced"
+        config_data["simulation"]["concurrent"] = True
+        print("INFO: Enhanced mode enabled via command line flag.")
+
+    # Determine base directory for resolving relative paths in config_data
+    # since we are passing a dictionary now.
+    base_dir = os.path.dirname(os.path.abspath(config_path))
+
     if is_analysis:
         print(
             "INFO: Detected 'sensitivity_analysis' in config. Running analysis workflow."
         )
-        analysis_main(config_path)
+        analysis_main(config_data, base_dir=base_dir)
     else:
         print(
             "INFO: No 'sensitivity_analysis' detected in config. Running standard simulation workflow."
         )
-        simulation_main(config_path)
+        simulation_main(config_data, base_dir=base_dir)
     return
 
 

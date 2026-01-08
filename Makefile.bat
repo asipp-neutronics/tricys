@@ -45,6 +45,7 @@ echo   reinstall     Re-install the project (uninstall , clean and install).
 echo   docs-install  Install documentation dependencies.
 echo   docs-serve    Serve documentation site locally for development.
 echo   docs-build    Build documentation site.
+echo   install-all   Install the project with ALL dependencies (dev, docs).
 echo   help          Show this help message.
 goto :eof
 
@@ -52,6 +53,7 @@ goto :eof
 :install
 echo --^> Installing project in editable mode...
 call pip install -e .
+call omc ./script/modelica_install/install.mos
 echo --^> Installation complete.
 goto :eof
 
@@ -60,6 +62,7 @@ goto :eof
 echo --^> Installing project with development dependencies...
 call pip install -e ".[dev]"
 call pre-commit install
+call omc ./script/modelica_install/install.mos
 echo --^> Development installation complete.
 goto :eof
 
@@ -79,11 +82,12 @@ echo --^> Building documentation...
 call mkdocs build
 goto :eof
 
-:win-install
-echo --^> Installing project with development dependencies...
-call pip install -e ".[win]"
+:install-all
+echo --^> Installing project with ALL dependencies...
+call pip install -e ".[dev,docs]"
 call pre-commit install
-echo --^> Development installation complete.
+call omc ./script/modelica_install/install.mos
+echo --^> Full installation complete.
 goto :eof
 
 
@@ -156,7 +160,7 @@ goto :eof
 echo --^> Re-installing project...
 call :uninstall
 call :clean
-call :win-install
+call :dev-install
 echo --^> Re-installation complete.
 goto :eof
 

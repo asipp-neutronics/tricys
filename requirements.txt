@@ -1,0 +1,15 @@
+pandas
+numpy
+matplotlib
+seaborn
+pathlib
+OMPython
+openai
+python-dotenv
+SALib
+python-json-logger
+tabulate
+tables
+dash
+dash-bootstrap-components
+pywin32; sys_platform == 'win32'

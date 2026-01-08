@@ -993,10 +993,101 @@ def plot_sweep_time_series(
     """
     glossary_maps = load_glossary(glossary_path) if glossary_path else ({}, {})
 
+    glossary_maps = load_glossary(glossary_path) if glossary_path else ({}, {})
+
     try:
-        df = pd.read_csv(csv_path)
+        if csv_path.endswith(".h5"):
+            # logic for HDF5
+            try:
+                jobs_df = pd.read_hdf(csv_path, "jobs_metadata")
+            except KeyError:
+                print(f"Error: 'jobs_metadata' not found in {csv_path}")
+                return []
+
+            # Filter jobs based on default_params
+            if default_params:
+                for param, value in default_params.items():
+                    if param in jobs_df.columns:
+                        # Ensure type matching for comparison
+                        jobs_df = jobs_df[jobs_df[param].astype(str) == str(value)]
+
+            job_ids = jobs_df["job_id"].tolist()
+            if not job_ids:
+                print(f"Warning: No jobs found matching parameters {default_params}")
+                return []
+
+            # Read results for these jobs
+            # Construct a where clause. Note: 'in' operator might be limited in num of arguments for PyTables
+            # If too many jobs, we might need chunked reading. For plotting (usually < 100 curves), this is fine.
+            # But sweep can be large.
+            # However, plot_sweep_time_series usually plots a subset (baseline) if default_params is passed.
+            # If default_params is NOT passed, it plots EVERYTHING. That could be huge.
+            # But the original CSV code just reads the whole CSV. If CSV works, HDF5 read should usually work unless it's truly massive.
+            # We'll trust the user isn't plotting 10,000 curves without filtering.
+
+            try:
+                # Read only necessary columns: time + y_vars + job_id
+                # We can't easily know exactly which columns correspond to y_var_name if it is a regex or partial match.
+                # So we might need to read a sample or just read all columns (but only for specific rows).
+                # Let's read all cols for filtered jobs.
+                # Optimization: Only read rows where job_id is in list.
+                df_raw = pd.read_hdf(csv_path, "results", where=f"job_id in {job_ids}")
+            except Exception as e:
+                print(f"Error reading HDF5 results: {e}")
+                return []
+
+            if df_raw.empty:
+                return []
+
+            # Reconstruct wide format
+            # New columns: {col_name}&{param_str}
+            data_dfs = []
+
+            # Group by job_id to process each job
+            unique_job_ids = df_raw["job_id"].unique()
+
+            for jid in unique_job_ids:
+                job_data = df_raw[df_raw["job_id"] == jid].copy()
+                # Get params for this job
+                # jobs_df index might not be job_id. filtering jobs_df again
+                job_row = jobs_df[jobs_df["job_id"] == jid].iloc[0]
+                job_params = job_row.drop("job_id").to_dict()
+
+                param_string = "&".join([f"{k}={v}" for k, v in job_params.items()])
+
+                # drop job_id
+                job_data = job_data.drop(columns=["job_id"])
+
+                # Store time separately or verify alignment.
+                # Simplest is to set index to time, rename cols, then join.
+                if "time" not in job_data.columns:
+                    continue
+
+                job_data.set_index("time", inplace=True)
+
+                rename_map = {
+                    c: f"{c}&{param_string}" if param_string else c
+                    for c in job_data.columns
+                }
+                job_data.rename(columns=rename_map, inplace=True)
+                data_dfs.append(job_data)
+
+            if not data_dfs:
+                return []
+
+            # Combine all (outer join on time index)
+            df = pd.concat(data_dfs, axis=1)
+            df.reset_index(inplace=True)  # Put time back as column
+
+        else:
+            # Legacy CSV
+            df = pd.read_csv(csv_path)
+
     except FileNotFoundError:
         print(f"Error: Could not find results file at {csv_path}")
+        return []
+
+    if df is None or len(df) == 0:
         return []
 
     if "time" not in df.columns:
