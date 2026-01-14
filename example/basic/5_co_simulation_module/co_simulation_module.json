@@ -9,29 +9,21 @@
         "step_size": 0.5
     },
     "simulation_parameters": {
-        "tep_fep.to_SDS_Fraction[1]":0.1
+        "tep_fep.to_SDS_Fraction[1]": "linspace:0.1:0.9:9"
     },
     "co_simulation": {
         "mode": "replacement",
-        "handlers":[
+        "handlers": [
             {
                 "submodel_name": "example_model.I_ISS",
                 "instance_name": "i_iss",
                 "handler_module": "tricys.handlers.i_iss_handler",
-                "handler_function": "run_dummy_simulation",
+                "handler_function": "run_aspen_simulation",
                 "params": {
-                    "description": "This is a dummy handler for i_iss.",
-                    "dummy_value": 123.45
-                }
-            },
-            {
-                "submodel_name": "example_model.DIV",
-                "instance_name": "div",
-                "handler_module": "tricys.handlers.div_handler",
-                "handler_function": "run_div_simulation",
-                "params": {
-                    "description": "This is a dummy handler for i_iss.",
-                    "dummy_value": 123.45
+                    "bkp_path": "../../example_aspenbkp/T2-Threetowers4.bkp",
+                    "base": 20,
+                    "retime": 60,
+                    "time_step": 3
                 }
             }
         ]

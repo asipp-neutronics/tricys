@@ -5,6 +5,7 @@ import importlib
 import importlib.util
 import json
 import logging
+import multiprocessing
 import os
 import shutil
 import subprocess
@@ -427,9 +428,26 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
         )
         return ""
     finally:
+        # Cleanup ModelicaSystem instances which might have their own sessions
+        if "mod" in locals() and mod and hasattr(mod, "omc"):
+            try:
+                mod.omc.sendExpression("quit()")
+                # mod.__del__() # triggering del might be safer but explicit quit is sure
+            except Exception:
+                pass
+
+        if "verif_mod" in locals() and verif_mod and hasattr(verif_mod, "omc"):
+            try:
+                verif_mod.omc.sendExpression("quit()")
+            except Exception:
+                pass
+
         if omc:
-            omc.sendExpression("quit()")
-            logger.info("Closed OMPython session", extra={"job_id": job_id})
+            try:
+                omc.sendExpression("quit()")
+                logger.info("Closed OMPython session", extra={"job_id": job_id})
+            except Exception:
+                pass
 
         if not sim_config.get("keep_temp_files", True):
             if os.path.exists(job_workspace):
@@ -672,6 +690,174 @@ def run_sequential_sweep(
     finally:
         if omc:
             omc.sendExpression("quit()")
+
+
+def _mp_run_co_simulation_wrapper(args):
+    """Wrapper method for multiprocessing co-simulation."""
+    config, job_params, job_id = args
+    try:
+        result_path = run_co_simulation_job(config, job_params, job_id)
+        return job_id, job_params, result_path, None
+    except Exception as e:
+        return job_id, job_params, None, str(e)
+
+
+def _mp_generic_wrapper(args):
+    """Generic wrapper for multiprocessing that accepts a function."""
+    func, config, job_params, job_id = args
+    try:
+        result = func(config, job_params, job_id)
+        return job_id, job_params, result, None
+    except Exception as e:
+        return job_id, job_params, None, str(e)
+
+
+def run_parallel_sweep(
+    config: dict,
+    jobs: List[Dict[str, Any]],
+    max_workers: int = None,
+    use_multiprocessing: bool = False,
+    post_job_callback: Callable[[int, Dict[str, Any], Any], None] = None,
+    custom_runner_func: Callable = None,
+) -> List[Any]:
+    """Executes a list of jobs in parallel using ThreadPoolExecutor or MultiprocessinPool.
+
+    Calculates results for a list of simulation jobs concurrently.
+
+    Args:
+        config: The main configuration dictionary.
+        jobs: A list of job parameter dictionaries to execute.
+        max_workers: Maximum number of concurrent workers. Defaults to CPU count.
+        use_multiprocessing: If True, uses multiprocessing.Pool (recommended for Co-Simulation).
+                             If False, uses ThreadPoolExecutor (recommended for standard jobs).
+        post_job_callback: Optional callback invoked immediately after each job completion.
+                           Signature: (job_id, job_params, result) -> None.
+                           The result is whatever the runner function returns.
+        custom_runner_func: Optional function to execute the job.
+                           Signature: (config, job_params, job_id) -> result.
+                           If not provided, defaults to run_co_simulation_job or run_single_job based on config.
+
+    Returns:
+        A list of results for each job (usually paths, but can be tuples if custom runner is used),
+        corresponding to the input `jobs` order.
+    """
+    if max_workers is None:
+        max_workers = os.cpu_count() or 4
+
+    logger.info(
+        f"Starting parallel sweep with {len(jobs)} jobs.",
+        extra={
+            "max_workers": max_workers,
+            "use_multiprocessing": use_multiprocessing,
+            "has_custom_runner": custom_runner_func is not None,
+        },
+    )
+
+    # Initialize result list with empty strings to preserve order
+    # Although we can fill it by index
+    results_map = {}  # job_id -> result
+
+    # Helper to resolve job runner function
+    has_co_sim = config.get("co_simulation") is not None
+
+    # Logic to choose runner
+    if custom_runner_func:
+        runner_func = custom_runner_func
+    else:
+        runner_func = run_co_simulation_job if has_co_sim else run_single_job
+
+    try:
+        if use_multiprocessing:
+            # MULTIPROCESSING PATH
+            if not custom_runner_func and not has_co_sim:
+                logger.warning(
+                    "Multiprocessing requested for standard job simulation. Using Threading instead as MP wrapper is optimized for Co-Sim."
+                )
+                use_multiprocessing = False
+            else:
+                # If custom runner is provided, we need to be careful about pickling.
+                # _mp_run_co_simulation_wrapper hardcodes run_co_simulation_job.
+                # If we want to support custom runner in MP, we need a generic wrapper or user must provide one.
+                # For now, let's assume if custom_runner is passed, it is picklable or user knows what they are doing?
+                # Check if custom runner is provided, if so use generic wrapper, else use default co-sim wrapper
+                wrapper = (
+                    _mp_generic_wrapper
+                    if custom_runner_func
+                    else _mp_run_co_simulation_wrapper
+                )
+
+                # Start MP pool
+                # For generic wrapper, we need to pass the runner function in the args!
+                if custom_runner_func:
+                    mp_args = [
+                        (custom_runner_func, config, job_params, i + 1)
+                        for i, job_params in enumerate(jobs)
+                    ]
+                else:
+                    mp_args = [
+                        (config, job_params, i + 1) for i, job_params in enumerate(jobs)
+                    ]
+
+                with multiprocessing.Pool(processes=max_workers) as pool:
+                    for job_id, job_params, result, error in pool.imap_unordered(
+                        wrapper, mp_args
+                    ):
+                        if error:
+                            logger.error(f"Job {job_id} failed: {error}")
+                            results_map[job_id] = ""
+                        else:
+                            results_map[job_id] = result
+                            if post_job_callback:
+                                try:
+                                    post_job_callback(job_id, job_params, result)
+                                except Exception as exc:
+                                    logger.error(
+                                        f"Post-job callback failed for job {job_id}: {exc}"
+                                    )
+
+        if not use_multiprocessing:
+            # THREADING PATH
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers
+            ) as executor:
+                # Map futures to job IDs
+                future_to_job = {
+                    executor.submit(runner_func, config, job_params, i + 1): (
+                        i + 1,
+                        job_params,
+                    )
+                    for i, job_params in enumerate(jobs)
+                }
+
+                for future in concurrent.futures.as_completed(future_to_job):
+                    job_id, job_params = future_to_job[future]
+                    try:
+                        result_path = future.result()
+                        results_map[job_id] = result_path
+
+                        if post_job_callback and result_path:
+                            try:
+                                post_job_callback(job_id, job_params, result_path)
+                            except Exception as exc:
+                                logger.error(
+                                    f"Post-job callback failed for job {job_id}: {exc}"
+                                )
+
+                    except Exception as exc:
+                        logger.error(
+                            f"Job {job_id} generated an exception: {exc}", exc_info=True
+                        )
+                        results_map[job_id] = ""
+
+    except Exception as e:
+        logger.error(f"Parallel sweep failed: {e}", exc_info=True)
+
+    # Construct final list in order
+    final_results = []
+    for i in range(len(jobs)):
+        final_results.append(results_map.get(i + 1, ""))
+
+    return final_results
 
 
 def run_post_processing(
@@ -964,6 +1150,46 @@ def _run_fast_subprocess_job(
         return ""
 
 
+def _mp_run_fast_subprocess_job_wrapper(args):
+    """Wrapper for multiprocessing.Pool to map _run_fast_subprocess_job."""
+    job_params, job_id, kwargs = args
+    try:
+        res = _run_fast_subprocess_job(
+            job_params,
+            job_id,
+            kwargs["exe_source"],
+            kwargs["xml_source"],
+            kwargs["om_bin_path"],
+            kwargs["base_temp_dir"],
+            kwargs["sim_config"],
+            variable_filter=kwargs.get("variable_filter"),
+            inplace_execution=kwargs.get("inplace_execution", False),
+        )
+        return job_id, job_params, res, None
+    except Exception as e:
+        return job_id, job_params, None, str(e)
+
+
+def _mp_run_single_job_wrapper(args):
+    """Wrapper for multiprocessing.Pool to map run_single_job."""
+    config, job_params, job_id = args
+    try:
+        res = run_single_job(config, job_params, job_id)
+        return job_id, job_params, res, None
+    except Exception as e:
+        return job_id, job_params, None, str(e)
+
+
+def _mp_run_co_simulation_job_wrapper(args):
+    """Wrapper for multiprocessing.Pool to map run_co_simulation_job."""
+    config, job_params, job_id = args
+    try:
+        res = run_co_simulation_job(config, job_params, job_id)
+        return job_id, job_params, res, None
+    except Exception as e:
+        return job_id, job_params, None, str(e)
+
+
 def run_simulation(config: Dict[str, Any]) -> None:
     """Orchestrates the main simulation workflow.
 
@@ -1039,11 +1265,12 @@ def run_simulation(config: Dict[str, Any]) -> None:
 
         # HDF5 path is prepared but only used in enhanced mode
 
+        # Check for enhanced execution mode (Global)
+        execute_mode = config["simulation"].get("execute_mode", "standard")
+        if config["simulation"].get("excute_mode"):
+            execute_mode = config["simulation"]["excute_mode"]
+
         if config.get("co_simulation") is None:
-            # Check for enhanced execution mode
-            execute_mode = config["simulation"].get("execute_mode", "standard")
-            if config["simulation"].get("excute_mode"):
-                execute_mode = config["simulation"]["excute_mode"]
 
             if execute_mode == "enhanced":
                 logger.info(
@@ -1068,39 +1295,38 @@ def run_simulation(config: Dict[str, Any]) -> None:
                     # 2. Run Many
                     if use_concurrent:
                         logger.info(
-                            "Running jobs concurrently (Enhanced HDF5 Streaming)"
+                            "Running jobs concurrently (Enhanced HDF5 Streaming)",
+                            extra={"max_workers": max_workers},
                         )
-                        with concurrent.futures.ProcessPoolExecutor(
-                            max_workers=max_workers
-                        ) as executor:
-                            future_to_job = {
-                                executor.submit(
-                                    _run_fast_subprocess_job,
-                                    job_params,
-                                    i + 1,
-                                    master_exe,
-                                    master_xml,
-                                    om_bin,
-                                    temp_dir,
-                                    config["simulation"],
-                                    variable_filter=config["simulation"].get(
-                                        "variableFilter"
-                                    ),
-                                    inplace_execution=True,
-                                ): (i + 1, job_params)
-                                for i, job_params in enumerate(jobs)
+                        # Prepare args
+                        mp_args = []
+                        for i, job_params in enumerate(jobs):
+                            kwargs = {
+                                "exe_source": master_exe,
+                                "xml_source": master_xml,
+                                "om_bin_path": om_bin,
+                                "base_temp_dir": temp_dir,
+                                "sim_config": config["simulation"],
+                                "variable_filter": config["simulation"].get(
+                                    "variableFilter"
+                                ),
+                                "inplace_execution": True,
                             }
-                            for future in concurrent.futures.as_completed(
-                                future_to_job
+                            mp_args.append((job_params, i + 1, kwargs))
+
+                        with multiprocessing.Pool(processes=max_workers) as pool:
+                            for (
+                                job_id,
+                                job_p,
+                                result_path,
+                                error,
+                            ) in pool.imap_unordered(
+                                _mp_run_fast_subprocess_job_wrapper, mp_args
                             ):
-                                job_id, job_params = future_to_job[future]
-                                try:
-                                    result_path = future.result()
-                                    process_result(
-                                        store, job_id, job_params, result_path
-                                    )
-                                except Exception as exc:
-                                    logger.error(f"Job failed: {exc}")
+                                if error:
+                                    logger.error(f"Job {job_id} failed: {error}")
+                                else:
+                                    process_result(store, job_id, job_p, result_path)
                     else:
                         logger.info(
                             "Running jobs sequentially (Enhanced HDF5 Streaming)"
@@ -1134,27 +1360,23 @@ def run_simulation(config: Dict[str, Any]) -> None:
                             "max_workers": max_workers,
                         },
                     )
-                    with concurrent.futures.ProcessPoolExecutor(
-                        max_workers=max_workers
-                    ) as executor:
-                        future_to_job = {
-                            executor.submit(
-                                run_single_job, config, job_params, i + 1
-                            ): job_params
-                            for i, job_params in enumerate(jobs)
-                        }
-                        for future in concurrent.futures.as_completed(future_to_job):
-                            job_params = future_to_job[future]
-                            try:
-                                result_path = future.result()
-                                if result_path:
-                                    simulation_results[
-                                        tuple(sorted(job_params.items()))
-                                    ] = result_path
-                            except Exception as exc:
-                                logger.error(
-                                    f"Job for {job_params} generated an exception: {exc}",
-                                    exc_info=True,
+
+                    mp_args = [
+                        (config, job_params, i + 1) for i, job_params in enumerate(jobs)
+                    ]
+
+                    with multiprocessing.Pool(processes=max_workers) as pool:
+                        for (
+                            job_id,
+                            job_p,
+                            result_path,
+                            error,
+                        ) in pool.imap_unordered(_mp_run_single_job_wrapper, mp_args):
+                            if error:
+                                logger.error(f"Job {job_id} failed: {error}")
+                            elif result_path:
+                                simulation_results[tuple(sorted(job_p.items()))] = (
+                                    result_path
                                 )
                 else:
                     logger.info("Starting simulation", extra={"mode": "SEQUENTIAL"})
@@ -1165,29 +1387,138 @@ def run_simulation(config: Dict[str, Any]) -> None:
                                 result_path
                             )
         else:
-            if use_concurrent:
-                logger.info(
-                    "Starting co-simulation",
-                    extra={
-                        "mode": "CONCURRENT",
-                        "max_workers": max_workers,
-                    },
-                )
+            if execute_mode == "enhanced":
+                logger.info("Starting Co-Simulation (Enhanced Mode: HDF5 Streaming)")
 
-                with concurrent.futures.ProcessPoolExecutor(
-                    max_workers=max_workers
-                ) as executor:
-                    future_to_job = {
-                        executor.submit(
-                            run_co_simulation_job, config, job_params, job_id=i + 1
-                        ): job_params
-                        for i, job_params in enumerate(jobs)
-                    }
+                with pd.HDFStore(
+                    hdf_path, mode="w", complib="blosc", complevel=9
+                ) as store:
+                    # Save configuration
+                    try:
+                        config_df = pd.DataFrame({"config_json": [json.dumps(config)]})
+                        store.put("config", config_df, format="fixed")
+                    except Exception as e:
+                        logger.warning(f"Failed to save config to HDF5: {e}")
 
-                    for future in concurrent.futures.as_completed(future_to_job):
-                        job_params = future_to_job[future]
+                    if use_concurrent:
+                        logger.info(
+                            "Starting co-simulation (Enhanced Parallel)",
+                            extra={"max_workers": max_workers},
+                        )
+                        mp_args = [
+                            (config, job_params, i + 1)
+                            for i, job_params in enumerate(jobs)
+                        ]
+
+                        with multiprocessing.Pool(processes=max_workers) as pool:
+                            for (
+                                job_id,
+                                job_p,
+                                result_path,
+                                error,
+                            ) in pool.imap_unordered(
+                                _mp_run_co_simulation_job_wrapper, mp_args
+                            ):
+                                if error:
+                                    logger.error(
+                                        "Co-simulation job generated an exception",
+                                        extra={"job_params": job_p, "exception": error},
+                                    )
+                                else:
+                                    process_result(store, job_id, job_p, result_path)
+                                    logger.info(
+                                        "Successfully finished co-simulation job",
+                                        extra={"job_params": job_p},
+                                    )
+                    else:
+                        logger.info("Starting co-simulation (Enhanced Sequential)")
+                        for i, job_params in enumerate(jobs):
+                            job_id = i + 1
+                            try:
+                                result_path = run_co_simulation_job(
+                                    config, job_params, job_id=job_id
+                                )
+                                process_result(store, job_id, job_params, result_path)
+                                logger.info(
+                                    "Successfully finished co-simulation job",
+                                    extra={"job_params": job_params},
+                                )
+                            except Exception as exc:
+                                logger.error(
+                                    "Co-simulation job generated an exception",
+                                    exc_info=True,
+                                    extra={
+                                        "job_params": job_params,
+                                        "exception": str(exc),
+                                    },
+                                )
+
+                # Mark that we used HDF5 so we skip the legacy aggregation
+                simulation_results = None
+
+            else:
+                if use_concurrent:
+                    logger.info(
+                        "Starting co-simulation",
+                        extra={
+                            "mode": "CONCURRENT",
+                            "max_workers": max_workers,
+                        },
+                    )
+
+                    mp_args = [
+                        (config, job_params, i + 1) for i, job_params in enumerate(jobs)
+                    ]
+
+                    with multiprocessing.Pool(processes=max_workers) as pool:
+                        for (
+                            job_id,
+                            job_p,
+                            result_path,
+                            error,
+                        ) in pool.imap_unordered(
+                            _mp_run_co_simulation_job_wrapper, mp_args
+                        ):
+                            if error:
+                                logger.error(
+                                    "Co-simulation job generated an exception",
+                                    extra={
+                                        "job_params": job_p,
+                                        "exception": error,
+                                    },
+                                )
+                            elif result_path:
+                                simulation_results[tuple(sorted(job_p.items()))] = (
+                                    result_path
+                                )
+                                logger.info(
+                                    "Successfully finished co-simulation job",
+                                    extra={
+                                        "job_params": job_p,
+                                    },
+                                )
+                            else:
+                                logger.warning(
+                                    "Co-simulation job did not return a result path",
+                                    extra={
+                                        "job_params": job_p,
+                                    },
+                                )
+
+                else:
+                    logger.info("Starting co-simulation", extra={"mode": "SEQUENTIAL"})
+                    for i, job_params in enumerate(jobs):
+                        job_id = i + 1
+                        logger.info(
+                            "Starting Sequential Co-simulation Job",
+                            extra={
+                                "job_index": f"{job_id}/{len(jobs)}",
+                            },
+                        )
                         try:
-                            result_path = future.result()
+                            result_path = run_co_simulation_job(
+                                config, job_params, job_id=job_id
+                            )
                             if result_path:
                                 simulation_results[
                                     tuple(sorted(job_params.items()))
@@ -1214,52 +1545,12 @@ def run_simulation(config: Dict[str, Any]) -> None:
                                     "exception": str(exc),
                                 },
                             )
-            else:
-                logger.info("Starting co-simulation", extra={"mode": "SEQUENTIAL"})
-                for i, job_params in enumerate(jobs):
-                    job_id = i + 1
-                    logger.info(
-                        "Starting Sequential Co-simulation Job",
-                        extra={
-                            "job_index": f"{job_id}/{len(jobs)}",
-                        },
-                    )
-                    try:
-                        result_path = run_co_simulation_job(
-                            config, job_params, job_id=job_id
-                        )
-                        if result_path:
-                            simulation_results[tuple(sorted(job_params.items()))] = (
-                                result_path
-                            )
-                            logger.info(
-                                "Successfully finished co-simulation job",
-                                extra={
-                                    "job_params": job_params,
-                                },
-                            )
-                        else:
-                            logger.warning(
-                                "Co-simulation job did not return a result path",
-                                extra={
-                                    "job_params": job_params,
-                                },
-                            )
-                    except Exception as exc:
-                        logger.error(
-                            "Co-simulation job generated an exception",
-                            exc_info=True,
+                        logger.info(
+                            "Finished Sequential Co-simulation Job",
                             extra={
-                                "job_params": job_params,
-                                "exception": str(exc),
+                                "job_index": f"{job_id}/{len(jobs)}",
                             },
                         )
-                    logger.info(
-                        "Finished Sequential Co-simulation Job",
-                        extra={
-                            "job_index": f"{job_id}/{len(jobs)}",
-                        },
-                    )
 
     except Exception as e:
         raise RuntimeError("Failed to run simulation", e)

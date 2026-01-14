@@ -14,53 +14,31 @@
             {
                 "name": "DIR_PLASMA_Analysis",
                 "independent_variable": "tep_fep.to_SDS_Fraction[1]",
-                "independent_variable_sampling": [0.1,0.3,0.6,0.8],
+                "independent_variable_sampling": [
+                    0.1,
+                    0.3,
+                    0.6,
+                    0.8
+                ],
                 "dependent_variables": [
                     "Startup_Inventory",
                     "Required_TBR"
                 ],
                 "simulation_parameters": {
-                    "plasma.fb": [0.02,0.04,0.08,0.09,0.1],
-                    "plasma.nf":0.5
+                    "plasma.fb": [
+                        0.02,
+                        0.04,
+                        0.08,
+                        0.09,
+                        0.1
+                    ],
+                    "plasma.nf": 0.5
                 },
-                "plot_type":"line",
-                "combine_plots":true,
-                "sweep_time":["sds.I[1]"]
-            },
-            {
-                "name": "Pulse_PLASMA_Analysis",
-                "independent_variable": "pulseSource.width",
-                "independent_variable_sampling": [50,60,70,80,90,99],
-                "dependent_variables": [
-                    "Startup_Inventory",
-                    "Required_TBR"
-                ],
-                "simulation_parameters": {
-                    "plasma.fb": [0.02,0.04,0.08,0.09,0.1],
-                    "plasma.nf":0.5
-                },
-                "plot_type":"line",
-                "combine_plots":true,
-                "sweep_time":["sds.I[1]"]
-            },
-            {
-                "name": "DoubleTime_PLASMA_Analysis",
-                "independent_variable": "plasma.fb",
-                "independent_variable_sampling": [0.02,0.05,0.08,0.1],
-                "dependent_variables": [
-                    "Startup_Inventory",
-                    "Required_TBR"
-                ],
-                "simulation_parameters": {
-                    "plasma.nf":0.5,
-                    "Required_TBR": {
-                        "metric_name":"Doubling_Time",
-                        "metric_max_value": [4380,8760,13140,17530]
-                    }
-                },
-                "plot_type":"line",
-                "combine_plots":true,
-                "sweep_time":["sds.I[1]"]
+                "plot_type": "line",
+                "combine_plots": true,
+                "sweep_time": [
+                    "sds.I[1]"
+                ]
             }
         ],
         "metrics_definition": {
@@ -80,28 +58,31 @@
                 "source_column": "sds.I[1]",
                 "method": "bisection_search",
                 "parameter_to_optimize": "blanket.TBR",
-                "search_range": [1,1.5],
+                "search_range": [
+                    1,
+                    1.5
+                ],
                 "tolerance": 0.005,
                 "max_iterations": 10
             }
         },
         "glossary_path": "../../example_glossary/example_glossary.csv",
-		"unit_map": {
-			"Doubling_Time": {
-				"unit": "days",
-				"conversion_factor": 24
-			},
-			"Startup_Inventory": {
-				"unit": "kg",
-				"conversion_factor": 1000
-			},
-            "Self_Sufficiency_Time": {
-				"unit": "days",
-				"conversion_factor": 24
+        "unit_map": {
+            "Doubling_Time": {
+                "unit": "days",
+                "conversion_factor": 24
             },
-			"width":{
-				"unit": "%"
-			}
-		}
+            "Startup_Inventory": {
+                "unit": "kg",
+                "conversion_factor": 1000
+            },
+            "Self_Sufficiency_Time": {
+                "unit": "days",
+                "conversion_factor": 24
+            },
+            "width": {
+                "unit": "%"
+            }
+        }
     }
 }

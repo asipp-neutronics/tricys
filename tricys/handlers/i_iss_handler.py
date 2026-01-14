@@ -1,8 +1,10 @@
 import logging
 import os
+import random  # Added
 import time
 
 import pandas as pd
+import pythoncom  # Added
 import win32com.client as win32
 
 # Standard logger setup
@@ -38,13 +40,40 @@ class AspenEnhanced:
             COM object version "Apwn.Document.40.0" may need adjustment for different
             Aspen Plus versions.
         """
-        logger.info("Dispatching Aspen COM object...")
-        self.aspen = win32.Dispatch("Apwn.Document.40.0")  # Adjust version if necessary
-        logger.info(f"Loading Aspen backup file: {os.path.abspath(bkp_path)}")
-        self.aspen.InitFromArchive2(os.path.abspath(bkp_path))
-        self.aspen.Visible = 0
-        self.aspen.SuppressDialogs = 1
-        logger.info("Aspen initialized successfully.")
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                logger.info(
+                    f"Dispatching Aspen COM object (Attempt {attempt + 1}/{max_retries})..."
+                )
+                self.aspen = win32.DispatchEx(
+                    "Apwn.Document.40.0"
+                )  # Use DispatchEx to force new instance
+                logger.info(f"Loading Aspen backup file: {os.path.abspath(bkp_path)}")
+                self.aspen.InitFromArchive2(os.path.abspath(bkp_path))
+                self.aspen.Visible = 0
+                self.aspen.SuppressDialogs = 1
+                logger.info("Aspen initialized successfully.")
+                break
+            except Exception as e:
+                logger.warning(
+                    f"Failed to initialize Aspen (Attempt {attempt + 1}/{max_retries}): {e}"
+                )
+                if self.aspen:
+                    try:
+                        self.aspen.Close()
+                    except Exception:
+                        pass
+                    self.aspen = None
+
+                if attempt == max_retries - 1:
+                    logger.error("All attempts to initialize Aspen failed.")
+                    raise
+
+                # Exponential backoff with jitter: 2s, 4s, 8s... + random jitter
+                sleep_time = (2**attempt) + random.uniform(0, 1)
+                logger.info(f"Retrying in {sleep_time:.2f} seconds...")
+                time.sleep(sleep_time)
 
         # 定义摩尔质量 (g/mol)
         self.M_T, self.M_D, self.M_H = 3.016, 2.014, 1.008
@@ -123,8 +152,33 @@ class AspenEnhanced:
             Typically used in finally block to ensure cleanup even on errors.
         """
         if self.aspen:
-            self.aspen.Close()
-            logger.info("Closed Aspen session.")
+            try:
+                # Try to get Application object before closing document
+                app = getattr(self.aspen, "Application", None)
+
+                # Close the document
+                try:
+                    self.aspen.Close()
+                    logger.info("Closed Aspen document.")
+                except Exception as e:
+                    logger.warning(f"Error closing Aspen document: {e}")
+
+                # Quit the application process
+                if app:
+                    try:
+                        app.Quit()
+                        logger.info("Quitted Aspen application.")
+                    except Exception as e:
+                        # 0x80010108 (RPC_E_DISCONNECTED) means the process is already disconnected/gone
+                        if "-2147417848" in str(e):
+                            logger.info(f"Aspen application already disconnected: {e}")
+                        else:
+                            logger.warning(f"Error quitting Aspen application: {e}")
+
+            except Exception as e:
+                logger.error(f"Error checking Aspen Application: {e}")
+            finally:
+                self.aspen = None
 
 
 # ================== 主执行接口函数 ====================
@@ -138,6 +192,7 @@ def run_aspen_simulation(
     time_step: int = 3,
     min_stable_steps: int = 100,
     stable_threshold: float = 1e-6,
+    **kwargs,
 ) -> dict:
     """Runs an Aspen Plus simulation based on inputs from a Modelica simulation.
 
@@ -163,13 +218,18 @@ def run_aspen_simulation(
         for min_stable_steps). Input CSV encoding is 'gbk'. Creates cumulative inventory
         tracking columns I_H, I_D, I_T. Output columns use 1-indexed array notation [1], [2], [3].
     """
+    pythoncom.CoInitialize()
     aspen = None
     all_results = []
     output_placeholder = {}
 
     try:
+        # bkp_path is already pointing to the isolated copy in the job directory
+        # thanks to simulation.py's asset management.
+        local_bkp_path = bkp_path
+
         # 1. 初始化Aspen
-        aspen = AspenEnhanced(bkp_path)
+        aspen = AspenEnhanced(local_bkp_path)
 
         # 2. 读取OpenModelica数据
         logger.info(f"Reading input data from: {temp_input_csv}")

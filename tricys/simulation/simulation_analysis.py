@@ -1,5 +1,5 @@
-import concurrent.futures
 import logging
+import multiprocessing
 import os
 import shutil
 import sys
@@ -31,6 +31,7 @@ from tricys.core.modelica import (
 )
 from tricys.simulation.simulation import (
     run_co_simulation_job,
+    run_parallel_sweep,
     run_post_processing,
     run_sequential_sweep,
     run_single_job,
@@ -596,8 +597,17 @@ def _run_bisection_search_for_job(
             f"Bisection search failed during setup or execution: {e}", exc_info=True
         )
     finally:
+        if "mod" in locals() and mod and hasattr(mod, "omc"):
+            try:
+                mod.omc.sendExpression("quit()")
+            except Exception:
+                pass
+
         if omc:
-            omc.sendExpression("quit()")
+            try:
+                omc.sendExpression("quit()")
+            except Exception:
+                pass
 
     return all_optimal_params, all_optimal_values
 
@@ -876,6 +886,26 @@ def _run_post_processing(
     run_post_processing(config, results_df, post_processing_output_dir)
 
 
+def _mp_execute_analysis_case_wrapper(case_info):
+    """Wrapper for multiprocessing.Pool to map _execute_analysis_case."""
+    try:
+        res = _execute_analysis_case(case_info)
+        return case_info, res, None
+    except Exception as e:
+        return case_info, None, str(e)
+
+
+def _mp_run_co_simulation_wrapper(args):
+    """Wrapper for multiprocessing.Pool to map _run_co_simulation."""
+    config, job_params, job_id = args
+    try:
+        res = _run_co_simulation(config, job_params, job_id)
+        # res is (optimal_params, optimal_values, result_path)
+        return job_id, job_params, res, None
+    except Exception as e:
+        return job_id, job_params, None, str(e)
+
+
 def run_simulation(config: Dict[str, Any]) -> None:
     """Orchestrates the simulation analysis workflow.
 
@@ -947,11 +977,14 @@ def run_simulation(config: Dict[str, Any]) -> None:
 
         # Force sequential cases for Enhanced Mode to prevent ProcessPoolExecutor conflicts
         # User requested this safeguard.
-        execute_mode = config.get("simulation", {}).get("execute_mode", "standard")
-        if execute_mode == "enhanced" and run_cases_concurrently:
+        # Prevent nested multiprocessing pools (Co-Sim uses MP, Cases use MP)
+        # If Co-Simulation is active, force sequential cases.
+        # Otherwise (Standard Job -> Threads), allowing parallel cases is safe.
+        is_co_sim = config.get("co_simulation") is not None
+        if is_co_sim and run_cases_concurrently:
             logger.warning(
-                "Enhanced Mode detected: Forcing sequential execution of Analysis Cases "
-                "to prevent potential ProcessPoolExecutor conflicts."
+                "Co-Simulation detected: Forcing sequential execution of Analysis Cases "
+                "to prevent nested multiprocessing pools."
             )
             run_cases_concurrently = False
 
@@ -966,18 +999,17 @@ def run_simulation(config: Dict[str, Any]) -> None:
                 f"Using up to {max_workers} parallel processes for analysis cases."
             )
 
-            with concurrent.futures.ProcessPoolExecutor(
-                max_workers=max_workers
-            ) as executor:
-                future_to_case = {
-                    executor.submit(_execute_analysis_case, case_info): case_info
-                    for case_info in case_configs
-                }
-                for future in concurrent.futures.as_completed(future_to_case):
-                    case_info = future_to_case[future]
+            with multiprocessing.Pool(processes=max_workers) as pool:
+                for case_info, success, error in pool.imap_unordered(
+                    _mp_execute_analysis_case_wrapper, case_configs
+                ):
                     case_name = case_info["case_data"].get("name", case_info["index"])
-                    try:
-                        if future.result():
+                    if error:
+                        logger.error(
+                            f"Parallel case '{case_name}' failed in executor with: {error}"
+                        )
+                    else:
+                        if success:
                             successful_cases += 1
                             logger.info(
                                 f"Parallel case '{case_name}' completed successfully."
@@ -986,11 +1018,6 @@ def run_simulation(config: Dict[str, Any]) -> None:
                             logger.warning(
                                 f"Parallel case '{case_name}' completed with errors."
                             )
-                    except Exception as exc:
-                        logger.error(
-                            f"Parallel case '{case_name}' failed in executor with: {exc}",
-                            exc_info=True,
-                        )
         else:
             logger.info(
                 f"Starting execution of {len(case_configs)} analysis cases SEQUENTIALLY."
@@ -1138,114 +1165,65 @@ def run_simulation(config: Dict[str, Any]) -> None:
     use_concurrent = config["simulation"].get("concurrent", False)
 
     try:
-        # --- ENHANCED MODE ---
+        # Define runners based on config
+        is_co_sim = config.get("co_simulation") is not None
+        runner_func = _run_co_simulation if is_co_sim else _run_single_job
+
+        # Common cleanup/prep
+        final_results = []
+
         if execute_mode == "enhanced":
             logger.info("Running simulation in ENHANCED mode (HDF5 Streaming).")
+
+            # Using HDFStore
             with pd.HDFStore(hdf_path, mode="w", complib="blosc", complevel=9) as store:
                 # Save jobs metadata
                 meta_df = pd.DataFrame(jobs)
                 meta_df["job_id"] = range(1, len(jobs) + 1)
                 store.put("jobs_metadata", meta_df, format="table", data_columns=True)
 
-                final_results = []
-                if config.get("co_simulation") is None:
-                    if use_concurrent:
-                        logger.info(
-                            "Starting simulation in CONCURRENT mode (Enhanced)."
-                        )
-                        max_workers = config["simulation"].get(
-                            "max_workers", os.cpu_count()
-                        )
-                        with concurrent.futures.ThreadPoolExecutor(
-                            max_workers=max_workers
-                        ) as executor:
-                            future_to_job = {
-                                executor.submit(
-                                    _run_single_job, config, job_params, i + 1
-                                ): (i + 1, job_params)
-                                for i, job_params in enumerate(jobs)
-                            }
-                            for future in concurrent.futures.as_completed(
-                                future_to_job
-                            ):
-                                job_id, job_params = future_to_job[future]
-                                try:
-                                    optimal_params, optimal_values, result_path = (
-                                        future.result()
-                                    )
-                                    if result_path:
-                                        _process_h5_result(
-                                            store, job_id, job_params, result_path
-                                        )
+                use_mp = is_co_sim
+                max_workers = config["simulation"].get("max_workers", os.cpu_count())
 
-                                    # Collect optimization results
-                                    final_result_entry = job_params.copy()
-                                    final_result_entry.update(optimal_params)
-                                    final_result_entry.update(optimal_values)
-                                    final_results.append(final_result_entry)
+                # Callback for Enhanced Mode
+                import threading
 
-                                except Exception as exc:
-                                    logger.error(f"Job {job_id} failed: {exc}")
+                store_lock = threading.Lock()
 
+                def enhanced_callback(job_id, params, result):
+                    if not result:
+                        return
+                    optimal_params, optimal_values, result_path = result
+
+                    if result_path:
+                        if use_mp:
+                            _process_h5_result(store, job_id, params, result_path)
+                        else:
+                            with store_lock:
+                                _process_h5_result(store, job_id, params, result_path)
+
+                    entry = params.copy()
+                    entry.update(optimal_params)
+                    entry.update(optimal_values)
+
+                    if use_mp:
+                        final_results.append(entry)
                     else:
-                        logger.info(
-                            "Starting simulation in SEQUENTIAL mode (Enhanced)."
-                        )
-                        # _run_sequential_sweep returns paths but cleans up?
-                        # No, _run_sequential_sweep in this file returns a list of result_paths.
-                        # It doesn't support the callback logic for cleanup we had in simulation.py unless we pass one.
-                        # But wait, _run_sequential_sweep logic is defined in THIS file (lines 639-676).
-                        # It iterates jobs and runs them.
-                        # We can just iterate jobs here manually for enhanced mode to control cleanup.
-                        for i, job_params in enumerate(jobs):
-                            params, values, res_path = _run_single_job(
-                                config, job_params, i + 1
-                            )
-                            if res_path:
-                                _process_h5_result(store, i + 1, job_params, res_path)
+                        with store_lock:
+                            final_results.append(entry)
 
-                            # Collect optimization results
-                            final_result_entry = job_params.copy()
-                            final_result_entry.update(params)
-                            final_result_entry.update(values)
-                            final_results.append(final_result_entry)
+                logger.info(
+                    f"Starting sweep (Enhanced). MP={use_mp}, Workers={max_workers if use_concurrent else 1}"
+                )
 
-                else:  # Co-simulation Enhanced
-                    logger.info("Starting co-simulation in CONCURRENT mode (Enhanced).")
-                    max_workers = config["simulation"].get("max_workers", 4)
-                    with concurrent.futures.ProcessPoolExecutor(
-                        max_workers=max_workers
-                    ) as executor:
-                        future_to_job = {
-                            executor.submit(
-                                _run_co_simulation, config, job_params, job_id=i + 1
-                            ): (i + 1, job_params)
-                            for i, job_params in enumerate(jobs)
-                        }
-                        for future in concurrent.futures.as_completed(future_to_job):
-                            job_id, job_params = future_to_job[future]
-                            try:
-                                optimal_params, optimal_values, result_path = (
-                                    future.result()
-                                )
-                                if result_path:
-                                    _process_h5_result(
-                                        store, job_id, job_params, result_path
-                                    )
-
-                                # Collect optimization results (Not implementing for Co-Sim yet as structure differs, but keeping pattern)
-                                # Co-sim usually doesn't have internal optimization loop returning data same way?
-                                # Actually _run_co_simulation returns same signature.
-                                # So we can collect it too.
-                                final_result_entry = job_params.copy()
-                                final_result_entry.update(optimal_params)
-                                final_result_entry.update(optimal_values)
-                                final_results.append(final_result_entry)
-
-                            except Exception as exc:
-                                logger.error(
-                                    f"Co-simulation Job {job_id} failed: {exc}"
-                                )
+                run_parallel_sweep(
+                    config,
+                    jobs,
+                    max_workers=max_workers if use_concurrent else 1,
+                    use_multiprocessing=use_mp if use_concurrent else False,
+                    post_job_callback=enhanced_callback,
+                    custom_runner_func=runner_func,
+                )
 
             if _get_optimization_tasks(config) and final_results:
                 final_df = pd.DataFrame(final_results)
@@ -1253,155 +1231,70 @@ def run_simulation(config: Dict[str, Any]) -> None:
                 final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
                 logger.info(f"Sweep optimization summary saved to: {output_path}")
 
-            # Results are in HDF5, no combined_df needed
-            simulation_results = None
-            combined_df = None
-            combined_csv_path = hdf_path  # For plotting logic reference
-
-        # --- STANDARD MODE ---
-        elif config.get("co_simulation") is None:
-            if use_concurrent:
-                logger.info("Starting simulation in CONCURRENT mode.")
-                max_workers = config["simulation"].get("max_workers", os.cpu_count())
-                logger.info(f"Using up to {max_workers} parallel workers.")
-                final_results = []
-                with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=max_workers
-                ) as executor:
-                    future_to_job = {
-                        executor.submit(
-                            _run_single_job, config, job_params, i + 1
-                        ): job_params
-                        for i, job_params in enumerate(jobs)
-                    }
-                    for future in concurrent.futures.as_completed(future_to_job):
-                        job_params = future_to_job[future]
-                        try:
-                            (
-                                optimal_params,
-                                optimal_values,
-                                result_path,
-                            ) = future.result()
-                            if result_path:
-                                simulation_results[
-                                    tuple(sorted(job_params.items()))
-                                ] = result_path
-                        except Exception as exc:
-                            logger.error(
-                                f"Job for {job_params} generated an exception: {exc}",
-                                exc_info=True,
-                            )
-                        final_result_entry = job_params.copy()
-                        final_result_entry.update(optimal_params)
-                        final_result_entry.update(optimal_values)
-                        final_results.append(final_result_entry)
-
-                if _get_optimization_tasks(config):
-                    results_dir = os.path.abspath(config["paths"]["results_dir"])
-                    os.makedirs(results_dir, exist_ok=True)
-                    if final_results:
-                        final_df = pd.DataFrame(final_results)
-                        output_path = os.path.join(
-                            results_dir, "requierd_tbr_summary.csv"
-                        )
-                        final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
-                        logger.info(
-                            f"Sweep optimization summary saved to: {output_path}"
-                        )
-            else:
-                logger.info("Starting simulation in SEQUENTIAL mode.")
-                result_paths = _run_sequential_sweep(config, jobs)
-                for i, result_path in enumerate(result_paths):
-                    if result_path:
-                        simulation_results[tuple(sorted(jobs[i].items()))] = result_path
         else:
-            if use_concurrent:
-                logger.info("Starting co-simulation in CONCURRENT mode.")
-                max_workers = config["simulation"].get("max_workers", 4)
-                logger.info(f"Using up to {max_workers} parallel processes.")
+            # STANDARD MODE
+            logger.info("Running simulation in STANDARD mode.")
+            simulation_results = {}  # Needed for post-processing
 
-                final_results = []
+            use_mp = False  # Standard mode prefers Threading usually?
+            # Original code: Simple -> Threading, Co-Sim -> MP?
+            # Original code:
+            # if config.get("co_simulation") is None: ThreadPoolExecutor
+            # else: multiprocessing.Pool
+            # So YES, Co-Sim uses MP in Standard Mode too.
+            use_mp = is_co_sim
 
-                with concurrent.futures.ProcessPoolExecutor(
-                    max_workers=max_workers
-                ) as executor:
-                    future_to_job = {
-                        executor.submit(
-                            _run_co_simulation, config, job_params, job_id=i + 1
-                        ): job_params
-                        for i, job_params in enumerate(jobs)
-                    }
+            max_workers = config["simulation"].get("max_workers", os.cpu_count())
 
-                    for future in concurrent.futures.as_completed(future_to_job):
-                        job_params = future_to_job[future]
-                        try:
-                            (
-                                optimal_params,
-                                optimal_values,
-                                result_path,
-                            ) = future.result()
-                            if result_path:
-                                simulation_results[
-                                    tuple(sorted(job_params.items()))
-                                ] = result_path
-                                logger.info(
-                                    f"Successfully finished job for params: {job_params}"
-                                )
-                            else:
-                                logger.warning(
-                                    f"Job for params {job_params} did not return a result path."
-                                )
-                        except Exception as exc:
-                            logger.error(
-                                f"Job for params {job_params} generated an exception: {exc}",
-                                exc_info=True,
-                            )
-                        final_result_entry = job_params.copy()
-                        final_result_entry.update(optimal_params)
-                        final_result_entry.update(optimal_values)
-                        final_results.append(final_result_entry)
-            else:
-                logger.info("Starting co-simulation in SEQUENTIAL mode.")
-                final_results = []
-                for i, job_params in enumerate(jobs):
-                    job_id = i + 1
-                    logger.info(f"--- Starting Sequential Job {job_id}/{len(jobs)} ---")
-                    try:
-                        (
-                            optimal_params,
-                            optimal_values,
-                            result_path,
-                        ) = _run_co_simulation(config, job_params, job_id=job_id)
+            import threading
+
+            res_lock = threading.Lock()
+
+            def standard_callback(job_id, params, result):
+                if not result:
+                    return
+                optimal_params, optimal_values, result_path = result
+
+                entry = params.copy()
+                entry.update(optimal_params)
+                entry.update(optimal_values)
+
+                if use_mp:
+                    # Serial callback in main process
+                    if result_path:
+                        simulation_results[tuple(sorted(params.items()))] = result_path
+                    final_results.append(entry)
+                else:
+                    # Threaded callback
+                    with res_lock:
                         if result_path:
-                            simulation_results[tuple(sorted(job_params.items()))] = (
+                            simulation_results[tuple(sorted(params.items()))] = (
                                 result_path
                             )
-                            logger.info(
-                                f"Successfully finished job for params: {job_params}"
-                            )
-                        else:
-                            logger.warning(
-                                f"Job for params {job_params} did not return a result path."
-                            )
-                        final_result_entry = job_params.copy()
-                        final_result_entry.update(optimal_params)
-                        final_result_entry.update(optimal_values)
-                        final_results.append(final_result_entry)
-                    except Exception as exc:
-                        logger.error(
-                            f"Job for params {job_params} generated an exception: {exc}",
-                            exc_info=True,
-                        )
-                    logger.info(f"--- Finished Sequential Job {job_id}/{len(jobs)} ---")
+                        final_results.append(entry)
+
+            logger.info(
+                f"Starting sweep (Standard). MP={use_mp}, Workers={max_workers if use_concurrent else 1}"
+            )
+
+            run_parallel_sweep(
+                config,
+                jobs,
+                max_workers=max_workers if use_concurrent else 1,
+                use_multiprocessing=use_mp if use_concurrent else False,
+                post_job_callback=standard_callback,
+                custom_runner_func=runner_func,
+            )
 
             if _get_optimization_tasks(config):
                 results_dir = os.path.abspath(config["paths"]["results_dir"])
-                os.makedirs(results_dir, exist_ok=True)
+                # final_results populated by callback
                 if final_results:
                     final_df = pd.DataFrame(final_results)
                     output_path = os.path.join(results_dir, "requierd_tbr_summary.csv")
                     final_df.to_csv(output_path, index=False, encoding="utf-8-sig")
                     logger.info(f"Sweep optimization summary saved to: {output_path}")
+
     except Exception as e:
         raise RuntimeError(f"Failed to run simualtion: {e}")
 
@@ -1457,6 +1350,8 @@ def run_simulation(config: Dict[str, Any]) -> None:
         combined_df = None
     else:
         combined_df = pd.DataFrame()  # Or None, as you had before
+
+    combined_csv_path = None
 
     if combined_df is not None and not combined_df.empty:
         if len(jobs) == 1:
