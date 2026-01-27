@@ -1,6 +1,6 @@
 {
   "description": "TRICYS BASIC 仿真示例",
-  "version": "1.0", 
+  "version": "1.0",
   "examples": [
     {
       "name": "BASIC - 基础配置",
@@ -15,21 +15,15 @@
       "config": "parameter_sweep.json"
     },
     {
-      "name": "BASIC - 并发运行",
-      "description": "运行并发操作示例，该配置展示了如何进行并发仿真",
-      "path": "3_concurrent_operation",
-      "config": "concurrent_operation.json"
-    },
-    {
       "name": "BASIC - 后处理模块",
       "description": "运行后处理模块示例，该配置展示了如何进行仿真结果的后处理",
-      "path": "4_post_processing_module",
+      "path": "3_post_processing_module",
       "config": "post_processing_module.json"
     },
     {
       "name": "BASIC - 协同仿真模块",
       "description": "运行协同仿真模块示例，该配置展示了如何进行多模型协同仿真(静态集成)",
-      "path": "5_co_simulation_module",
+      "path": "4_co_simulation_module",
       "config": "co_simulation_module.json"
     }
   ]
