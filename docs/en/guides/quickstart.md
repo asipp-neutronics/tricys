@@ -98,8 +98,11 @@ You will see a menu similar to the one below:
 ```
 
 - **Enter a number** (e.g., `1`) and press Enter to run the corresponding example.
-- The program will automatically copy the example files to the `test_example` folder in the project root directory and execute the task there.
+- The program will automatically copy the example files to the `test_example` folder in the **current working directory** and execute the task there.
 - This design ensures that the original example files are not modified and keeps the workspace clean.
+
+!!! tip "Enhanced Mode"
+    By default, the example runner automatically enables **Enhanced Mode** (Compile Once, Run Many). This significantly reduces compilation time and improves efficiency for large-scale parameter sweep tasks. If you run tasks manually from the command line, you can achieve the same effect by appending the `--enhanced` argument.
 
 ### c. View the Results
 
@@ -113,13 +116,16 @@ For example, if you ran the `Basic Configuration` example, the results will be l
 
 ## 4. Run the Graphical User Interface (GUI)
 
-If you prefer a graphical interface, you can start the `tricys` GUI.
+!!! failure "Deprecation Warning"
+    The `tricys gui` feature will be deprecated in the future. It is recommended to use the command-line interface or the `example` runner directly.
+
+~~If you prefer a graphical interface, you can start the `tricys` GUI.~~
 
 ```shell
 tricys gui
 ```
 
-The GUI provides an interactive interface for loading models, setting parameters, defining sweep ranges, and starting simulations.
+~~The GUI provides an interactive interface for loading models, setting parameters, defining sweep ranges, and starting simulations.~~
 
 ## 5. TRICYS Related Commands
 
@@ -133,6 +139,7 @@ Besides using the example runner, you can also use `tricys`'s various subcommand
 | `tricys analysis` | Runs a simulation analysis. Requires specifying a configuration file via the `-c` argument, or the existence of a default `config.json` in the current directory. |
 | `tricys gui` | Launches the interactive Graphical User Interface (GUI). |
 | `tricys example` | Runs an interactive example runner capable of starting all types of examples. |
+| `tricys hdf5` | Launches the HDF5 result visualization tool for efficient viewing and analysis of large-scale simulation data files (`.h5`). |
 | `tricys archive <timestamp>` | Archives the simulation or analysis results of the specified `timestamp` into a zip file. |
 | `tricys unarchive <zip_file>` | Extracts a previously archived run file (`zip_file`). |
 | **`analysis` Subcommands** | |
