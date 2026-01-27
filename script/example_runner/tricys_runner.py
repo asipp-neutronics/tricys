@@ -20,7 +20,7 @@ class TricysTestRunner:
         self.script_dir = Path(__file__).parent.parent.parent
         self.workspace_dir = self.script_dir
         self.example_dir = self.workspace_dir / "example" / "basic"
-        self.test_example_base_dir = self.workspace_dir / "test_example"
+        self.test_example_base_dir = Path.cwd() / "test_example"
 
         # Automatically scan and generate example configurations
         self.examples = self._scan_examples()

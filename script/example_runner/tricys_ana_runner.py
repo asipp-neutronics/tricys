@@ -20,7 +20,7 @@ class TricysAnaTestRunner:
         self.script_dir = Path(__file__).parent.parent.parent
         self.workspace_dir = self.script_dir
         self.example_dir = self.workspace_dir / "example" / "analysis"
-        self.test_example_base_dir = self.workspace_dir / "test_example"
+        self.test_example_base_dir = Path.cwd() / "test_example"
 
         # Automatically scan and generate example configurations
         self.examples = self._scan_examples()
@@ -266,14 +266,8 @@ class TricysAnaTestRunner:
 
         example_info = self.examples[choice]
 
-        # Ask for enhanced mode
-        print("\n" + "-" * 30)
-        enhanced_input = (
-            input("是否启用 Enhanced 模式 (Compile Once)? (y/n, 默认y): ")
-            .strip()
-            .lower()
-        )
-        use_enhanced = enhanced_input in ["", "y", "yes", "是"]
+        # Default to Enhanced mode without prompting
+        use_enhanced = True
 
         # 1. Copy example files
         if not self.copy_example(example_info):

@@ -73,10 +73,6 @@ def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
         the trend is considered monotonic and NaN is returned. Otherwise, returns
         the time of the absolute minimum in the original data.
     """
-
-    print(
-        f"Calculating time_of_turning_point for series with length {len(series)} and {len(time_series)} "
-    )
     if time_series is None:
         raise ValueError("time_series must be provided for time_of_turning_point")
 
