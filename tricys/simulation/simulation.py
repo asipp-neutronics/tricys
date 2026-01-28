@@ -22,6 +22,7 @@ from tricys.core.modelica import (
     get_om_session,
     load_modelica_package,
 )
+from tricys.utils.concurrency_utils import get_safe_max_workers
 from tricys.utils.config_utils import basic_prepare_config
 from tricys.utils.file_utils import get_unique_filename
 from tricys.utils.log_utils import setup_logging
@@ -945,7 +946,12 @@ def run_simulation(config: Dict[str, Any]) -> None:
 
     sim_config = config["simulation"]
     use_concurrent = sim_config.get("concurrent", False)
-    max_workers = sim_config.get("max_workers", os.cpu_count() or 4)
+    maximize_workers = sim_config.get("maximize_workers", False)
+    max_workers = get_safe_max_workers(
+        sim_config.get("max_workers"),
+        maximize=maximize_workers,
+        task_count=len(jobs),
+    )
     is_co_sim = config.get("co_simulation") is not None
 
     # --- Concurrent Mode (Enhanced + HDF5) ---

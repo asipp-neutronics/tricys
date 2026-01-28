@@ -260,7 +260,9 @@ def run_simulation(config: Dict[str, Any]) -> None:
     use_concurrent = config["simulation"].get("concurrent", False)
     maximize_workers = config["simulation"].get("maximize_workers", False)
     max_workers = get_safe_max_workers(
-        config["simulation"].get("max_workers"), maximize=maximize_workers
+        config["simulation"].get("max_workers"),
+        maximize=maximize_workers,
+        task_count=len(jobs),
     )
 
     logger.info(
