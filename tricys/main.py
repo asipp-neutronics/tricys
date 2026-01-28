@@ -22,9 +22,9 @@ def run_example_runner() -> None:
     try:
         python_executable = sys.executable
         main_py_path = Path(__file__).resolve()
-        project_root = main_py_path.parent.parent
+        # project_root = main_py_path.parent.parent
         runner_script = (
-            project_root / "script" / "example_runner" / "tricys_all_runner.py"
+            main_py_path.parent / "example" / "example_runner" / "tricys_all_runner.py"
         )
 
         if not runner_script.exists():
@@ -127,8 +127,8 @@ def main() -> None:
                 import importlib.util
 
                 script_path = (
-                    Path(__file__).parent.parent
-                    / "script"
+                    Path(__file__).parent
+                    / "example"
                     / "example_runner"
                     / "tricys_runner.py"
                 )
@@ -195,8 +195,8 @@ def main() -> None:
                 import importlib.util
 
                 script_path = (
-                    Path(__file__).parent.parent
-                    / "script"
+                    Path(__file__).parent
+                    / "example"
                     / "example_runner"
                     / "tricys_ana_runner.py"
                 )
@@ -231,22 +231,11 @@ def main() -> None:
         elif main_args.command == "example":
             run_example_runner()
         elif main_args.command == "hdf5":
-            try:
-                from tricys.visualizer.main import start as visualizer_main
+            from tricys.visualizer.main import start as visualizer_main
 
-                # Reconstruct argv for the visualizer's argument parser
-                sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
-                visualizer_main()
-            except ImportError:
-                print(
-                    "Error: The visualizer feature requires additional packages.",
-                    file=sys.stderr,
-                )
-                print(
-                    'Please install them by running: pip install "tricys[visualizer]"',
-                    file=sys.stderr,
-                )
-                sys.exit(1)
+            # Reconstruct argv for the visualizer's argument parser
+            sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
+            visualizer_main()
         elif main_args.command == "archive":
             archive_run(main_args.timestamp)
         elif main_args.command == "unarchive":

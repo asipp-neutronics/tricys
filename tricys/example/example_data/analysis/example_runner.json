@@ -1,0 +1,36 @@
+{
+  "description": "TRICYS ANALYSIS 分析示例",
+  "version": "1.0",
+  "examples": [
+    {
+      "name": "ANALYSIS - 基准工况分析",
+      "description": "运行基准工况分析示例, 该配置包括对氚燃料循环模型的基准工况分析，基于后处理模块",
+      "path": "1_baseline_condition_analysis",
+      "config": "baseline_condition_analysis.json"
+    },
+    {
+      "name": "ANALYSIS - 单参数敏感性分析 ",
+      "description": "运行单参数敏感性分析示例，该配置包括多个参数的单参数敏感性分析",
+      "path": "2_single_parameter_sensitivity_analysis",
+      "config": "single_parameter_sensitivity_analysis.json"
+    },
+    {
+      "name": "ANALYSIS - 多参数敏感性分析",
+      "description": "运行多参数敏感性分析示例, 该配置包括独立变量和背景参数组成的多参数敏感性分析",
+      "path": "3_multi_parameter_sensitivity_analysis",
+      "config": "multi_parameter_sensitivity_analysis.json"
+    },
+    {
+      "name": "ANALYSIS - SOBOL全局敏感性分析",
+      "description": "运行SOBOL全局敏感性分析示例，该配置包括基于SOBOL方法的全局敏感性分析",
+      "path": "4_sobol_global_sensitivity_analysis",
+      "config": "sobol_global_sensitivity_analysis.json"
+    },
+    {
+      "name": "ANALYSIS - LATIN不确定性分析",
+      "description": "运行LATIN不确定性分析示例，该配置包括基于LATIN方法的不确定性分析",
+      "path": "5_latin_uncertainty_analysis",
+      "config": "latin_uncertainty_analysis.json"
+    }
+  ]
+}

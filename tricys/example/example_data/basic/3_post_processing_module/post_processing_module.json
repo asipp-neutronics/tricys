@@ -1,0 +1,37 @@
+{
+    "paths": {
+        "package_path": "../../example_model_single/example_model.mo"
+    },
+    "simulation": {
+        "model_name": "example_model.Cycle",
+        "variableFilter": "time|sds.I[1]",
+        "stop_time": 2000.0,
+        "step_size": 0.5
+    },
+    "simulation_parameters": {
+        "blanket.TBR": "linspace:1:1.5:10",
+        "tep_fep.to_SDS_Fraction[1]":"log:0.1:0.99:5"
+    },
+    "post_processing": [
+        {
+            "module": "tricys.postprocess.rise_analysis",
+            "function": "analyze_rise_dip",
+            "params": {
+                "output_filename": "rise_report.json"
+            }
+        },
+        {
+            "module": "tricys.postprocess.static_alarm",
+            "function": "check_thresholds",
+            "params": {
+                "output_filename": "alarm_report.json",
+                "rules": [
+                    {
+                        "columns": ["sds.I[1]"],
+                        "min": 0.0
+                    }
+                ]
+            }
+        }
+    ]
+}

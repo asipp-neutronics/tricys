@@ -63,7 +63,10 @@ docs = [
 ]
 
 [tool.setuptools]
-packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess"]
+packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess", "tricys.example", "tricys.example.example_runner"]
+
+[tool.setuptools.package-data]
+tricys = ["example/example_data/**/*"]
 
 [tool.black]
 line-length = 88

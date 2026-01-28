@@ -1,0 +1,30 @@
+{
+  "description": "TRICYS BASIC 仿真示例",
+  "version": "1.0",
+  "examples": [
+    {
+      "name": "BASIC - 基础配置",
+      "description": "运行基础配置示例，该配置包括必须的基础配置",
+      "path": "1_basic_configuration",
+      "config": "basic_configuration.json"
+    },
+    {
+      "name": "BASIC - 参数扫描",
+      "description": "运行参数扫描示例，该配置包括多个参数的扫描设置",
+      "path": "2_parameter_sweep",
+      "config": "parameter_sweep.json"
+    },
+    {
+      "name": "BASIC - 后处理模块",
+      "description": "运行后处理模块示例，该配置展示了如何进行仿真结果的后处理",
+      "path": "3_post_processing_module",
+      "config": "post_processing_module.json"
+    },
+    {
+      "name": "BASIC - 协同仿真模块",
+      "description": "运行协同仿真模块示例，该配置展示了如何进行多模型协同仿真(静态集成)",
+      "path": "4_co_simulation_module",
+      "config": "co_simulation_module.json"
+    }
+  ]
+}
