@@ -27,6 +27,7 @@ from tricys.simulation.simulation import (
     run_co_simulation_job,
     run_post_processing,
 )
+from tricys.utils.concurrency_utils import get_safe_max_workers
 from tricys.utils.config_utils import (
     analysis_prepare_config,
     analysis_setup_analysis_cases_workspaces,
@@ -257,7 +258,10 @@ def run_simulation(config: Dict[str, Any]) -> None:
 
     is_co_sim = config.get("co_simulation") is not None
     use_concurrent = config["simulation"].get("concurrent", False)
-    max_workers = config["simulation"].get("max_workers", os.cpu_count() or 4)
+    maximize_workers = config["simulation"].get("maximize_workers", False)
+    max_workers = get_safe_max_workers(
+        config["simulation"].get("max_workers"), maximize=maximize_workers
+    )
 
     logger.info(
         f"Starting Simulation Analysis (Enhanced Mode). CoSim={is_co_sim}, Concurrent={use_concurrent}"
@@ -442,7 +446,10 @@ def _handle_analysis_cases(config: Dict[str, Any]) -> bool:
             logger.info(
                 f"Starting execution of {len(case_configs)} analysis cases in PARALLEL."
             )
-            max_workers = sa_config.get("max_case_workers", os.cpu_count())
+            max_workers = get_safe_max_workers(
+                sa_config.get("max_case_workers"),
+                maximize=config["simulation"].get("maximize_workers", False),
+            )
             logger.info(
                 f"Using up to {max_workers} parallel processes for analysis cases."
             )

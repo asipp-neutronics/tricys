@@ -71,6 +71,11 @@ def main() -> None:
         action="store_true",
         help="Run in enhanced mode (sets execute_mode='enhanced' in config).",
     )
+    parser.add_argument(
+        "--turbo",
+        action="store_true",
+        help="Maximize process usage (ignores default safety limits).",
+    )
 
     # Subparsers for explicit commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -278,13 +283,18 @@ def main() -> None:
         "sensitivity_analysis", {}
     ).get("enabled", False)
 
-    # 4. Handle --enhanced override
+    if "simulation" not in config_data:
+        config_data["simulation"] = {}
+
+    # 4. Handle --enhanced and --turbo overrides
     if main_args.enhanced:
-        if "simulation" not in config_data:
-            config_data["simulation"] = {}
         config_data["simulation"]["execute_mode"] = "enhanced"
         config_data["simulation"]["concurrent"] = True
         print("INFO: Enhanced mode enabled via command line flag.")
+
+    if main_args.turbo:
+        config_data["simulation"]["maximize_workers"] = True
+        print("INFO: Turbo mode enabled! Using maximum available resources.")
 
     # Determine base directory for resolving relative paths in config_data
     # since we are passing a dictionary now.
