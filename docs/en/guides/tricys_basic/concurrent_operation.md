@@ -62,10 +62,31 @@ When `concurrent` is set to `true`, TRICYS automatically activates Enhanced Mode
 
 - **Description**: Controls the maximum number of processes used for concurrent execution.
 - **Type**: Integer (optional).
-- **Default**: Defaults to the number of CPU cores.
-- **Recommendation**: Set to the number of physical CPU cores for optimal performance. If memory is tight, consider lowering this value.
+- **Default**: Smart calculation (see strategy below).
 
-## 4. Result File Differences
+## 4. Smart Concurrency Strategy
+
+`tricys` uses a smart strategy to determine the final number of processes to use, adapting to multi-user shared server scenarios to ensure full performance without inadvertently crowding out other users.
+
+The priority order is as follows:
+
+1.  **Turbo Mode (`--turbo`)**:
+    - If you use the `--turbo` flag on the command line, the program will ignore all limits and force the use of **100% of available CPU cores**.
+    - **Best for**: Dedicated servers, or when results are needed urgently.
+
+2.  **Configuration Override (`config.json`)**:
+    - If you explicitly set `max_workers` in the config file (e.g., `"max_workers": 20`), the program will strictly adhere to that value.
+    - **Best for**: Precise control over resource usage.
+
+3.  **Default Safety Limit (Default Safety)**:
+    - If Turbo is not enabled and `max_workers` is not configured, the program defaults to using only **50% of available CPU cores**.
+    - **Best for**: Daily use on shared servers, leaving resources for other users.
+
+4.  **Task Clamping**:
+    - **This is the final hard optimization**. If the calculated worker count exceeds the actual number of simulation tasks, the program will automatically reduce the worker count to match the number of tasks.
+    - *Example*: Even if you have a 128-core server but run only 5 simulation tasks, the program will launch only 5 processes, not 128. This significantly reduces system overhead.
+
+## 5. Result File Differences
 
 The result file structure differs slightly when Concurrent/Enhanced Mode is enabled:
 

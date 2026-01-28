@@ -7,7 +7,7 @@ dev_addr: '127.0.0.1:18000'
 
 theme:
   name: material
-  language: "zh"
+  language: "en"
   icon:
     repo: fontawesome/brands/git-alt
   palette:
@@ -58,13 +58,14 @@ plugins:
 
   - i18n:
       docs_structure: folder
-      default_language: "zh"
+      default_language: "en"
       fallback_to_default: true
       languages:
         - locale: en
           name: English
           build: true
-          link: '/tricys/en/'
+          default: true
+          link: '/tricys/'
           nav_translations:
             # 顶层
             '主页': 'Home'
@@ -116,10 +117,9 @@ plugins:
             '核心性能指标': 'Core Performance Metrics'
 
         - locale: zh
-          default: true
           name: 简体中文
           build: true
-          link: '/tricys/'
+          link: '/tricys/zh/'
           site_name: "氚燃料循环集成仿真平台"
   - offline
 
