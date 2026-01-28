@@ -63,7 +63,7 @@ docs = [
 ]
 
 [tool.setuptools]
-packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess", "tricys.example", "tricys.example.example_runner"]
+packages = ["tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess", "tricys.example", "tricys.example.example_runner", "tricys.visualizer"]
 
 [tool.setuptools.package-data]
 tricys = ["example/example_data/**/*"]
