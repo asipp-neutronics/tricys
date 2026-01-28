@@ -1,3 +1,4 @@
+import json
 import logging
 import multiprocessing
 import os
@@ -288,74 +289,111 @@ def run_simulation(config: Dict[str, Any]) -> None:
     # Run Sweep
     final_results = []
 
-    try:
-        with pd.HDFStore(hdf_path, mode="w", complib="blosc", complevel=9) as store:
-            # Metadata
-            meta_df = pd.DataFrame(jobs)
-            if not meta_df.empty:
-                meta_df["job_id"] = range(1, len(jobs) + 1)
-                store.put("jobs_metadata", meta_df, format="table", data_columns=True)
+    from tricys.utils.log_capture import LogCapture
 
-            # Results Handler
-            def _handle_result(job_id, params, result_data):
-                opts, vals, res_path = result_data
+    # Capture logs for HDF5 storage
+    with LogCapture() as log_handler:
+        try:
+            with pd.HDFStore(hdf_path, mode="w", complib="blosc", complevel=9) as store:
+                # Metadata
+                meta_df = pd.DataFrame(jobs)
+                if not meta_df.empty:
+                    meta_df["job_id"] = range(1, len(jobs) + 1)
+                    # Force object dtype only for string/object columns to avoid HDF5 issues
+                    for col in meta_df.select_dtypes(
+                        include=["object", "string"]
+                    ).columns:
+                        meta_df[col] = meta_df[col].astype(object)
+                    store.put(
+                        "jobs_metadata", meta_df, format="table", data_columns=True
+                    )
 
-                # Save trace to HDF5
-                if res_path and os.path.exists(res_path):
-                    try:
-                        df = pd.read_csv(res_path)
-                        df["job_id"] = job_id
-                        store.append("results", df, index=False, data_columns=True)
+                # Results Handler
+                def _handle_result(job_id, params, result_data):
+                    opts, vals, res_path = result_data
 
-                        param_df = pd.DataFrame([params])
-                        param_df["job_id"] = job_id
-                        store.append("jobs", param_df, index=False, data_columns=True)
+                    # Save trace to HDF5
+                    if res_path and os.path.exists(res_path):
+                        try:
+                            df = pd.read_csv(res_path)
+                            df["job_id"] = job_id
+                            store.append("results", df, index=False, data_columns=True)
 
-                        # Cleanup Job Workspace
-                        job_dir = os.path.dirname(res_path)
-                        if "job_" in os.path.basename(job_dir):
-                            shutil.rmtree(job_dir, ignore_errors=True)
-                    except Exception as e:
-                        logger.error(f"HDF5 write failed for job {job_id}: {e}")
+                            param_df = pd.DataFrame([params])
+                            param_df["job_id"] = job_id
 
-                # Collect Summary
-                entry = params.copy()
-                entry.update(opts)
-                entry.update(vals)
-                final_results.append(entry)
+                            # Type safety
+                            for col in param_df.select_dtypes(
+                                include=["object", "string"]
+                            ).columns:
+                                param_df[col] = param_df[col].astype(object)
 
-            # Execution
-            if not is_co_sim:
-                # STANDARD (FAST) PATH
-                pool_args = [
-                    (job, i + 1, config, fast_context) for i, job in enumerate(jobs)
-                ]
-                wrapper = _enhanced_runner_wrapper
-            else:
-                # CO-SIM PATH
-                pool_args = [(config, job, i + 1) for i, job in enumerate(jobs)]
-                wrapper = _co_sim_runner_wrapper
+                            store.append(
+                                "jobs", param_df, index=False, data_columns=True
+                            )
 
-            if use_concurrent:
-                with multiprocessing.Pool(max_workers) as pool:
-                    for job_id, parsed_params, res_data, err in pool.imap_unordered(
-                        wrapper, pool_args
-                    ):
+                            # Cleanup Job Workspace
+                            job_dir = os.path.dirname(res_path)
+                            if "job_" in os.path.basename(job_dir):
+                                shutil.rmtree(job_dir, ignore_errors=True)
+                        except Exception as e:
+                            logger.error(f"HDF5 write failed for job {job_id}: {e}")
+
+                    # Collect Summary
+                    entry = params.copy()
+                    entry.update(opts)
+                    entry.update(vals)
+                    final_results.append(entry)
+
+                # Prepare Execution Args
+                if not is_co_sim:
+                    # STANDARD (FAST) PATH
+                    pool_args = [
+                        (job, i + 1, config, fast_context) for i, job in enumerate(jobs)
+                    ]
+                    wrapper = _enhanced_runner_wrapper
+                else:
+                    # CO-SIM PATH
+                    pool_args = [(config, job, i + 1) for i, job in enumerate(jobs)]
+                    wrapper = _co_sim_runner_wrapper
+
+                # Run Execution
+                if use_concurrent:
+                    with multiprocessing.Pool(max_workers) as pool:
+                        for job_id, parsed_params, res_data, err in pool.imap_unordered(
+                            wrapper, pool_args
+                        ):
+                            if err:
+                                logger.error(f"Job {job_id} failed: {err}")
+                            else:
+                                _handle_result(job_id, parsed_params, res_data)
+                else:
+                    # Sequential Loop
+                    for args in pool_args:
+                        job_id, parsed_params, res_data, err = wrapper(args)
                         if err:
                             logger.error(f"Job {job_id} failed: {err}")
                         else:
                             _handle_result(job_id, parsed_params, res_data)
-            else:
-                # Sequential Loop
-                for args in pool_args:
-                    job_id, parsed_params, res_data, err = wrapper(args)
-                    if err:
-                        logger.error(f"Job {job_id} failed: {err}")
-                    else:
-                        _handle_result(job_id, parsed_params, res_data)
 
-    except Exception as e:
-        logger.error(f"Sweep failed: {e}", exc_info=True)
+                # Save Config and Logs at the end
+                try:
+                    # Save Config
+                    config_df = pd.DataFrame({"config_json": [json.dumps(config)]})
+                    config_df = config_df.astype(object)
+                    store.put("config", config_df, format="fixed")
+
+                    # Save Logs
+                    logger.info("Saving execution logs to HDF5.")
+                    logs_json = log_handler.to_json()
+                    log_df = pd.DataFrame({"log": [logs_json]})
+                    log_df = log_df.astype(object)
+                    store.put("log", log_df, format="fixed")
+                except Exception as e:
+                    logger.warning(f"Failed to save finalize data to HDF5: {e}")
+
+        except Exception as e:
+            logger.error(f"Sweep failed: {e}", exc_info=True)
 
     # Post Analysis
     if final_results and _get_optimization_tasks(config):

@@ -956,82 +956,109 @@ def run_simulation(config: Dict[str, Any]) -> None:
 
     # --- Concurrent Mode (Enhanced + HDF5) ---
     if use_concurrent:
-        logger.info(
-            f"Starting Concurrent Simulation (Enhanced Mode) with {max_workers} workers. CoSim={is_co_sim}"
-        )
+        from tricys.utils.log_capture import LogCapture
 
-        hdf_filename = "sweep_results.h5"
-        hdf_path = get_unique_filename(results_dir, hdf_filename)
+        # Capture logs for HDF5 storage
+        with LogCapture() as log_handler:
+            logger.info(
+                f"Starting Concurrent Simulation (Enhanced Mode) with {max_workers} workers. CoSim={is_co_sim}"
+            )
 
-        pool_args = []
-        wrapper_func = None
+            hdf_filename = "sweep_results.h5"
+            hdf_path = get_unique_filename(results_dir, hdf_filename)
 
-        if not is_co_sim:
-            # 1. Compile Model Once (Standard Jobs Only)
-            master_exe, master_xml, om_bin = _build_model_only(config)
+            pool_args = []
+            wrapper_func = None
 
-            # Prepare job args for standard fast runner
-            for i, job_params in enumerate(jobs):
-                kwargs = {
-                    "exe_source": master_exe,
-                    "xml_source": master_xml,
-                    "om_bin_path": om_bin,
-                    "base_temp_dir": temp_dir,
-                    "sim_config": sim_config,
-                    "variable_filter": sim_config.get("variableFilter"),
-                    "inplace_execution": True,
-                }
-                pool_args.append((job_params, i + 1, kwargs))
-            wrapper_func = _mp_run_fast_subprocess_job_wrapper
-        else:
-            # Co-Simulation: No "Master Build", each job runs fully isolated
-            # (or reuses compiled if implemented in CoSim logic, but here we just dispatch)
-            for i, job_params in enumerate(jobs):
-                pool_args.append((config, job_params, i + 1))
-            wrapper_func = _mp_run_co_simulation_job_wrapper
+            if not is_co_sim:
+                # 1. Compile Model Once (Standard Jobs Only)
+                master_exe, master_xml, om_bin = _build_model_only(config)
 
-        # 2. Run Jobs Streaming to HDF5
-        with pd.HDFStore(hdf_path, mode="w", complib="blosc", complevel=9) as store:
-            # Save configuration
-            try:
-                config_df = pd.DataFrame({"config_json": [json.dumps(config)]})
-                store.put("config", config_df, format="fixed")
-            except Exception as e:
-                logger.warning(f"Failed to save config to HDF5: {e}")
+                # Prepare job args for standard fast runner
+                for i, job_params in enumerate(jobs):
+                    kwargs = {
+                        "exe_source": master_exe,
+                        "xml_source": master_xml,
+                        "om_bin_path": om_bin,
+                        "base_temp_dir": temp_dir,
+                        "sim_config": sim_config,
+                        "variable_filter": sim_config.get("variableFilter"),
+                        "inplace_execution": True,
+                    }
+                    pool_args.append((job_params, i + 1, kwargs))
+                wrapper_func = _mp_run_fast_subprocess_job_wrapper
+            else:
+                # Co-Simulation: No "Master Build", each job runs fully isolated
+                for i, job_params in enumerate(jobs):
+                    pool_args.append((config, job_params, i + 1))
+                wrapper_func = _mp_run_co_simulation_job_wrapper
 
-            # Helper to process result into HDF5
-            def _process_h5(job_id, params, res_path):
-                if not res_path or not os.path.exists(res_path):
-                    return
+            # 2. Run Jobs Streaming to HDF5
+            with pd.HDFStore(hdf_path, mode="w", complib="blosc", complevel=9) as store:
+                # Save configuration
                 try:
-                    df = pd.read_csv(res_path)
-                    df["job_id"] = job_id
-
-                    # Use 'append' with data_columns=True for queryability if needed
-                    store.append("results", df, index=False, data_columns=True)
-
-                    param_df = pd.DataFrame([params])
-                    param_df["job_id"] = job_id
-                    store.append("jobs", param_df, index=False, data_columns=True)
-
-                    # Cleanup immediately to save disk space
-                    job_dir = os.path.dirname(res_path)
-                    if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
-                        shutil.rmtree(job_dir)
+                    config_df = pd.DataFrame({"config_json": [json.dumps(config)]})
+                    # Force object dtype for all columns to ensure HDF5 compatibility
+                    config_df = config_df.astype(object)
+                    store.put("config", config_df, format="fixed")
                 except Exception as e:
-                    logger.error(f"Failed to process HDF5 result for job {job_id}: {e}")
+                    logger.warning(f"Failed to save config to HDF5: {e}")
 
-            # Execute Pool
-            with multiprocessing.Pool(processes=max_workers) as pool:
-                for job_id, job_p, result_path, error in pool.imap_unordered(
-                    wrapper_func, pool_args
-                ):
-                    if error:
-                        logger.error(f"Job {job_id} failed: {error}")
-                    else:
-                        _process_h5(job_id, job_p, result_path)
+                # Helper to process result into HDF5
+                def _process_h5(job_id, params, res_path):
+                    if not res_path or not os.path.exists(res_path):
+                        return
+                    try:
+                        df = pd.read_csv(res_path)
+                        df["job_id"] = job_id
 
-        logger.info(f"Concurrent simulation completed. Results saved to {hdf_path}")
+                        # Use 'append' with data_columns=True for queryability if needed
+                        store.append("results", df, index=False, data_columns=True)
+
+                        param_df = pd.DataFrame([params])
+                        param_df["job_id"] = job_id
+
+                        # Force object dtype only for string/object columns to avoid HDF5 issues with StringDtype
+                        for col in param_df.select_dtypes(
+                            include=["object", "string"]
+                        ).columns:
+                            param_df[col] = param_df[col].astype(object)
+
+                        store.append("jobs", param_df, index=False, data_columns=True)
+
+                        # Cleanup immediately to save disk space
+                        job_dir = os.path.dirname(res_path)
+                        if os.path.exists(job_dir) and "job_" in os.path.basename(
+                            job_dir
+                        ):
+                            shutil.rmtree(job_dir)
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to process HDF5 result for job {job_id}: {e}"
+                        )
+
+                # Execute Pool
+                with multiprocessing.Pool(processes=max_workers) as pool:
+                    for job_id, job_p, result_path, error in pool.imap_unordered(
+                        wrapper_func, pool_args
+                    ):
+                        if error:
+                            logger.error(f"Job {job_id} failed: {error}")
+                        else:
+                            _process_h5(job_id, job_p, result_path)
+
+                # Save Logs to HDF5
+                logger.info("Saving execution logs to HDF5.")
+                try:
+                    logs_json = log_handler.to_json()
+                    log_df = pd.DataFrame({"log": [logs_json]})
+                    # Force object dtype
+                    log_df = log_df.astype(object)
+                    store.put("log", log_df, format="fixed")
+                except Exception as e:
+                    logger.warning(f"Failed to save logs to HDF5: {e}")
+
+            logger.info(f"Concurrent simulation completed. Results saved to {hdf_path}")
 
         # Post-processing using HDF5
         post_processing_output_dir = os.path.join(results_dir, "post_processing")
