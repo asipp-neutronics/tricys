@@ -205,9 +205,6 @@ def _time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
     the original, unsmoothed data.
     """
 
-    logger.debug(
-        f"Calculating time_of_turning_point for series with length {len(series)} and {len(time_series)} "
-    )
     if time_series is None:
         raise ValueError("time_series must be provided for time_of_turning_point")
 

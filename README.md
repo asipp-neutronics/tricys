@@ -1,121 +1,121 @@
-# TRICYS - 氚燃料循环集成仿真平台
+# TRICYS - Tritium Integrated Cycle Simulation Platform
 
 [![license](https://img.shields.io/badge/license-Apache--2.0-green)](./LICENSE)
 [![python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![docs](https://img.shields.io/badge/docs-中文-brightgreen.svg)](https://asipp-neutronics.github.io/tricys/)
+[![docs](https://img.shields.io/badge/docs-English-blue.svg)](https://asipp-neutronics.github.io/tricys/)
 
-**TRICYS** (**TR**itium **I**ntegrated **CY**cle **S**imulation) 是一个开源、模块化、多尺度的聚变堆氚燃料循环仿真器，旨在提供基于物理的动态闭环分析，并严格遵守全厂范围的质量守恒原则。
+**TRICYS** (**TR**itium **I**ntegrated **CY**cle **S**imulation) is an open-source, modular, multi-scale fusion reactor tritium fuel cycle simulator, designed to provide physics-based dynamic closed-loop analysis, strictly adhering to plant-wide mass conservation principles.
 
-我们的目标是为研究人员和工程师提供一个灵活且强大的平台，用于探索各种氚管理策略、优化系统设计，并深入理解聚变反应堆环境中氚的流动与库存动态。
+Our goal is to provide researchers and engineers with a flexible and robust platform to explore various tritium management strategies, optimize system designs, and gain deep insights into tritium flow and inventory dynamics in fusion reactor environments.
 
-![Tritium Fuel Cycle System](./docs/zh/assets/cycle_system.png)
+![Tritium Fuel Cycle System](./docs/en/assets/cycle_system.png)
 
-## 功能特性
+## Features
 
-- **参数扫描与并发**: 系统地研究多个参数对系统性能的影响，支持并发运行和大规模批量仿真。
-- **子模块协同仿真**: 支持与外部工具（如 Aspen Plus）进行数据交换，完成子模块系统集成。
-- **自动化报告生成**: 自动生成标准化的 Markdown 分析报告，包含图表、统计数据和可视化结果。
-- **高级敏感性分析**: 支持系统参数的自定义敏感性分析，并集成SALib库量化参数对输出的影响
-- **AI 增强分析**: 集成大型语言模型（LLM），能够将原始的图表和数据自动转化为结构化的学术风格报告。
+- **Parameter Scanning & Concurrency**: Systematically investigate the impact of multiple parameters on system performance, supporting concurrent execution and large-scale batch simulations.
+- **Sub-module Co-simulation**: Supports data exchange with external tools (such as Aspen Plus) to achieve sub-module system integration.
+- **Automated Report Generation**: Automatically generates standardized Markdown analysis reports, including charts, statistics, and visualization results.
+- **Advanced Sensitivity Analysis**: Supports custom sensitivity analysis of system parameters, integrating the SALib library to quantify the impact of parameters on outputs.
+- **AI-Enhanced Analysis**: Integrates Large Language Models (LLM) to automatically transform raw charts and data into structured academic-style reports.
 
-## 快速开始：Windows 本地安装
+## Quick Start: Windows Local Installation
 
-为确保与 Aspen Plus 等外部 Windows 软件的协同仿真功能完全兼容，我们优先推荐 Windows 本地安装。
+To ensure full compatibility with co-simulation features involving external Windows software like Aspen Plus, we prioritize and recommend Windows local installation.
 
-### 1. 环境要求
-1.  **Python**: 3.8 或更高版本 (建议安装时勾选 "Add Python to PATH")。
-2.  **Git**: 用于克隆代码仓库。
-3.  **OpenModelica**: 确保其命令行工具 (`omc.exe`) 已添加到系统的 `PATH` 环境变量中。
+### 1. Requirements
+1.  **Python**: 3.8 or higher await (Recommend checking "Add Python to PATH" during installation).
+2.  **Git**: For cloning the code repository.
+3.  **OpenModelica**: Ensure its command-line tool (`omc.exe`) is added to the system's `PATH` environment variable.
 
-### 2. 安装步骤
+### 2. Installation Steps
 
-a. **克隆项目仓库**
-   打开终端（如 PowerShell），使用 `git` 克隆源代码。
+a. **Clone Project Repository**
+   Open a terminal (e.g., PowerShell) and use `git` to clone the source code.
    ```shell
    git clone https://github.com/asipp-neutronics/tricys.git
    cd tricys
    ```
 
-b. **创建并激活虚拟环境**
-   为了隔离项目依赖，建议创建一个独立的 Python 虚拟环境。
+b. **Create and Activate Virtual Environment**
+   To isolate project dependencies, it is recommended to create a separate Python virtual environment.
    ```shell
-   # 创建虚拟环境
+   # Create virtual environment
    py -m venv venv
-   # 激活虚拟环境
+   # Activate virtual environment
    .\venv\Scripts\activate
    ```
 
-c. **安装项目依赖**
-   使用 `pip` 以“可编辑”模式安装 `tricys` 及其所有依赖项。
+c. **Install Project Dependencies**
+   Use `pip` to install `tricys` and all its dependencies in "editable" mode.
    ```shell
    pip install -e ".[win]"
    ```
-   或者，您也可以使用项目提供的便捷脚本：
+   Alternatively, you can use the convenient script provided by the project:
    ```shell
    Makefile.bat win-install
    ```
 
-### 3. 运行一个示例
+### 3. Run an Example
 
-安装完成后，您可以启动交互式示例运行器来快速体验 `tricys` 的核心功能。
+After installation, you can launch the interactive example runner to quickly experience the core features of `tricys`.
 
 ```shell
 tricys example
 ```
-该命令会扫描并列出所有可用的基础和高级分析示例。您只需根据提示输入数字，即可自动运行对应的示例任务。
+This command will scan and list all available basic and advanced analysis examples. You only need to enter the number as prompted to automatically run the corresponding example task.
 
 
-## 备选方案：Docker（标准 0D 仿真）
+## Alternative: Docker (Standard 0D Simulation)
 
-如果您不需要与外部 Windows 软件进行协同仿真，为了简化开发环境的配置，本项目维护了两个容器镜像, 支持 **VSCode & Dev Containers** 在容器化环境中运行和测试代码，：
-1. [ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_ompython/476218036?tag=docker_dev)：带有OMEdit可视化应用
-2. [ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_gui/476218102?tag=docker_dev)：不带有OMEdit可视化应用
+If you do not require co-simulation with external Windows software, to simplify the development environment configuration, this project maintains two container images, supporting **VSCode & Dev Containers** to run and test code in a containerized environment:
+1. [ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_ompython/476218036?tag=docker_dev): With OMEdit visualization application
+2. [ghcr.io/asipp-neutronics/tricys_openmodelica_ompython:docker_dev](https://github.com/orgs/asipp-neutronics/packages/container/tricys_openmodelica_gui/476218102?tag=docker_dev): Without OMEdit visualization application
 
-**如需切换dev container请删除原容器并修改docker-compose.yml**
+**To switch dev containers, please remove the original container and modify docker-compose.yml**
 ```
 image: ghcr.io/asipp-neutronics/tricys_openmodelica_gui:docker_dev
 ```
 
-### 1. 环境要求
-- **Docker**: 最新版本。
-- **VSCode**: 最新版本，并已安装 [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) 插件。
+### 1. Requirements
+- **Docker**: Latest version.
+- **VSCode**: Latest version, with [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension installed.
 
-### 2. 一键启动开发环境
+### 2. One-click Development Environment Setup
 
-1.  **克隆仓库**:
+1.  **Clone Repository**:
     ```bash
     git clone https://github.com/asipp-neutronics/tricys.git
     cd tricys
     ```
 
-2.  **在 VSCode 中打开**:
+2.  **Open in VSCode**:
     ```bash
     code .
     ```
 
-3.  **在容器中重新打开**: VSCode 会检测到 `.devcontainer` 目录并提示“在容器中重新打开 (Reopen in Container)”，点击该按钮。
-    > 首次构建容器时，需要下载指定的 Docker 镜像，可能需要一些时间。
+3.  **Reopen in Container**: VSCode will detect the `.devcontainer` directory and prompt "Reopen in Container". Click that button.
+    > When building the container for the first time, the specified Docker image needs to be downloaded, which may take some time.
 
-4.  **安装项目依赖**: 容器成功启动后，在 VSCode 的终端中执行以下命令来安装项目所需的 Python 库。
+4.  **Install Project Dependencies**: After the container starts successfully, execute the following command in the VSCode terminal to install the Python libraries required by the project.
     ```bash
     make dev-install
     ```
 
 
-##  文档
+## Documentation
 
-获取更详细的功能介绍、配置指南和高级教程，请访问我们的[在线文档](https://asipp-neutronics.github.io/tricys/)。
+For more detailed feature introductions, configuration guides, and advanced tutorials, please visit our [Online Documentation](https://asipp-neutronics.github.io/tricys/en/).
 
-##  贡献
+## Contribution
 
-我们欢迎社区的任何贡献！如果您希望参与 `tricys` 的开发，请遵循以下规范：
+We welcome any contributions from the community! If you wish to participate in the development of `tricys`, please follow these guidelines:
 
-- **代码风格**: 使用 `black` 进行代码格式化，`ruff` 进行风格检查和修复。
-- **命名规范**: 遵循 `snake_case` (变量/函数) 和 `PascalCase` (类) 的约定。
-- **文档字符串**: 所有公共模块、类和函数都必须包含 Google 风格的文档字符串。
-- **测试**: 使用 `pytest` 编写单元测试，并确保高覆盖率。
-- **Git 提交**: 遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范，使提交历史清晰可读。
+- **Code Style**: Use `black` for code formatting, `ruff` for style checking and fixing.
+- **Naming Conventions**: Follow `snake_case` (variables/functions) and `PascalCase` (classes) conventions.
+- **Docstrings**: All public modules, classes, and functions must include Google-style docstrings.
+- **Testing**: Use `pytest` to write unit tests and ensure high coverage.
+- **Git Commits**: Follow [Conventional Commits](https://www.conventionalcommits.org/) specification to keep commit history clear and readable.
 
-##  许可证
+## License
 
-本项目采用 [Apache-2.0](./LICENSE) 许可证。
+This project is licensed under the [Apache-2.0](./LICENSE) License.

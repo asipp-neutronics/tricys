@@ -22,9 +22,9 @@ def run_example_runner() -> None:
     try:
         python_executable = sys.executable
         main_py_path = Path(__file__).resolve()
-        project_root = main_py_path.parent.parent
+        # project_root = main_py_path.parent.parent
         runner_script = (
-            project_root / "script" / "example_runner" / "tricys_all_runner.py"
+            main_py_path.parent / "example" / "example_runner" / "tricys_all_runner.py"
         )
 
         if not runner_script.exists():
@@ -70,6 +70,11 @@ def main() -> None:
         "--enhanced",
         action="store_true",
         help="Run in enhanced mode (sets execute_mode='enhanced' in config).",
+    )
+    parser.add_argument(
+        "--turbo",
+        action="store_true",
+        help="Maximize process usage (ignores default safety limits).",
     )
 
     # Subparsers for explicit commands
@@ -127,8 +132,8 @@ def main() -> None:
                 import importlib.util
 
                 script_path = (
-                    Path(__file__).parent.parent
-                    / "script"
+                    Path(__file__).parent
+                    / "example"
                     / "example_runner"
                     / "tricys_runner.py"
                 )
@@ -195,8 +200,8 @@ def main() -> None:
                 import importlib.util
 
                 script_path = (
-                    Path(__file__).parent.parent
-                    / "script"
+                    Path(__file__).parent
+                    / "example"
                     / "example_runner"
                     / "tricys_ana_runner.py"
                 )
@@ -231,22 +236,11 @@ def main() -> None:
         elif main_args.command == "example":
             run_example_runner()
         elif main_args.command == "hdf5":
-            try:
-                from tricys.visualizer.main import start as visualizer_main
+            from tricys.visualizer.main import start as visualizer_main
 
-                # Reconstruct argv for the visualizer's argument parser
-                sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
-                visualizer_main()
-            except ImportError:
-                print(
-                    "Error: The visualizer feature requires additional packages.",
-                    file=sys.stderr,
-                )
-                print(
-                    'Please install them by running: pip install "tricys[visualizer]"',
-                    file=sys.stderr,
-                )
-                sys.exit(1)
+            # Reconstruct argv for the visualizer's argument parser
+            sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
+            visualizer_main()
         elif main_args.command == "archive":
             archive_run(main_args.timestamp)
         elif main_args.command == "unarchive":
@@ -289,13 +283,18 @@ def main() -> None:
         "sensitivity_analysis", {}
     ).get("enabled", False)
 
-    # 4. Handle --enhanced override
+    if "simulation" not in config_data:
+        config_data["simulation"] = {}
+
+    # 4. Handle --enhanced and --turbo overrides
     if main_args.enhanced:
-        if "simulation" not in config_data:
-            config_data["simulation"] = {}
         config_data["simulation"]["execute_mode"] = "enhanced"
         config_data["simulation"]["concurrent"] = True
         print("INFO: Enhanced mode enabled via command line flag.")
+
+    if main_args.turbo:
+        config_data["simulation"]["maximize_workers"] = True
+        print("INFO: Turbo mode enabled! Using maximum available resources.")
 
     # Determine base directory for resolving relative paths in config_data
     # since we are passing a dictionary now.

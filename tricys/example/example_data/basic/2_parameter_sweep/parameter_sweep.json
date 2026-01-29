@@ -6,10 +6,9 @@
         "model_name": "example_model.Cycle",
         "variableFilter": "time|sds.I[1]",
         "stop_time": 2000.0,
-        "step_size": 0.5,
-        "concurrent": true
+        "step_size": 0.5
     },
     "simulation_parameters": {
-        "blanket.TBR": "linspace:1:1.5:10"
+        "tep_fep.to_SDS_Fraction[1]":[0.1,0.15,0.2,0.3,0.4,0.6,0.8]
     }
 }
