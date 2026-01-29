@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/explanation/tricys_analysis/analysis_report.html" hreflang="en">
+          <link rel="alternate" href="analysis_report.html" hreflang="en">
         
-          <link rel="alternate" href="analysis_report.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/explanation/tricys_analysis/analysis_report.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>生成分析报告 - 氚燃料循环集成仿真平台</title>
+        <title>Generating Analysis Reports - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#1" class="md-skip">
-          跳转至
+        <a href="#tricys-automated-analysis-reports" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              生成分析报告
+              Generating Analysis Reports
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/explanation/tricys_analysis/analysis_report.html" hreflang="en" class="md-select__link">
+            <a href="analysis_report.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="analysis_report.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/explanation/tricys_analysis/analysis_report.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -270,7 +266,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -480,7 +476,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -496,7 +492,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -516,7 +512,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -560,7 +556,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -576,7 +572,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -596,7 +592,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -648,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -664,7 +660,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -684,7 +680,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -712,7 +708,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -740,7 +736,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -768,7 +764,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -796,7 +792,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -848,7 +844,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -864,7 +860,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -884,7 +880,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -912,7 +908,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -940,7 +936,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -968,7 +964,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -996,7 +992,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1024,7 +1020,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1088,7 +1084,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1104,7 +1100,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1124,7 +1120,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1171,7 +1167,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1187,7 +1183,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1207,7 +1203,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1235,7 +1231,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1263,7 +1259,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1320,7 +1316,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1336,7 +1332,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1356,7 +1352,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1384,7 +1380,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1411,6 +1407,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -1419,7 +1417,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1437,7 +1435,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1449,34 +1447,36 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-glossary-and-internationalized-charts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 专业术语与国际化图表
+        1. Glossary and Internationalized Charts
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 专业术语与国际化图表">
+    <nav class="md-nav" aria-label="1. Glossary and Internationalized Charts">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11" class="md-nav__link">
+  <a href="#11-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 工作原理
+        1.1 How It Works
       
     </span>
   </a>
@@ -1484,10 +1484,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-glossary-format-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 术语表格式示例
+        1.2 Glossary Format Example
       
     </span>
   </a>
@@ -1500,22 +1500,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-core-chart-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 核心图表类型
+        2. Core Chart Types
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 核心图表类型">
+    <nav class="md-nav" aria-label="2. Core Chart Types">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-main-trend-plots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1 主趋势图
+        2.1 Main Trend Plots
       
     </span>
   </a>
@@ -1523,10 +1523,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-constraint-solving-analysis-plots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2 约束求解分析图
+        2.2 Constraint-Solving Analysis Plots
       
     </span>
   </a>
@@ -1534,10 +1534,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#23" class="md-nav__link">
+  <a href="#23-sweep-process-time-series-plots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.3 扫描过程时序图
+        2.3 Sweep Process Time-Series Plots
       
     </span>
   </a>
@@ -1550,22 +1550,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-multi-stage-report-generation-logic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 多阶段报告生成逻辑
+        3. Multi-Stage Report Generation Logic
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 多阶段报告生成逻辑">
+    <nav class="md-nav" aria-label="3. Multi-Stage Report Generation Logic">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31" class="md-nav__link">
+  <a href="#31-stage-1-base-data-report" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1. 阶段一：基础数据报告
+        3.1. Stage 1: Base Data Report
       
     </span>
   </a>
@@ -1573,10 +1573,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
+  <a href="#32-stage-2-raw-data-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2. 阶段二：原始数据分析
+        3.2. Stage 2: Raw Data Analysis
       
     </span>
   </a>
@@ -1584,10 +1584,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#33" class="md-nav__link">
+  <a href="#33-stage-3-academic-report-writing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3. 阶段三：学术报告撰写
+        3.3. Stage 3: Academic Report Writing
       
     </span>
   </a>
@@ -1622,7 +1622,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1681,7 +1681,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1697,7 +1697,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1908,7 +1908,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1924,7 +1924,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1944,7 +1944,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1972,7 +1972,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -2000,7 +2000,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -2028,7 +2028,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2056,7 +2056,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2091,7 +2091,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2118,7 +2118,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2144,34 +2144,36 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-glossary-and-internationalized-charts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 专业术语与国际化图表
+        1. Glossary and Internationalized Charts
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 专业术语与国际化图表">
+    <nav class="md-nav" aria-label="1. Glossary and Internationalized Charts">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11" class="md-nav__link">
+  <a href="#11-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 工作原理
+        1.1 How It Works
       
     </span>
   </a>
@@ -2179,10 +2181,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-glossary-format-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 术语表格式示例
+        1.2 Glossary Format Example
       
     </span>
   </a>
@@ -2195,22 +2197,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-core-chart-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 核心图表类型
+        2. Core Chart Types
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 核心图表类型">
+    <nav class="md-nav" aria-label="2. Core Chart Types">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-main-trend-plots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1 主趋势图
+        2.1 Main Trend Plots
       
     </span>
   </a>
@@ -2218,10 +2220,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-constraint-solving-analysis-plots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2 约束求解分析图
+        2.2 Constraint-Solving Analysis Plots
       
     </span>
   </a>
@@ -2229,10 +2231,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#23" class="md-nav__link">
+  <a href="#23-sweep-process-time-series-plots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.3 扫描过程时序图
+        2.3 Sweep Process Time-Series Plots
       
     </span>
   </a>
@@ -2245,22 +2247,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-multi-stage-report-generation-logic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 多阶段报告生成逻辑
+        3. Multi-Stage Report Generation Logic
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 多阶段报告生成逻辑">
+    <nav class="md-nav" aria-label="3. Multi-Stage Report Generation Logic">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31" class="md-nav__link">
+  <a href="#31-stage-1-base-data-report" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1. 阶段一：基础数据报告
+        3.1. Stage 1: Base Data Report
       
     </span>
   </a>
@@ -2268,10 +2270,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
+  <a href="#32-stage-2-raw-data-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2. 阶段二：原始数据分析
+        3.2. Stage 2: Raw Data Analysis
       
     </span>
   </a>
@@ -2279,10 +2281,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#33" class="md-nav__link">
+  <a href="#33-stage-3-academic-report-writing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3. 阶段三：学术报告撰写
+        3.3. Stage 3: Academic Report Writing
       
     </span>
   </a>
@@ -2314,32 +2316,31 @@
   
 
 
-  <h1>生成分析报告</h1>
-
-<p>TRICYS 不仅是一个仿真执行框架，更是一个强大的自动化分析与报告平台。它能够将复杂的仿真结果自动处理成结构清晰、内容丰富、支持中英双语的分析报告。其报告生成流程采用创新的分层设计，从数据驱动的图表生成，到可选的、由大语言模型（LLM）驱动的深度分析与学术级报告撰写，实现了端到端的自动化。</p>
-<h2 id="1">1. 专业术语与国际化图表<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>为了使生成的图表具有专业性和可读性，TRICYS 引入了一套基于外部术语表的标签映射机制，并支持中英双语切换。</p>
-<h3 id="11">1.1 工作原理<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
-<p>该功能由 <code>tricys/analysis/plot.py</code> 模块实现。</p>
+<h1 id="tricys-automated-analysis-reports">TRICYS Automated Analysis Reports<a class="headerlink" href="#tricys-automated-analysis-reports" title="Permanent link">&para;</a></h1>
+<p>TRICYS is more than just a simulation execution framework; it is also a powerful platform for automated analysis and reporting. It can automatically process complex simulation results into well-structured, content-rich analysis reports that support both English and Chinese. Its report generation process uses an innovative layered design, achieving end-to-end automation from data-driven chart generation to optional, Large Language Model (LLM)-driven in-depth analysis and academic-grade report writing.</p>
+<h2 id="1-glossary-and-internationalized-charts">1. Glossary and Internationalized Charts<a class="headerlink" href="#1-glossary-and-internationalized-charts" title="Permanent link">&para;</a></h2>
+<p>To make the generated charts professional and readable, TRICYS introduces a label mapping mechanism based on an external glossary, which also supports switching between English and Chinese.</p>
+<h3 id="11-how-it-works">1.1 How It Works<a class="headerlink" href="#11-how-it-works" title="Permanent link">&para;</a></h3>
+<p>This functionality is implemented by the <code>tricys/analysis/plot.py</code> module.</p>
 <ol>
-<li><strong>加载术语表</strong>：程序启动时，<code>load_glossary()</code> 函数会读取一个用户指定的 CSV 文件（<code>glossary_path</code>）。该 CSV 文件定义了内部模型变量名与其中英文专业术语的对应关系。</li>
-<li><strong>设置语言</strong>：通过调用 <code>set_plot_language('cn')</code> 或 <code>set_plot_language('en')</code>，可以全局切换图表的显示语言。切换至中文时，会自动启用支持中文的字体（如“SimHei”）。</li>
-<li><strong>标签格式化</strong>：在绘制图表时，所有原始的变量名（如 <code>Startup_Inventory</code>, <code>sds.I[1]</code>）都会经过 <code>_format_label()</code> 函数处理。该函数会：<ul>
-<li>首先，根据当前设置的语言，在加载的术语表中查找对应的中文或英文专业术语。</li>
-<li>如果查找到，则使用该专业术语作为图表标签（例如，图例、坐标轴标题）。</li>
-<li>如果未找到，则执行默认的格式化（例如，将下划线替换为空格），保证标签的基本可读性。</li>
+<li><strong>Load Glossary</strong>: When the program starts, the <code>load_glossary()</code> function reads a user-specified CSV file (<code>glossary_path</code>). This CSV file defines the correspondence between internal model variable names and their professional terms in English and Chinese.</li>
+<li><strong>Set Language</strong>: By calling <code>set_plot_language('cn')</code> or <code>set_plot_language('en')</code>, the display language of the charts can be switched globally. When switching to Chinese, a font that supports Chinese characters (e.g., "SimHei") is automatically enabled.</li>
+<li><strong>Format Labels</strong>: When plotting, all raw variable names (e.g., <code>Startup_Inventory</code>, <code>sds.I[1]</code>) are processed by the <code>_format_label()</code> function. This function will:<ul>
+<li>First, look up the corresponding professional term in English or Chinese in the loaded glossary based on the current language setting.</li>
+<li>If found, it uses that professional term as the chart label (e.g., for legends, axis titles).</li>
+<li>If not found, it performs default formatting (e.g., replacing underscores with spaces) to ensure basic readability.</li>
 </ul>
 </li>
-<li><strong>单位映射</strong>：除了术语，坐标轴的单位也支持通过 <code>unit_map</code> 配置进行转换和显示，并同样支持国际化。</li>
+<li><strong>Unit Mapping</strong>: In addition to terms, the units on the axes can also be converted and displayed via the <code>unit_map</code> configuration, which also supports internationalization.</li>
 </ol>
-<h3 id="12">1.2 术语表格式示例<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
-<p>该 CSV 文件必须包含以下三列：</p>
+<h3 id="12-glossary-format-example">1.2 Glossary Format Example<a class="headerlink" href="#12-glossary-format-example" title="Permanent link">&para;</a></h3>
+<p>The CSV file must contain the following three columns:</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">模型参数 (Model Parameter)</th>
-<th style="text-align: left;">英文术语 (English Term)</th>
-<th style="text-align: left;">中文翻译 (Chinese Translation)</th>
+<th style="text-align: left;">Model Parameter</th>
+<th style="text-align: left;">English Term</th>
+<th style="text-align: left;">Chinese Translation</th>
 </tr>
 </thead>
 <tbody>
@@ -2360,126 +2361,126 @@
 </tr>
 </tbody>
 </table>
-<p>通过这种机制，TRICYS 能够将内部变量 <code>Startup_Inventory</code> 在生成图表时自动美化为“Startup Inventory (kg)”或“启动库存 (千克)”。</p>
-<h2 id="2">2. 核心图表类型<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p><code>tricys/analysis/plot.py</code> 中的 <code>generate_analysis_plots()</code> 函数是所有分析图表的总入口，它会根据分析任务的类型生成以下几类核心图表：</p>
-<h4 id="21">2.1 主趋势图<a class="headerlink" href="#21" title="Permanent link">&para;</a></h4>
+<p>With this mechanism, TRICYS can automatically format the internal variable <code>Startup_Inventory</code> into "Startup Inventory (kg)" or "启动库存 (千克)" when generating charts.</p>
+<h2 id="2-core-chart-types">2. Core Chart Types<a class="headerlink" href="#2-core-chart-types" title="Permanent link">&para;</a></h2>
+<p>The <code>generate_analysis_plots()</code> function in <code>tricys/analysis/plot.py</code> serves as the main entry point for all analysis charts. It generates several core types of charts based on the analysis task.</p>
+<h4 id="21-main-trend-plots">2.1 Main Trend Plots<a class="headerlink" href="#21-main-trend-plots" title="Permanent link">&para;</a></h4>
 <ul>
-<li><strong>用途</strong>：展示关键性能指标（因变量）如何随独立扫描变量的变化而变化。</li>
-<li><strong>特点</strong>：<ul>
-<li>当存在多个背景扫描参数（<code>simulation_parameters</code>）时，会自动使用不同的颜色、线型和标记来绘制多条曲线，并生成图例。</li>
-<li>如果曲线数量不多，会自动在数据点上标注数值，方便精确读数。</li>
-<li>支持将多个指标绘制在同一张图的多个子图中（<code>_generate_combined_plots</code>），或为每个指标生成独立的图表文件（<code>_generate_individual_plots</code>）。</li>
+<li><strong>Purpose</strong>: To show how key performance indicators (dependent variables) change in response to variations in the independent sweep variable.</li>
+<li><strong>Features</strong>:<ul>
+<li>When multiple background sweep parameters (<code>simulation_parameters</code>) are present, it automatically plots multiple curves with different colors, line styles, and markers, and generates a legend.</li>
+<li>If the number of curves is small, it automatically annotates the data points with their values for precise reading.</li>
+<li>Supports plotting multiple metrics in subplots within a single figure (<code>_generate_combined_plots</code>) or generating separate chart files for each metric (<code>_generate_individual_plots</code>).</li>
 </ul>
 </li>
 </ul>
-<h4 id="22">2.2 约束求解分析图<a class="headerlink" href="#22" title="Permanent link">&para;</a></h4>
+<h4 id="22-constraint-solving-analysis-plots">2.2 Constraint-Solving Analysis Plots<a class="headerlink" href="#22-constraint-solving-analysis-plots" title="Permanent link">&para;</a></h4>
 <ul>
-<li><strong>用途</strong>：专门用于可视化“目标寻优”任务的结果（即 <code>Required_</code> 开头的指标）。</li>
-<li><strong>特点</strong>：<ul>
-<li>由 <code>_generate_multi_required_plot()</code> 函数生成，通常采用多子图布局。</li>
-<li>每个子图代表一组特定的背景参数组合，清晰地展示了在不同场景下，为了达成某个约束条件（例如，倍增时间小于10年），需要付出的“代价”（即被优化的参数值）。</li>
-<li>这种图对于理解多变量权衡（Trade-offs）关系至关重要。</li>
+<li><strong>Purpose</strong>: Specifically designed to visualize the results of "goal-seeking" tasks (i.e., metrics prefixed with <code>Required_</code>).</li>
+<li><strong>Features</strong>:<ul>
+<li>Generated by the <code>_generate_multi_required_plot()</code> function, usually in a multi-subplot layout.</li>
+<li>Each subplot represents a specific combination of background parameters, clearly showing the "cost" (the optimized parameter value) required to meet a certain constraint (e.g., doubling time less than 10 years) under different scenarios.</li>
+<li>This type of plot is crucial for understanding multi-variable trade-offs.</li>
 </ul>
 </li>
 </ul>
-<h4 id="23">2.3 扫描过程时序图<a class="headerlink" href="#23" title="Permanent link">&para;</a></h4>
+<h4 id="23-sweep-process-time-series-plots">2.3 Sweep Process Time-Series Plots<a class="headerlink" href="#23-sweep-process-time-series-plots" title="Permanent link">&para;</a></h4>
 <ul>
-<li><strong>用途</strong>：当需要观察某个动态变量在不同参数扫描下的完整时间演化过程时，生成此图。</li>
-<li><strong>特点</strong>：<ul>
-<li>由 <code>plot_sweep_time_series()</code> 函数生成，包含<strong>两个子图</strong>：<ol>
-<li><strong>全局视图 (Overall View)</strong>：展示从 <code>t=0</code> 到仿真结束的完整时间曲线。为了突出早期关键行为，此视图会自动隐藏超过初始值两倍的数据点。</li>
-<li><strong>细节视图 (Detailed View)</strong>：自动聚焦于所有曲线中首次达到最小值的区域，并放大显示。这对于观察系统启动初期的动态特性（如库存的“下跌-回升”转折点）非常有用。</li>
+<li><strong>Purpose</strong>: Generated when it is necessary to observe the complete time evolution of a dynamic variable across different parameter sweeps.</li>
+<li><strong>Features</strong>:<ul>
+<li>Generated by the <code>plot_sweep_time_series()</code> function, it contains <strong>two subplots</strong>:<ol>
+<li><strong>Overall View</strong>: Shows the complete time curve from <code>t=0</code> to the end of the simulation. To highlight key early behaviors, this view automatically hides data points that exceed twice the initial value.</li>
+<li><strong>Detailed View</strong>: Automatically focuses on and zooms into the region where the minimum value is first reached across all curves. This is very useful for observing the system's initial dynamic characteristics (like the "dip-and-recover" turning point of the inventory).</li>
 </ol>
 </li>
-<li>一个红色的虚线框会自动绘制在“全局视图”上，以标示“细节视图”所对应的区域。</li>
+<li>A red dashed box is automatically drawn on the "Overall View" to indicate the region corresponding to the "Detailed View".</li>
 </ul>
 </li>
 </ul>
-<h2 id="3">3. 多阶段报告生成逻辑<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<p>TRICYS 的报告生成分为两个核心阶段，由 <code>tricys/analysis/report.py</code> 模块调度。这种设计将原始数据与 AI 解读分离，保证了结果的透明度和可追溯性。</p>
+<h2 id="3-multi-stage-report-generation-logic">3. Multi-Stage Report Generation Logic<a class="headerlink" href="#3-multi-stage-report-generation-logic" title="Permanent link">&para;</a></h2>
+<p>TRICYS's report generation is divided into several core stages, orchestrated by the <code>tricys/analysis/report.py</code> module. This design separates raw data from AI interpretation, ensuring transparency and traceability of the results.</p>
 <pre class="mermaid"><code>graph TD
-    A[开始] --&gt; B[执行所有仿真与分析任务];
-    B --&gt; C["&lt;b&gt;阶段一：生成基础数据报告&lt;/b&gt;&lt;br&gt;`generate_prompt_templates()`"];
-    C --&gt; D{AI 分析是否启用?};
-    D -- 否 --&gt; E[结束: 仅包含数据和图表的基础报告];
-    D -- 是 --&gt; F["&lt;b&gt;阶段二：生成 AI 增强报告&lt;/b&gt;"];
+    A[Start] --&gt; B[Execute all simulation and analysis tasks];
+    B --&gt; C["&lt;b&gt;Stage 1: Generate Base Data Report&lt;/b&gt;&lt;br&gt;`generate_prompt_templates()`"];
+    C --&gt; D{Is AI analysis enabled?};
+    D -- No --&gt; E[End: A base report with only data and charts];
+    D -- Yes --&gt; F["&lt;b&gt;Stage 2: Generate AI-Enhanced Report&lt;/b&gt;"];
 
     subgraph F
         direction LR
-        F1["第一次调用 LLM:&lt;br&gt;原始数据分析&lt;br&gt;`call_openai_analysis_api`"] --&gt; F2["第二次调用 LLM:&lt;br&gt;学术报告撰写&lt;br&gt;`generate_sensitivity_academic_report`"];
+        F1["First LLM Call:&lt;br&gt;Raw Data Analysis&lt;br&gt;`call_openai_analysis_api`"] --&gt; F2["Second LLM Call:&lt;br&gt;Academic Report Writing&lt;br&gt;`generate_sensitivity_academic_report`"];
     end
-    F --&gt; G[结束: 生成包含深度分析的学术级报告];</code></pre>
-<h3 id="31">3.1. 阶段一：基础数据报告<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
-<p>此阶段由 <code>generate_prompt_templates()</code> 函数执行，其核心职责是创建一个<strong>内容详尽、纯数据驱动</strong>的 Markdown 文件。这份文件是后续所有分析的“事实根基”，包含：</p>
+    F --&gt; G[End: An academic-grade report with in-depth analysis];</code></pre>
+<h3 id="31-stage-1-base-data-report">3.1. Stage 1: Base Data Report<a class="headerlink" href="#31-stage-1-base-data-report" title="Permanent link">&para;</a></h3>
+<p>This stage is executed by the <code>generate_prompt_templates()</code> function. Its core responsibility is to create a <strong>comprehensive, purely data-driven</strong> Markdown file. This file serves as the "source of truth" for all subsequent analysis and includes:</p>
 <ol>
-<li><strong>配置详情</strong>：本次分析的所有配置参数，如独立/因变量、扫描范围、优化设置等。</li>
-<li><strong>数据表格</strong>：将 <code>sensitivity_analysis_summary.csv</code> 和 <code>requierd_tbr_summary.csv</code> 中的数据格式化为美观的 Markdown 表格。</li>
-<li><strong>图表嵌入</strong>：将 <code>plot.py</code> 生成的所有 <code>.svg</code> 图表文件通过 <code>![标题](文件名.svg)</code> 的语法嵌入报告中。</li>
-<li><strong>动态数据切片</strong>：如果适用，还会从 <code>sweep_results.csv</code> 中提取关键动态过程（如初始、转折点、结束阶段）的数据切片，以表格形式呈现。</li>
+<li><strong>Configuration Details</strong>: All configuration parameters for the analysis, such as independent/dependent variables, sweep ranges, and optimization settings.</li>
+<li><strong>Data Tables</strong>: Data from <code>sensitivity_analysis_summary.csv</code> and <code>requierd_tbr_summary.csv</code> formatted into clean Markdown tables.</li>
+<li><strong>Embedded Charts</strong>: All <code>.svg</code> chart files generated by <code>plot.py</code> are embedded into the report using <code>![Title](filename.svg)</code> syntax.</li>
+<li><strong>Dynamic Data Slices</strong>: If applicable, it also extracts data slices of key dynamic processes (e.g., initial, turning point, and final stages) from <code>sweep_results.csv</code> and presents them in tabular form.</li>
 </ol>
-<h3 id="32">3.2. 阶段二：原始数据分析<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<h3 id="32-stage-2-raw-data-analysis">3.2. Stage 2: Raw Data Analysis<a class="headerlink" href="#32-stage-2-raw-data-analysis" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>执行者</strong>：<code>call_openai_analysis_api()</code></li>
-<li><strong>目的</strong>：对<strong>纯数据表格</strong>进行深度量化分析，发掘数据背后的趋势与关联。</li>
-<li><strong>过程</strong>：<ol>
-<li>将阶段一生成的<strong>基础报告</strong>作为上下文，并附加上一个精心设计的分析指令（见下一节）。</li>
-<li>一个关键指令是<strong>忽略图表，只分析表格</strong>，这强制模型进行定量而非定性的分析。</li>
-<li>LLM 返回的分析结果会被<strong>追加</strong>到基础报告的末尾，形成一份包含“原始数据+AI初步解读”的完整报告。</li>
+<li><strong>Executor</strong>: <code>call_openai_analysis_api()</code></li>
+<li><strong>Purpose</strong>: To perform a deep, quantitative analysis of the <strong>pure data tables</strong> to uncover underlying trends and correlations.</li>
+<li><strong>Process</strong>:<ol>
+<li>The <strong>base report</strong> generated in Stage 1 is used as context, appended with a carefully designed analysis prompt (see next section).</li>
+<li>A key instruction is to <strong>ignore the charts and only analyze the tables</strong>, which forces the model to perform quantitative rather than qualitative analysis.</li>
+<li>The analysis result returned by the LLM is <strong>appended</strong> to the base report, creating a single report that contains "raw data + initial AI interpretation".</li>
 </ol>
 </li>
 </ul>
 <details>
-<summary>数据分析师提示词</summary>
+<summary>Data Analyst Prompt</summary>
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>**角色：** 你是一名聚变反应堆氚燃料循环领域的专家。
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>**任务：** 请**完全基于**下方提供的**两类数据表格**，对聚变堆燃料循环模型的**敏感性分析**结果进行深度解读。
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>**分析要点 (必须严格依据数据表格作答)：**
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>1.  **全局敏感性分析:**
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    *   分析性能指标总表呈现出怎样的**总体趋势**？
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    *   哪个性能指标对独立变量 `{independent_variable}` 的变化最为敏感？
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>2.  **交互效应分析：**
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    *   分析独立变量与背景扫描参数之间的交互作用对性能指标的影响。
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>3.  **动态过程分析:**
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    *   观察过程数据切片：系统在“初始阶段”和“结束阶段”的行为有何不同？
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    *   转折点阶段的数据揭示了什么物理过程？
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>4.  **综合结论：**
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    *   总结调整 `{independent_variable}` 对系统的综合影响和利弊权衡。
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    *   可以得出哪些关于系统设计或运行优化的初步建议？
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>**Role:** You are an expert in the field of tritium fuel cycles for fusion reactors.
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>**Task:** Please provide a deep interpretation of the sensitivity analysis results for a fusion reactor fuel cycle model, **based solely** on the **two types of data tables** provided below.
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>**Analysis Points (Must be answered strictly based on the data tables):**
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>1.  **Global Sensitivity Analysis:**
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    *   What **overall trends** do the summary performance metrics tables exhibit?
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    *   Which performance metric is most sensitive to changes in the independent variable `{independent_variable}`?
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>2.  **Interaction Effect Analysis:**
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    *   Analyze the interaction effects between the independent variable and the background sweep parameters on the performance metrics.
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>3.  **Dynamic Process Analysis:**
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    *   Observing the process data slices: what are the differences in the system&#39;s behavior during the &quot;initial phase&quot; and the &quot;final phase&quot;?
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    *   What physical process does the data from the &quot;turning point phase&quot; reveal?
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>4.  **Comprehensive Conclusion:**
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    *   Summarize the overall impact and potential trade-offs of adjusting `{independent_variable}` on the system.
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    *   What preliminary suggestions for system design or operational optimization can be derived from these findings?
 </code></pre></div>
 
 </details>
 
-<h3 id="33">3.3. 阶段三：学术报告撰写<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
+<h3 id="33-stage-3-academic-report-writing">3.3. Stage 3: Academic Report Writing<a class="headerlink" href="#33-stage-3-academic-report-writing" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>执行者</strong>：<code>generate_sensitivity_academic_report()</code></li>
-<li><strong>目的</strong>：将一份包含数据、图表和初步分析的混合报告，<strong>“升格”</strong>为一篇结构严谨、语言专业的学术风格报告。</li>
-<li><strong>过程</strong>：<ol>
-<li>将<strong>更新后的报告</strong>（已包含第一次AI分析）和<strong>术语表 (<code>glossary.csv</code>)</strong> 一同作为上下文。</li>
-<li>附加上一个更复杂的指令，要求模型扮演“资深科学家”角色，并严格遵循学术规范。</li>
-<li>LLM 会利用术语表将报告中的内部变量替换为专业术语，并按照标准的学术结构（摘要、引言、方法、结果与讨论、结论）重新组织和撰写所有内容。</li>
-<li>最终结果保存为一个全新的、可直接使用的学术报告文件 (<code>academic_report_....md</code>)。</li>
+<li><strong>Executor</strong>: <code>generate_sensitivity_academic_report()</code></li>
+<li><strong>Purpose</strong>: To <strong>"upgrade"</strong> a mixed report containing data, charts, and preliminary analysis into a well-structured, professionally-worded academic-style report.</li>
+<li><strong>Process</strong>:<ol>
+<li>The <strong>updated report</strong> (now including the first AI analysis) and the <strong>glossary file (<code>glossary.csv</code>)</strong> are provided together as context.</li>
+<li>A more complex prompt is appended, instructing the model to act as a "senior scientist" and strictly follow academic conventions.</li>
+<li>The LLM will use the glossary to replace internal variable names with professional terms and rewrite all content according to a standard academic structure (Abstract, Introduction, Methodology, Results and Discussion, Conclusion).</li>
+<li>The final result is saved as a new, ready-to-use academic report file (<code>academic_report_....md</code>).</li>
 </ol>
 </li>
 </ul>
 <details>
-<summary>资深科学家提示词</summary>
+<summary>Senior Scientist Prompt</summary>
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>**任务：** 您收到了一个初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>**指令：**
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `Startup_Inventory`）替换为术语表中对应的专业术语。
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>3.  **图表和表格的呈现与引用：**
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    *   **显示图表：** 您**必须**使用 Markdown 语法 `![图表标题](图表文件名)` 来**直接嵌入**和显示初步报告中包含的所有图表。
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    *   **引用图表：** 在正文中分析和讨论图表内容时，请对图表进行编号和文字引用。
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>4.  **结构化报告：** 您的报告应包含以下部分：
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    *   **标题 (Title):** ...
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    *   **摘要 (Abstract):** ...
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    *   **引言 (Introduction):** ...
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    *   **方法 (Methodology):** ...
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    *   **结果与讨论 (Results and Discussion):** ...
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    *   **结论 (Conclusion):** ...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>**Role:** You are a senior scientist with a deep academic background in nuclear fusion engineering, particularly in the tritium fuel cycle.
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>**Task:** You have received a preliminary report and a glossary of professional terms from an automated analysis program. Based on these two documents, your task is to write a more professional, formal, and in-depth analysis summary report suitable for academic publication.
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>**Instructions:**
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>1.  **Professional Language:** Replace the model parameters/abbreviations in the preliminary report (e.g., `sds.I[1]`, `Startup_Inventory`) with their corresponding professional terms from the glossary.
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>2.  **Academic Rewriting:** Reorganize and rephrase the findings from the preliminary report using rigorous and objective academic language.
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>3.  **Presentation and Citation of Figures and Tables:**
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    *   **Display Figures:** In the &quot;Results and Discussion&quot; section, you **must** use Markdown syntax `![Figure Title](figure_filename.svg)` to **directly embed** and display all the charts included in the preliminary report.
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    *   **Cite Figures:** When analyzing and discussing the content of the figures in the text, please number and cite them using phrases like &quot;As shown in Figure 1...&quot;.
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>4.  **Structured Report:** Your report should be about a **sensitivity analysis** and include the following sections:
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    *   **Title:** ...
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    *   **Abstract:** ...
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    *   **Introduction:** ...
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    *   **Methodology:** ...
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    *   **Results and Discussion:** ...
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    *   **Conclusion:** ...
 </code></pre></div>
 
 </details>
@@ -2506,7 +2507,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2515,33 +2516,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="performance_metrics.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 核心性能指标">
+          <a href="performance_metrics.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Core Performance Metrics">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                核心性能指标
+                Core Performance Metrics
               </div>
             </div>
           </a>
         
         
           
-          <a href="salib_integration.html" class="md-footer__link md-footer__link--next" aria-label="下一页: SALIB集成方法">
+          <a href="salib_integration.html" class="md-footer__link md-footer__link--next" aria-label="Next: SALIB Integration Methods">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                SALIB集成方法
+                SALIB Integration Methods
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2578,7 +2579,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

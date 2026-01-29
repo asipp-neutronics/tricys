@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/explanation/tricys_basic/concurrency.html" hreflang="en">
+          <link rel="alternate" href="concurrency.html" hreflang="en">
         
-          <link rel="alternate" href="concurrency.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/explanation/tricys_basic/concurrency.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>并发计算模式 - 氚燃料循环集成仿真平台</title>
+        <title>Concurrency Model - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#tricys" class="md-skip">
-          跳转至
+        <a href="#tricys-concurrent-execution" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              并发计算模式
+              Concurrency Model
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/explanation/tricys_basic/concurrency.html" hreflang="en" class="md-select__link">
+            <a href="concurrency.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="concurrency.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/explanation/tricys_basic/concurrency.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -270,7 +266,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -480,7 +476,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -496,7 +492,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -516,7 +512,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -560,7 +556,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -576,7 +572,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -596,7 +592,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -648,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -664,7 +660,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -684,7 +680,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -712,7 +708,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -740,7 +736,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -768,7 +764,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -796,7 +792,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -848,7 +844,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -864,7 +860,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -884,7 +880,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -912,7 +908,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -940,7 +936,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -968,7 +964,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -996,7 +992,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1024,7 +1020,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1088,7 +1084,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1104,7 +1100,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1124,7 +1120,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1173,7 +1169,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1189,7 +1185,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1209,7 +1205,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1237,7 +1233,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1274,7 +1270,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1292,7 +1288,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1304,7 +1300,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -1313,27 +1309,27 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-standard-simulation-multi-threaded-concurrency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 标准仿真：多线程并发
+        1. Standard Simulation: Multi-threaded Concurrency
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 标准仿真：多线程并发">
+    <nav class="md-nav" aria-label="1. Standard Simulation: Multi-threaded Concurrency">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11" class="md-nav__link">
+  <a href="#11-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1. 工作原理
+        1.1. How It Works
       
     </span>
   </a>
@@ -1341,10 +1337,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-why-use-multi-threading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2. 为何使用多线程？
+        1.2. Why Use Multi-threading?
       
     </span>
   </a>
@@ -1357,22 +1353,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-co-simulation-multi-process-concurrency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 协同仿真：多进程并发
+        2. Co-simulation: Multi-process Concurrency
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 协同仿真：多进程并发">
+    <nav class="md-nav" aria-label="2. Co-simulation: Multi-process Concurrency">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 工作原理
+        2.1. How It Works
       
     </span>
   </a>
@@ -1380,10 +1376,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-why-must-multi-processing-be-used" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 为何必须使用多进程？
+        2.2. Why Must Multi-processing Be Used?
       
     </span>
   </a>
@@ -1396,10 +1392,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-performance-and-practical-recommendations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 性能与实践建议
+        3. Performance and Practical Recommendations
       
     </span>
   </a>
@@ -1456,7 +1452,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1472,7 +1468,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1492,7 +1488,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1520,7 +1516,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1548,7 +1544,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1576,7 +1572,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1635,7 +1631,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1651,7 +1647,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1862,7 +1858,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1878,7 +1874,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1898,7 +1894,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1926,7 +1922,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1954,7 +1950,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1982,7 +1978,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2010,7 +2006,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2045,7 +2041,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2072,7 +2068,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2098,7 +2094,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2107,27 +2103,27 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-standard-simulation-multi-threaded-concurrency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 标准仿真：多线程并发
+        1. Standard Simulation: Multi-threaded Concurrency
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 标准仿真：多线程并发">
+    <nav class="md-nav" aria-label="1. Standard Simulation: Multi-threaded Concurrency">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11" class="md-nav__link">
+  <a href="#11-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1. 工作原理
+        1.1. How It Works
       
     </span>
   </a>
@@ -2135,10 +2131,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-why-use-multi-threading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2. 为何使用多线程？
+        1.2. Why Use Multi-threading?
       
     </span>
   </a>
@@ -2151,22 +2147,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-co-simulation-multi-process-concurrency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 协同仿真：多进程并发
+        2. Co-simulation: Multi-process Concurrency
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 协同仿真：多进程并发">
+    <nav class="md-nav" aria-label="2. Co-simulation: Multi-process Concurrency">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 工作原理
+        2.1. How It Works
       
     </span>
   </a>
@@ -2174,10 +2170,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-why-must-multi-processing-be-used" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 为何必须使用多进程？
+        2.2. Why Must Multi-processing Be Used?
       
     </span>
   </a>
@@ -2190,10 +2186,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-performance-and-practical-recommendations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 性能与实践建议
+        3. Performance and Practical Recommendations
       
     </span>
   </a>
@@ -2220,75 +2216,74 @@
   
 
 
-<h1 id="tricys">TRICYS 并发执行<a class="headerlink" href="#tricys" title="Permanent link">&para;</a></h1>
-<p>TRICYS 旨在充分利用现代多核处理器的计算能力，通过并发执行来显著缩短参数扫描和批量仿真的总耗时。根据仿真类型的不同，TRICYS 会智能地采用两种不同的并发策略：<strong>多线程</strong>（用于标准仿真）和<strong>多进程</strong>（用于协同仿真）。</p>
-<p>您可以在 <code>config.json</code> 中通过以下参数来控制并发行为：</p>
+<h1 id="tricys-concurrent-execution">TRICYS Concurrent Execution<a class="headerlink" href="#tricys-concurrent-execution" title="Permanent link">&para;</a></h1>
+<p>TRICYS is designed to fully leverage the computational power of modern multi-core processors by using concurrent execution to significantly reduce the total time required for parameter sweeps and batch simulations. Depending on the simulation type, TRICYS intelligently adopts two different concurrency strategies: <strong>multi-threading</strong> (for standard simulations) and <strong>multi-processing</strong> (for co-simulations).</p>
+<p>You can control the concurrency behavior in <code>config.json</code> with the following parameters:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">  </span><span class="c1">// 设置为 true 来开启并发模式</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="w">     </span><span class="c1">// 设置最大并发工作单元数，默认为 CPU 核心数</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">  </span><span class="c1">// Set to true to enable concurrent mode</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="w">     </span><span class="c1">// Set the maximum number of concurrent workers, defaults to the number of CPU cores</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="1">1. 标准仿真：多线程并发<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>对于不涉及协同仿真的标准参数扫描任务，TRICYS 默认使用<strong>多线程模型</strong>。</p>
-<h3 id="11">1.1. 工作原理<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
-<p>TRICYS 使用 Python 的 <code>concurrent.futures.ThreadPoolExecutor</code> 来管理一个工作线程池。每个仿真任务（即一组特定的参数）会被提交到线程池中，由一个空闲的线程来执行。</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 简化版原理代码</span>
+<h2 id="1-standard-simulation-multi-threaded-concurrency">1. Standard Simulation: Multi-threaded Concurrency<a class="headerlink" href="#1-standard-simulation-multi-threaded-concurrency" title="Permanent link">&para;</a></h2>
+<p>For standard parameter sweep tasks that do not involve co-simulation, TRICYS defaults to a <strong>multi-threading model</strong>.</p>
+<h3 id="11-how-it-works">1.1. How It Works<a class="headerlink" href="#11-how-it-works" title="Permanent link">&para;</a></h3>
+<p>TRICYS uses Python's <code>concurrent.futures.ThreadPoolExecutor</code> to manage a pool of worker threads. Each simulation task (i.e., a specific set of parameters) is submitted to the thread pool and executed by an available thread.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Simplified conceptual code</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="c1"># _run_single_job 是每个线程要执行的任务</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="c1"># _run_single_job is the task to be executed by each thread</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_run_single_job</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jobs</span><span class="p">)]</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># ... 等待并收集结果 ...</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># ... wait for and collect results ...</span>
 </code></pre></div>
-<h3 id="12">1.2. 为何使用多线程？<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
-<p>虽然 Python 存在全局解释器锁（GIL），使得在单个进程中无法实现真正的 CPU 密集型代码并行，但对于标准 Modelica 仿真场景，多线程仍然是高效的选择。原因如下：</p>
+<h3 id="12-why-use-multi-threading">1.2. Why Use Multi-threading?<a class="headerlink" href="#12-why-use-multi-threading" title="Permanent link">&para;</a></h3>
+<p>Although Python has a Global Interpreter Lock (GIL) that prevents true parallelism for CPU-bound code within a single process, multi-threading is still an efficient choice for standard Modelica simulation scenarios. Here's why:</p>
 <ul>
-<li><strong>I/O 密集型</strong>：调用 <code>OMPython</code> 运行仿真本质上是启动一个外部的 <code>simulate.exe</code> 可执行文件。Python 线程在此期间主要处于<strong>等待状态</strong>（I/O-bound），等待外部进程完成计算并写回结果文件。GIL 在此期间会被释放，允许其他线程运行。</li>
-<li><strong>低开销</strong>：线程比进程更轻量，创建和销毁的速度更快，占用的系统资源也更少。对于数量众多但每次仿真耗时不是特别长的任务，使用线程可以减少任务调度的额外开销。</li>
+<li><strong>I/O-Bound</strong>: Calling <code>OMPython</code> to run a simulation is essentially launching an external <code>simulate.exe</code> executable. During this time, the Python thread is mostly in a <strong>waiting state</strong> (I/O-bound), waiting for the external process to complete its calculations and write back the result file. The GIL is released during this period, allowing other threads to run.</li>
+<li><strong>Low Overhead</strong>: Threads are more lightweight than processes. They are created and destroyed faster and consume fewer system resources. For a large number of tasks where each simulation is not particularly time-consuming, using threads can reduce the overhead of task scheduling.</li>
 </ul>
-<h2 id="2">2. 协同仿真：多进程并发<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>对于复杂的协同仿真任务，TRICYS 则切换到更健壮的<strong>多进程模型</strong>。</p>
-<h3 id="21">2.1. 工作原理<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
-<p>TRICYS 使用 <code>concurrent.futures.ProcessPoolExecutor</code> 来创建一个进程池。每个协同仿真任务（<code>_run_co_simulation</code>）都在一个完全独立的子进程中运行。</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 简化版原理代码</span>
+<h2 id="2-co-simulation-multi-process-concurrency">2. Co-simulation: Multi-process Concurrency<a class="headerlink" href="#2-co-simulation-multi-process-concurrency" title="Permanent link">&para;</a></h2>
+<p>For complex co-simulation tasks, TRICYS switches to a more robust <strong>multi-processing model</strong>.</p>
+<h3 id="21-how-it-works">2.1. How It Works<a class="headerlink" href="#21-how-it-works" title="Permanent link">&para;</a></h3>
+<p>TRICYS uses <code>concurrent.futures.ProcessPoolExecutor</code> to create a process pool. Each co-simulation task (<code>_run_co_simulation</code>) runs in a completely separate child process.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Simplified conceptual code</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="c1"># _run_co_simulation 在一个独立的进程中执行</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="c1"># _run_co_simulation is executed in a separate process</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_run_co_simulation</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jobs</span><span class="p">)]</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="c1"># ... 等待并收集结果 ...</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="c1"># ... wait for and collect results ...</span>
 </code></pre></div>
-<h3 id="22">2.2. 为何必须使用多进程？<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
-<p>协同仿真的工作流程涉及到对文件系统的<strong>大量读写和修改</strong>，这是其必须使用多进程的核心原因：</p>
+<h3 id="22-why-must-multi-processing-be-used">2.2. Why Must Multi-processing Be Used?<a class="headerlink" href="#22-why-must-multi-processing-be-used" title="Permanent link">&para;</a></h3>
+<p>The co-simulation workflow involves <strong>extensive reading, writing, and modification of the file system</strong>, which is the core reason why it must use multi-processing:</p>
 <ul>
-<li><strong>环境隔离</strong>：每个协同仿真任务都需要一个纯净、独立的运行环境。它会将原始 Modelica 模型包<strong>复制</strong>到一个临时目录，然后对其进行修改（例如，生成拦截器或直接替换模型）。如果使用多线程，多个任务会同时修改共享的模型文件，导致文件损坏和结果错乱。</li>
-<li><strong>无状态冲突</strong>：进程拥有独立的内存空间和文件句柄。这确保了一个任务对模型代码的修改、外部 Python 处理器（handler）的运行以及生成的所有中间文件，都<strong>不会对其他并行任务产生任何干扰</strong>。</li>
-<li><strong>规避 GIL</strong>：协同仿真中的 Python 处理器（handler）本身可能是计算密集型的。在多进程模型下，每个进程都有自己的 Python 解释器和 GIL，可以实现真正的并行计算，充分利用所有 CPU 核心。</li>
+<li><strong>Environment Isolation</strong>: Each co-simulation task requires a clean, independent execution environment. It <strong>copies</strong> the original Modelica model package to a temporary directory and then modifies it (e.g., by generating an interceptor or replacing a model directly). If multi-threading were used, multiple tasks would simultaneously modify the shared model files, leading to file corruption and incorrect results.</li>
+<li><strong>State Conflict Avoidance</strong>: Processes have independent memory spaces and file handles. This ensures that modifications to model code, the execution of external Python handlers, and all generated intermediate files by one task <strong>will not interfere with other parallel tasks</strong>.</li>
+<li><strong>Bypassing the GIL</strong>: The Python handlers in co-simulation can themselves be computationally intensive. In a multi-processing model, each process has its own Python interpreter and GIL, enabling true parallel computation and full utilization of all CPU cores.</li>
 </ul>
-<h2 id="3">3. 性能与实践建议<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h2 id="3-performance-and-practical-recommendations">3. Performance and Practical Recommendations<a class="headerlink" href="#3-performance-and-practical-recommendations" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
-<p><strong>合理设置 <code>max_workers</code></strong>：</p>
+<p><strong>Set <code>max_workers</code> Reasonably</strong>:</p>
 <ul>
-<li>对于 I/O 密集型的标准仿真，可以设置比 CPU 核心数稍多的 <code>max_workers</code>（例如，核心数 * 1.5）。</li>
-<li>对于 CPU 密集型的协同仿真，<code>max_workers</code> 通常设置为等于或略小于您的 CPU 核心数，以避免过度的上下文切换开销。</li>
-<li>始终要考虑<strong>内存限制</strong>。每个进程都会消耗相当数量的内存，如果 <code>max_workers</code> 设置得太高，可能会导致内存耗尽。</li>
+<li>For I/O-bound standard simulations, you can set <code>max_workers</code> to be slightly higher than the number of CPU cores (e.g., <code>cores * 1.5</code>).</li>
+<li>For CPU-bound co-simulations, <code>max_workers</code> is typically set to be equal to or slightly less than your number of CPU cores to avoid excessive context-switching overhead.</li>
+<li>Always consider <strong>memory limits</strong>. Each process consumes a significant amount of memory. If <code>max_workers</code> is set too high, it may lead to memory exhaustion.</li>
 </ul>
 </li>
 <li>
-<p><strong>任务粒度</strong>：</p>
+<p><strong>Task Granularity</strong>:</p>
 <ul>
-<li>并发执行本身有开销。如果单次仿真耗时非常短（例如，少于 1 秒），并发带来的性能提升可能还不足以抵消任务调度的开销。在这种情况下，串行执行 (<code>"concurrent": false</code>) 可能更快。</li>
+<li>Concurrency itself has overhead. If a single simulation is very short (e.g., less than a second), the performance gain from concurrency may not be enough to offset the scheduling overhead. In this case, serial execution (<code>"concurrent": false</code>) might be faster.</li>
 </ul>
 </li>
 <li>
-<p><strong>监控系统资源</strong>：</p>
+<p><strong>Monitor System Resources</strong>:</p>
 <ul>
-<li>在运行大规模并发任务时，建议使用系统监控工具（如任务管理器或 <code>htop</code>）来观察 CPU 和内存的使用情况，以便调整 <code>max_workers</code> 到最佳值。</li>
+<li>When running large-scale concurrent tasks, it is advisable to use system monitoring tools (like Task Manager or <code>htop</code>) to observe CPU and memory usage, which can help in tuning <code>max_workers</code> to its optimal value.</li>
 </ul>
 </li>
 </ul>
-<hr />
 
 
 
@@ -2312,7 +2307,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2321,33 +2316,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="co_simulation.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 协同仿真原理">
+          <a href="co_simulation.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Co-simulation Principle">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                协同仿真原理
+                Co-simulation Principle
               </div>
             </div>
           </a>
         
         
           
-          <a href="../tricys_analysis/analysis_flow.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 自动分析流程">
+          <a href="../tricys_analysis/analysis_flow.html" class="md-footer__link md-footer__link--next" aria-label="Next: Analysis Flow">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                自动分析流程
+                Analysis Flow
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2384,7 +2379,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

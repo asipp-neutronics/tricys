@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/guides/tricys_basic/co_simulation_module.html" hreflang="en">
+          <link rel="alternate" href="co_simulation_module.html" hreflang="en">
         
-          <link rel="alternate" href="co_simulation_module.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/guides/tricys_basic/co_simulation_module.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>协同仿真模块 - 氚燃料循环集成仿真平台</title>
+        <title>Co-simulation Module - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
-          跳转至
+        <a href="#co-simulation-module" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              协同仿真模块
+              Co-simulation Module
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/guides/tricys_basic/co_simulation_module.html" hreflang="en" class="md-select__link">
+            <a href="co_simulation_module.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="co_simulation_module.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/guides/tricys_basic/co_simulation_module.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -272,7 +268,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -485,7 +481,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -501,7 +497,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -521,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -568,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -584,7 +580,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -604,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -661,7 +657,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -677,7 +673,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -697,7 +693,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -725,7 +721,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -753,7 +749,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -781,7 +777,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -818,7 +814,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -836,7 +832,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -848,7 +844,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -857,15 +853,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 工作流程
+        1. Workflow
       
     </span>
   </a>
@@ -873,10 +869,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 配置文件示例
+        2. Configuration File Example
       
     </span>
   </a>
@@ -884,22 +880,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-configuration-details" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 配置项详解
+        3. Configuration Details
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 配置项详解">
+    <nav class="md-nav" aria-label="3. Configuration Details">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-co_simulation" class="md-nav__link">
+  <a href="#31-co_simulation-top-level-object" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1. co_simulation (顶层对象)
+        3.1. co_simulation (Top-level Object)
       
     </span>
   </a>
@@ -907,10 +903,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-mode" class="md-nav__link">
+  <a href="#32-mode-integration-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2. mode (集成模式)
+        3.2. mode (Integration Mode)
       
     </span>
   </a>
@@ -918,10 +914,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#33-handlers" class="md-nav__link">
+  <a href="#33-handlers-configuration-object-list" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3. handlers (配置对象列表)
+        3.3. handlers (Configuration Object List)
       
     </span>
   </a>
@@ -934,10 +930,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-result-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 结果输出
+        4. Result Output
       
     </span>
   </a>
@@ -945,22 +941,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
+  <a href="#5-custom-handlers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 自定义处理器
+        5. Custom Handlers
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 自定义处理器">
+    <nav class="md-nav" aria-label="5. Custom Handlers">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51" class="md-nav__link">
+  <a href="#51-handler-function-specification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1. 处理器函数规范
+        5.1. Handler Function Specification
       
     </span>
   </a>
@@ -968,10 +964,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52" class="md-nav__link">
+  <a href="#52-handler-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2. 处理器示例
+        5.2. Handler Example
       
     </span>
   </a>
@@ -979,10 +975,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53" class="md-nav__link">
+  <a href="#53-updating-the-configuration-file" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3. 更新配置文件
+        5.3. Updating the Configuration File
       
     </span>
   </a>
@@ -995,10 +991,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
+  <a href="#6-advanced-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 高级：原理解说
+        6. Advanced: How It Works
       
     </span>
   </a>
@@ -1055,7 +1051,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1071,7 +1067,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1091,7 +1087,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -1119,7 +1115,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -1147,7 +1143,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -1175,7 +1171,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1203,7 +1199,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1231,7 +1227,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1290,7 +1286,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1306,7 +1302,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1326,7 +1322,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1370,7 +1366,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1386,7 +1382,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1406,7 +1402,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1434,7 +1430,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1462,7 +1458,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1514,7 +1510,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1530,7 +1526,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1550,7 +1546,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1578,7 +1574,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1606,7 +1602,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1634,7 +1630,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1693,7 +1689,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1709,7 +1705,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1920,7 +1916,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1936,7 +1932,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1956,7 +1952,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1984,7 +1980,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -2012,7 +2008,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -2040,7 +2036,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2068,7 +2064,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2103,7 +2099,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2130,7 +2126,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2156,7 +2152,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2165,15 +2161,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 工作流程
+        1. Workflow
       
     </span>
   </a>
@@ -2181,10 +2177,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 配置文件示例
+        2. Configuration File Example
       
     </span>
   </a>
@@ -2192,22 +2188,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-configuration-details" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 配置项详解
+        3. Configuration Details
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 配置项详解">
+    <nav class="md-nav" aria-label="3. Configuration Details">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-co_simulation" class="md-nav__link">
+  <a href="#31-co_simulation-top-level-object" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1. co_simulation (顶层对象)
+        3.1. co_simulation (Top-level Object)
       
     </span>
   </a>
@@ -2215,10 +2211,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-mode" class="md-nav__link">
+  <a href="#32-mode-integration-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2. mode (集成模式)
+        3.2. mode (Integration Mode)
       
     </span>
   </a>
@@ -2226,10 +2222,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#33-handlers" class="md-nav__link">
+  <a href="#33-handlers-configuration-object-list" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3. handlers (配置对象列表)
+        3.3. handlers (Configuration Object List)
       
     </span>
   </a>
@@ -2242,10 +2238,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-result-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 结果输出
+        4. Result Output
       
     </span>
   </a>
@@ -2253,22 +2249,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
+  <a href="#5-custom-handlers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 自定义处理器
+        5. Custom Handlers
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 自定义处理器">
+    <nav class="md-nav" aria-label="5. Custom Handlers">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51" class="md-nav__link">
+  <a href="#51-handler-function-specification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1. 处理器函数规范
+        5.1. Handler Function Specification
       
     </span>
   </a>
@@ -2276,10 +2272,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52" class="md-nav__link">
+  <a href="#52-handler-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2. 处理器示例
+        5.2. Handler Example
       
     </span>
   </a>
@@ -2287,10 +2283,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53" class="md-nav__link">
+  <a href="#53-updating-the-configuration-file" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3. 更新配置文件
+        5.3. Updating the Configuration File
       
     </span>
   </a>
@@ -2303,10 +2299,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
+  <a href="#6-advanced-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 高级：原理解说
+        6. Advanced: How It Works
       
     </span>
   </a>
@@ -2333,34 +2329,34 @@
   
 
 
-<h1 id="_1">协同仿真模块<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>协同仿真（Co-Simulation）是 <code>tricys</code> 中一项高级且强大的功能，它允许 Modelica 模型与外部程序（如 Aspen Plus, MATLAB, 或自定义的 Python 脚本）进行交互，实现0维系统模型与3维子模块多物理场模型进行系统集成。</p>
-<p>这对于以下场景尤其有用：</p>
+<h1 id="co-simulation-module">Co-Simulation Module<a class="headerlink" href="#co-simulation-module" title="Permanent link">&para;</a></h1>
+<p>Co-Simulation is an advanced and powerful feature in <code>tricys</code> that allows Modelica models to interact with external programs (like Aspen Plus, MATLAB, or custom Python scripts), enabling the integration of 0D system models with 3D sub-module multi-physics models.</p>
+<p>This is particularly useful for the following scenarios:</p>
 <ul>
-<li>某个子系统的模型在另一个专业软件中已经存在且非常成熟。</li>
-<li>子系统的行为非常复杂，难以用 Modelica 语言直接描述，但可以通过外部计算得到。</li>
+<li>A model for a subsystem already exists and is well-established in another specialized software.</li>
+<li>The behavior of a subsystem is too complex to be described directly in the Modelica language but can be calculated externally.</li>
 </ul>
-<h2 id="1">1. 工作流程<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>协同仿真的核心思想是“<strong>运行-处理-再运行</strong>” (Run-Process-Rerun)。</p>
+<h2 id="1-workflow">1. Workflow<a class="headerlink" href="#1-workflow" title="Permanent link">&para;</a></h2>
+<p>The core idea of co-simulation is "<strong>Run-Process-Rerun</strong>".</p>
 <pre class="mermaid"><code>graph LR
-    A[1.初步仿真] --&gt; B[(结果)];
-    B --&gt; C[2.外部处理器 Handler ];
-    C --&gt; D[(新数据)];
-    D --&gt; E[3.注入新数据];
-    E --&gt; F[4.最终完整仿真];
+    A[1. Primary Run] --&gt; B[(Results)];
+    B --&gt; C[2. External Handler];
+    C --&gt; D[(New Data)];
+    D --&gt; E[3. Inject New Data];
+    E --&gt; F[4. Final Full Simulation];
 
     style A fill:#A6C8FF
     style C fill:#FFDDA6
     style F fill:#A6FFC8</code></pre>
 <ol>
-<li><strong>初步仿真 (Primary Run)</strong>: <code>tricys</code> 首先运行一个不包含被替代子系统的初步仿真。</li>
-<li><strong>调用处理器 (Call Handlers)</strong>: 初步仿真的结果被传递给一个或多个用户定义的“处理器”(Handler)。</li>
-<li><strong>外部计算</strong>: 处理器函数接收结果，并调用外部程序（如 Aspen）或执行内部算法，计算出新的数据。</li>
-<li><strong>数据注入 (Injection)</strong>: 处理器返回一个数据字典。<code>tricys</code> 会动态地创建一个新的顶层模型，用 <code>CombiTimeTable</code> (数据表) 模块替换掉原来的子系统，并将处理器返回的数据作为这个数据表的内容。</li>
-<li><strong>最终仿真 (Final Run)</strong>: <code>tricys</code> 运行这个被动态修改过的、包含注入数据的新模型，从而完成一次完整的协同仿真。</li>
+<li><strong>Primary Run</strong>: <code>tricys</code> first runs a preliminary simulation without the substituted subsystem.</li>
+<li><strong>Call Handlers</strong>: The results of the primary run are passed to one or more user-defined "handlers".</li>
+<li><strong>External Computation</strong>: The handler function receives the results and calls an external program (like Aspen) or executes an internal algorithm to compute new data.</li>
+<li><strong>Data Injection</strong>: The handler returns a data dictionary. <code>tricys</code> dynamically creates a new top-level model, replacing the original subsystem with a <code>CombiTimeTable</code> (data table) module, and uses the data returned by the handler as the content for this table.</li>
+<li><strong>Final Run</strong>: <code>tricys</code> runs this dynamically modified new model, which contains the injected data, to complete a full co-simulation.</li>
 </ol>
-<h2 id="2">2. 配置文件示例<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>通过在 <code>config.json</code> 中定义 <code>co_simulation</code> 字段来启用此功能。</p>
+<h2 id="2-configuration-file-example">2. Configuration File Example<a class="headerlink" href="#2-configuration-file-example" title="Permanent link">&para;</a></h2>
+<p>Enable this feature by defining the <code>co_simulation</code> field in <code>config.json</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
@@ -2392,168 +2388,168 @@
 <a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="3">3. 配置项详解<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<h3 id="31-co_simulation">3.1. <code>co_simulation</code> (顶层对象)<a class="headerlink" href="#31-co_simulation" title="Permanent link">&para;</a></h3>
+<h2 id="3-configuration-details">3. Configuration Details<a class="headerlink" href="#3-configuration-details" title="Permanent link">&para;</a></h2>
+<h3 id="31-co_simulation-top-level-object">3.1. <code>co_simulation</code> (Top-level Object)<a class="headerlink" href="#31-co_simulation-top-level-object" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数 (Parameter)</th>
-<th style="text-align: left;">类型与要求</th>
-<th style="text-align: left;">描述</th>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Type &amp; Requirement</th>
+<th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align: left;"><code>mode</code></td>
-<td style="text-align: left;">字符串, 选填</td>
-<td style="text-align: left;">定义协同仿真的集成模式。默认为 <code>"interceptor"</code>。</td>
+<td style="text-align: left;">string, optional</td>
+<td style="text-align: left;">Defines the integration mode for co-simulation. Defaults to <code>"interceptor"</code>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>handlers</code></td>
-<td style="text-align: left;">列表, 必填</td>
-<td style="text-align: left;">一个或多个“处理器配置对象”的列表，每个对象定义如何处理一个特定的子模型。</td>
+<td style="text-align: left;">list, required</td>
+<td style="text-align: left;">A list of one or more "handler configuration objects", each defining how to process a specific submodel.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="32-mode">3.2. <code>mode</code> (集成模式)<a class="headerlink" href="#32-mode" title="Permanent link">&para;</a></h3>
-<p><code>mode</code> 字段决定了 <code>tricys</code> 如何将外部计算结果集成回 Modelica 模型中。</p>
+<h3 id="32-mode-integration-mode">3.2. <code>mode</code> (Integration Mode)<a class="headerlink" href="#32-mode-integration-mode" title="Permanent link">&para;</a></h3>
+<p>The <code>mode</code> field determines how <code>tricys</code> integrates the external computation results back into the Modelica model.</p>
 <ul>
 <li>
-<p><code>"interceptor"</code> (默认模式):</p>
+<p><code>"interceptor"</code> (default mode):</p>
 <ul>
-<li><strong>非侵入式</strong>。它会为目标子模型生成一个“拦截器”包裹模型，并在一个新的顶层系统模型中重定向连接。</li>
-<li><strong>优点</strong>: 原始模型文件（包括子模型和顶层模型）都保持不变，安全性高。</li>
-<li><strong>适用场景</strong>: 推荐在大多数情况下使用，尤其是当您不希望修改原始模型库时。</li>
+<li><strong>Non-invasive</strong>. It generates a "wrapper" interceptor model for the target submodel and redirects connections in a new top-level system model.</li>
+<li><strong>Advantages</strong>: The original model files (both submodel and top-level model) remain unchanged, ensuring high safety.</li>
+<li><strong>Use Case</strong>: Recommended for most situations, especially when you do not want to modify the original model library.</li>
 </ul>
 </li>
 <li>
 <p><code>"replacement"</code>:</p>
 <ul>
-<li><strong>侵入式</strong>。它会直接修改目标子模型的 <code>.mo</code> 文件（会创建 <code>.bak</code> 备份），将其内部逻辑完全替换为从CSV文件读取数据的逻辑。</li>
-<li><strong>优点</strong>: 实现更直接，不需要生成新的顶层模型。</li>
-<li><strong>适用场景</strong>: 当您希望对子模型进行永久性或半永久性的行为替换，或者在某些复杂的模型结构中，“拦截器”模式难以实现连接重路由时。</li>
+<li><strong>Invasive</strong>. It directly modifies the target submodel's <code>.mo</code> file (a <code>.bak</code> backup is created), completely replacing its internal logic with logic to read data from a CSV file.</li>
+<li><strong>Advantages</strong>: More direct implementation, no need to generate a new top-level model.</li>
+<li><strong>Use Case</strong>: When you want a permanent or semi-permanent replacement of a submodel's behavior, or in complex model structures where the "interceptor" mode has difficulty redirecting connections.</li>
 </ul>
 </li>
 </ul>
-<h3 id="33-handlers">3.3. <code>handlers</code> (配置对象列表)<a class="headerlink" href="#33-handlers" title="Permanent link">&para;</a></h3>
-<p><code>handlers</code> 列表中的每个对象都定义了一个具体的替换任务。</p>
+<h3 id="33-handlers-configuration-object-list">3.3. <code>handlers</code> (Configuration Object List)<a class="headerlink" href="#33-handlers-configuration-object-list" title="Permanent link">&para;</a></h3>
+<p>Each object in the <code>handlers</code> list defines a specific replacement task.</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数 (Parameter)</th>
-<th style="text-align: left;">类型与要求</th>
-<th style="text-align: left;">描述</th>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Type &amp; Requirement</th>
+<th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align: left;"><code>submodel_name</code></td>
-<td style="text-align: left;">字符串, 必填</td>
-<td style="text-align: left;">要被外部处理器替代的子模型的完整 Modelica 类路径。例如 <code>example_model.DIV</code>。</td>
+<td style="text-align: left;">string, required</td>
+<td style="text-align: left;">The full Modelica class path of the submodel to be replaced by an external handler. E.g., <code>example_model.DIV</code>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>instance_name</code></td>
-<td style="text-align: left;">字符串, 必填</td>
-<td style="text-align: left;">该子模型在顶层仿真模型 (<code>simulation.model_name</code>) 中的<strong>实例名</strong>。例如，如果顶层模型中有 <code>DIV div;</code>，那么这里的 <code>instance_name</code> 就是 <code>div</code>。</td>
+<td style="text-align: left;">string, required</td>
+<td style="text-align: left;">The <strong>instance name</strong> of this submodel in the top-level simulation model (<code>simulation.model_name</code>). E.g., if the top-level model has <code>DIV div;</code>, then the <code>instance_name</code> here is <code>div</code>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>handler_script_path</code></td>
-<td style="text-align: left;">字符串, 推荐</td>
-<td style="text-align: left;">指向包含处理器逻辑的 Python <strong>脚本文件</strong>的相对或绝对路径。这是指定处理器的首选方法。</td>
+<td style="text-align: left;">string, recommended</td>
+<td style="text-align: left;">The relative or absolute path to the Python <strong>script file</strong> containing the handler logic. This is the preferred method for specifying a handler.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>handler_module</code></td>
-<td style="text-align: left;">字符串, 兼容</td>
-<td style="text-align: left;">包含处理器逻辑的 Python <strong>模块</strong>的路径（例如 <code>tricys.handlers.div_handler</code>）。用于向后兼容。如果同时提供了 <code>handler_script_path</code>，则优先使用脚本路径。</td>
+<td style="text-align: left;">string, compatible</td>
+<td style="text-align: left;">The path to the Python <strong>module</strong> containing the handler logic (e.g., <code>tricys.handlers.div_handler</code>). Used for backward compatibility. If <code>handler_script_path</code> is also provided, the script path takes precedence.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>handler_function</code></td>
-<td style="text-align: left;">字符串, 必填</td>
-<td style="text-align: left;">在处理器脚本或模块中要调用的函数名。</td>
+<td style="text-align: left;">string, required</td>
+<td style="text-align: left;">The name of the handler function to be called within the script or module.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>params</code></td>
-<td style="text-align: left;">字典, 选填</td>
-<td style="text-align: left;">一个字典，其中包含的键值对将作为关键字参数传递给处理器函数。</td>
+<td style="text-align: left;">dictionary, optional</td>
+<td style="text-align: left;">A dictionary containing key-value pairs that will be passed as keyword arguments to the handler function.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="4">4. 结果输出<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
-<p>协同仿真的最终输出与标准仿真类似，会根据任务数量在结果目录 (<code>results_dir</code>) 中生成一个合并的 CSV 文件：</p>
+<h2 id="4-result-output">4. Result Output<a class="headerlink" href="#4-result-output" title="Permanent link">&para;</a></h2>
+<p>The final output of a co-simulation is similar to a standard simulation, generating a combined CSV file in the results directory (<code>results_dir</code>) based on the number of tasks:</p>
 <ul>
-<li><strong>单次运行</strong>: <code>simulation_result.csv</code></li>
-<li><strong>参数扫描</strong>: <code>sweep_results.csv</code></li>
+<li><strong>Single Run</strong>: <code>simulation_result.csv</code></li>
+<li><strong>Parameter Sweep</strong>: <code>sweep_results.csv</code></li>
 </ul>
-<p>在这个文件中，被外部处理器替代的子模块的相关变量列，其数据将来源于您的处理器函数的计算结果，而不是原始 Modelica 模型的计算结果。</p>
-<h2 id="5">5. 自定义处理器<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
-<p>要真正发挥协同仿真的威力，您需要创建自己的处理器函数。</p>
-<h3 id="51">5.1. 处理器函数规范<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
-<p>您的处理器必须遵循以下规范：</p>
+<p>In this file, the variable columns corresponding to the externally simulated submodel will be populated with data generated by your Python handlers, not from the original Modelica model's calculations.</p>
+<h2 id="5-custom-handlers">5. Custom Handlers<a class="headerlink" href="#5-custom-handlers" title="Permanent link">&para;</a></h2>
+<p>To truly leverage the power of co-simulation, you need to create your own handler functions.</p>
+<h3 id="51-handler-function-specification">5.1. Handler Function Specification<a class="headerlink" href="#51-handler-function-specification" title="Permanent link">&para;</a></h3>
+<p>Your handler must adhere to the following specifications:</p>
 <ol>
 <li>
-<p><strong>函数签名</strong>:
+<p><strong>Function Signature</strong>:
     <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">my_handler</span><span class="p">(</span><span class="n">temp_input_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temp_output_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="c1"># ... 函数体 ...</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="c1"># ... function body ...</span>
 </code></pre></div></p>
 <ul>
-<li><code>temp_input_csv</code>: <code>tricys</code> 传入的 <strong>输入文件路径</strong>。该 CSV 文件包含了第一阶段仿真记录的、子模块所需的所有输入端口数据。</li>
-<li><code>temp_output_csv</code>: 您需要将计算结果写入的 <strong>输出文件路径</strong>。</li>
-<li><code>**params</code>: 一个字典，包含了您在 <code>config.json</code> 中为该处理器配置的所有 <code>params</code>。</li>
+<li><code>temp_input_csv</code>: The <strong>input file path</strong> passed by <code>tricys</code>. This CSV file contains all the input port data for the submodel, recorded during the first simulation stage.</li>
+<li><code>temp_output_csv</code>: The <strong>output file path</strong> where you need to write your calculation results.</li>
+<li><code>**params</code>: A dictionary containing all the <code>params</code> you configured for this handler in <code>config.json</code>.</li>
 </ul>
 </li>
 <li>
-<p><strong>核心逻辑</strong>:</p>
+<p><strong>Core Logic</strong>:</p>
 <ul>
-<li>使用 <code>pandas</code> 或其他库读取 <code>temp_input_csv</code> 的数据。</li>
-<li>执行您的核心计算逻辑。</li>
-<li>将结果（<strong>必须包含 'time' 列</strong>）保存到 <code>temp_output_csv</code> 路径。</li>
+<li>Read data from <code>temp_input_csv</code> using <code>pandas</code> or another library.</li>
+<li>Execute your core computation logic.</li>
+<li>Save the results (which <strong>must include a 'time' column</strong>) to the path specified by <code>temp_output_csv</code>.</li>
 </ul>
 </li>
 <li>
-<p><strong>返回值 (重要)</strong>:</p>
+<p><strong>Return Value (Important)</strong>:</p>
 <ul>
-<li>函数 <strong>必须</strong> 返回一个字典，该字典描述了如何将您输出的 CSV 文件中的数据列映射到 Modelica 子模块的输出端口。</li>
-<li><strong>键 (key)</strong>: Modelica 子模块的输出端口名 (字符串)。</li>
-<li><strong>值 (value)</strong>: 一个表示 Modelica 数组的字符串，格式为 <code>"{t, y1, y2, ...}"</code>。其中 <code>t</code> 是 <code>time</code> 列的索引（通常是1），<code>y1</code>, <code>y2</code>... 是对应端口各维度数据列的索引。</li>
+<li>The function <strong>must</strong> return a dictionary that describes how to map the data columns in your output CSV file to the output ports of the Modelica submodel.</li>
+<li><strong>Key</strong>: The name of the Modelica submodel's output port (string).</li>
+<li><strong>Value</strong>: A string representing a Modelica array, in the format <code>"{t, y1, y2, ...}"</code>. Here, <code>t</code> is the index of the <code>time</code> column (usually 1), and <code>y1</code>, <code>y2</code>... are the indices of the data columns for each dimension of the port.</li>
 </ul>
 </li>
 </ol>
-<h3 id="52">5.2. 处理器示例<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
-<p>假设我们要替换的 Modelica 子模块 <code>MySubModel</code> 有一个5维输出端口 <code>to_O_ISS</code>。</p>
+<h3 id="52-handler-example">5.2. Handler Example<a class="headerlink" href="#52-handler-example" title="Permanent link">&para;</a></h3>
+<p>Suppose we want to replace a Modelica submodel <code>MySubModel</code> that has a 5-dimensional output port <code>to_O_ISS</code>.</p>
 <p><strong><code>my_div_handler.py</code>:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_div_simulation</span><span class="p">(</span><span class="n">temp_input_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temp_output_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="sd">    一个简单的处理器示例。</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="sd">    它读取输入，将所有输入值乘以一个来自配置的因子，然后写回。</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="sd">    A simple handler example.</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="sd">    It reads the input, multiplies all input values by a factor from the configuration, and writes them back.</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="c1"># 打印从 config.json 传入的参数</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="c1"># Print the parameters passed from config.json</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">factor</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;factor&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running DIV handler with factor: </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="c1"># 1. 读取输入数据</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="c1"># 1. Read input data</span>
 <a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">input_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">temp_input_csv</span><span class="p">)</span>
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="c1"># 2. 执行计算 (示例：将所有输入乘以因子)</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="c1"># 假设输入端口名为 &#39;div.from_plasma[1]&#39; 到 &#39;[5]&#39;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="c1"># 2. Perform calculation (Example: multiply all inputs by a factor)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="c1"># Assume input port names are &#39;div.from_plasma[1]&#39; to &#39;[5]&#39;</span>
 <a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">output_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">output_df</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_df</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
 <a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        <span class="n">input_col_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;div.from_plasma[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">]&#39;</span>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>        <span class="n">output_col_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;to_O_ISS_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="c1"># 在CSV中自定义列名</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>        <span class="n">output_col_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;to_O_ISS_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="c1"># Custom column name in the CSV</span>
 <a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>        <span class="k">if</span> <span class="n">input_col_name</span> <span class="ow">in</span> <span class="n">input_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
 <a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>            <span class="n">output_df</span><span class="p">[</span><span class="n">output_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_df</span><span class="p">[</span><span class="n">input_col_name</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor</span>
 <a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>            <span class="n">output_df</span><span class="p">[</span><span class="n">output_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># 如果输入不存在，则输出0</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>            <span class="n">output_df</span><span class="p">[</span><span class="n">output_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Output 0 if input does not exist</span>
 <a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>
-<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="c1"># 3. 将结果写入指定的输出CSV文件</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="c1"># 3. Write the results to the specified output CSV file</span>
 <a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    <span class="n">output_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">temp_output_csv</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>
-<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    <span class="c1"># 4. 返回端口到CSV列的映射</span>
-<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="c1"># CSV有6列: time, to_O_ISS_1, ..., to_O_ISS_5</span>
-<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="c1"># Modelica端口 to_O_ISS 是5维的</span>
-<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    <span class="c1"># 映射关系:</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    <span class="c1"># 4. Return the mapping from port to CSV columns</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="c1"># The CSV has 6 columns: time, to_O_ISS_1, ..., to_O_ISS_5</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="c1"># The Modelica port to_O_ISS is 5-dimensional</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    <span class="c1"># Mapping:</span>
 <a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>    <span class="c1"># time -&gt; column 1</span>
 <a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>    <span class="c1"># to_O_ISS[1] -&gt; column 2 (to_O_ISS_1)</span>
 <a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>    <span class="c1"># to_O_ISS[2] -&gt; column 3 (to_O_ISS_2)</span>
@@ -2563,30 +2559,30 @@
 <a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>        <span class="s2">&quot;to_O_ISS&quot;</span><span class="p">:</span> <span class="s2">&quot;{1,2,3,4,5,6}&quot;</span>
 <a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    <span class="p">}</span>
 </code></pre></div></p>
-<h3 id="53">5.3. 更新配置文件<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
-<p>现在，您可以更新 <code>config.json</code> 来使用这个新的本地处理器脚本。我们推荐使用 <code>handler_script_path</code>，因为它比 <code>handler_module</code> 更直接。</p>
-<p>同时，我们也可以明确指定协同仿真的 <code>mode</code>。</p>
+<h3 id="53-updating-the-configuration-file">5.3. Updating the Configuration File<a class="headerlink" href="#53-updating-the-configuration-file" title="Permanent link">&para;</a></h3>
+<p>Now, you can update your <code>config.json</code> to use this new local handler script. We recommend using <code>handler_script_path</code> as it is more direct than <code>handler_module</code>.</p>
+<p>You can also explicitly specify the co-simulation <code>mode</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="err">...</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">&quot;co_simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="nt">&quot;mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;interceptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &quot;interceptor&quot; (默认) 或 &quot;replacement&quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="nt">&quot;mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;interceptor&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &quot;interceptor&quot; (default) or &quot;replacement&quot;</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="nt">&quot;handlers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">            </span><span class="p">{</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">                </span><span class="nt">&quot;submodel_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_model.DIV&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">                </span><span class="nt">&quot;instance_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;div&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">                </span><span class="nt">&quot;handler_script_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/my_div_handler.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// 使用脚本路径</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">                </span><span class="nt">&quot;handler_script_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/my_div_handler.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Use script path</span>
 <a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">                </span><span class="nt">&quot;handler_function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;run_div_simulation&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">                </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">                    </span><span class="nt">&quot;factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="c1">// 传递给函数的自定义参数</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">                    </span><span class="nt">&quot;factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="c1">// Custom parameter passed to the function</span>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">                </span><span class="p">}</span>
 <a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">        </span><span class="p">]</span>
 <a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="6">6. 高级：原理解说<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<h2 id="6-advanced-how-it-works">6. Advanced: How It Works<a class="headerlink" href="#6-advanced-how-it-works" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><a href="../../explanation/co_simulation.md">协同仿真</a></strong>：协同仿真中两种将外部数据注入 Modelica 模型的方法。</li>
+<li><strong><a href="../../explanation/co_simulation.md">Co-Simulation Explanation</a></strong>: Learn about the two methods for injecting external data into a Modelica model during co-simulation.</li>
 </ul>
 
 
@@ -2611,7 +2607,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2620,33 +2616,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="post_processing_module.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 后处理模块">
+          <a href="post_processing_module.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Post-processing Module">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                后处理模块
+                Post-processing Module
               </div>
             </div>
           </a>
         
         
           
-          <a href="../tricys_analysis/index.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 通用介绍">
+          <a href="../tricys_analysis/index.html" class="md-footer__link md-footer__link--next" aria-label="Next: Introduction &amp; Common Config">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                通用介绍
+                Introduction & Common Config
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2683,7 +2679,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

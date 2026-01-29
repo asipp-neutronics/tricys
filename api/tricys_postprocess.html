@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../en/api/tricys_postprocess.html" hreflang="en">
+          <link rel="alternate" href="tricys_postprocess.html" hreflang="en">
         
-          <link rel="alternate" href="tricys_postprocess.html" hreflang="zh">
+          <link rel="alternate" href="../zh/api/tricys_postprocess.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>tricys.postprocess - 氚燃料循环集成仿真平台</title>
+        <title>tricys.postprocess - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-post-processing" class="md-skip">
-          跳转至
+        <a href="#api-reference-post-processing-modules" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,7 +110,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../en/api/tricys_postprocess.html" hreflang="en" class="md-select__link">
+            <a href="tricys_postprocess.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="tricys_postprocess.html" hreflang="zh" class="md-select__link">
+            <a href="../zh/api/tricys_postprocess.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -270,7 +266,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -290,7 +286,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -400,19 +396,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -439,7 +435,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -482,7 +478,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -498,7 +494,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -518,7 +514,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -562,7 +558,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -578,7 +574,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -598,7 +594,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -650,7 +646,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -666,7 +662,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -686,7 +682,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -714,7 +710,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -742,7 +738,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -770,7 +766,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -798,7 +794,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -850,7 +846,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -866,7 +862,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -886,7 +882,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -914,7 +910,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -942,7 +938,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -970,7 +966,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -998,7 +994,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1026,7 +1022,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1085,7 +1081,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1101,7 +1097,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1121,7 +1117,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1165,7 +1161,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1181,7 +1177,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1201,7 +1197,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1229,7 +1225,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1257,7 +1253,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1309,7 +1305,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1325,7 +1321,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1345,7 +1341,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1373,7 +1369,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1401,7 +1397,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1429,7 +1425,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1493,7 +1489,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1509,7 +1505,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1680,7 +1676,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -1689,7 +1685,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -1866,7 +1862,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1882,7 +1878,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1902,7 +1898,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1930,7 +1926,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1958,7 +1954,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1986,7 +1982,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2014,7 +2010,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2049,7 +2045,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2076,7 +2072,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2104,7 +2100,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2113,7 +2109,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -2238,13 +2234,13 @@
   
 
 
-<h1 id="api-post-processing">API 参考 - 后处理模块 (Post-processing)<a class="headerlink" href="#api-post-processing" title="Permanent link">&para;</a></h1>
+<h1 id="api-reference-post-processing-modules">API Reference - Post-processing Modules<a class="headerlink" href="#api-reference-post-processing-modules" title="Permanent link">&para;</a></h1>
 <div class="admonition tip">
-<p class="admonition-title">后处理模块 (Post-processing)</p>
-<p>后处理模块 (Post-processing) 提供了在仿真运行后自动执行的分析和报告功能。
-请在下方的标签页中选择您感兴趣的特定模块。</p>
+<p class="admonition-title">Post-processing Modules</p>
+<p>The Post-processing modules provide analysis and reporting functions that are automatically executed after a simulation run.
+Please select a specific module of interest from the tabs below.</p>
 </div>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Baseline Analysis (基准分析)</label><label for="__tabbed_1_2">Rise Analysis (上升时间分析)</label><label for="__tabbed_1_3">Static Alarm (静态警报)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Baseline Analysis</label><label for="__tabbed_1_2">Rise Analysis</label><label for="__tabbed_1_3">Static Alarm</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 
@@ -2368,7 +2364,10 @@ environment variables. Generates both initial LLM analysis and academic summary.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tricys/postprocess/baseline_analysis.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-879">879</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-876">876</a></span>
+<span class="normal"><a href="#__codelineno-0-877">877</a></span>
+<span class="normal"><a href="#__codelineno-0-878">878</a></span>
+<span class="normal"><a href="#__codelineno-0-879">879</a></span>
 <span class="normal"><a href="#__codelineno-0-880">880</a></span>
 <span class="normal"><a href="#__codelineno-0-881">881</a></span>
 <span class="normal"><a href="#__codelineno-0-882">882</a></span>
@@ -2477,122 +2476,119 @@ environment variables. Generates both initial LLM analysis and academic summary.
 <span class="normal"><a href="#__codelineno-0-985">985</a></span>
 <span class="normal"><a href="#__codelineno-0-986">986</a></span>
 <span class="normal"><a href="#__codelineno-0-987">987</a></span>
-<span class="normal"><a href="#__codelineno-0-988">988</a></span>
-<span class="normal"><a href="#__codelineno-0-989">989</a></span>
-<span class="normal"><a href="#__codelineno-0-990">990</a></span>
-<span class="normal"><a href="#__codelineno-0-991">991</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-879" name="__codelineno-0-879"></a><span class="k">def</span><span class="w"> </span><span class="nf">baseline_analysis</span><span class="p">(</span><span class="n">results_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-880" name="__codelineno-0-880"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates baseline analysis plots and reports.</span>
-<a id="__codelineno-0-881" name="__codelineno-0-881"></a>
-<a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="sd">    Creates three outputs:</span>
-<a id="__codelineno-0-883" name="__codelineno-0-883"></a><span class="sd">    1. A time-series plot with overall view and detailed zoom around turning point</span>
-<a id="__codelineno-0-884" name="__codelineno-0-884"></a><span class="sd">    2. A bar chart showing final values of all variables, sorted</span>
-<a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">    3. An optional Markdown report with AI analysis (if &#39;ai&#39; flag is True)</span>
-<a id="__codelineno-0-886" name="__codelineno-0-886"></a>
-<a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">        results_df: The combined DataFrame of simulation results.</span>
-<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">        output_dir: The directory to save the plots and report.</span>
-<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">        **kwargs: Additional parameters from config, including &#39;ai&#39; flag, &#39;detailed_var&#39;,</span>
-<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">            &#39;glossary_path&#39;, and AI model settings.</span>
-<a id="__codelineno-0-892" name="__codelineno-0-892"></a>
-<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">    Note:</span>
-<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">        Removes duplicate rows before processing. Creates bilingual plots (English and</span>
-<a id="__codelineno-0-895" name="__codelineno-0-895"></a><span class="sd">        Chinese). If AI analysis enabled, requires API_KEY, BASE_URL, and AI_MODELS/AI_MODEL</span>
-<a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">        environment variables. Generates both initial LLM analysis and academic summary.</span>
-<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-898" name="__codelineno-0-898"></a>    <span class="k">if</span> <span class="s2">&quot;time&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-<a id="__codelineno-0-899" name="__codelineno-0-899"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Plotting failed: &#39;time&#39; column not found in results DataFrame.&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-900" name="__codelineno-0-900"></a>        <span class="k">return</span>
+<span class="normal"><a href="#__codelineno-0-988">988</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-876" name="__codelineno-0-876"></a><span class="k">def</span><span class="w"> </span><span class="nf">baseline_analysis</span><span class="p">(</span><span class="n">results_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-877" name="__codelineno-0-877"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates baseline analysis plots and reports.</span>
+<a id="__codelineno-0-878" name="__codelineno-0-878"></a>
+<a id="__codelineno-0-879" name="__codelineno-0-879"></a><span class="sd">    Creates three outputs:</span>
+<a id="__codelineno-0-880" name="__codelineno-0-880"></a><span class="sd">    1. A time-series plot with overall view and detailed zoom around turning point</span>
+<a id="__codelineno-0-881" name="__codelineno-0-881"></a><span class="sd">    2. A bar chart showing final values of all variables, sorted</span>
+<a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="sd">    3. An optional Markdown report with AI analysis (if &#39;ai&#39; flag is True)</span>
+<a id="__codelineno-0-883" name="__codelineno-0-883"></a>
+<a id="__codelineno-0-884" name="__codelineno-0-884"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">        results_df: The combined DataFrame of simulation results.</span>
+<a id="__codelineno-0-886" name="__codelineno-0-886"></a><span class="sd">        output_dir: The directory to save the plots and report.</span>
+<a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">        **kwargs: Additional parameters from config, including &#39;ai&#39; flag, &#39;detailed_var&#39;,</span>
+<a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">            &#39;glossary_path&#39;, and AI model settings.</span>
+<a id="__codelineno-0-889" name="__codelineno-0-889"></a>
+<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">    Note:</span>
+<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">        Removes duplicate rows before processing. Creates bilingual plots (English and</span>
+<a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">        Chinese). If AI analysis enabled, requires API_KEY, BASE_URL, and AI_MODELS/AI_MODEL</span>
+<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">        environment variables. Generates both initial LLM analysis and academic summary.</span>
+<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-895" name="__codelineno-0-895"></a>    <span class="k">if</span> <span class="s2">&quot;time&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+<a id="__codelineno-0-896" name="__codelineno-0-896"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Plotting failed: &#39;time&#39; column not found in results DataFrame.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-897" name="__codelineno-0-897"></a>        <span class="k">return</span>
+<a id="__codelineno-0-898" name="__codelineno-0-898"></a>
+<a id="__codelineno-0-899" name="__codelineno-0-899"></a>    <span class="k">if</span> <span class="s2">&quot;glossary_path&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+<a id="__codelineno-0-900" name="__codelineno-0-900"></a>        <span class="n">load_glossary</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;glossary_path&quot;</span><span class="p">])</span>
 <a id="__codelineno-0-901" name="__codelineno-0-901"></a>
-<a id="__codelineno-0-902" name="__codelineno-0-902"></a>    <span class="k">if</span> <span class="s2">&quot;glossary_path&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-<a id="__codelineno-0-903" name="__codelineno-0-903"></a>        <span class="n">load_glossary</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;glossary_path&quot;</span><span class="p">])</span>
-<a id="__codelineno-0-904" name="__codelineno-0-904"></a>
-<a id="__codelineno-0-905" name="__codelineno-0-905"></a>    <span class="n">os</span><span class="o">.</span><span class="n">removedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-<a id="__codelineno-0-906" name="__codelineno-0-906"></a>    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
-<a id="__codelineno-0-907" name="__codelineno-0-907"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;report&quot;</span>
-<a id="__codelineno-0-908" name="__codelineno-0-908"></a>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-0-909" name="__codelineno-0-909"></a>
-<a id="__codelineno-0-910" name="__codelineno-0-910"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<a id="__codelineno-0-911" name="__codelineno-0-911"></a>    <span class="c1"># Remove duplicate rows before processing</span>
-<a id="__codelineno-0-912" name="__codelineno-0-912"></a>    <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-0-913" name="__codelineno-0-913"></a>    <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-0-914" name="__codelineno-0-914"></a>
-<a id="__codelineno-0-915" name="__codelineno-0-915"></a>    <span class="c1"># Create a unified color map for all variables</span>
-<a id="__codelineno-0-916" name="__codelineno-0-916"></a>    <span class="n">all_plot_columns</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s2">&quot;time&quot;</span><span class="p">])</span>
-<a id="__codelineno-0-917" name="__codelineno-0-917"></a>    <span class="n">colors</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s2">&quot;turbo&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_plot_columns</span><span class="p">))</span>
-<a id="__codelineno-0-918" name="__codelineno-0-918"></a>    <span class="n">color_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">all_plot_columns</span><span class="p">,</span> <span class="n">colors</span><span class="p">))</span>
-<a id="__codelineno-0-919" name="__codelineno-0-919"></a>
-<a id="__codelineno-0-920" name="__codelineno-0-920"></a>    <span class="c1"># Add the color map to kwargs to pass it to the helper functions</span>
-<a id="__codelineno-0-921" name="__codelineno-0-921"></a>    <span class="n">plot_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<a id="__codelineno-0-922" name="__codelineno-0-922"></a>    <span class="n">plot_kwargs</span><span class="p">[</span><span class="s2">&quot;color_map&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color_map</span>
+<a id="__codelineno-0-902" name="__codelineno-0-902"></a>    <span class="n">os</span><span class="o">.</span><span class="n">removedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+<a id="__codelineno-0-903" name="__codelineno-0-903"></a>    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+<a id="__codelineno-0-904" name="__codelineno-0-904"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;report&quot;</span>
+<a id="__codelineno-0-905" name="__codelineno-0-905"></a>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-906" name="__codelineno-0-906"></a>
+<a id="__codelineno-0-907" name="__codelineno-0-907"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-0-908" name="__codelineno-0-908"></a>    <span class="c1"># Remove duplicate rows before processing</span>
+<a id="__codelineno-0-909" name="__codelineno-0-909"></a>    <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-910" name="__codelineno-0-910"></a>    <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-911" name="__codelineno-0-911"></a>
+<a id="__codelineno-0-912" name="__codelineno-0-912"></a>    <span class="c1"># Create a unified color map for all variables</span>
+<a id="__codelineno-0-913" name="__codelineno-0-913"></a>    <span class="n">all_plot_columns</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s2">&quot;time&quot;</span><span class="p">])</span>
+<a id="__codelineno-0-914" name="__codelineno-0-914"></a>    <span class="n">colors</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s2">&quot;turbo&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_plot_columns</span><span class="p">))</span>
+<a id="__codelineno-0-915" name="__codelineno-0-915"></a>    <span class="n">color_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">all_plot_columns</span><span class="p">,</span> <span class="n">colors</span><span class="p">))</span>
+<a id="__codelineno-0-916" name="__codelineno-0-916"></a>
+<a id="__codelineno-0-917" name="__codelineno-0-917"></a>    <span class="c1"># Add the color map to kwargs to pass it to the helper functions</span>
+<a id="__codelineno-0-918" name="__codelineno-0-918"></a>    <span class="n">plot_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-0-919" name="__codelineno-0-919"></a>    <span class="n">plot_kwargs</span><span class="p">[</span><span class="s2">&quot;color_map&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color_map</span>
+<a id="__codelineno-0-920" name="__codelineno-0-920"></a>
+<a id="__codelineno-0-921" name="__codelineno-0-921"></a>    <span class="c1"># Generate the time-series plot with zoom</span>
+<a id="__codelineno-0-922" name="__codelineno-0-922"></a>    <span class="n">_plot_time_series_with_zoom</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
 <a id="__codelineno-0-923" name="__codelineno-0-923"></a>
-<a id="__codelineno-0-924" name="__codelineno-0-924"></a>    <span class="c1"># Generate the time-series plot with zoom</span>
-<a id="__codelineno-0-925" name="__codelineno-0-925"></a>    <span class="n">_plot_time_series_with_zoom</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-924" name="__codelineno-0-924"></a>    <span class="c1"># Generate the bar chart of final values</span>
+<a id="__codelineno-0-925" name="__codelineno-0-925"></a>    <span class="n">_plot_final_values_bar_chart</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
 <a id="__codelineno-0-926" name="__codelineno-0-926"></a>
-<a id="__codelineno-0-927" name="__codelineno-0-927"></a>    <span class="c1"># Generate the bar chart of final values</span>
-<a id="__codelineno-0-928" name="__codelineno-0-928"></a>    <span class="n">_plot_final_values_bar_chart</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-929" name="__codelineno-0-929"></a>
-<a id="__codelineno-0-930" name="__codelineno-0-930"></a>    <span class="c1"># --- Report Generation and AI Analysis ---</span>
-<a id="__codelineno-0-931" name="__codelineno-0-931"></a>    <span class="n">base_report_path</span><span class="p">,</span> <span class="n">base_report_content</span> <span class="o">=</span> <span class="n">_generate_postprocess_report</span><span class="p">(</span>
-<a id="__codelineno-0-932" name="__codelineno-0-932"></a>        <span class="n">df</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-<a id="__codelineno-0-933" name="__codelineno-0-933"></a>    <span class="p">)</span>
-<a id="__codelineno-0-934" name="__codelineno-0-934"></a>
-<a id="__codelineno-0-935" name="__codelineno-0-935"></a>    <span class="k">if</span> <span class="n">base_report_path</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ai&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-<a id="__codelineno-0-936" name="__codelineno-0-936"></a>        <span class="n">load_dotenv</span><span class="p">()</span>
-<a id="__codelineno-0-937" name="__codelineno-0-937"></a>        <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_KEY&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-938" name="__codelineno-0-938"></a>        <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_URL&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-939" name="__codelineno-0-939"></a>
-<a id="__codelineno-0-940" name="__codelineno-0-940"></a>        <span class="c1"># Prioritize AI_MODELS, fallback to AI_MODEL</span>
-<a id="__codelineno-0-941" name="__codelineno-0-941"></a>        <span class="n">ai_models_str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AI_MODELS&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-942" name="__codelineno-0-942"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ai_models_str</span><span class="p">:</span>
-<a id="__codelineno-0-943" name="__codelineno-0-943"></a>            <span class="n">ai_models_str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AI_MODEL&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-944" name="__codelineno-0-944"></a>
-<a id="__codelineno-0-945" name="__codelineno-0-945"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">base_url</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ai_models_str</span><span class="p">:</span>
-<a id="__codelineno-0-946" name="__codelineno-0-946"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-<a id="__codelineno-0-947" name="__codelineno-0-947"></a>                <span class="s2">&quot;API_KEY, BASE_URL, or AI_MODELS/AI_MODEL not found in environment variables. Skipping LLM analysis.&quot;</span>
-<a id="__codelineno-0-948" name="__codelineno-0-948"></a>            <span class="p">)</span>
-<a id="__codelineno-0-949" name="__codelineno-0-949"></a>            <span class="k">return</span>
-<a id="__codelineno-0-950" name="__codelineno-0-950"></a>
-<a id="__codelineno-0-951" name="__codelineno-0-951"></a>        <span class="n">ai_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">ai_models_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+<a id="__codelineno-0-927" name="__codelineno-0-927"></a>    <span class="c1"># --- Report Generation and AI Analysis ---</span>
+<a id="__codelineno-0-928" name="__codelineno-0-928"></a>    <span class="n">base_report_path</span><span class="p">,</span> <span class="n">base_report_content</span> <span class="o">=</span> <span class="n">_generate_postprocess_report</span><span class="p">(</span>
+<a id="__codelineno-0-929" name="__codelineno-0-929"></a>        <span class="n">df</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<a id="__codelineno-0-930" name="__codelineno-0-930"></a>    <span class="p">)</span>
+<a id="__codelineno-0-931" name="__codelineno-0-931"></a>
+<a id="__codelineno-0-932" name="__codelineno-0-932"></a>    <span class="k">if</span> <span class="n">base_report_path</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ai&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-0-933" name="__codelineno-0-933"></a>        <span class="n">load_dotenv</span><span class="p">()</span>
+<a id="__codelineno-0-934" name="__codelineno-0-934"></a>        <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_KEY&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-935" name="__codelineno-0-935"></a>        <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_URL&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-936" name="__codelineno-0-936"></a>
+<a id="__codelineno-0-937" name="__codelineno-0-937"></a>        <span class="c1"># Prioritize AI_MODELS, fallback to AI_MODEL</span>
+<a id="__codelineno-0-938" name="__codelineno-0-938"></a>        <span class="n">ai_models_str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AI_MODELS&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-939" name="__codelineno-0-939"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ai_models_str</span><span class="p">:</span>
+<a id="__codelineno-0-940" name="__codelineno-0-940"></a>            <span class="n">ai_models_str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AI_MODEL&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-941" name="__codelineno-0-941"></a>
+<a id="__codelineno-0-942" name="__codelineno-0-942"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">base_url</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ai_models_str</span><span class="p">:</span>
+<a id="__codelineno-0-943" name="__codelineno-0-943"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-944" name="__codelineno-0-944"></a>                <span class="s2">&quot;API_KEY, BASE_URL, or AI_MODELS/AI_MODEL not found in environment variables. Skipping LLM analysis.&quot;</span>
+<a id="__codelineno-0-945" name="__codelineno-0-945"></a>            <span class="p">)</span>
+<a id="__codelineno-0-946" name="__codelineno-0-946"></a>            <span class="k">return</span>
+<a id="__codelineno-0-947" name="__codelineno-0-947"></a>
+<a id="__codelineno-0-948" name="__codelineno-0-948"></a>        <span class="n">ai_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">ai_models_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+<a id="__codelineno-0-949" name="__codelineno-0-949"></a>
+<a id="__codelineno-0-950" name="__codelineno-0-950"></a>        <span class="k">for</span> <span class="n">ai_model</span> <span class="ow">in</span> <span class="n">ai_models</span><span class="p">:</span>
+<a id="__codelineno-0-951" name="__codelineno-0-951"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating AI analysis for model: </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-952" name="__codelineno-0-952"></a>
-<a id="__codelineno-0-953" name="__codelineno-0-953"></a>        <span class="k">for</span> <span class="n">ai_model</span> <span class="ow">in</span> <span class="n">ai_models</span><span class="p">:</span>
-<a id="__codelineno-0-954" name="__codelineno-0-954"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating AI analysis for model: </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-955" name="__codelineno-0-955"></a>
-<a id="__codelineno-0-956" name="__codelineno-0-956"></a>            <span class="n">sanitized_model_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<a id="__codelineno-0-957" name="__codelineno-0-957"></a>                <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ai_model</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-958" name="__codelineno-0-958"></a>            <span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
-<a id="__codelineno-0-959" name="__codelineno-0-959"></a>
-<a id="__codelineno-0-960" name="__codelineno-0-960"></a>            <span class="n">model_report_filename</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-961" name="__codelineno-0-961"></a>                <span class="sa">f</span><span class="s2">&quot;analysis_report_baseline_condition_</span><span class="si">{</span><span class="n">sanitized_model_name</span><span class="si">}</span><span class="s2">.md&quot;</span>
-<a id="__codelineno-0-962" name="__codelineno-0-962"></a>            <span class="p">)</span>
-<a id="__codelineno-0-963" name="__codelineno-0-963"></a>            <span class="n">model_report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_report_filename</span><span class="p">)</span>
+<a id="__codelineno-0-953" name="__codelineno-0-953"></a>            <span class="n">sanitized_model_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-0-954" name="__codelineno-0-954"></a>                <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ai_model</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-955" name="__codelineno-0-955"></a>            <span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+<a id="__codelineno-0-956" name="__codelineno-0-956"></a>
+<a id="__codelineno-0-957" name="__codelineno-0-957"></a>            <span class="n">model_report_filename</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-958" name="__codelineno-0-958"></a>                <span class="sa">f</span><span class="s2">&quot;analysis_report_baseline_condition_</span><span class="si">{</span><span class="n">sanitized_model_name</span><span class="si">}</span><span class="s2">.md&quot;</span>
+<a id="__codelineno-0-959" name="__codelineno-0-959"></a>            <span class="p">)</span>
+<a id="__codelineno-0-960" name="__codelineno-0-960"></a>            <span class="n">model_report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">model_report_filename</span><span class="p">)</span>
+<a id="__codelineno-0-961" name="__codelineno-0-961"></a>
+<a id="__codelineno-0-962" name="__codelineno-0-962"></a>            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_report_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-963" name="__codelineno-0-963"></a>                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">base_report_content</span><span class="p">)</span>
 <a id="__codelineno-0-964" name="__codelineno-0-964"></a>
-<a id="__codelineno-0-965" name="__codelineno-0-965"></a>            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_report_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-966" name="__codelineno-0-966"></a>                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">base_report_content</span><span class="p">)</span>
-<a id="__codelineno-0-967" name="__codelineno-0-967"></a>
-<a id="__codelineno-0-968" name="__codelineno-0-968"></a>            <span class="n">llm_analysis</span> <span class="o">=</span> <span class="n">_call_openai_for_postprocess_analysis</span><span class="p">(</span>
-<a id="__codelineno-0-969" name="__codelineno-0-969"></a>                <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
-<a id="__codelineno-0-970" name="__codelineno-0-970"></a>                <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span>
-<a id="__codelineno-0-971" name="__codelineno-0-971"></a>                <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
-<a id="__codelineno-0-972" name="__codelineno-0-972"></a>                <span class="n">report_content</span><span class="o">=</span><span class="n">base_report_content</span><span class="p">,</span>
-<a id="__codelineno-0-973" name="__codelineno-0-973"></a>                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-0-974" name="__codelineno-0-974"></a>            <span class="p">)</span>
-<a id="__codelineno-0-975" name="__codelineno-0-975"></a>
-<a id="__codelineno-0-976" name="__codelineno-0-976"></a>            <span class="k">if</span> <span class="n">llm_analysis</span><span class="p">:</span>
-<a id="__codelineno-0-977" name="__codelineno-0-977"></a>                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_report_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-978" name="__codelineno-0-978"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">---</span><span class="se">\n\n</span><span class="s2"># AI模型分析提示词 (</span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">)</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-979" name="__codelineno-0-979"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;```markdown</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-980" name="__codelineno-0-980"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">llm_analysis</span><span class="p">)</span>
-<a id="__codelineno-0-981" name="__codelineno-0-981"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">```</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-982" name="__codelineno-0-982"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<a id="__codelineno-0-983" name="__codelineno-0-983"></a>                    <span class="sa">f</span><span class="s2">&quot;Appended LLM analysis for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">model_report_path</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-984" name="__codelineno-0-984"></a>                <span class="p">)</span>
-<a id="__codelineno-0-985" name="__codelineno-0-985"></a>
-<a id="__codelineno-0-986" name="__codelineno-0-986"></a>                <span class="c1"># --- ADDED: Second AI call for academic summary ---</span>
-<a id="__codelineno-0-987" name="__codelineno-0-987"></a>                <span class="n">academic_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<a id="__codelineno-0-988" name="__codelineno-0-988"></a>                <span class="n">academic_kwargs</span><span class="p">[</span><span class="s2">&quot;report_filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_report_filename</span>
-<a id="__codelineno-0-989" name="__codelineno-0-989"></a>                <span class="n">generate_academic_report</span><span class="p">(</span>
-<a id="__codelineno-0-990" name="__codelineno-0-990"></a>                    <span class="n">output_dir</span><span class="p">,</span> <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span> <span class="o">**</span><span class="n">academic_kwargs</span>
-<a id="__codelineno-0-991" name="__codelineno-0-991"></a>                <span class="p">)</span>
+<a id="__codelineno-0-965" name="__codelineno-0-965"></a>            <span class="n">llm_analysis</span> <span class="o">=</span> <span class="n">_call_openai_for_postprocess_analysis</span><span class="p">(</span>
+<a id="__codelineno-0-966" name="__codelineno-0-966"></a>                <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+<a id="__codelineno-0-967" name="__codelineno-0-967"></a>                <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span>
+<a id="__codelineno-0-968" name="__codelineno-0-968"></a>                <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+<a id="__codelineno-0-969" name="__codelineno-0-969"></a>                <span class="n">report_content</span><span class="o">=</span><span class="n">base_report_content</span><span class="p">,</span>
+<a id="__codelineno-0-970" name="__codelineno-0-970"></a>                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-0-971" name="__codelineno-0-971"></a>            <span class="p">)</span>
+<a id="__codelineno-0-972" name="__codelineno-0-972"></a>
+<a id="__codelineno-0-973" name="__codelineno-0-973"></a>            <span class="k">if</span> <span class="n">llm_analysis</span><span class="p">:</span>
+<a id="__codelineno-0-974" name="__codelineno-0-974"></a>                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_report_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-975" name="__codelineno-0-975"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">---</span><span class="se">\n\n</span><span class="s2"># AI模型分析提示词 (</span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">)</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-976" name="__codelineno-0-976"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;```markdown</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-977" name="__codelineno-0-977"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">llm_analysis</span><span class="p">)</span>
+<a id="__codelineno-0-978" name="__codelineno-0-978"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">```</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-979" name="__codelineno-0-979"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+<a id="__codelineno-0-980" name="__codelineno-0-980"></a>                    <span class="sa">f</span><span class="s2">&quot;Appended LLM analysis for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">model_report_path</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-981" name="__codelineno-0-981"></a>                <span class="p">)</span>
+<a id="__codelineno-0-982" name="__codelineno-0-982"></a>
+<a id="__codelineno-0-983" name="__codelineno-0-983"></a>                <span class="c1"># --- ADDED: Second AI call for academic summary ---</span>
+<a id="__codelineno-0-984" name="__codelineno-0-984"></a>                <span class="n">academic_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-0-985" name="__codelineno-0-985"></a>                <span class="n">academic_kwargs</span><span class="p">[</span><span class="s2">&quot;report_filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_report_filename</span>
+<a id="__codelineno-0-986" name="__codelineno-0-986"></a>                <span class="n">generate_academic_report</span><span class="p">(</span>
+<a id="__codelineno-0-987" name="__codelineno-0-987"></a>                    <span class="n">output_dir</span><span class="p">,</span> <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span> <span class="o">**</span><span class="n">academic_kwargs</span>
+<a id="__codelineno-0-988" name="__codelineno-0-988"></a>                <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2616,7 +2612,10 @@ and a glossary of terms to an LLM.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tricys/postprocess/baseline_analysis.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-737">737</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-734">734</a></span>
+<span class="normal"><a href="#__codelineno-0-735">735</a></span>
+<span class="normal"><a href="#__codelineno-0-736">736</a></span>
+<span class="normal"><a href="#__codelineno-0-737">737</a></span>
 <span class="normal"><a href="#__codelineno-0-738">738</a></span>
 <span class="normal"><a href="#__codelineno-0-739">739</a></span>
 <span class="normal"><a href="#__codelineno-0-740">740</a></span>
@@ -2752,149 +2751,146 @@ and a glossary of terms to an LLM.</p>
 <span class="normal"><a href="#__codelineno-0-870">870</a></span>
 <span class="normal"><a href="#__codelineno-0-871">871</a></span>
 <span class="normal"><a href="#__codelineno-0-872">872</a></span>
-<span class="normal"><a href="#__codelineno-0-873">873</a></span>
-<span class="normal"><a href="#__codelineno-0-874">874</a></span>
-<span class="normal"><a href="#__codelineno-0-875">875</a></span>
-<span class="normal"><a href="#__codelineno-0-876">876</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-737" name="__codelineno-0-737"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_academic_report</span><span class="p">(</span><span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-738" name="__codelineno-0-738"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-739" name="__codelineno-0-739"></a><span class="sd">    Generates a professional academic analysis summary by sending the existing report</span>
-<a id="__codelineno-0-740" name="__codelineno-0-740"></a><span class="sd">    and a glossary of terms to an LLM.</span>
-<a id="__codelineno-0-741" name="__codelineno-0-741"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-742" name="__codelineno-0-742"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-743" name="__codelineno-0-743"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<a id="__codelineno-0-744" name="__codelineno-0-744"></a>            <span class="sa">f</span><span class="s2">&quot;Starting generation of the academic analysis summary for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">.&quot;</span>
-<a id="__codelineno-0-745" name="__codelineno-0-745"></a>        <span class="p">)</span>
-<a id="__codelineno-0-746" name="__codelineno-0-746"></a>
-<a id="__codelineno-0-747" name="__codelineno-0-747"></a>        <span class="c1"># 1. Read the existing report</span>
-<a id="__codelineno-0-748" name="__codelineno-0-748"></a>        <span class="n">report_filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-<a id="__codelineno-0-749" name="__codelineno-0-749"></a>            <span class="s2">&quot;report_filename&quot;</span><span class="p">,</span> <span class="s2">&quot;baseline_condition_analysis_report.md&quot;</span>
-<a id="__codelineno-0-750" name="__codelineno-0-750"></a>        <span class="p">)</span>
-<a id="__codelineno-0-751" name="__codelineno-0-751"></a>        <span class="n">report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">report_filename</span><span class="p">)</span>
-<a id="__codelineno-0-752" name="__codelineno-0-752"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">report_path</span><span class="p">):</span>
-<a id="__codelineno-0-753" name="__codelineno-0-753"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<a id="__codelineno-0-754" name="__codelineno-0-754"></a>                <span class="sa">f</span><span class="s2">&quot;Cannot generate academic summary: Original report &#39;</span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">&#39; not found.&quot;</span>
-<a id="__codelineno-0-755" name="__codelineno-0-755"></a>            <span class="p">)</span>
-<a id="__codelineno-0-756" name="__codelineno-0-756"></a>            <span class="k">return</span>
-<a id="__codelineno-0-757" name="__codelineno-0-757"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-758" name="__codelineno-0-758"></a>            <span class="n">original_report_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<a id="__codelineno-0-759" name="__codelineno-0-759"></a>
-<a id="__codelineno-0-760" name="__codelineno-0-760"></a>        <span class="c1"># 2. Read the glossary</span>
-<a id="__codelineno-0-761" name="__codelineno-0-761"></a>        <span class="n">glossary_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;glossary_path&quot;</span><span class="p">,</span> <span class="s2">&quot;sheets.csv&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-762" name="__codelineno-0-762"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">glossary_path</span><span class="p">):</span>
-<a id="__codelineno-0-763" name="__codelineno-0-763"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<a id="__codelineno-0-764" name="__codelineno-0-764"></a>                <span class="sa">f</span><span class="s2">&quot;Cannot generate academic summary: Glossary file &#39;</span><span class="si">{</span><span class="n">glossary_path</span><span class="si">}</span><span class="s2">&#39; not found.&quot;</span>
-<a id="__codelineno-0-765" name="__codelineno-0-765"></a>            <span class="p">)</span>
-<a id="__codelineno-0-766" name="__codelineno-0-766"></a>            <span class="k">return</span>
-<a id="__codelineno-0-767" name="__codelineno-0-767"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">glossary_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-768" name="__codelineno-0-768"></a>            <span class="n">glossary_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<a id="__codelineno-0-769" name="__codelineno-0-769"></a>
-<a id="__codelineno-0-770" name="__codelineno-0-770"></a>        <span class="c1"># 3. Check for API credentials</span>
-<a id="__codelineno-0-771" name="__codelineno-0-771"></a>        <span class="n">load_dotenv</span><span class="p">()</span>
-<a id="__codelineno-0-772" name="__codelineno-0-772"></a>        <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_KEY&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-773" name="__codelineno-0-773"></a>        <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_URL&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-774" name="__codelineno-0-774"></a>
-<a id="__codelineno-0-775" name="__codelineno-0-775"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">api_key</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">]):</span>
-<a id="__codelineno-0-776" name="__codelineno-0-776"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-<a id="__codelineno-0-777" name="__codelineno-0-777"></a>                <span class="s2">&quot;API_KEY, BASE_URL, or AI_MODEL not found. Skipping academic summary generation.&quot;</span>
-<a id="__codelineno-0-778" name="__codelineno-0-778"></a>            <span class="p">)</span>
-<a id="__codelineno-0-779" name="__codelineno-0-779"></a>            <span class="k">return</span>
+<span class="normal"><a href="#__codelineno-0-873">873</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-734" name="__codelineno-0-734"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_academic_report</span><span class="p">(</span><span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-735" name="__codelineno-0-735"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-736" name="__codelineno-0-736"></a><span class="sd">    Generates a professional academic analysis summary by sending the existing report</span>
+<a id="__codelineno-0-737" name="__codelineno-0-737"></a><span class="sd">    and a glossary of terms to an LLM.</span>
+<a id="__codelineno-0-738" name="__codelineno-0-738"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-739" name="__codelineno-0-739"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-740" name="__codelineno-0-740"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+<a id="__codelineno-0-741" name="__codelineno-0-741"></a>            <span class="sa">f</span><span class="s2">&quot;Starting generation of the academic analysis summary for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">.&quot;</span>
+<a id="__codelineno-0-742" name="__codelineno-0-742"></a>        <span class="p">)</span>
+<a id="__codelineno-0-743" name="__codelineno-0-743"></a>
+<a id="__codelineno-0-744" name="__codelineno-0-744"></a>        <span class="c1"># 1. Read the existing report</span>
+<a id="__codelineno-0-745" name="__codelineno-0-745"></a>        <span class="n">report_filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<a id="__codelineno-0-746" name="__codelineno-0-746"></a>            <span class="s2">&quot;report_filename&quot;</span><span class="p">,</span> <span class="s2">&quot;baseline_condition_analysis_report.md&quot;</span>
+<a id="__codelineno-0-747" name="__codelineno-0-747"></a>        <span class="p">)</span>
+<a id="__codelineno-0-748" name="__codelineno-0-748"></a>        <span class="n">report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">report_filename</span><span class="p">)</span>
+<a id="__codelineno-0-749" name="__codelineno-0-749"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">report_path</span><span class="p">):</span>
+<a id="__codelineno-0-750" name="__codelineno-0-750"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+<a id="__codelineno-0-751" name="__codelineno-0-751"></a>                <span class="sa">f</span><span class="s2">&quot;Cannot generate academic summary: Original report &#39;</span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">&#39; not found.&quot;</span>
+<a id="__codelineno-0-752" name="__codelineno-0-752"></a>            <span class="p">)</span>
+<a id="__codelineno-0-753" name="__codelineno-0-753"></a>            <span class="k">return</span>
+<a id="__codelineno-0-754" name="__codelineno-0-754"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-755" name="__codelineno-0-755"></a>            <span class="n">original_report_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<a id="__codelineno-0-756" name="__codelineno-0-756"></a>
+<a id="__codelineno-0-757" name="__codelineno-0-757"></a>        <span class="c1"># 2. Read the glossary</span>
+<a id="__codelineno-0-758" name="__codelineno-0-758"></a>        <span class="n">glossary_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;glossary_path&quot;</span><span class="p">,</span> <span class="s2">&quot;sheets.csv&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-759" name="__codelineno-0-759"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">glossary_path</span><span class="p">):</span>
+<a id="__codelineno-0-760" name="__codelineno-0-760"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+<a id="__codelineno-0-761" name="__codelineno-0-761"></a>                <span class="sa">f</span><span class="s2">&quot;Cannot generate academic summary: Glossary file &#39;</span><span class="si">{</span><span class="n">glossary_path</span><span class="si">}</span><span class="s2">&#39; not found.&quot;</span>
+<a id="__codelineno-0-762" name="__codelineno-0-762"></a>            <span class="p">)</span>
+<a id="__codelineno-0-763" name="__codelineno-0-763"></a>            <span class="k">return</span>
+<a id="__codelineno-0-764" name="__codelineno-0-764"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">glossary_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-765" name="__codelineno-0-765"></a>            <span class="n">glossary_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<a id="__codelineno-0-766" name="__codelineno-0-766"></a>
+<a id="__codelineno-0-767" name="__codelineno-0-767"></a>        <span class="c1"># 3. Check for API credentials</span>
+<a id="__codelineno-0-768" name="__codelineno-0-768"></a>        <span class="n">load_dotenv</span><span class="p">()</span>
+<a id="__codelineno-0-769" name="__codelineno-0-769"></a>        <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_KEY&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-770" name="__codelineno-0-770"></a>        <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_URL&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-771" name="__codelineno-0-771"></a>
+<a id="__codelineno-0-772" name="__codelineno-0-772"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">api_key</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">]):</span>
+<a id="__codelineno-0-773" name="__codelineno-0-773"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-774" name="__codelineno-0-774"></a>                <span class="s2">&quot;API_KEY, BASE_URL, or AI_MODEL not found. Skipping academic summary generation.&quot;</span>
+<a id="__codelineno-0-775" name="__codelineno-0-775"></a>            <span class="p">)</span>
+<a id="__codelineno-0-776" name="__codelineno-0-776"></a>            <span class="k">return</span>
+<a id="__codelineno-0-777" name="__codelineno-0-777"></a>
+<a id="__codelineno-0-778" name="__codelineno-0-778"></a>        <span class="c1"># 4. Construct the prompt</span>
+<a id="__codelineno-0-779" name="__codelineno-0-779"></a>        <span class="n">role_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。</span>
 <a id="__codelineno-0-780" name="__codelineno-0-780"></a>
-<a id="__codelineno-0-781" name="__codelineno-0-781"></a>        <span class="c1"># 4. Construct the prompt</span>
-<a id="__codelineno-0-782" name="__codelineno-0-782"></a>        <span class="n">role_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。</span>
+<a id="__codelineno-0-781" name="__codelineno-0-781"></a><span class="s2">**任务：** 您收到了由程序自动生成的初步分析报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。</span>
+<a id="__codelineno-0-782" name="__codelineno-0-782"></a><span class="s2">&quot;&quot;&quot;</span>
 <a id="__codelineno-0-783" name="__codelineno-0-783"></a>
-<a id="__codelineno-0-784" name="__codelineno-0-784"></a><span class="s2">**任务：** 您收到了由程序自动生成的初步分析报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。</span>
-<a id="__codelineno-0-785" name="__codelineno-0-785"></a><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-786" name="__codelineno-0-786"></a>
-<a id="__codelineno-0-787" name="__codelineno-0-787"></a>        <span class="c1"># Find all plots to instruct the LLM to include them</span>
-<a id="__codelineno-0-788" name="__codelineno-0-788"></a>        <span class="n">all_plots</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;.png&quot;</span><span class="p">))]</span>
-<a id="__codelineno-0-789" name="__codelineno-0-789"></a>        <span class="n">plot_list_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;    *   `</span><span class="si">{</span><span class="n">plot</span><span class="si">}</span><span class="s2">`&quot;</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">all_plots</span><span class="p">])</span>
-<a id="__codelineno-0-790" name="__codelineno-0-790"></a>        <span class="n">instructions_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;**指令：**</span>
-<a id="__codelineno-0-791" name="__codelineno-0-791"></a>
-<a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="s2">1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `detailed_var`）替换为术语表中对应的“中文翻译”或“英文术语”。例如，应将“`sds`的库存”表述为“储存与输送系统 (SDS) 的氚库存量 (Tritium Inventory)”。</span>
-<a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="s2">2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。避免使用“看起来”、“好像”等模糊词汇。</span>
-<a id="__codelineno-0-794" name="__codelineno-0-794"></a><span class="s2">3.  **图表和表格的呈现与引用：**</span>
-<a id="__codelineno-0-795" name="__codelineno-0-795"></a><span class="s2">    *   **显示图表：** 在报告的“结果与讨论”部分，您**必须**使用Markdown语法 `![图表标题](图表文件名)` 来**直接嵌入**和显示初步报告中包含的所有图表。可用的图表文件如下：</span>
-<a id="__codelineno-0-796" name="__codelineno-0-796"></a><span class="si">{</span><span class="n">plot_list_str</span><span class="si">}</span>
-<a id="__codelineno-0-797" name="__codelineno-0-797"></a><span class="s2">    *   **引用图表：** 在正文中分析和讨论图表内容时，请使用“如图1所示...”等方式对图表进行编号和文字引用。</span>
-<a id="__codelineno-0-798" name="__codelineno-0-798"></a><span class="s2">    *   **显示表格：** 当呈现数据时（例如，关键阶段的抽样数据或最终值），您**必须**使用Markdown的管道表格（pipe-table）格式来清晰地展示它们。您可以直接复用或重新格式化初步报告中的数据表格。</span>
-<a id="__codelineno-0-799" name="__codelineno-0-799"></a><span class="s2">4.  **结构化报告：** 您的报告是关于一个**基准工况（Baseline Operating Condition）**的模拟分析。报告应包含以下部分：</span>
-<a id="__codelineno-0-800" name="__codelineno-0-800"></a><span class="s2">    *   **摘要 (Abstract):** 简要概括本次**基准工况**模拟的目的、关键发现和核心结论。</span>
-<a id="__codelineno-0-801" name="__codelineno-0-801"></a><span class="s2">    *   **引言 (Introduction):** 描述**基准工况**模拟的背景和目标，提及关键的输入参数。</span>
-<a id="__codelineno-0-802" name="__codelineno-0-802"></a><span class="s2">    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。分点详细论述：</span>
-<a id="__codelineno-0-803" name="__codelineno-0-803"></a><span class="s2">        *   关键性能指标（如氚自持时间、倍增时间等，如果数据可用）的总体趋势。</span>
-<a id="__codelineno-0-804" name="__codelineno-0-804"></a><span class="s2">        *   对关键转折点（例如氚库存的最低点）的物理意义进行深入分析。</span>
-<a id="__codelineno-0-805" name="__codelineno-0-805"></a><span class="s2">        *   评估系统在模拟结束时的最终状态，并讨论氚在各子系统中的分布情况。</span>
-<a id="__codelineno-0-806" name="__codelineno-0-806"></a><span class="s2">    *   **结论 (Conclusion):** 总结本次模拟研究得出的主要学术结论。</span>
-<a id="__codelineno-0-807" name="__codelineno-0-807"></a><span class="s2">5.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容（包括图表和表格）都遵循正确的Markdown语法。</span>
+<a id="__codelineno-0-784" name="__codelineno-0-784"></a>        <span class="c1"># Find all plots to instruct the LLM to include them</span>
+<a id="__codelineno-0-785" name="__codelineno-0-785"></a>        <span class="n">all_plots</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;.png&quot;</span><span class="p">))]</span>
+<a id="__codelineno-0-786" name="__codelineno-0-786"></a>        <span class="n">plot_list_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;    *   `</span><span class="si">{</span><span class="n">plot</span><span class="si">}</span><span class="s2">`&quot;</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">all_plots</span><span class="p">])</span>
+<a id="__codelineno-0-787" name="__codelineno-0-787"></a>        <span class="n">instructions_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;**指令：**</span>
+<a id="__codelineno-0-788" name="__codelineno-0-788"></a>
+<a id="__codelineno-0-789" name="__codelineno-0-789"></a><span class="s2">1.  **专业化语言：** 将初步报告中的模型参数/缩写（例如 `sds.I[1]`, `detailed_var`）替换为术语表中对应的“中文翻译”或“英文术语”。例如，应将“`sds`的库存”表述为“储存与输送系统 (SDS) 的氚库存量 (Tritium Inventory)”。</span>
+<a id="__codelineno-0-790" name="__codelineno-0-790"></a><span class="s2">2.  **学术化重述：** 用严谨、客观的学术语言重新组织和阐述初步报告中的发现。避免使用“看起来”、“好像”等模糊词汇。</span>
+<a id="__codelineno-0-791" name="__codelineno-0-791"></a><span class="s2">3.  **图表和表格的呈现与引用：**</span>
+<a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="s2">    *   **显示图表：** 在报告的“结果与讨论”部分，您**必须**使用Markdown语法 `![图表标题](图表文件名)` 来**直接嵌入**和显示初步报告中包含的所有图表。可用的图表文件如下：</span>
+<a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="si">{</span><span class="n">plot_list_str</span><span class="si">}</span>
+<a id="__codelineno-0-794" name="__codelineno-0-794"></a><span class="s2">    *   **引用图表：** 在正文中分析和讨论图表内容时，请使用“如图1所示...”等方式对图表进行编号和文字引用。</span>
+<a id="__codelineno-0-795" name="__codelineno-0-795"></a><span class="s2">    *   **显示表格：** 当呈现数据时（例如，关键阶段的抽样数据或最终值），您**必须**使用Markdown的管道表格（pipe-table）格式来清晰地展示它们。您可以直接复用或重新格式化初步报告中的数据表格。</span>
+<a id="__codelineno-0-796" name="__codelineno-0-796"></a><span class="s2">4.  **结构化报告：** 您的报告是关于一个**基准工况（Baseline Operating Condition）**的模拟分析。报告应包含以下部分：</span>
+<a id="__codelineno-0-797" name="__codelineno-0-797"></a><span class="s2">    *   **摘要 (Abstract):** 简要概括本次**基准工况**模拟的目的、关键发现和核心结论。</span>
+<a id="__codelineno-0-798" name="__codelineno-0-798"></a><span class="s2">    *   **引言 (Introduction):** 描述**基准工况**模拟的背景和目标，提及关键的输入参数。</span>
+<a id="__codelineno-0-799" name="__codelineno-0-799"></a><span class="s2">    *   **结果与讨论 (Results and Discussion):** 这是报告的核心。分点详细论述：</span>
+<a id="__codelineno-0-800" name="__codelineno-0-800"></a><span class="s2">        *   关键性能指标（如氚自持时间、倍增时间等，如果数据可用）的总体趋势。</span>
+<a id="__codelineno-0-801" name="__codelineno-0-801"></a><span class="s2">        *   对关键转折点（例如氚库存的最低点）的物理意义进行深入分析。</span>
+<a id="__codelineno-0-802" name="__codelineno-0-802"></a><span class="s2">        *   评估系统在模拟结束时的最终状态，并讨论氚在各子系统中的分布情况。</span>
+<a id="__codelineno-0-803" name="__codelineno-0-803"></a><span class="s2">    *   **结论 (Conclusion):** 总结本次模拟研究得出的主要学术结论。</span>
+<a id="__codelineno-0-804" name="__codelineno-0-804"></a><span class="s2">5.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容（包括图表和表格）都遵循正确的Markdown语法。</span>
+<a id="__codelineno-0-805" name="__codelineno-0-805"></a>
+<a id="__codelineno-0-806" name="__codelineno-0-806"></a><span class="s2">**输入文件：**</span>
+<a id="__codelineno-0-807" name="__codelineno-0-807"></a><span class="s2">&quot;&quot;&quot;</span>
 <a id="__codelineno-0-808" name="__codelineno-0-808"></a>
-<a id="__codelineno-0-809" name="__codelineno-0-809"></a><span class="s2">**输入文件：**</span>
-<a id="__codelineno-0-810" name="__codelineno-0-810"></a><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-811" name="__codelineno-0-811"></a>
-<a id="__codelineno-0-812" name="__codelineno-0-812"></a>        <span class="n">analysis_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-813" name="__codelineno-0-813"></a><span class="s2">---</span>
-<a id="__codelineno-0-814" name="__codelineno-0-814"></a><span class="s2">### 1. 初步分析报告 (`baseline_condition_analysis_report.md`)</span>
+<a id="__codelineno-0-809" name="__codelineno-0-809"></a>        <span class="n">analysis_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-810" name="__codelineno-0-810"></a><span class="s2">---</span>
+<a id="__codelineno-0-811" name="__codelineno-0-811"></a><span class="s2">### 1. 初步分析报告 (`baseline_condition_analysis_report.md`)</span>
+<a id="__codelineno-0-812" name="__codelineno-0-812"></a><span class="s2">---</span>
+<a id="__codelineno-0-813" name="__codelineno-0-813"></a><span class="si">{</span><span class="n">original_report_content</span><span class="si">}</span>
+<a id="__codelineno-0-814" name="__codelineno-0-814"></a>
 <a id="__codelineno-0-815" name="__codelineno-0-815"></a><span class="s2">---</span>
-<a id="__codelineno-0-816" name="__codelineno-0-816"></a><span class="si">{</span><span class="n">original_report_content</span><span class="si">}</span>
-<a id="__codelineno-0-817" name="__codelineno-0-817"></a>
-<a id="__codelineno-0-818" name="__codelineno-0-818"></a><span class="s2">---</span>
-<a id="__codelineno-0-819" name="__codelineno-0-819"></a><span class="s2">### 2. 专业术语表 (`sheets.csv`)</span>
-<a id="__codelineno-0-820" name="__codelineno-0-820"></a><span class="s2">---</span>
-<a id="__codelineno-0-821" name="__codelineno-0-821"></a><span class="si">{</span><span class="n">glossary_content</span><span class="si">}</span>
-<a id="__codelineno-0-822" name="__codelineno-0-822"></a><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-823" name="__codelineno-0-823"></a>
-<a id="__codelineno-0-824" name="__codelineno-0-824"></a>        <span class="c1"># 5. Call the API</span>
-<a id="__codelineno-0-825" name="__codelineno-0-825"></a>        <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">3</span>
-<a id="__codelineno-0-826" name="__codelineno-0-826"></a>        <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
-<a id="__codelineno-0-827" name="__codelineno-0-827"></a>            <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-828" name="__codelineno-0-828"></a>                <span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">)</span>
-<a id="__codelineno-0-829" name="__codelineno-0-829"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<a id="__codelineno-0-830" name="__codelineno-0-830"></a>                    <span class="sa">f</span><span class="s2">&quot;Sending request to OpenAI API for academic summary for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2"> (Attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s2">)...&quot;</span>
-<a id="__codelineno-0-831" name="__codelineno-0-831"></a>                <span class="p">)</span>
-<a id="__codelineno-0-832" name="__codelineno-0-832"></a>
-<a id="__codelineno-0-833" name="__codelineno-0-833"></a>                <span class="n">full_text_prompt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<a id="__codelineno-0-834" name="__codelineno-0-834"></a>                    <span class="p">[</span><span class="n">role_prompt</span><span class="p">,</span> <span class="n">instructions_prompt</span><span class="p">,</span> <span class="n">analysis_prompt</span><span class="p">]</span>
-<a id="__codelineno-0-835" name="__codelineno-0-835"></a>                <span class="p">)</span>
-<a id="__codelineno-0-836" name="__codelineno-0-836"></a>
-<a id="__codelineno-0-837" name="__codelineno-0-837"></a>                <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-<a id="__codelineno-0-838" name="__codelineno-0-838"></a>                    <span class="n">model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
-<a id="__codelineno-0-839" name="__codelineno-0-839"></a>                    <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">full_text_prompt</span><span class="p">}],</span>
-<a id="__codelineno-0-840" name="__codelineno-0-840"></a>                    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span>
-<a id="__codelineno-0-841" name="__codelineno-0-841"></a>                <span class="p">)</span>
-<a id="__codelineno-0-842" name="__codelineno-0-842"></a>                <span class="n">academic_summary</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
-<a id="__codelineno-0-843" name="__codelineno-0-843"></a>
-<a id="__codelineno-0-844" name="__codelineno-0-844"></a>                <span class="c1"># 6. Save the result</span>
-<a id="__codelineno-0-845" name="__codelineno-0-845"></a>                <span class="n">sanitized_model_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<a id="__codelineno-0-846" name="__codelineno-0-846"></a>                    <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ai_model</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-847" name="__codelineno-0-847"></a>                <span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
-<a id="__codelineno-0-848" name="__codelineno-0-848"></a>                <span class="n">summary_filename</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-849" name="__codelineno-0-849"></a>                    <span class="sa">f</span><span class="s2">&quot;academic_analysis_summary_</span><span class="si">{</span><span class="n">sanitized_model_name</span><span class="si">}</span><span class="s2">.md&quot;</span>
-<a id="__codelineno-0-850" name="__codelineno-0-850"></a>                <span class="p">)</span>
-<a id="__codelineno-0-851" name="__codelineno-0-851"></a>                <span class="n">summary_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">summary_filename</span><span class="p">)</span>
-<a id="__codelineno-0-852" name="__codelineno-0-852"></a>                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-853" name="__codelineno-0-853"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">academic_summary</span><span class="p">)</span>
-<a id="__codelineno-0-854" name="__codelineno-0-854"></a>
-<a id="__codelineno-0-855" name="__codelineno-0-855"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<a id="__codelineno-0-856" name="__codelineno-0-856"></a>                    <span class="sa">f</span><span class="s2">&quot;Successfully generated academic analysis summary: </span><span class="si">{</span><span class="n">summary_path</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-857" name="__codelineno-0-857"></a>                <span class="p">)</span>
-<a id="__codelineno-0-858" name="__codelineno-0-858"></a>                <span class="k">return</span>  <span class="c1"># Exit after success</span>
-<a id="__codelineno-0-859" name="__codelineno-0-859"></a>
-<a id="__codelineno-0-860" name="__codelineno-0-860"></a>            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-0-861" name="__codelineno-0-861"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<a id="__codelineno-0-862" name="__codelineno-0-862"></a>                    <span class="sa">f</span><span class="s2">&quot;Error calling OpenAI API for academic summary on attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-863" name="__codelineno-0-863"></a>                <span class="p">)</span>
-<a id="__codelineno-0-864" name="__codelineno-0-864"></a>                <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-0-865" name="__codelineno-0-865"></a>                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<a id="__codelineno-0-866" name="__codelineno-0-866"></a>                <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-867" name="__codelineno-0-867"></a>                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<a id="__codelineno-0-868" name="__codelineno-0-868"></a>                        <span class="sa">f</span><span class="s2">&quot;Failed to generate academic summary for </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s2"> attempts.&quot;</span>
-<a id="__codelineno-0-869" name="__codelineno-0-869"></a>                    <span class="p">)</span>
-<a id="__codelineno-0-870" name="__codelineno-0-870"></a>                    <span class="k">return</span>  <span class="c1"># Exit after all retries failed</span>
-<a id="__codelineno-0-871" name="__codelineno-0-871"></a>
-<a id="__codelineno-0-872" name="__codelineno-0-872"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-0-873" name="__codelineno-0-873"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<a id="__codelineno-0-874" name="__codelineno-0-874"></a>            <span class="sa">f</span><span class="s2">&quot;Error in generate_academic_report for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-875" name="__codelineno-0-875"></a>            <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-876" name="__codelineno-0-876"></a>        <span class="p">)</span>
+<a id="__codelineno-0-816" name="__codelineno-0-816"></a><span class="s2">### 2. 专业术语表 (`sheets.csv`)</span>
+<a id="__codelineno-0-817" name="__codelineno-0-817"></a><span class="s2">---</span>
+<a id="__codelineno-0-818" name="__codelineno-0-818"></a><span class="si">{</span><span class="n">glossary_content</span><span class="si">}</span>
+<a id="__codelineno-0-819" name="__codelineno-0-819"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-820" name="__codelineno-0-820"></a>
+<a id="__codelineno-0-821" name="__codelineno-0-821"></a>        <span class="c1"># 5. Call the API</span>
+<a id="__codelineno-0-822" name="__codelineno-0-822"></a>        <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">3</span>
+<a id="__codelineno-0-823" name="__codelineno-0-823"></a>        <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+<a id="__codelineno-0-824" name="__codelineno-0-824"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-825" name="__codelineno-0-825"></a>                <span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">)</span>
+<a id="__codelineno-0-826" name="__codelineno-0-826"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+<a id="__codelineno-0-827" name="__codelineno-0-827"></a>                    <span class="sa">f</span><span class="s2">&quot;Sending request to OpenAI API for academic summary for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2"> (Attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s2">)...&quot;</span>
+<a id="__codelineno-0-828" name="__codelineno-0-828"></a>                <span class="p">)</span>
+<a id="__codelineno-0-829" name="__codelineno-0-829"></a>
+<a id="__codelineno-0-830" name="__codelineno-0-830"></a>                <span class="n">full_text_prompt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-0-831" name="__codelineno-0-831"></a>                    <span class="p">[</span><span class="n">role_prompt</span><span class="p">,</span> <span class="n">instructions_prompt</span><span class="p">,</span> <span class="n">analysis_prompt</span><span class="p">]</span>
+<a id="__codelineno-0-832" name="__codelineno-0-832"></a>                <span class="p">)</span>
+<a id="__codelineno-0-833" name="__codelineno-0-833"></a>
+<a id="__codelineno-0-834" name="__codelineno-0-834"></a>                <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-0-835" name="__codelineno-0-835"></a>                    <span class="n">model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+<a id="__codelineno-0-836" name="__codelineno-0-836"></a>                    <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">full_text_prompt</span><span class="p">}],</span>
+<a id="__codelineno-0-837" name="__codelineno-0-837"></a>                    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span>
+<a id="__codelineno-0-838" name="__codelineno-0-838"></a>                <span class="p">)</span>
+<a id="__codelineno-0-839" name="__codelineno-0-839"></a>                <span class="n">academic_summary</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
+<a id="__codelineno-0-840" name="__codelineno-0-840"></a>
+<a id="__codelineno-0-841" name="__codelineno-0-841"></a>                <span class="c1"># 6. Save the result</span>
+<a id="__codelineno-0-842" name="__codelineno-0-842"></a>                <span class="n">sanitized_model_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<a id="__codelineno-0-843" name="__codelineno-0-843"></a>                    <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ai_model</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-844" name="__codelineno-0-844"></a>                <span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+<a id="__codelineno-0-845" name="__codelineno-0-845"></a>                <span class="n">summary_filename</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-846" name="__codelineno-0-846"></a>                    <span class="sa">f</span><span class="s2">&quot;academic_analysis_summary_</span><span class="si">{</span><span class="n">sanitized_model_name</span><span class="si">}</span><span class="s2">.md&quot;</span>
+<a id="__codelineno-0-847" name="__codelineno-0-847"></a>                <span class="p">)</span>
+<a id="__codelineno-0-848" name="__codelineno-0-848"></a>                <span class="n">summary_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">summary_filename</span><span class="p">)</span>
+<a id="__codelineno-0-849" name="__codelineno-0-849"></a>                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-850" name="__codelineno-0-850"></a>                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">academic_summary</span><span class="p">)</span>
+<a id="__codelineno-0-851" name="__codelineno-0-851"></a>
+<a id="__codelineno-0-852" name="__codelineno-0-852"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+<a id="__codelineno-0-853" name="__codelineno-0-853"></a>                    <span class="sa">f</span><span class="s2">&quot;Successfully generated academic analysis summary: </span><span class="si">{</span><span class="n">summary_path</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-854" name="__codelineno-0-854"></a>                <span class="p">)</span>
+<a id="__codelineno-0-855" name="__codelineno-0-855"></a>                <span class="k">return</span>  <span class="c1"># Exit after success</span>
+<a id="__codelineno-0-856" name="__codelineno-0-856"></a>
+<a id="__codelineno-0-857" name="__codelineno-0-857"></a>            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-858" name="__codelineno-0-858"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+<a id="__codelineno-0-859" name="__codelineno-0-859"></a>                    <span class="sa">f</span><span class="s2">&quot;Error calling OpenAI API for academic summary on attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-860" name="__codelineno-0-860"></a>                <span class="p">)</span>
+<a id="__codelineno-0-861" name="__codelineno-0-861"></a>                <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-862" name="__codelineno-0-862"></a>                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-863" name="__codelineno-0-863"></a>                <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-864" name="__codelineno-0-864"></a>                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+<a id="__codelineno-0-865" name="__codelineno-0-865"></a>                        <span class="sa">f</span><span class="s2">&quot;Failed to generate academic summary for </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s2"> attempts.&quot;</span>
+<a id="__codelineno-0-866" name="__codelineno-0-866"></a>                    <span class="p">)</span>
+<a id="__codelineno-0-867" name="__codelineno-0-867"></a>                    <span class="k">return</span>  <span class="c1"># Exit after all retries failed</span>
+<a id="__codelineno-0-868" name="__codelineno-0-868"></a>
+<a id="__codelineno-0-869" name="__codelineno-0-869"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-870" name="__codelineno-0-870"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+<a id="__codelineno-0-871" name="__codelineno-0-871"></a>            <span class="sa">f</span><span class="s2">&quot;Error in generate_academic_report for model </span><span class="si">{</span><span class="n">ai_model</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-872" name="__codelineno-0-872"></a>            <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-873" name="__codelineno-0-873"></a>        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3918,7 +3914,7 @@ separate fields in the report. Reports total alarm count in logs.</p>
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -3929,17 +3925,17 @@ separate fields in the report. Reports total alarm count in logs.</p>
       
         
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="tricys_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: tricys.analysis">
+          <a href="tricys_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: tricys.analysis">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
                 tricys.analysis
@@ -3949,10 +3945,10 @@ separate fields in the report. Reports total alarm count in logs.</p>
         
         
           
-          <a href="tricys_handlers.html" class="md-footer__link md-footer__link--next" aria-label="下一页: tricys.handlers">
+          <a href="tricys_handlers.html" class="md-footer__link md-footer__link--next" aria-label="Next: tricys.handlers">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
                 tricys.handlers
@@ -3992,7 +3988,7 @@ separate fields in the report. Reports total alarm count in logs.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>

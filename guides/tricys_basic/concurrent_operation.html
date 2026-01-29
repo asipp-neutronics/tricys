@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/guides/tricys_basic/concurrent_operation.html" hreflang="en">
+          <link rel="alternate" href="concurrent_operation.html" hreflang="en">
         
-          <link rel="alternate" href="concurrent_operation.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/guides/tricys_basic/concurrent_operation.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>并发运行 - 氚燃料循环集成仿真平台</title>
+        <title>Concurrent Operation - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
-          跳转至
+        <a href="#concurrent-operation-enhanced-mode" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              并发运行
+              Concurrent Operation
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/guides/tricys_basic/concurrent_operation.html" hreflang="en" class="md-select__link">
+            <a href="concurrent_operation.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="concurrent_operation.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/guides/tricys_basic/concurrent_operation.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -272,7 +268,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -485,7 +481,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -501,7 +497,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -521,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -568,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -584,7 +580,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -604,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -661,7 +657,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -677,7 +673,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -697,7 +693,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -725,7 +721,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -762,7 +758,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -780,7 +776,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -792,7 +788,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -801,49 +797,27 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-what-is-enhanced-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 如何启用并发
+        1. What is Enhanced Mode?
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 配置项详解
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 配置项详解">
+    <nav class="md-nav" aria-label="1. What is Enhanced Mode?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-simulationconcurrent" class="md-nav__link">
+  <a href="#core-features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. simulation.concurrent
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-simulationmax_workers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.2. simulation.max_workers
+        Core Features:
       
     </span>
   </a>
@@ -852,6 +826,106 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-how-to-enable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. How to Enable
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. How to Enable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-quick-enable-via-cli-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Quick Enable via CLI (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-enable-via-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Enable via Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configuration-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Configuration Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Configuration Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulationconcurrent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        simulation.concurrent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulationmax_workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        simulation.max_workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-smart-concurrency-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Smart Concurrency Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-result-file-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Result File Differences
+      
+    </span>
+  </a>
   
 </li>
       
@@ -878,7 +952,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -906,7 +980,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -961,7 +1035,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -977,7 +1051,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -997,7 +1071,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -1025,7 +1099,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -1053,7 +1127,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -1081,7 +1155,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1109,7 +1183,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1137,7 +1211,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1196,7 +1270,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1212,7 +1286,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1232,7 +1306,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1276,7 +1350,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1292,7 +1366,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1312,7 +1386,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1340,7 +1414,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1368,7 +1442,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1420,7 +1494,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1436,7 +1510,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1456,7 +1530,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1484,7 +1558,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1512,7 +1586,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1540,7 +1614,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1599,7 +1673,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1615,7 +1689,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1826,7 +1900,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1842,7 +1916,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1862,7 +1936,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1890,7 +1964,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1918,7 +1992,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1946,7 +2020,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -1974,7 +2048,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2009,7 +2083,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2036,7 +2110,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2062,7 +2136,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2071,49 +2145,27 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-what-is-enhanced-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 如何启用并发
+        1. What is Enhanced Mode?
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 配置项详解
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 配置项详解">
+    <nav class="md-nav" aria-label="1. What is Enhanced Mode?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-simulationconcurrent" class="md-nav__link">
+  <a href="#core-features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. simulation.concurrent
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-simulationmax_workers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.2. simulation.max_workers
+        Core Features:
       
     </span>
   </a>
@@ -2122,6 +2174,106 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-how-to-enable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. How to Enable
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. How to Enable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-quick-enable-via-cli-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Quick Enable via CLI (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-enable-via-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Enable via Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configuration-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Configuration Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Configuration Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulationconcurrent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        simulation.concurrent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulationmax_workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        simulation.max_workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-smart-concurrency-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Smart Concurrency Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-result-file-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Result File Differences
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2145,48 +2297,108 @@
   
 
 
-<h1 id="_1">并发运行<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>对于包含大量仿真任务的参数扫描，逐个顺序执行可能会非常耗时。<code>tricys</code> 支持并发运行（并行计算），可以充分利用您计算机的多个 CPU 核心，显著缩短总仿真时间。</p>
-<h2 id="1">1. 如何启用并发<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>启用并发非常简单，只需在配置文件的 <code>simulation</code> 部分将 <code>concurrent</code> 标志设置为 <code>true</code>。</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="err">...</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nt">&quot;model_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_model.Cycle&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="err">...</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1:1.5:10&quot;</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="p">}</span>
-</code></pre></div>
-<h2 id="2">2. 配置项详解<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<h3 id="21-simulationconcurrent">2.1. <code>simulation.concurrent</code><a class="headerlink" href="#21-simulationconcurrent" title="Permanent link">&para;</a></h3>
+<h1 id="concurrent-operation-enhanced-mode">Concurrent Operation &amp; Enhanced Mode<a class="headerlink" href="#concurrent-operation-enhanced-mode" title="Permanent link">&para;</a></h1>
+<p>For parameter sweeps involving a large number of simulation tasks, executing them sequentially one by one can be very time-consuming. <code>tricys</code> supports concurrent operation (parallel computing) to fully utilize your computer's multiple CPU cores, significantly reducing the total simulation time.</p>
+<p>Additionally, TRICYS introduces <strong>Enhanced Mode</strong>, which uses a "Compile Once, Run Many" strategy and efficient data streaming to drastically improve simulation efficiency and stability.</p>
+<h2 id="1-what-is-enhanced-mode">1. What is Enhanced Mode?<a class="headerlink" href="#1-what-is-enhanced-mode" title="Permanent link">&para;</a></h2>
+<p>Enhanced Mode is an optimized execution mode in <code>tricys</code> designed for large-scale simulations. It addresses performance bottlenecks and Out-Of-Memory (OOM) issues often encountered when using traditional OpenModelica calls for thousands of simulations.</p>
+<h3 id="core-features">Core Features:<a class="headerlink" href="#core-features" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Compile Once, Run Many</strong>:</p>
 <ul>
-<li><strong>描述</strong>: 是否启用并发运行。</li>
-<li><strong>类型</strong>: 布尔值 (<code>true</code> 或 <code>false</code>)。</li>
-<li><strong>默认值</strong>: <code>false</code>。</li>
-<li><strong>工作原理</strong>: 当设置为 <code>true</code> 时，<code>tricys</code> 会启动一个进程池，将仿真任务（例如参数扫描中的每一次运行）分配给不同的进程并行执行。</li>
-</ul>
-<h3 id="22-simulationmax_workers">2.2. <code>simulation.max_workers</code><a class="headerlink" href="#22-simulationmax_workers" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>描述</strong>: 控制用于并发执行的最大进程数（或称“工作进程”数量）。</li>
-<li><strong>类型</strong>: 整数 (选填)。</li>
-<li><strong>默认值</strong>: 如果不指定该参数，<code>tricys</code> 将默认使用您计算机上的 <strong>所有可用 CPU 核心数</strong>。</li>
-<li><strong>建议</strong>:<ul>
-<li>对于计算密集型任务，建议将此值设置为不超过您计算机的物理核心数，以获得最佳性能。</li>
-<li>如果在仿真过程中遇到内存不足的问题，可以适当调低 <code>max_workers</code> 的值，因为每个进程都会独立加载模型并消耗一定的内存。</li>
+<li><strong>Traditional Mode</strong>: Every simulation (even if the model is the same and only parameters differ) re-invokes OMC to compile the model. This is acceptable for small-scale tasks, but in large sweeps, compilation time takes up a huge proportion.</li>
+<li><strong>Enhanced Mode</strong>: The program first compiles the model into a standalone executable (Exe/XML) and then directly calls this executable for all subsequent tasks. This eliminates repetitive compilation overhead, significantly speeding up startup.</li>
 </ul>
 </li>
+<li>
+<p><strong>HDF5 Streaming</strong>:</p>
+<ul>
+<li><strong>Traditional Mode</strong>: Each task generates an independent CSV file, which are merged at the end. When tasks number in the tens of thousands, this creates huge disk I/O pressure, and the final merge process can easily lead to memory overflow (OOM).</li>
+<li><strong>Enhanced Mode</strong>: Results from all concurrent tasks are streamed in real-time into a single HDF5 file (<code>sweep_results.h5</code>). HDF5 is an efficient binary format capable of storing massive amounts of data without consuming large amounts of memory.</li>
 </ul>
-<p>在上面的示例中，<code>"concurrent": true</code> 和 <code>"max_workers": 4</code> 意味着 <code>tricys</code> 会创建一个包含 4 个工作进程的进程池，来并行处理由参数扫描生成的 10 个仿真任务。</p>
+</li>
+<li>
+<p><strong>Process Isolation</strong>:</p>
+<ul>
+<li>Each simulation task still runs in an independent process, ensuring that a calculation crash caused by specific parameters does not affect the stability of the main program.</li>
+</ul>
+</li>
+</ol>
+<h2 id="2-how-to-enable">2. How to Enable<a class="headerlink" href="#2-how-to-enable" title="Permanent link">&para;</a></h2>
+<h3 id="21-quick-enable-via-cli-recommended">2.1 Quick Enable via CLI (Recommended)<a class="headerlink" href="#21-quick-enable-via-cli-recommended" title="Permanent link">&para;</a></h3>
+<p>The most <strong>convenient and fast</strong> way to enable Enhanced Mode is to append the <code>--enhanced</code> argument directly to the command line. You can enjoy the performance boost of single compilation and HDF5 without modifying the configuration file.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>tricys<span class="w"> </span>-c<span class="w"> </span>config.json<span class="w"> </span>--enhanced
+</code></pre></div>
+<p>This command automatically overrides settings in the configuration file, enforcing Enhanced Mode (including concurrent execution).</p>
+<h3 id="22-enable-via-configuration">2.2 Enable via Configuration<a class="headerlink" href="#22-enable-via-configuration" title="Permanent link">&para;</a></h3>
+<p>You can also explicitly enable <code>concurrent</code> in your configuration file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="nt">&quot;model_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_model.Cycle&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="err">...</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
+</code></pre></div>
+<p>When <code>concurrent</code> is set to <code>true</code>, TRICYS automatically activates Enhanced Mode.</p>
+<h2 id="3-configuration-details">3. Configuration Details<a class="headerlink" href="#3-configuration-details" title="Permanent link">&para;</a></h2>
+<h3 id="simulationconcurrent"><code>simulation.concurrent</code><a class="headerlink" href="#simulationconcurrent" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Description</strong>: Whether to enable concurrent operation (and automatically activate Enhanced Mode).</li>
+<li><strong>Type</strong>: Boolean (<code>true</code> or <code>false</code>).</li>
+<li><strong>Default</strong>: <code>false</code>.</li>
+</ul>
+<h3 id="simulationmax_workers"><code>simulation.max_workers</code><a class="headerlink" href="#simulationmax_workers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Description</strong>: Controls the maximum number of processes used for concurrent execution.</li>
+<li><strong>Type</strong>: Integer (optional).</li>
+<li><strong>Default</strong>: Smart calculation (see strategy below).</li>
+</ul>
+<h2 id="4-smart-concurrency-strategy">4. Smart Concurrency Strategy<a class="headerlink" href="#4-smart-concurrency-strategy" title="Permanent link">&para;</a></h2>
+<p><code>tricys</code> uses a smart strategy to determine the final number of processes to use, adapting to multi-user shared server scenarios to ensure full performance without inadvertently crowding out other users.</p>
+<p>The priority order is as follows:</p>
+<ol>
+<li>
+<p><strong>Turbo Mode (<code>--turbo</code>)</strong>:</p>
+<ul>
+<li>If you use the <code>--turbo</code> flag on the command line, the program will ignore all limits and force the use of <strong>100% of available CPU cores</strong>.</li>
+<li><strong>Best for</strong>: Dedicated servers, or when results are needed urgently.</li>
+</ul>
+</li>
+<li>
+<p><strong>Configuration Override (<code>config.json</code>)</strong>:</p>
+<ul>
+<li>If you explicitly set <code>max_workers</code> in the config file (e.g., <code>"max_workers": 20</code>), the program will strictly adhere to that value.</li>
+<li><strong>Best for</strong>: Precise control over resource usage.</li>
+</ul>
+</li>
+<li>
+<p><strong>Default Safety Limit (Default Safety)</strong>:</p>
+<ul>
+<li>If Turbo is not enabled and <code>max_workers</code> is not configured, the program defaults to using only <strong>50% of available CPU cores</strong>.</li>
+<li><strong>Best for</strong>: Daily use on shared servers, leaving resources for other users.</li>
+</ul>
+</li>
+<li>
+<p><strong>Task Clamping</strong>:</p>
+<ul>
+<li><strong>This is the final hard optimization</strong>. If the calculated worker count exceeds the actual number of simulation tasks, the program will automatically reduce the worker count to match the number of tasks.</li>
+<li><em>Example</em>: Even if you have a 128-core server but run only 5 simulation tasks, the program will launch only 5 processes, not 128. This significantly reduces system overhead.</li>
+</ul>
+</li>
+</ol>
+<h2 id="5-result-file-differences">5. Result File Differences<a class="headerlink" href="#5-result-file-differences" title="Permanent link">&para;</a></h2>
+<p>The result file structure differs slightly when Concurrent/Enhanced Mode is enabled:</p>
+<ul>
+<li><strong>Traditional Mode</strong>: Generates <code>sweep_results.csv</code>.</li>
+<li><strong>Enhanced Mode</strong>: Generates <code>sweep_results.h5</code>.</li>
+</ul>
+<p><code>tricys</code> post-processing modules and plotting tools automatically detect and support reading HDF5 formatted results.</p>
 <div class="admonition success">
-<p class="admonition-title">适用场景</p>
-<p>并发运行不仅适用于标准的参数扫描，也同样适用于<a href="co_simulation_module.html">协同仿真</a>和<a href="../tricys_analysis/index.html">自动分析</a>流程，能够全面提升 <code>tricys</code> 的执行效率。</p>
+<p class="admonition-title">From CSV to HDF5</p>
+<p>HDF5 offers orders of magnitude improvement in read/write performance compared to CSV. For results containing millions of rows, CSV parsing might take minutes, while HDF5 takes milliseconds.</p>
 </div>
 
 
@@ -2211,7 +2423,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2220,33 +2432,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="parameter_sweep.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 参数扫描">
+          <a href="parameter_sweep.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Parameter Sweep">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                参数扫描
+                Parameter Sweep
               </div>
             </div>
           </a>
         
         
           
-          <a href="post_processing_module.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 后处理模块">
+          <a href="post_processing_module.html" class="md-footer__link md-footer__link--next" aria-label="Next: Post-processing Module">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                后处理模块
+                Post-processing Module
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2283,7 +2495,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

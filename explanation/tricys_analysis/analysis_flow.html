@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/explanation/tricys_analysis/analysis_flow.html" hreflang="en">
+          <link rel="alternate" href="analysis_flow.html" hreflang="en">
         
-          <link rel="alternate" href="analysis_flow.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/explanation/tricys_analysis/analysis_flow.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>自动分析流程 - 氚燃料循环集成仿真平台</title>
+        <title>Analysis Flow - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#1" class="md-skip">
-          跳转至
+        <a href="#tricys-analysis-workflow" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              自动分析流程
+              Analysis Flow
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/explanation/tricys_analysis/analysis_flow.html" hreflang="en" class="md-select__link">
+            <a href="analysis_flow.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="analysis_flow.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/explanation/tricys_analysis/analysis_flow.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -270,7 +266,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -480,7 +476,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -496,7 +492,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -516,7 +512,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -560,7 +556,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -576,7 +572,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -596,7 +592,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -648,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -664,7 +660,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -684,7 +680,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -712,7 +708,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -740,7 +736,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -768,7 +764,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -796,7 +792,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -848,7 +844,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -864,7 +860,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -884,7 +880,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -912,7 +908,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -940,7 +936,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -968,7 +964,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -996,7 +992,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1024,7 +1020,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1088,7 +1084,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1104,7 +1100,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1124,7 +1120,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1171,7 +1167,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1187,7 +1183,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1207,7 +1203,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1235,7 +1231,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1263,7 +1259,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1320,7 +1316,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1336,7 +1332,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1355,6 +1351,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -1363,7 +1361,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1381,7 +1379,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1393,22 +1391,24 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-core-workflow-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 核心流程图
+        1. Core Workflow Diagram
       
     </span>
   </a>
@@ -1416,22 +1416,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-detailed-workflow-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 流程步骤详解
+        2. Detailed Workflow Steps
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 流程步骤详解">
+    <nav class="md-nav" aria-label="2. Detailed Workflow Steps">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-startup-and-mode-selection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 启动与模式选择
+        2.1. Startup and Mode Selection
       
     </span>
   </a>
@@ -1439,10 +1439,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-mode-1-multi-case-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 模式一：多案例分析
+        2.2. Mode 1: Multi-Case Analysis
       
     </span>
   </a>
@@ -1450,10 +1450,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#23-salib" class="md-nav__link">
+  <a href="#23-mode-2-salib-global-sensitivity-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.3. 模式二：SALib 全局敏感性分析
+        2.3. Mode 2: SALib Global Sensitivity Analysis
       
     </span>
   </a>
@@ -1461,10 +1461,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#24" class="md-nav__link">
+  <a href="#24-mode-3-standard-sweep-and-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.4. 模式三：标准扫描与分析
+        2.4. Mode 3: Standard Sweep and Analysis
       
     </span>
   </a>
@@ -1499,7 +1499,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1527,7 +1527,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1555,7 +1555,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1614,7 +1614,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1630,7 +1630,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1841,7 +1841,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1857,7 +1857,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1877,7 +1877,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1905,7 +1905,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1933,7 +1933,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1961,7 +1961,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -1989,7 +1989,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2024,7 +2024,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2051,7 +2051,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2077,22 +2077,24 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-core-workflow-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 核心流程图
+        1. Core Workflow Diagram
       
     </span>
   </a>
@@ -2100,22 +2102,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-detailed-workflow-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 流程步骤详解
+        2. Detailed Workflow Steps
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 流程步骤详解">
+    <nav class="md-nav" aria-label="2. Detailed Workflow Steps">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-startup-and-mode-selection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 启动与模式选择
+        2.1. Startup and Mode Selection
       
     </span>
   </a>
@@ -2123,10 +2125,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-mode-1-multi-case-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 模式一：多案例分析
+        2.2. Mode 1: Multi-Case Analysis
       
     </span>
   </a>
@@ -2134,10 +2136,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#23-salib" class="md-nav__link">
+  <a href="#23-mode-2-salib-global-sensitivity-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.3. 模式二：SALib 全局敏感性分析
+        2.3. Mode 2: SALib Global Sensitivity Analysis
       
     </span>
   </a>
@@ -2145,10 +2147,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#24" class="md-nav__link">
+  <a href="#24-mode-3-standard-sweep-and-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.4. 模式三：标准扫描与分析
+        2.4. Mode 3: Standard Sweep and Analysis
       
     </span>
   </a>
@@ -2180,171 +2182,166 @@
   
 
 
-  <h1>自动分析流程</h1>
-
-<p><code>tricys</code> 的分析工作流 (<code>simulation_analysis.py</code>) 是一个强大的、以分析为导向的自动化流程。它在核心仿真功能之上，构建了复杂的多模式调度、目标寻优和报告生成能力。本篇文档将详细解析其内部的完整工作流程。</p>
-<h2 id="1">1. 核心流程图<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>下面是 <code>tricys</code> 分析工作流的完整流程图。它从读取配置开始，智能地选择三种主要操作模式之一，并执行相应的任务直到结束。</p>
+<h1 id="tricys-analysis-workflow">TRICYS Analysis Workflow<a class="headerlink" href="#tricys-analysis-workflow" title="Permanent link">&para;</a></h1>
+<p>The analysis workflow of <code>tricys</code> (<code>simulation_analysis.py</code>) is a powerful, analysis-oriented automated process. Built upon the core simulation functionality, it incorporates complex multi-mode scheduling, goal-seeking optimization, and report generation capabilities. This document provides a detailed breakdown of its internal workflow.</p>
+<h2 id="1-core-workflow-diagram">1. Core Workflow Diagram<a class="headerlink" href="#1-core-workflow-diagram" title="Permanent link">&para;</a></h2>
+<p>Below is the complete workflow diagram for the <code>tricys</code> analysis process. It starts by reading the configuration, intelligently selects one of three primary operating modes, and executes the corresponding tasks until completion.</p>
 <pre class="mermaid"><code>graph TD
-    %% === 1. 启动阶段 ===
-    subgraph Sub_A ["A. 启动与模式选择"]
-        A1[开始: main config.json] --&gt; A2["准备配置与日志&lt;br&gt;analysis_prepare_config()"]
-        A2 --&gt; A3{"&lt;font size=4&gt;&lt;b&gt;运行模式判断&lt;/b&gt;&lt;/font&gt;&lt;br&gt;在 run_simulation() 内部"}
+    %% === 1. Startup Phase ===
+    subgraph Sub_A ["A. Startup &amp; Mode Selection"]
+        A1[Start: main config.json] --&gt; A2["Prepare Config &amp; Logs&lt;br&gt;analysis_prepare_config()"]
+        A2 --&gt; A3{"&lt;font size=4&gt;&lt;b&gt;Execution Mode Dispatch&lt;/b&gt;&lt;/font&gt;&lt;br&gt;Inside run_simulation()"}
     end
 
-    %% 模式判定逻辑
-    A3 --&gt; B_GROUP{analysis_cases 是否存在?}
-    B_GROUP -- 是 --&gt; C1
-    B_GROUP -- 否 --&gt; D_GROUP{是否为 SALib 分析?}
+    %% Mode Dispatch Logic
+    A3 --&gt; B_GROUP{analysis_cases defined?}
+    B_GROUP -- Yes --&gt; C1
+    B_GROUP -- No --&gt; D_GROUP{Is it a SALib analysis?}
 
-    D_GROUP -- 是 --&gt; E1
-    D_GROUP -- 否 --&gt; F1
+    D_GROUP -- Yes --&gt; E1
+    D_GROUP -- No --&gt; F1
 
-    %% === 2. 模式一 ===
-    subgraph Sub_C ["C. 模式一: 多案例分析"]
+    %% === 2. Mode One ===
+    subgraph Sub_C ["C. Mode 1: Multi-Case Analysis"]
         direction TB
-        C1["&lt;b&gt;模式一: 多案例分析&lt;/b&gt;"]
-        C1 --&gt; C2[为每个案例创建&lt;br&gt;独立工作目录和配置]
-        C2 --&gt; C3{并行执行案例?&lt;br&gt;concurrent_cases}
+        C1["&lt;b&gt;Mode 1: Multi-Case Analysis&lt;/b&gt;"]
+        C1 --&gt; C2[Create isolated workspace&lt;br&gt;&amp; config for each case]
+        C2 --&gt; C3{Run cases in parallel?&lt;br&gt;concurrent_cases}
 
-        C3 -- 是 --&gt; C4[使用 &lt;b&gt;ProcessPoolExecutor&lt;/b&gt;&lt;br&gt;并行调用 _execute_analysis_case]
-        C3 -- 否 --&gt; C5[串行循环&lt;br&gt;逐个调用 _execute_analysis_case]
+        C3 -- Yes --&gt; C4[Use &lt;b&gt;ProcessPoolExecutor&lt;/b&gt;&lt;br&gt;to call _execute_analysis_case in parallel]
+        C3 -- No --&gt; C5[Loop sequentially&lt;br&gt;and call _execute_analysis_case]
 
-        %% 子图：单个案例执行
-        subgraph Sub_C6 ["C6. 单个案例的执行 _execute_analysis_case"]
+        %% Subgraph for single case execution
+        subgraph Sub_C6 ["C6. Single Case Execution (_execute_analysis_case)"]
             direction TB
-            C6_1[进入独立工作目录] --&gt; C6_2["&lt;b&gt;递归调用 run_simulation&lt;br&gt;(禁用内部并发)&lt;/b&gt;"] 
-            C6_2 --&gt; C6_3[执行模式三的完整流程]
+            C6_1[Change to isolated workspace] --&gt; C6_2["&lt;b&gt;Recursively call run_simulation&lt;br&gt;(with inner concurrency disabled)&lt;/b&gt;"] 
+            C6_2 --&gt; C6_3[Execute the full flow of Mode 3]
         end
 
-        %% 修复点：连接到子图内部的第一个节点 C6_1，而不是子图本身
         C4 --&gt; C6_1
         C5 --&gt; C6_1
 
-        C6_3 --&gt; C7[所有案例执行完毕]
-        C7 --&gt; C8["汇总所有案例的报告&lt;br&gt;consolidate_reports()"]
-        C8 --&gt; Z1[结束]
+        C6_3 --&gt; C7[All cases completed]
+        C7 --&gt; C8["Consolidate reports&lt;br&gt;from all cases&lt;br&gt;consolidate_reports()"]
+        C8 --&gt; Z1[End]
     end
 
-    %% === 3. 模式二 ===
-    subgraph Sub_E ["E. 模式二: SALib 分析"]
+    %% === 3. Mode Two ===
+    subgraph Sub_E ["E. Mode 2: SALib Analysis"]
         direction TB
-        E1["&lt;b&gt;模式二: SALib 分析&lt;/b&gt;"] --&gt; E2[调用 run_salib_analysis]
+        E1["&lt;b&gt;Mode 2: SALib Analysis&lt;/b&gt;"] --&gt; E2[Call run_salib_analysis]
 
-        %% 子图：SALib 流程
-        subgraph Sub_E3 ["E3. SALib 内部流程"]
+        %% Subgraph for SALib flow
+        subgraph Sub_E3 ["E3. SALib Internal Workflow"]
             direction TB
-            E3_1[1. 使用 SALib 生成参数样本] --&gt; E3_2[2. 为每个样本运行仿真] 
-            E3_2 --&gt; E3_3[3. 收集结果并计算敏感度指数]
+            E3_1[1. Generate parameter samples using SALib] --&gt; E3_2[2. Run simulation for each sample] 
+            E3_2 --&gt; E3_3[3. Collect results and compute sensitivity indices]
         end
 
-        %% 修复点：连接到子图内部节点 E3_1
         E2 --&gt; E3_1
-        E3_3 --&gt; Z2[结束]
+        E3_3 --&gt; Z2[End]
     end
 
-    %% === 4. 模式三 ===
-    subgraph Sub_F ["F. 模式三: 标准扫描与分析"]
+    %% === 4. Mode Three ===
+    subgraph Sub_F ["F. Mode 3: Standard Sweep &amp; Analysis"]
         direction TB
-        F1["&lt;b&gt;模式三: 标准扫描与分析&lt;/b&gt;"] --&gt; F2[生成仿真任务列表 jobs]
-        F2 --&gt; F3{并行执行任务?&lt;br&gt;concurrent}
+        F1["&lt;b&gt;Mode 3: Standard Sweep &amp; Analysis&lt;/b&gt;"] --&gt; F2[Generate list of simulation jobs]
+        F2 --&gt; F3{Run jobs in parallel?&lt;br&gt;concurrent}
 
-        F3 -- 是 --&gt; F4["使用 &lt;b&gt;ThreadPoolExecutor (标准)&lt;/b&gt;&lt;br&gt;或 &lt;b&gt;ProcessPoolExecutor (协同)&lt;/b&gt;&lt;br&gt;并行执行每个任务"]
-        F3 -- 否 --&gt; F5["串行执行&lt;br&gt;_run_sequential_sweep()"]
+        F3 -- Yes --&gt; F4["Use &lt;b&gt;ThreadPoolExecutor (Standard Sim)&lt;/b&gt;&lt;br&gt;or &lt;b&gt;ProcessPoolExecutor (Co-Sim)&lt;/b&gt;&lt;br&gt;to run each job in parallel"]
+        F3 -- No --&gt; F5["Execute sequentially&lt;br&gt;_run_sequential_sweep()"]
 
-        %% 子图：单个任务执行
-        subgraph Sub_F6 ["F6. 单个任务的执行 _run_..._job"]
+        %% Subgraph for single job execution
+        subgraph Sub_F6 ["F6. Single Job Execution (_run_..._job)"]
             direction TB
-            F6_1[1. 在隔离目录中运行仿真] --&gt; F6_2{2. 是否配置了优化目标?&lt;br&gt;Required_...}
+            F6_1[1. Run simulation in isolated workspace] --&gt; F6_2{2. Optimization goal configured?&lt;br&gt;(e.g., Required_...)}
 
-            F6_2 -- 是 --&gt; F6_3["&lt;b&gt;优化子流程&lt;/b&gt;&lt;br&gt;调用 _run_bisection_search_for_job"]
+            F6_2 -- Yes --&gt; F6_3["&lt;b&gt;Optimization Sub-flow&lt;/b&gt;&lt;br&gt;Call _run_bisection_search_for_job"]
 
-            %% 嵌套子图：二分搜索
-            subgraph Sub_F6_4 ["F6_4. 二分搜索循环"]
-                F6_4_1[a. 在搜索范围内&lt;br&gt;迭代执行仿真] --&gt; F6_4_2[b. 检查指标是否满足条件] 
-                F6_4_2 --&gt; F6_4_3[c. 缩小搜索范围]
+            %% Nested subgraph for bisection search
+            subgraph Sub_F6_4 ["F6_4. Bisection Search Loop"]
+                F6_4_1[a. Iteratively run simulations&lt;br&gt;within search range] --&gt; F6_4_2[b. Check if metric meets target] 
+                F6_4_2 --&gt; F6_4_3[c. Narrow search range]
                 F6_4_3 --&gt; F6_4_1
             end
 
             F6_3 --&gt; F6_4_1
-            F6_4_2 -- 满足或结束 --&gt; F6_5
+            F6_4_2 -- Met or Finished --&gt; F6_5
 
-            F6_5["3. 返回仿真结果路径&lt;br&gt;和&lt;b&gt;优化结果&lt;/b&gt;"]
-            F6_2 -- 否 --&gt; F6_5
+            F6_5["3. Return simulation result path&lt;br&gt;&amp; &lt;b&gt;optimization results&lt;/b&gt;"]
+            F6_2 -- No --&gt; F6_5
         end
 
-        %% 修复点：连接到子图内部节点 F6_1
         F4 --&gt; F6_1
         F5 --&gt; F6_1
 
-        F6_5 --&gt; F7[所有任务执行完毕]
-        F7 --&gt; F8["&lt;b&gt;结果聚合与后处理&lt;/b&gt;"]
+        F6_5 --&gt; F7[All jobs completed]
+        F7 --&gt; F8["&lt;b&gt;Result Aggregation &amp; Post-processing&lt;/b&gt;"]
 
-        %% 子图：后续步骤
-        subgraph Sub_F9 ["F9. 后续步骤"]
+        %% Subgraph for subsequent steps
+        subgraph Sub_F9 ["F9. Subsequent Steps"]
             direction TB
-            F9_1[a. 合并仿真结果到 sweep_results.csv] --&gt; F9_2[b. 合并优化结果到 requierd_tbr_summary.csv]
-            F9_2 --&gt; F9_3["c. 执行敏感性分析&lt;br&gt;_run_sensitivity_analysis()&lt;br&gt;(提取指标、生成图表)"]
-            F9_3 --&gt; F9_4["d. 执行自定义后处理&lt;br&gt;_run_post_processing()"]
+            F9_1[a. Merge simulation results to sweep_results.csv] --&gt; F9_2[b. Merge optimization results to requierd_tbr_summary.csv]
+            F9_2 --&gt; F9_3["c. Run sensitivity analysis&lt;br&gt;_run_sensitivity_analysis()&lt;br&gt;(Extract metrics, generate plots)"]
+            F9_3 --&gt; F9_4["d. Execute custom post-processing&lt;br&gt;_run_post_processing()"]
         end
 
-        %% 修复点：连接到子图内部节点 F9_1
         F8 --&gt; F9_1
-        F9_4 --&gt; Z3[结束]
+        F9_4 --&gt; Z3[End]
     end
 
-    %% 样式定义
+    %% Style Definitions
     style C1 fill:#e3f2fd,stroke:#333,stroke-width:2px
     style E1 fill:#e8f5e9,stroke:#333,stroke-width:2px
     style F1 fill:#fbe9e7,stroke:#333,stroke-width:2px</code></pre>
-<h2 id="2">2. 流程步骤详解<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<h3 id="21">2.1. 启动与模式选择<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
-<p>整个流程始于 <code>main</code> 函数，它负责加载和预处理配置文件 (<code>analysis_prepare_config</code>) 并设置日志系统。核心逻辑位于 <code>run_simulation</code> 函数中，它首先会进行<strong>模式判断</strong>，以决定接下来执行哪个核心工作流。</p>
+<h2 id="2-detailed-workflow-steps">2. Detailed Workflow Steps<a class="headerlink" href="#2-detailed-workflow-steps" title="Permanent link">&para;</a></h2>
+<h3 id="21-startup-and-mode-selection">2.1. Startup and Mode Selection<a class="headerlink" href="#21-startup-and-mode-selection" title="Permanent link">&para;</a></h3>
+<p>The entire process begins in the <code>main</code> function, which is responsible for loading and preprocessing the configuration file (<code>analysis_prepare_config</code>) and setting up the logging system. The core logic resides in the <code>run_simulation</code> function, which first performs <strong>mode dispatch</strong> to decide which core workflow to execute next.</p>
 <hr />
-<h3 id="22">2.2. 模式一：多案例分析<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
-<p>当配置文件中定义了 <code>analysis_cases</code> 时，此模式被激活。它用于执行一系列独立的、可对比的分析研究。</p>
+<h3 id="22-mode-1-multi-case-analysis">2.2. Mode 1: Multi-Case Analysis<a class="headerlink" href="#22-mode-1-multi-case-analysis" title="Permanent link">&para;</a></h3>
+<p>This mode is activated when <code>analysis_cases</code> is defined in the configuration file. It is used to execute a series of independent, comparable analysis studies.</p>
 <ol>
-<li><strong>环境设置</strong>：框架会为 <code>analysis_cases</code> 中的每一个案例创建一个完全独立的子工作目录，并为其生成一份定制化的配置文件。这确保了每个案例的运行环境（包括模型修改、临时文件和结果）都是隔离的。</li>
-<li><strong>并发执行</strong>：如果配置了 <code>"concurrent_cases": true</code>，<code>tricys</code> 会启动一个<strong>进程池</strong> (<code>ProcessPoolExecutor</code>) 来并行执行所有案例。使用进程是至关重要的，因为每个案例都是一个完整的 <code>tricys</code> 运行实例，需要独立的内存空间和文件系统权限以避免冲突。</li>
-<li><strong>递归调用</strong>：每个案例的执行由 <code>_execute_analysis_case</code> 函数包裹，该函数会<strong>递归地调用 <code>run_simulation</code></strong>，并强制禁用内部的并发执行（防止进程池嵌套）。这意味着每个案例内部会完整地执行一遍“模式三”的流程。</li>
-<li><strong>报告汇总</strong>：所有案例执行完毕后，框架会调用 <code>consolidate_reports</code> 等函数，从所有子工作目录中收集分析结果和报告，并生成一份顶层的汇总报告，方便用户进行跨案例的比较。</li>
+<li><strong>Environment Setup</strong>: The framework creates a completely separate sub-workspace for each case defined in <code>analysis_cases</code> and generates a customized configuration file for each. This ensures that the execution environment for each case (including model modifications, temporary files, and results) is isolated.</li>
+<li><strong>Concurrent Execution</strong>: If <code>"concurrent_cases": true</code> is configured, <code>tricys</code> starts a <strong>process pool</strong> (<code>ProcessPoolExecutor</code>) to execute all cases in parallel. Using processes is crucial here, as each case is a full <code>tricys</code> run instance that requires independent memory space and file system permissions to avoid conflicts.</li>
+<li><strong>Recursive Call</strong>: The execution of each case is wrapped by the <code>_execute_analysis_case</code> function, which <strong>recursively calls <code>run_simulation</code></strong> while forcing internal concurrency to be disabled (to prevent nested process pools). This means each case internally executes the complete workflow of "Mode 3".</li>
+<li><strong>Report Consolidation</strong>: After all cases are completed, the framework calls functions like <code>consolidate_reports</code> to collect the analysis results and reports from all sub-workspaces and generate a top-level summary report, facilitating cross-case comparisons for the user.</li>
 </ol>
 <hr />
-<h3 id="23-salib">2.3. 模式二：SALib 全局敏感性分析<a class="headerlink" href="#23-salib" title="Permanent link">&para;</a></h3>
-<p>如果配置指向一个全局敏感性分析（GSA）任务（通过 <code>independent_variable_sampling</code> 和 <code>analyzer</code> 等关键字识别），<code>tricys</code> 会将控制权移交给专门的 SALib 工作流。</p>
+<h3 id="23-mode-2-salib-global-sensitivity-analysis">2.3. Mode 2: SALib Global Sensitivity Analysis<a class="headerlink" href="#23-mode-2-salib-global-sensitivity-analysis" title="Permanent link">&para;</a></h3>
+<p>If the configuration points to a Global Sensitivity Analysis (GSA) task (identified by keywords like <code>independent_variable_sampling</code> and <code>analyzer</code>), <code>tricys</code> hands over control to a dedicated SALib workflow.</p>
 <ol>
-<li><strong>调用 <code>run_salib_analysis</code></strong>：这是 SALib 流程的入口。</li>
-<li><strong>参数采样</strong>：使用 SALib 库（如 <code>saltelli.sample</code>）根据配置的参数分布生成大量的参数样本集。</li>
-<li><strong>批量仿真</strong>：为每一个参数样本运行一次 Modelica 仿真。</li>
-<li><strong>结果分析</strong>：收集所有仿真结果，并使用 SALib 的分析器（如 <code>sobol.analyze</code>）计算每个参数的一阶、二阶和总阶敏感性指数（S1, S2, ST）。</li>
-<li><strong>输出报告</strong>：将敏感性指数和相关图表输出为最终的分析报告。</li>
+<li><strong>Call <code>run_salib_analysis</code></strong>: This is the entry point for the SALib process.</li>
+<li><strong>Parameter Sampling</strong>: It uses the SALib library (e.g., <code>saltelli.sample</code>) to generate a large set of parameter samples based on the configured parameter distributions.</li>
+<li><strong>Batch Simulation</strong>: It runs a Modelica simulation for each parameter sample.</li>
+<li><strong>Result Analysis</strong>: It collects all simulation results and uses a SALib analyzer (e.g., <code>sobol.analyze</code>) to calculate the first-order, second-order, and total-order sensitivity indices (S1, S2, ST) for each parameter.</li>
+<li><strong>Output Report</strong>: The sensitivity indices and related plots are outputted as the final analysis report.</li>
 </ol>
 <hr />
-<h3 id="24">2.4. 模式三：标准扫描与分析<a class="headerlink" href="#24" title="Permanent link">&para;</a></h3>
-<p>这是最基础也是最核心的工作流，当以上两种模式的条件都不满足时，就会执行此流程。</p>
+<h3 id="24-mode-3-standard-sweep-and-analysis">2.4. Mode 3: Standard Sweep and Analysis<a class="headerlink" href="#24-mode-3-standard-sweep-and-analysis" title="Permanent link">&para;</a></h3>
+<p>This is the most fundamental and core workflow, executed when the conditions for the other two modes are not met.</p>
 <ol>
-<li><strong>生成任务</strong>：根据 <code>simulation_parameters</code> 生成仿真任务列表 <code>jobs</code>。</li>
-<li><strong>执行仿真任务</strong>：<ul>
-<li>根据 <code>concurrent</code> 配置，选择并行或串行执行所有 <code>jobs</code>。</li>
-<li>每个任务的执行由 <code>_run_single_job</code> 或 <code>_run_co_simulation</code> 等函数处理。</li>
+<li><strong>Job Generation</strong>: A list of simulation jobs is generated based on the <code>simulation_parameters</code>.</li>
+<li><strong>Job Execution</strong>:<ul>
+<li>Based on the <code>concurrent</code> configuration, all <code>jobs</code> are executed either in parallel or sequentially.</li>
+<li>The execution of each job is handled by functions like <code>_run_single_job</code> or <code>_run_co_simulation</code>.</li>
 </ul>
 </li>
-<li><strong>优化子流程（核心特色）</strong>：在单次仿真任务执行完毕后，系统会检查是否配置了优化目标（以 <code>Required_</code> 为前缀的指标）。<ul>
-<li>如果存在，系统会立即调用 <code>_run_bisection_search_for_job</code>，启动一个<strong>二分搜索循环</strong>。</li>
-<li>该循环会为了寻找一个能满足预设指标（例如，氚增殖比TBR &gt; 1.05）的最优参数值，而<strong>迭代地运行多次仿真</strong>，并根据每次的结果动态调整参数，直到找到解或达到最大迭代次数。</li>
+<li><strong>Optimization Sub-flow (Core Feature)</strong>: After a single simulation job is completed, the system checks if an optimization goal is configured (metrics prefixed with <code>Required_</code>).<ul>
+<li>If yes, the system immediately calls <code>_run_bisection_search_for_job</code> to start a <strong>bisection search loop</strong>.</li>
+<li>This loop <strong>iteratively runs multiple simulations</strong> to find the optimal parameter value that satisfies a predefined metric (e.g., a TBR &gt; 1.05), adjusting the parameter based on the results of each iteration until a solution is found or the maximum number of iterations is reached.</li>
 </ul>
 </li>
-<li><strong>结果聚合</strong>：<ul>
-<li>所有任务（包括优化子流程中的所有仿真）完成后，框架会聚合两类数据：<ul>
-<li>所有仿真的原始时间序列数据，合并到 <code>sweep_results.csv</code>。</li>
-<li>所有优化任务的最终结果（例如，<code>TBR&gt;1.05</code> 对应的最优 <code>enrichment</code> 是 <code>0.85</code>），合并到 <code>requierd_tbr_summary.csv</code>。</li>
+<li><strong>Result Aggregation</strong>:<ul>
+<li>After all tasks (including all simulations within the optimization sub-flow) are complete, the framework aggregates two types of data:<ul>
+<li>The raw time-series data from all simulations is merged into <code>sweep_results.csv</code>.</li>
+<li>The final results of all optimization tasks (e.g., the optimal <code>enrichment</code> for <code>TBR&gt;1.05</code> is <code>0.85</code>) are merged into <code>requierd_tbr_summary.csv</code>.</li>
 </ul>
 </li>
 </ul>
 </li>
-<li><strong>最终分析与后处理</strong>：<ul>
-<li>调用 <code>_run_sensitivity_analysis</code>，它会加载聚合后的数据，计算最终的关键性能指标（KPI），并生成分析图表和摘要。</li>
-<li>调用 <code>_run_post_processing</code>，执行用户自定义的任何最终处理脚本（例如，生成特定的报告格式）。</li>
+<li><strong>Final Analysis and Post-processing</strong>:<ul>
+<li><code>_run_sensitivity_analysis</code> is called to load the aggregated data, calculate final Key Performance Indicators (KPIs), and generate analysis plots and summaries.</li>
+<li><code>_run_post_processing</code> is called to execute any user-defined custom scripts (e.g., to generate reports in a specific format).</li>
 </ul>
 </li>
 </ol>
@@ -2371,7 +2368,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2380,33 +2377,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../tricys_basic/concurrency.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 并发计算模式">
+          <a href="../tricys_basic/concurrency.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Concurrency Model">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                并发计算模式
+                Concurrency Model
               </div>
             </div>
           </a>
         
         
           
-          <a href="performance_metrics.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 核心性能指标">
+          <a href="performance_metrics.html" class="md-footer__link md-footer__link--next" aria-label="Next: Core Performance Metrics">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                核心性能指标
+                Core Performance Metrics
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2443,7 +2440,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

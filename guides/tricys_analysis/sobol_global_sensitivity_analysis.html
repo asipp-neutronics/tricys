@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/guides/tricys_analysis/sobol_global_sensitivity_analysis.html" hreflang="en">
+          <link rel="alternate" href="sobol_global_sensitivity_analysis.html" hreflang="en">
         
-          <link rel="alternate" href="sobol_global_sensitivity_analysis.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/guides/tricys_analysis/sobol_global_sensitivity_analysis.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>SOBOL全局敏感性分析 - 氚燃料循环集成仿真平台</title>
+        <title>SOBOL Global Sensitivity Analysis - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#sobol" class="md-skip">
-          跳转至
+        <a href="#sobol-global-sensitivity-analysis" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              SOBOL全局敏感性分析
+              SOBOL Global Sensitivity Analysis
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/guides/tricys_analysis/sobol_global_sensitivity_analysis.html" hreflang="en" class="md-select__link">
+            <a href="sobol_global_sensitivity_analysis.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="sobol_global_sensitivity_analysis.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/guides/tricys_analysis/sobol_global_sensitivity_analysis.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -272,7 +268,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -485,7 +481,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -501,7 +497,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -521,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -568,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -584,7 +580,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -604,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -659,7 +655,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -675,7 +671,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -695,7 +691,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -723,7 +719,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -751,7 +747,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -779,7 +775,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -807,7 +803,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -864,7 +860,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -880,7 +876,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -900,7 +896,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -928,7 +924,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -956,7 +952,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -984,7 +980,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1021,7 +1017,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1039,7 +1035,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1051,7 +1047,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -1060,15 +1056,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 配置文件示例
+        1. Configuration File Example
       
     </span>
   </a>
@@ -1076,10 +1072,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-key-configuration-items-explained" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 关键配置项详解
+        2. Key Configuration Items Explained
       
     </span>
   </a>
@@ -1087,22 +1083,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-analysis-report-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 分析报告输出
+        3. Analysis Report Output
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 分析报告输出">
+    <nav class="md-nav" aria-label="3. Analysis Report Output">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sobol_1" class="md-nav__link">
+  <a href="#how-to-interpret-sobol-indices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        如何解读Sobol指数
+        How to Interpret Sobol Indices
       
     </span>
   </a>
@@ -1115,10 +1111,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-full-example-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 完整示例配置
+        4. Full Example Configuration
       
     </span>
   </a>
@@ -1126,22 +1122,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-ai" class="md-nav__link">
+  <a href="#5-ai-enhanced-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. AI 增强分析
+        5. AI-Enhanced Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. AI 增强分析">
+    <nav class="md-nav" aria-label="5. AI-Enhanced Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51" class="md-nav__link">
+  <a href="#51-how-to-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1. 启用方式
+        5.1. How to Enable
       
     </span>
   </a>
@@ -1149,10 +1145,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52" class="md-nav__link">
+  <a href="#52-environment-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2. 环境配置
+        5.2. Environment Setup
       
     </span>
   </a>
@@ -1160,10 +1156,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53" class="md-nav__link">
+  <a href="#53-output-reports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3. 输出报告
+        5.3. Output Reports
       
     </span>
   </a>
@@ -1198,7 +1194,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1257,7 +1253,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1273,7 +1269,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1293,7 +1289,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1337,7 +1333,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1353,7 +1349,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1373,7 +1369,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1401,7 +1397,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1429,7 +1425,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1481,7 +1477,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1497,7 +1493,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1517,7 +1513,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1545,7 +1541,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1573,7 +1569,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1601,7 +1597,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1660,7 +1656,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1676,7 +1672,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1887,7 +1883,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1903,7 +1899,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1923,7 +1919,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1951,7 +1947,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1979,7 +1975,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -2007,7 +2003,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2035,7 +2031,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2070,7 +2066,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2097,7 +2093,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2123,7 +2119,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2132,15 +2128,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 配置文件示例
+        1. Configuration File Example
       
     </span>
   </a>
@@ -2148,10 +2144,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-key-configuration-items-explained" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 关键配置项详解
+        2. Key Configuration Items Explained
       
     </span>
   </a>
@@ -2159,22 +2155,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-analysis-report-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 分析报告输出
+        3. Analysis Report Output
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 分析报告输出">
+    <nav class="md-nav" aria-label="3. Analysis Report Output">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sobol_1" class="md-nav__link">
+  <a href="#how-to-interpret-sobol-indices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        如何解读Sobol指数
+        How to Interpret Sobol Indices
       
     </span>
   </a>
@@ -2187,10 +2183,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-full-example-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 完整示例配置
+        4. Full Example Configuration
       
     </span>
   </a>
@@ -2198,22 +2194,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-ai" class="md-nav__link">
+  <a href="#5-ai-enhanced-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. AI 增强分析
+        5. AI-Enhanced Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. AI 增强分析">
+    <nav class="md-nav" aria-label="5. AI-Enhanced Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51" class="md-nav__link">
+  <a href="#51-how-to-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1. 启用方式
+        5.1. How to Enable
       
     </span>
   </a>
@@ -2221,10 +2217,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52" class="md-nav__link">
+  <a href="#52-environment-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2. 环境配置
+        5.2. Environment Setup
       
     </span>
   </a>
@@ -2232,10 +2228,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53" class="md-nav__link">
+  <a href="#53-output-reports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3. 输出报告
+        5.3. Output Reports
       
     </span>
   </a>
@@ -2267,12 +2263,12 @@
   
 
 
-<h1 id="sobol">SOBOL全局敏感性分析<a class="headerlink" href="#sobol" title="Permanent link">&para;</a></h1>
-<p>全局敏感性分析 (Global Sensitivity Analysis, GSA) 是一种强大的工具，用于量化模型输入参数（以及它们之间的交互作用）对模型输出方差的贡献。与一次只改变一个参数的局部敏感性分析不同，GSA 会同时在整个参数空间内进行探索。</p>
-<p><code>tricys</code> 集成了业界标准的 <code>SALib</code> 库，提供了对 <strong>Sobol</strong> 方法的直接支持。Sobol 是一种基于方差的 GSA 方法，它能够高效地计算出每个参数对模型输出不确定性的贡献度，包括参数的独立影响和参数间的交互影响。</p>
-<p>关于性能指标的定义、术语表和单位映射等通用配置，请参考<a href="index.html">通用介绍</a>。</p>
-<h2 id="1">1. 配置文件示例<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>SOBOL 分析的配置与之前的敏感性分析有显著不同，主要体现在 <code>independent_variable</code> 变为列表，<code>independent_variable_sampling</code> 变为对象，并新增了 <code>analyzer</code> 字段。</p>
+<h1 id="sobol-global-sensitivity-analysis">SOBOL Global Sensitivity Analysis<a class="headerlink" href="#sobol-global-sensitivity-analysis" title="Permanent link">&para;</a></h1>
+<p>Global Sensitivity Analysis (GSA) is a powerful tool for quantifying the contribution of model input parameters (and their interactions) to the variance of the model output. Unlike local sensitivity analysis, which changes one parameter at a time, GSA explores the entire parameter space simultaneously.</p>
+<p><code>tricys</code> integrates the industry-standard <code>SALib</code> library, providing direct support for the <strong>Sobol</strong> method. Sobol is a variance-based GSA method that can efficiently calculate the contribution of each parameter to the model output's uncertainty, including both the independent influence of parameters and their interaction effects.</p>
+<p>For common configurations such as metric definitions, glossaries, and unit maps, please refer to the <a href="index.html">Automated Analysis Main Page</a>.</p>
+<h2 id="1-configuration-file-example">1. Configuration File Example<a class="headerlink" href="#1-configuration-file-example" title="Permanent link">&para;</a></h2>
+<p>The configuration for a SOBOL analysis is significantly different from previous sensitivity analyses, mainly in that <code>independent_variable</code> becomes a list, <code>independent_variable_sampling</code> becomes an object, and a new <code>analyzer</code> field is added.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="c1">// ... (paths, simulation)</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;sensitivity_analysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -2299,37 +2295,36 @@
 <a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">                </span><span class="p">}</span>
 <a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">        </span><span class="p">],</span>
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">        </span><span class="c1">// ... (通用配置)</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">        </span><span class="c1">// ... (Common configurations)</span>
 <a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="2">2. 关键配置项详解<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h2 id="2-key-configuration-items-explained">2. Key Configuration Items Explained<a class="headerlink" href="#2-key-configuration-items-explained" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>independent_variable</code> (列表): 一个包含<strong>所有</strong>要进行全局敏感性分析的输入参数的列表。</li>
-<li><code>independent_variable_sampling</code> (对象): 一个字典，为 <code>independent_variable</code> 列表中的每一个参数定义其采样范围和概率分布。</li>
-<li><strong>键</strong>: 参数的完整路径。</li>
-<li><strong>值</strong>: 包含 <code>bounds</code> (列表 <code>[min, max]</code>) 和 <code>distribution</code> (字符串, 如 <code>"unif"</code>) 的对象。</li>
-<li><code>analyzer</code> (对象): 定义要使用的 GSA 方法及其参数。</li>
-<li><code>method</code>: 对于 Sobol 分析，固定为 <code>"sobol"</code>。</li>
-<li><code>sample_N</code>: Sobol 采样所需的基数 <code>N</code>。<ul>
-<li>⚠️ <strong>重要</strong>: 实际运行的仿真总次数将是 <strong><code>N * (2D + 2)</code></strong>，其中 <code>D</code> 是 <code>independent_variable</code> 的数量。例如，本例中 <code>D=5</code>, <code>N=256</code>，则总仿真次数为 <code>256 * (2*5 + 2) = 3072</code> 次。</li>
+<li><code>independent_variable</code> (list): A list containing <strong>all</strong> input parameters to be included in the global sensitivity analysis.</li>
+<li><code>independent_variable_sampling</code> (object): A dictionary that defines the sampling range and probability distribution for each parameter in the <code>independent_variable</code> list.</li>
+<li><strong>Key</strong>: The full path of the parameter.</li>
+<li><strong>Value</strong>: An object containing <code>bounds</code> (a list <code>[min, max]</code>) and <code>distribution</code> (a string, e.g., <code>"unif"</code>).</li>
+<li><code>analyzer</code> (object): Defines the GSA method to be used and its parameters.</li>
+<li><code>method</code>: For Sobol analysis, this is fixed as <code>"sobol"</code>.</li>
+<li><code>sample_N</code>: The base number of samples <code>N</code> required for Sobol sampling.<ul>
+<li>⚠️ <strong>Important</strong>: The total number of simulations to be run will be <strong><code>N * (2D + 2)</code></strong>, where <code>D</code> is the number of <code>independent_variable</code>s. For example, in this case, <code>D=5</code> and <code>N=256</code>, so the total number of simulations will be <code>256 * (2*5 + 2) = 3072</code>.</li>
 </ul>
 </li>
 </ul>
-<h2 id="3">3. 分析报告输出<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<p>报告的核心内容是针对<strong>每一个</strong>因变量（性能指标）的独立分析结果。例如，对于 <code>Startup_Inventory</code> 指标，报告会包含：</p>
+<h2 id="3-analysis-report-output">3. Analysis Report Output<a class="headerlink" href="#3-analysis-report-output" title="Permanent link">&para;</a></h2>
+<p>The core content of the report is an independent analysis result for <strong>each</strong> dependent variable (performance metric). For example, for the <code>Startup_Inventory</code> metric, the report will include:</p>
 <ol>
-<li><strong>Sobol敏感性指数表</strong>: 一个 Markdown 表格，精确列出每个输入参数的一阶（S1）、总阶（ST）敏感性指数及其置信区间。</li>
-<li><strong>敏感性指数图</strong>: 嵌入的条形图，直观地对比各个参数的 S1 和 ST 指数，便于快速识别关键影响因素。</li>
+<li><strong>Sobol Sensitivity Indices Table</strong>: A Markdown table that precisely lists the first-order (S1) and total-order (ST) sensitivity indices and their confidence intervals for each input parameter.</li>
+<li><strong>Sensitivity Indices Chart</strong>: An embedded bar chart that visually compares the S1 and ST indices of each parameter, making it easy to quickly identify key influencing factors.</li>
 </ol>
-<h3 id="sobol_1">如何解读Sobol指数<a class="headerlink" href="#sobol_1" title="Permanent link">&para;</a></h3>
+<h3 id="how-to-interpret-sobol-indices">How to Interpret Sobol Indices<a class="headerlink" href="#how-to-interpret-sobol-indices" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>S1 (一阶指数)</strong>: 参数的<strong>独立贡献</strong>。S1 值越高，表示该参数对模型输出的<strong>直接影响</strong>越大。</li>
-<li><strong>ST (总阶指数)</strong>: 参数的<strong>总体贡献</strong>，包括其独立影响以及它与所有其他参数的<strong>交互作用</strong>。</li>
-<li><strong>交互作用 (Interaction)</strong>: <code>ST - S1</code> 的差值可以近似衡量该参数与其他参数的<strong>交互效应强度</strong>。如果一个参数的 <code>ST</code> 远大于其 <code>S1</code>，说明该参数的很多影响是通过与其他参数的耦合、协同作用实现的。</li>
-<li></li>
+<li><strong>S1 (First-order index)</strong>: The <strong>independent contribution</strong> of the parameter. A higher S1 value indicates that the parameter has a greater <strong>direct impact</strong> on the model output.</li>
+<li><strong>ST (Total-order index)</strong>: The <strong>total contribution</strong> of the parameter, including its independent effect and its <strong>interaction</strong> with all other parameters.</li>
+<li><strong>Interaction</strong>: The difference <code>ST - S1</code> can be used to approximate the <strong>strength of the interaction effect</strong> of that parameter with others. If a parameter's <code>ST</code> is much larger than its <code>S1</code>, it means that much of its influence is realized through coupling and synergistic effects with other parameters.</li>
 </ul>
-<h2 id="4">4. 完整示例配置<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h2 id="4-full-example-configuration">4. Full Example Configuration<a class="headerlink" href="#4-full-example-configuration" title="Permanent link">&para;</a></h2>
 <details>
 <summary>example/analysis/4_sobol_global_sensitivity_analysis/sobol_global_sensitivity_analysis.json</summary>
 
@@ -2427,10 +2422,10 @@
 
 </details>
 
-<h2 id="5-ai">5. AI 增强分析<a class="headerlink" href="#5-ai" title="Permanent link">&para;</a></h2>
-<p><code>tricys</code> 的所有分析模块都深度集成了大型语言模型（LLM），能够将原始的图表和数据自动转化为结构化的学术风格报告。</p>
-<h3 id="51">5.1. 启用方式<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
-<p>在您的分析案例配置中（即 <code>analysis_cases</code> 列表中的任意一个对象，或 <code>post_processing</code> 的 <code>params</code> 中），添加 <code>"ai": true</code> 即可为该案例激活 AI 分析功能。</p>
+<h2 id="5-ai-enhanced-analysis">5. AI-Enhanced Analysis<a class="headerlink" href="#5-ai-enhanced-analysis" title="Permanent link">&para;</a></h2>
+<p>All analysis modules in <code>tricys</code> are deeply integrated with Large Language Models (LLMs), capable of automatically converting raw charts and data into structured, academic-style reports.</p>
+<h3 id="51-how-to-enable">5.1. How to Enable<a class="headerlink" href="#51-how-to-enable" title="Permanent link">&para;</a></h3>
+<p>In your analysis case configuration (i.e., within any object in the <code>analysis_cases</code> list or in the <code>params</code> of a <code>post_processing</code> task), add <code>"ai": true</code> to activate the AI analysis feature for that case.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">&quot;analysis_cases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="p">{</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TBR_Analysis_with_AI_Report&quot;</span><span class="p">,</span>
@@ -2441,18 +2436,18 @@
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">]</span>
 </code></pre></div>
-<h3 id="52">5.2. 环境配置<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
-<p>在使用此功能前，您必须在项目的<strong>根目录</strong>下创建一个名为 <code>.env</code> 的文件，并填入您的大语言模型 API 凭据。这确保了您的密钥安全，不会被提交到版本控制中。</p>
+<h3 id="52-environment-setup">5.2. Environment Setup<a class="headerlink" href="#52-environment-setup" title="Permanent link">&para;</a></h3>
+<p>Before using this feature, you must create a file named <code>.env</code> in the project's <strong>root directory</strong> and fill in your Large Language Model API credentials. This ensures that your keys are kept secure and are not committed to version control.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># .env file in project root
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>API_KEY=&quot;sk-your_api_key_here&quot;
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>BASE_URL=&quot;https://your_api_base_url/v1&quot;
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>AI_MODEL=&quot;your_model_name_here&quot;
 </code></pre></div>
-<h3 id="53">5.3. 输出报告<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
-<p>启用后，除了标准的分析报告 (<code>analysis_report_...md</code>)，<code>tricys</code> 还会在该案例的 <code>report</code> 文件夹内生成两份额外的报告：</p>
+<h3 id="53-output-reports">5.3. Output Reports<a class="headerlink" href="#53-output-reports" title="Permanent link">&para;</a></h3>
+<p>When enabled, in addition to the standard analysis report (<code>analysis_report_...md</code>), <code>tricys</code> will generate two additional reports in the case's <code>report</code> folder:</p>
 <ul>
-<li><strong><code>analysis_report_{case_name}_{model_name}.md</code></strong>: 在核心报告的基础上，末尾追加了由 AI 生成的对数据和图表的深度文字解读。</li>
-<li><strong><code>academic_report_{case_name}_{model_name}.md</code></strong>: 一份完全由 AI 撰写的、结构严谨的学术风格报告。这份报告通常包含摘要、引言、方法、结果与讨论、结论等部分，可以直接作为汇报材料或论文初稿使用。</li>
+<li><strong><code>analysis_report_{case_name}_{model_name}.md</code></strong>: Appends an in-depth textual interpretation of the data and charts, generated by the AI, to the end of the core report.</li>
+<li><strong><code>academic_report_{case_name}_{model_name}.md</code></strong>: A well-structured, academic-style report written entirely by the AI. This report typically includes sections such as Abstract, Introduction, Methods, Results and Discussion, and Conclusion, and can be used directly for presentations or as a draft for a paper.</li>
 </ul>
 
 
@@ -2477,7 +2472,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2486,33 +2481,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="multi_parameter_sensitivity_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 多参数敏感性分析">
+          <a href="multi_parameter_sensitivity_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Multi-parameter Sensitivity Analysis">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                多参数敏感性分析
+                Multi-parameter Sensitivity Analysis
               </div>
             </div>
           </a>
         
         
           
-          <a href="latin_uncertainty_analysis.html" class="md-footer__link md-footer__link--next" aria-label="下一页: Latin不确定性量化分析">
+          <a href="latin_uncertainty_analysis.html" class="md-footer__link md-footer__link--next" aria-label="Next: Latin Uncertainty Analysis">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                Latin不确定性量化分析
+                Latin Uncertainty Analysis
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2549,7 +2544,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

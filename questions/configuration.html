@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../en/questions/configuration.html" hreflang="en">
+          <link rel="alternate" href="configuration.html" hreflang="en">
         
-          <link rel="alternate" href="configuration.html" hreflang="zh">
+          <link rel="alternate" href="../zh/questions/configuration.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>⚙️ 配置运行 - 氚燃料循环集成仿真平台</title>
+        <title>⚙️ Configuration & Execution - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -54,10 +54,6 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-    
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
@@ -94,8 +90,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -109,13 +105,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ⚙️ 配置运行
+              ⚙️ Configuration & Execution
             
           </span>
         </div>
@@ -141,20 +137,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../en/questions/configuration.html" hreflang="en" class="md-select__link">
+            <a href="configuration.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="configuration.html" hreflang="zh" class="md-select__link">
+            <a href="../zh/questions/configuration.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -175,16 +171,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -197,7 +193,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -209,7 +205,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -230,7 +226,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -246,7 +242,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -265,7 +261,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -285,7 +281,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -305,7 +301,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -327,7 +323,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -347,7 +343,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -366,7 +362,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -393,19 +389,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -432,7 +428,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -475,7 +471,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -491,7 +487,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -511,7 +507,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -555,7 +551,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -571,7 +567,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -591,7 +587,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -643,7 +639,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -659,7 +655,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -679,7 +675,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -707,7 +703,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -735,7 +731,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -763,7 +759,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -791,7 +787,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -843,7 +839,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -859,7 +855,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -879,7 +875,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -907,7 +903,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -935,7 +931,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -963,7 +959,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -991,7 +987,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1019,7 +1015,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1078,7 +1074,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1094,7 +1090,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1114,7 +1110,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1158,7 +1154,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1174,7 +1170,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1194,7 +1190,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1222,7 +1218,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1250,7 +1246,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1302,7 +1298,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1318,7 +1314,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1338,7 +1334,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1366,7 +1362,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1394,7 +1390,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1422,7 +1418,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1481,7 +1477,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1497,7 +1493,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1713,7 +1709,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1729,7 +1725,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1749,7 +1745,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1784,7 +1780,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1813,7 +1809,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1841,7 +1837,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -1869,7 +1865,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -1904,7 +1900,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -1931,7 +1927,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -1957,7 +1953,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -1980,149 +1976,149 @@
   
 
 
-  <h1>⚙️ 配置运行</h1>
+  <h1>⚙️ Configuration & Execution</h1>
 
 <details class="question">
-<summary>问：如何运行仿真？</summary>
-<p>TRICYS 提供多种运行方式：</p>
-<p><strong>1. 命令行（CLI）</strong>：
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 使用默认配置文件 config.json</span>
+<summary>Q: How to run a simulation?</summary>
+<p>TRICYS offers several ways to run simulations:</p>
+<p><strong>1. Command-Line Interface (CLI)</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Use the default configuration file config.json</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>tricys
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 指定配置文件</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Specify a configuration file</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>tricys<span class="w"> </span>-c<span class="w"> </span>my_config.json
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 运行分析任务</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Run an analysis task</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>tricys<span class="w"> </span>analysis<span class="w"> </span>-c<span class="w"> </span>analysis_config.json
 </code></pre></div></p>
-<p><strong>2. 图形界面（GUI）</strong>：
+<p><strong>2. Graphical User Interface (GUI)</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tricys<span class="w"> </span>gui
 </code></pre></div></p>
-<p><strong>3. 交互式示例</strong>：
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 运行所有示例的交互式菜单</span>
+<p><strong>3. Interactive Examples</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Run an interactive menu for all examples</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>tricys<span class="w"> </span>example
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 运行基础仿真示例</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Run basic simulation examples</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>tricys<span class="w"> </span>basic<span class="w"> </span>example
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># 运行分析示例</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Run analysis examples</span>
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>tricys<span class="w"> </span>analysis<span class="w"> </span>example
 </code></pre></div></p>
 </details>
 <details class="question">
-<summary>问：如何理解输出文件？</summary>
-<p>仿真完成后，结果保存在 <code>results/</code> 目录下的时间戳子目录中：</p>
+<summary>Q: How to understand the output files?</summary>
+<p>After the simulation is complete, the results are saved in a timestamped subdirectory under <code>results/</code>:</p>
 <table>
 <thead>
 <tr>
-<th>文件名</th>
-<th>说明</th>
+<th>Filename</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>simulation_result.csv</code></td>
-<td><strong>单参数组合</strong>的详细结果，包含所有变量随时间的变化。</td>
+<td>Detailed results for a <strong>single parameter combination</strong>, containing all variables over time.</td>
 </tr>
 <tr>
 <td><code>sweep_results.csv</code></td>
-<td><strong>多参数组合</strong>（参数扫描）的汇总结果。</td>
+<td>Aggregated results for <strong>multiple parameter combinations</strong> (parameter sweep).</td>
 </tr>
 <tr>
 <td><code>sensitivity_analysis_summary.csv</code></td>
-<td><strong>【仅分析任务】</strong> 敏感性分析的汇总指标，每行是一次运行的KPI。</td>
+<td><strong>[Analysis Tasks Only]</strong> Summary metrics for sensitivity analysis, where each row is the KPI for one run.</td>
 </tr>
 <tr>
 <td><code>requierd_tbr_summary.csv</code></td>
-<td><strong>【仅分析任务】</strong> 当执行“TBR需求”等目标搜索任务时生成的优化结果。</td>
+<td><strong>[Analysis Tasks Only]</strong> Optimization results generated when performing goal-seeking tasks like "Required TBR".</td>
 </tr>
 <tr>
 <td><code>simulation_*.log</code></td>
-<td>详细的运行日志，包含调试信息。</td>
+<td>Detailed runtime log, including debugging information.</td>
 </tr>
 <tr>
 <td><code>config.json</code></td>
-<td>本次运行使用的完整配置备份。</td>
+<td>A backup of the full configuration used for this run.</td>
 </tr>
 <tr>
 <td><code>*_report.md</code></td>
-<td><strong>【仅分析任务】</strong> 自动生成的AI分析报告。</td>
+<td><strong>[Analysis Tasks Only]</strong> Auto-generated AI analysis report.</td>
 </tr>
 <tr>
 <td><code>*.png</code> / <code>*.csv</code></td>
-<td>各种图表和数据导出。</td>
+<td>Various charts and data exports.</td>
 </tr>
 </tbody>
 </table>
-<p><strong>结果文件CSV结构</strong></p>
-<p>无论运行一个还是多个参数组合，最终的CSV文件都遵循相似的列命名规则。</p>
+<p><strong>Result CSV File Structure</strong></p>
+<p>Whether running one or multiple parameter combinations, the final CSV files follow similar column naming conventions.</p>
 <ul>
 <li>
-<p><strong>基础情况 (无扫描参数)</strong>:
-    如果 <code>simulation_parameters</code> 为空，列名就是 <code>variableFilter</code> 中定义的变量名。
+<p><strong>Base Case (No Scanned Parameters)</strong>:
+    If <code>simulation_parameters</code> is empty, the column names are simply the variable names defined in <code>variableFilter</code>.
     <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>time,sds.I[1],blanket.I[1],...
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>0.0,10.5,2.3,...
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>参数扫描情况</strong>:
-    当 <code>simulation_parameters</code> 不为空时，列名会附加参数信息。
+<p><strong>Parameter Sweep Case</strong>:
+    When <code>simulation_parameters</code> is not empty, the column names will have parameter information appended.
     <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>time,sds.I[1]&amp;blanket.TBR=1.05,sds.I[1]&amp;blanket.TBR=1.1,...
 </code></pre></div></p>
 <ul>
-<li><strong>列名格式</strong>: <code>&lt;变量名&gt;&amp;&lt;参数1&gt;=&lt;值1&gt;&amp;&lt;参数2&gt;=&lt;值2&gt;...</code></li>
-<li><code>time</code> 列保持不变。</li>
-<li>每个参数组合下的每个变量都成为一个独立的列。列名由 <strong>变量名</strong> 和 <strong>参数-值</strong> 对拼接而成，并用 <code>&amp;</code> 符号分隔。</li>
+<li><strong>Column Name Format</strong>: <code>&lt;variable_name&gt;&amp;&lt;param1&gt;=&lt;value1&gt;&amp;&lt;param2&gt;=&lt;value2&gt;...</code></li>
+<li>The <code>time</code> column remains unchanged.</li>
+<li>Each variable under each parameter combination becomes a separate column. The column name is formed by joining the <strong>variable name</strong> and <strong>parameter-value</strong> pairs, separated by the <code>&amp;</code> symbol.</li>
 </ul>
 </li>
 </ul>
 </details>
 <details class="question">
-<summary>问：如何定义复杂的参数扫描？</summary>
-<p>TRICYS 支持多种<a href="../guides/tricys_basic/parameter_sweep.html">参数扫描格式</a>：</p>
+<summary>Q: How to define complex parameter scans?</summary>
+<p>TRICYS supports several <a href="../guides/tricys_basic/parameter_sweep.html">parameter scan formats</a>:</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">功能</th>
-<th style="text-align: left;">格式</th>
-<th style="text-align: left;">示例</th>
-<th style="text-align: left;">说明</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Format</th>
+<th style="text-align: left;">Example</th>
+<th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><strong>离散列表</strong></td>
+<td style="text-align: left;"><strong>Discrete List</strong></td>
 <td style="text-align: left;"><code>[v1, v2, ...]</code></td>
 <td style="text-align: left;"><code>[6, 12, 18]</code></td>
-<td style="text-align: left;">一组离散值</td>
+<td style="text-align: left;">A set of discrete values</td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>等差序列</strong></td>
+<td style="text-align: left;"><strong>Arithmetic Series</strong></td>
 <td style="text-align: left;"><code>"start:stop:step"</code></td>
 <td style="text-align: left;"><code>"1.05:1.15:0.05"</code></td>
-<td style="text-align: left;">起始值、终止值、步长</td>
+<td style="text-align: left;">Start, stop, and step size</td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>线性间隔</strong></td>
+<td style="text-align: left;"><strong>Linear Spacing</strong></td>
 <td style="text-align: left;"><code>"linspace:start:stop:num"</code></td>
 <td style="text-align: left;"><code>"linspace:10:20:5"</code></td>
-<td style="text-align: left;">生成 <code>num</code> 个等间距点</td>
+<td style="text-align: left;">Generate <code>num</code> evenly spaced points</td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>对数间隔</strong></td>
+<td style="text-align: left;"><strong>Logarithmic Spacing</strong></td>
 <td style="text-align: left;"><code>"log:start:stop:num"</code></td>
 <td style="text-align: left;"><code>"log:1:1000:4"</code></td>
-<td style="text-align: left;">生成 <code>num</code> 个对数尺度的点</td>
+<td style="text-align: left;">Generate <code>num</code> logarithmically scaled points</td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>从文件读取</strong></td>
+<td style="text-align: left;"><strong>Read from File</strong></td>
 <td style="text-align: left;"><code>"file:path:column"</code></td>
 <td style="text-align: left;"><code>"file:data.csv:voltage"</code></td>
-<td style="text-align: left;">从 CSV 文件的指定列读取</td>
+<td style="text-align: left;">Read from a specified column in a CSV file</td>
 </tr>
 </tbody>
 </table>
-<p><strong>示例配置</strong>：
+<p><strong>Example Configuration</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span><span class="w"> </span><span class="mf">1.15</span><span class="p">,</span><span class="w"> </span><span class="mf">1.2</span><span class="p">],</span>
@@ -2133,25 +2129,25 @@
 </code></pre></div></p>
 </details>
 <details class="question">
-<summary>问：如何过滤输出变量？</summary>
-<p>使用 <code>variableFilter</code> 参数来选择需要保存的变量。该参数支持正则表达式，但请注意其语法以匹配Modelica变量命名规则。</p>
-<p><strong>配置示例</strong>：</p>
+<summary>Q: How to filter output variables?</summary>
+<p>Use the <code>variableFilter</code> parameter to select the variables to be saved. This parameter supports regular expressions, but be mindful of the syntax to match Modelica's variable naming rules.</p>
+<p><strong>Configuration Example</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]|blanket.I[1-5]|div.I[1-5]&quot;</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="p">}</span>
-</code></pre></div>
-<p><strong>常用模式</strong>：
-*   <code>time</code>：时间变量（必须包含）
-*   <code>sds.I[1]</code>：精确匹配单个变量
-*   <code>sds.I[1-5]</code>：匹配数组变量 <code>sds.I[1]</code> 到 <code>sds.I[5]</code>
-*   <code>blanket.I[1-5]|div.I[1-5]</code>：匹配多个特定数组变量</p>
+</code></pre></div></p>
+<p><strong>Common Patterns</strong>:
+*   <code>time</code>: The time variable (must be included).
+*   <code>sds.I[1]</code>: Exact match for a single variable.
+*   <code>sds.I[1-5]</code>: Matches array variables from <code>sds.I[1]</code> to <code>sds.I[5]</code>.
+*   <code>blanket.I[1-5]|div.I[1-5]</code>: Matches multiple specific array variables.</p>
 </details>
 <details class="question">
-<summary>问：仿真时间很长，如何加速？</summary>
-<p>可以采取以下优化措施：</p>
-<p><strong>1. <a href="../guides/tricys_basic/concurrent_operation.html">启用并发运行</a></strong>：
+<summary>Q: The simulation is very slow, how to speed it up?</summary>
+<p>You can take the following optimization measures:</p>
+<p><strong>1. <a href="../guides/tricys_basic/concurrent_operation.html">Enable concurrent execution</a></strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
@@ -2159,29 +2155,28 @@
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>2. 减少输出变量</strong>：
+<p><strong>2. Reduce the number of output variables</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">只保存关键变量</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">O</span><span class="kc">nl</span><span class="err">y</span><span class="w"> </span><span class="err">save</span><span class="w"> </span><span class="err">key</span><span class="w"> </span><span class="err">variables</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>3. 增大时间步长</strong>（权衡精度）：
+<p><strong>3. Increase the time step</strong> (trade-off with accuracy):
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="err">增加到</span><span class="w"> </span><span class="mf">1.0</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">I</span><span class="kc">n</span><span class="err">crease</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="mf">1.0</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>4. 减少扫描点数</strong>：
+<p><strong>4. Reduce the number of scan points</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1.05:1.15:5&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">减少到</span><span class="w"> </span><span class="mi">5</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1.05:1.15:5&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">Reduce</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="mi">5</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
 </code></pre></div></p>
 </details>
-<hr />
 
 
 
@@ -2205,7 +2200,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2214,33 +2209,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="installation.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 🚀 安装环境">
+          <a href="installation.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: 🚀 Installation &amp; Environment">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                🚀 安装环境
+                🚀 Installation & Environment
               </div>
             </div>
           </a>
         
         
           
-          <a href="advanced_features.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 🔬 高级功能">
+          <a href="advanced_features.html" class="md-footer__link md-footer__link--next" aria-label="Next: 🔬 Advanced Features">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                🔬 高级功能
+                🔬 Advanced Features
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2277,7 +2272,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>

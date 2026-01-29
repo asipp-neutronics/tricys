@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/guides/tricys_basic/post_processing_module.html" hreflang="en">
+          <link rel="alternate" href="post_processing_module.html" hreflang="en">
         
-          <link rel="alternate" href="post_processing_module.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/guides/tricys_basic/post_processing_module.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>后处理模块 - 氚燃料循环集成仿真平台</title>
+        <title>Post-processing Module - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
-          跳转至
+        <a href="#post-processing-module" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              后处理模块
+              Post-processing Module
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/guides/tricys_basic/post_processing_module.html" hreflang="en" class="md-select__link">
+            <a href="post_processing_module.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="post_processing_module.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/guides/tricys_basic/post_processing_module.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -272,7 +268,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -485,7 +481,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -501,7 +497,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -521,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -568,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -584,7 +580,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -604,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -661,7 +657,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -677,7 +673,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -697,7 +693,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -725,7 +721,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -753,7 +749,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -790,7 +786,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -808,7 +804,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -820,7 +816,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -829,15 +825,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 配置文件示例
+        1. Configuration File Example
       
     </span>
   </a>
@@ -845,15 +841,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-configuration-details" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 配置项详解
+        2. Configuration Details
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 配置项详解">
+    <nav class="md-nav" aria-label="2. Configuration Details">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -868,22 +864,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-post-processing-function" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 后处理函数
+        2.2. Post-Processing Function
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.2. 后处理函数">
+    <nav class="md-nav" aria-label="2.2. Post-Processing Function">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#module" class="md-nav__link">
+  <a href="#method-1-module-module-loading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        方式一：module (模块加载)
+        Method 1: module (Module Loading)
       
     </span>
   </a>
@@ -891,10 +887,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#script_path" class="md-nav__link">
+  <a href="#method-2-script_path-script-path-loading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        方式二：script_path (脚本路径加载)
+        Method 2: script_path (Script Path Loading)
       
     </span>
   </a>
@@ -912,10 +908,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-built-in-post-processing-modules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 内置后处理模块
+        3. Built-in Post-Processing Modules
       
     </span>
   </a>
@@ -923,22 +919,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-custom-post-processing-modules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 自定义后处理模块
+        4. Custom Post-Processing Modules
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. 自定义后处理模块">
+    <nav class="md-nav" aria-label="4. Custom Post-Processing Modules">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41" class="md-nav__link">
+  <a href="#41-function-signature" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1. 函数签名
+        4.1. Function Signature
       
     </span>
   </a>
@@ -946,10 +942,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42" class="md-nav__link">
+  <a href="#42-complete-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2. 完整示例
+        4.2. Complete Example
       
     </span>
   </a>
@@ -962,10 +958,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
+  <a href="#5-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 下一步
+        5. Next Steps
       
     </span>
   </a>
@@ -995,7 +991,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -1050,7 +1046,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1066,7 +1062,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1086,7 +1082,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -1114,7 +1110,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -1142,7 +1138,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -1170,7 +1166,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1198,7 +1194,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1226,7 +1222,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1285,7 +1281,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1301,7 +1297,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1321,7 +1317,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1365,7 +1361,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1381,7 +1377,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1401,7 +1397,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1429,7 +1425,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1457,7 +1453,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1509,7 +1505,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1525,7 +1521,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1545,7 +1541,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1573,7 +1569,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1601,7 +1597,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1629,7 +1625,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1688,7 +1684,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1704,7 +1700,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1915,7 +1911,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1931,7 +1927,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1951,7 +1947,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1979,7 +1975,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -2007,7 +2003,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -2035,7 +2031,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2063,7 +2059,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2098,7 +2094,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2125,7 +2121,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2151,7 +2147,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2160,15 +2156,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 配置文件示例
+        1. Configuration File Example
       
     </span>
   </a>
@@ -2176,15 +2172,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-configuration-details" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 配置项详解
+        2. Configuration Details
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 配置项详解">
+    <nav class="md-nav" aria-label="2. Configuration Details">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2199,22 +2195,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-post-processing-function" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 后处理函数
+        2.2. Post-Processing Function
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.2. 后处理函数">
+    <nav class="md-nav" aria-label="2.2. Post-Processing Function">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#module" class="md-nav__link">
+  <a href="#method-1-module-module-loading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        方式一：module (模块加载)
+        Method 1: module (Module Loading)
       
     </span>
   </a>
@@ -2222,10 +2218,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#script_path" class="md-nav__link">
+  <a href="#method-2-script_path-script-path-loading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        方式二：script_path (脚本路径加载)
+        Method 2: script_path (Script Path Loading)
       
     </span>
   </a>
@@ -2243,10 +2239,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-built-in-post-processing-modules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 内置后处理模块
+        3. Built-in Post-Processing Modules
       
     </span>
   </a>
@@ -2254,22 +2250,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-custom-post-processing-modules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 自定义后处理模块
+        4. Custom Post-Processing Modules
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. 自定义后处理模块">
+    <nav class="md-nav" aria-label="4. Custom Post-Processing Modules">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41" class="md-nav__link">
+  <a href="#41-function-signature" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1. 函数签名
+        4.1. Function Signature
       
     </span>
   </a>
@@ -2277,10 +2273,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42" class="md-nav__link">
+  <a href="#42-complete-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2. 完整示例
+        4.2. Complete Example
       
     </span>
   </a>
@@ -2293,10 +2289,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
+  <a href="#5-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 下一步
+        5. Next Steps
       
     </span>
   </a>
@@ -2323,11 +2319,11 @@
   
 
 
-<h1 id="_1">后处理模块<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p><code>tricys</code> 不仅能运行仿真，还提供了一个强大的后处理（Post-Processing）框架，允许您在仿真任务完成后自动对结果进行分析、生成报告或执行其他自定义操作。</p>
-<p>后处理功能通过在配置文件中添加 <code>post_processing</code> 字段来实现。</p>
-<h2 id="1">1. 配置文件示例<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>以下示例展示了如何在参数扫描完成后，自动执行两个分析任务：一个使用内置的 <code>module</code>，另一个使用用户自定义的 <code>script_path</code>。</p>
+<h1 id="post-processing-module">Post-Processing Module<a class="headerlink" href="#post-processing-module" title="Permanent link">&para;</a></h1>
+<p><code>tricys</code> not only runs simulations but also provides a powerful Post-Processing framework that allows you to automatically analyze results, generate reports, or perform other custom operations after the simulation tasks are complete.</p>
+<p>The post-processing feature is enabled by adding a <code>post_processing</code> field to the configuration file.</p>
+<h2 id="1-configuration-file-example">1. Configuration File Example<a class="headerlink" href="#1-configuration-file-example" title="Permanent link">&para;</a></h2>
+<p>The following example shows how to automatically execute two analysis tasks after a parameter sweep is completed: one using a built-in <code>module</code> and the other using a user-defined <code>script_path</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="err">...</span>
@@ -2357,80 +2353,80 @@
 <a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">    </span><span class="p">]</span>
 <a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="2">2. 配置项详解<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h2 id="2-configuration-details">2. Configuration Details<a class="headerlink" href="#2-configuration-details" title="Permanent link">&para;</a></h2>
 <h3 id="21-post_processing">2.1. <code>post_processing</code><a class="headerlink" href="#21-post_processing" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>描述</strong>: 这是一个列表（Array），其中每个元素代表一个独立的后处理步骤。这些步骤会按照它们在列表中的顺序依次执行。</li>
-<li><strong>执行时机</strong>: 所有仿真任务（例如参数扫描中的每一次运行）全部完成后，<code>tricys</code> 会将汇总的结果（<code>sweep_results.csv</code>）加载到一个 Pandas DataFrame 中，并将其传递给您指定的后处理函数。</li>
+<li><strong>Description</strong>: This is a list (Array) where each element represents an independent post-processing step. These steps will be executed sequentially in the order they appear in the list.</li>
+<li><strong>Execution Timing</strong>: After all simulation tasks (e.g., every run in a parameter sweep) are completed, <code>tricys</code> will load the aggregated results (<code>sweep_results.csv</code>) into a Pandas DataFrame and pass it to your specified post-processing functions.</li>
 </ul>
-<h3 id="22">2.2. 后处理函数<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
-<p>列表中的每个对象都定义了一个要执行的 Python 函数。您可以通过以下两种方式之一来指定要调用的代码：</p>
-<h4 id="module">方式一：<code>module</code> (模块加载)<a class="headerlink" href="#module" title="Permanent link">&para;</a></h4>
+<h3 id="22-post-processing-function">2.2. Post-Processing Function<a class="headerlink" href="#22-post-processing-function" title="Permanent link">&para;</a></h3>
+<p>Each object in the list defines a Python function to be executed. You can specify the code to be called in one of two ways:</p>
+<h4 id="method-1-module-module-loading">Method 1: <code>module</code> (Module Loading)<a class="headerlink" href="#method-1-module-module-loading" title="Permanent link">&para;</a></h4>
 <ul>
-<li><code>module</code> (字符串, 必填):</li>
-<li><strong>描述</strong>: 要调用的 Python 函数所在的<strong>模块</strong>的完整路径。这要求您的代码是一个可以通过 <code>import</code> 语句加载的 Python 包或模块（例如，已安装或位于带有 <code>__init__.py</code> 的目录中）。</li>
-<li><strong>示例</strong>: <code>tricys.postprocess.static_alarm</code></li>
+<li><code>module</code> (string, required):</li>
+<li><strong>Description</strong>: The full path of the <strong>module</strong> where the Python function to be called is located. This requires your code to be a Python package or module that can be loaded with an <code>import</code> statement (e.g., installed or located in a directory with an <code>__init__.py</code> file).</li>
+<li><strong>Example</strong>: <code>tricys.postprocess.static_alarm</code></li>
 </ul>
-<h4 id="script_path">方式二：<code>script_path</code> (脚本路径加载)<a class="headerlink" href="#script_path" title="Permanent link">&para;</a></h4>
+<h4 id="method-2-script_path-script-path-loading">Method 2: <code>script_path</code> (Script Path Loading)<a class="headerlink" href="#method-2-script_path-script-path-loading" title="Permanent link">&para;</a></h4>
 <ul>
-<li><code>script_path</code> (字符串, 必填):</li>
-<li><strong>描述</strong>: 指向包含要调用函数的单个 Python <strong>脚本文件</strong>的路径。这更加灵活，不需要您的脚本成为一个正式的包。</li>
-<li><strong>示例</strong>: <code>scripts/my_custom_analyzer.py</code></li>
+<li><code>script_path</code> (string, required):</li>
+<li><strong>Description</strong>: The path to a single Python <strong>script file</strong> containing the function to be called. This is more flexible and does not require your script to be part of a formal package.</li>
+<li><strong>Example</strong>: <code>scripts/my_custom_analyzer.py</code></li>
 </ul>
 <hr />
-<p>无论使用哪种方式，您都需要提供以下字段：</p>
+<p>Regardless of which method you use, you need to provide the following fields:</p>
 <ul>
-<li><code>function</code> (字符串, 必填):</li>
-<li><strong>描述</strong>: 要在指定模块或脚本中调用的函数名。</li>
+<li><code>function</code> (string, required):</li>
+<li><strong>Description</strong>: The name of the function to be called in the specified module or script.</li>
 <li>
-<p><strong>示例</strong>: <code>check_thresholds</code></p>
+<p><strong>Example</strong>: <code>check_thresholds</code></p>
 </li>
 <li>
-<p><code>params</code> (字典, 选填):</p>
+<p><code>params</code> (dictionary, optional):</p>
 </li>
-<li><strong>描述</strong>: 一个包含要传递给目标函数的关键字参数（keyword arguments）的字典。</li>
-<li><strong>示例</strong>: 在上面的例子中，<code>params</code> 为 <code>check_thresholds</code> 函数提供了 <code>rules</code> 参数。</li>
+<li><strong>Description</strong>: A dictionary containing keyword arguments to be passed to the target function.</li>
+<li><strong>Example</strong>: In the example above, <code>params</code> provides the <code>rules</code> argument to the <code>check_thresholds</code> function.</li>
 </ul>
-<h2 id="3">3. 内置后处理模块<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<p><code>tricys</code> 自带了一些常用的后处理模块，位于 <code>tricys/postprocess</code> 目录下：</p>
+<h2 id="3-built-in-post-processing-modules">3. Built-in Post-Processing Modules<a class="headerlink" href="#3-built-in-post-processing-modules" title="Permanent link">&para;</a></h2>
+<p><code>tricys</code> comes with several common post-processing modules, located in the <code>tricys/postprocess</code> directory:</p>
 <ul>
-<li><strong><code>rise_analysis</code></strong>: 用于分析信号的上升时间、下降时间、峰值等动态特性。</li>
-<li><strong><code>static_alarm</code></strong>: 用于检查结果是否超出了预设的静态阈值（上限或下限）。</li>
-<li><strong><code>baseline_analysis</code></strong>: 用于执行基准工况分析。</li>
+<li><strong><code>rise_analysis</code></strong>: For analyzing dynamic characteristics of signals, such as rise time, fall time, and peak values.</li>
+<li><strong><code>static_alarm</code></strong>: For checking if results exceed preset static thresholds (upper or lower limits).</li>
+<li><strong><code>baseline_analysis</code></strong>: For performing baseline condition analysis.</li>
 </ul>
-<h2 id="4">4. 自定义后处理模块<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
-<p>后处理框架最大的优势在于其扩展性。您可以轻松编写自己的 Python 脚本来执行任何想要的分析。</p>
-<h3 id="41">4.1. 函数签名<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
-<p>为了能被 <code>tricys</code> 框架正确调用，您的自定义后处理函数<strong>必须</strong>遵循特定的签名。框架会自动通过<strong>关键字参数</strong>传入两个核心数据：</p>
+<h2 id="4-custom-post-processing-modules">4. Custom Post-Processing Modules<a class="headerlink" href="#4-custom-post-processing-modules" title="Permanent link">&para;</a></h2>
+<p>The greatest advantage of the post-processing framework is its extensibility. You can easily write your own Python scripts to perform any analysis you want.</p>
+<h3 id="41-function-signature">4.1. Function Signature<a class="headerlink" href="#41-function-signature" title="Permanent link">&para;</a></h3>
+<p>To be called correctly by the <code>tricys</code> framework, your custom post-processing function <strong>must</strong> follow a specific signature. The framework automatically passes two core pieces of data via <strong>keyword arguments</strong>:</p>
 <ol>
-<li><code>results_df</code> (pd.DataFrame): 包含所有仿真运行汇总结果的 Pandas DataFrame。</li>
-<li><code>output_dir</code> (str): 一个专属的输出目录路径，供您保存报告、图表等分析产物。</li>
+<li><code>results_df</code> (pd.DataFrame): A Pandas DataFrame containing the aggregated results of all simulation runs.</li>
+<li><code>output_dir</code> (str): A dedicated output directory path for you to save reports, charts, and other analysis artifacts.</li>
 </ol>
-<p>因此，您的函数签名必须能够接收这两个参数，以及您在 <code>params</code> 中定义的任何其他自定义参数。</p>
-<p>一个标准的函数签名如下：</p>
+<p>Therefore, your function signature must be able to accept these two arguments, as well as any other custom arguments you define in <code>params</code>.</p>
+<p>A standard function signature is as follows:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">my_custom_function</span><span class="p">(</span><span class="n">results_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="sd">    一个通用的后处理函数签名。</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="sd">    A generic post-processing function signature.</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">    - results_df: 由 tricys 传入的仿真结果。</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">    - output_dir: 由 tricys 提供的用于保存报告的目录。</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">    - **kwargs: 用于接收来自 JSON 配置中 &quot;params&quot; 的所有自定义参数。</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">    - results_df: The simulation results passed in by tricys.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">    - output_dir: The directory provided by tricys for saving reports.</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">    - **kwargs: Used to receive all custom parameters from &quot;params&quot; in the JSON configuration.</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="c1"># 从 kwargs 中获取自定义参数</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="c1"># Get custom parameters from kwargs</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">my_param</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;my_param&quot;</span><span class="p">,</span> <span class="s2">&quot;default_value&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="c1"># 在这里编写您的分析代码...</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;分析报告将保存在: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;收到的自定义参数 my_param 的值为: </span><span class="si">{</span><span class="n">my_param</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;结果数据预览:&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="c1"># Write your analysis code here...</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analysis report will be saved in: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received custom parameter my_param with value: </span><span class="si">{</span><span class="n">my_param</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Preview of result data:&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">results_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </code></pre></div>
-<h3 id="42">4.2. 完整示例<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
-<p>让我们创建一个完整的自定义后处理脚本，并展示如何通过 <code>script_path</code> 在配置中调用它。</p>
-<p><strong>步骤 1: 创建分析脚本</strong></p>
-<p>假设我们在项目下创建了一个名为 <code>scripts/my_custom_analyzer.py</code> 的文件：</p>
+<h3 id="42-complete-example">4.2. Complete Example<a class="headerlink" href="#42-complete-example" title="Permanent link">&para;</a></h3>
+<p>Let's create a complete custom post-processing script and show how to call it from the configuration using <code>script_path</code>.</p>
+<p><strong>Step 1: Create the analysis script</strong></p>
+<p>Suppose we create a file named <code>scripts/my_custom_analyzer.py</code> in our project:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># scripts/my_custom_analyzer.py</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -2438,29 +2434,29 @@
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">analyze_peak_value</span><span class="p">(</span><span class="n">results_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_column_pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;peak_report.json&quot;</span><span class="p">):</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="sd">    在所有匹配的列中查找峰值，并生成一份报告。</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="sd">    Finds the peak value in all matching columns and generates a report.</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="c1"># 筛选出符合模式的列</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="c1"># Filter for columns that match the pattern</span>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">target_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">results_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">target_column_pattern</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
 <a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
 <a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">target_columns</span><span class="p">:</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;警告: 未找到匹配 &#39;</span><span class="si">{</span><span class="n">target_column_pattern</span><span class="si">}</span><span class="s2">&#39; 的列。&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: No columns found matching &#39;</span><span class="si">{</span><span class="n">target_column_pattern</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="k">return</span>
 <a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="c1"># 计算每一列的峰值</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="c1"># Calculate the peak value for each column</span>
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">peak_values</span> <span class="o">=</span> <span class="n">results_df</span><span class="p">[</span><span class="n">target_columns</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="c1"># 定义报告输出路径</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="c1"># Define the report output path</span>
 <a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="n">report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">report_filename</span><span class="p">)</span>
 <a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="c1"># 保存报告</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="c1"># Save the report</span>
 <a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">peak_values</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>
-<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;峰值分析报告已保存至: </span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Peak value analysis report saved to: </span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>步骤 2: 更新配置文件</strong></p>
-<p>现在，在您的 <code>config.json</code> 中配置 <code>post_processing</code> 部分来调用这个脚本：</p>
+<p><strong>Step 2: Update the configuration file</strong></p>
+<p>Now, configure the <code>post_processing</code> section in your <code>config.json</code> to call this script:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="err">...</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">&quot;post_processing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -2475,15 +2471,16 @@
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="p">]</span>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="p">}</span>
 </code></pre></div>
-<p>当 <code>tricys</code> 完成所有仿真后，它会自动执行 <code>analyze_peak_value</code> 函数，并将仿真结果中所有包含 <code>sds.I[1]</code> 的列的峰值计算出来，最后将结果保存到 <code>post_processing/sds_peak_values.json</code> 文件中。</p>
-<p>通过这种方式，您可以将任意复杂的数据分析流程无缝集成到 <code>tricys</code> 的自动化工作流中。</p>
+<p>When <code>tricys</code> finishes all simulations, it will automatically execute the <code>analyze_peak_value</code> function, calculate the peak values for all columns containing <code>sds.I[1]</code> in the simulation results, and finally save the results to the <code>post_processing/sds_peak_values.json</code> file.</p>
+<p>In this way, you can seamlessly integrate any complex data analysis process into the automated workflow of <code>tricys</code>.</p>
 <hr />
-<h2 id="5">5. 下一步<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
-<p>掌握了如何创建和使用后处理模块后，您可以将它应用到更复杂的场景中：</p>
+<h2 id="5-next-steps">5. Next Steps<a class="headerlink" href="#5-next-steps" title="Permanent link">&para;</a></h2>
+<p>After mastering how to create and use post-processing modules, you can apply them to more complex scenarios:</p>
 <ul>
-<li><strong><a href="../tricys_analysis/index.html">敏感性分析</a></strong>：为复杂的敏感性分析结果编写专用的后处理脚本，以提取关键指标和生成可视化图表。</li>
-<li><strong><a href="co_simulation_module.html">协同仿真</a></strong>：对包含外部模块的协同仿真结果进行整合与分析。</li>
+<li><strong><a href="../tricys_analysis/index.html">Sensitivity Analysis</a></strong>: Write dedicated post-processing scripts for complex sensitivity analysis results to extract key metrics and generate visualizations.</li>
+<li><strong><a href="co_simulation_module.html">Co-Simulation</a></strong>: Integrate and analyze the results of co-simulations that include external modules.</li>
 </ul>
+<hr />
 
 
 
@@ -2507,7 +2504,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2516,33 +2513,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="concurrent_operation.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 并发运行">
+          <a href="concurrent_operation.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Concurrent Operation">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                并发运行
+                Concurrent Operation
               </div>
             </div>
           </a>
         
         
           
-          <a href="co_simulation_module.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 协同仿真模块">
+          <a href="co_simulation_module.html" class="md-footer__link md-footer__link--next" aria-label="Next: Co-simulation Module">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                协同仿真模块
+                Co-simulation Module
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2579,7 +2576,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

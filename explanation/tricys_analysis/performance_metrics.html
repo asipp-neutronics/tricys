@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/explanation/tricys_analysis/performance_metrics.html" hreflang="en">
+          <link rel="alternate" href="performance_metrics.html" hreflang="en">
         
-          <link rel="alternate" href="performance_metrics.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/explanation/tricys_analysis/performance_metrics.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>核心性能指标 - 氚燃料循环集成仿真平台</title>
+        <title>Core Performance Metrics - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#1" class="md-skip">
-          跳转至
+        <a href="#1-startup-inventory" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              核心性能指标
+              Core Performance Metrics
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/explanation/tricys_analysis/performance_metrics.html" hreflang="en" class="md-select__link">
+            <a href="performance_metrics.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="performance_metrics.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/explanation/tricys_analysis/performance_metrics.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -270,7 +266,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -480,7 +476,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -496,7 +492,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -516,7 +512,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -560,7 +556,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -576,7 +572,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -596,7 +592,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -648,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -664,7 +660,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -684,7 +680,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -712,7 +708,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -740,7 +736,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -768,7 +764,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -796,7 +792,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -848,7 +844,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -864,7 +860,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -884,7 +880,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -912,7 +908,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -940,7 +936,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -968,7 +964,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -996,7 +992,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1024,7 +1020,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1088,7 +1084,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1104,7 +1100,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1124,7 +1120,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1171,7 +1167,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1187,7 +1183,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1207,7 +1203,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1235,7 +1231,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1263,7 +1259,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1320,7 +1316,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1336,7 +1332,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1356,7 +1352,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1391,7 +1387,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1409,7 +1405,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1421,22 +1417,22 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-startup-inventory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 启动库存
+        1. Startup Inventory
       
     </span>
   </a>
@@ -1444,10 +1440,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-self-sufficiency-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 自持时间
+        2. Self-Sufficiency Time
       
     </span>
   </a>
@@ -1455,10 +1451,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-doubling-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 倍增时间
+        3. Doubling Time
       
     </span>
   </a>
@@ -1466,10 +1462,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-constraint-solving-metrics-eg-required_tbr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 约束求解指标
+        4. Constraint-Solving Metrics (e.g., Required_TBR)
       
     </span>
   </a>
@@ -1499,7 +1495,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1527,7 +1523,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1586,7 +1582,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1602,7 +1598,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1813,7 +1809,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1829,7 +1825,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1849,7 +1845,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1877,7 +1873,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1905,7 +1901,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1933,7 +1929,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -1961,7 +1957,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -1996,7 +1992,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2023,7 +2019,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2049,22 +2045,22 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-startup-inventory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 启动库存
+        1. Startup Inventory
       
     </span>
   </a>
@@ -2072,10 +2068,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-self-sufficiency-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 自持时间
+        2. Self-Sufficiency Time
       
     </span>
   </a>
@@ -2083,10 +2079,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-doubling-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 倍增时间
+        3. Doubling Time
       
     </span>
   </a>
@@ -2094,10 +2090,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-constraint-solving-metrics-eg-required_tbr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 约束求解指标
+        4. Constraint-Solving Metrics (e.g., Required_TBR)
       
     </span>
   </a>
@@ -2124,59 +2120,60 @@
   
 
 
-  <h1>核心性能指标</h1>
+  <h1>Core Performance Metrics</h1>
 
-<p>在氚燃料循环的模拟与分析中，评估系统的经济性和可持续性至关重要。<code>tricys</code> 内置了一系列核心性能指标（Key Performance Indicators, KPIs），用于从动态仿真结果中量化评估系统的关键特性。</p>
-<h2 id="1">1. 启动库存<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>In the simulation and analysis of the tritium fuel cycle, evaluating the system's economic efficiency and sustainability is crucial. <code>tricys</code> has a built-in series of Key Performance Indicators (KPIs) used to quantitatively assess the key characteristics of the system from dynamic simulation results.</p>
+<h2 id="1-startup-inventory">1. Startup Inventory<a class="headerlink" href="#1-startup-inventory" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>计算函数</strong>: <code>calculate_startup_inventory</code></li>
-<li><strong>物理意义</strong>: 启动库存是指在反应堆启动初期，为了维持连续运行直至系统达到氚自持（即氚的增殖速率等于或超过其消耗速率）而必须预先投入的氚量。在氚库存随时间变化的曲线上，这表现为从初始库存下降到最低点（拐点）的垂直距离。</li>
+<li><strong>Calculation Function</strong>: <code>calculate_startup_inventory</code></li>
+<li><strong>Physical Meaning</strong>: Startup inventory refers to the amount of tritium that must be pre-loaded at the beginning of a reactor's operation to sustain continuous operation until the system achieves tritium self-sufficiency (i.e., the tritium breeding rate equals or exceeds its consumption rate). On a time-varying curve of tritium inventory, this is represented by the vertical distance from the initial inventory down to its lowest point (the turning point).</li>
 <li>
-<p><strong>计算方法</strong>:</p>
+<p><strong>Calculation Method</strong>:</p>
 <ol>
-<li>在仿真时间序列中，找到氚库存的最低点（Turning Point），这个点通常代表系统从净消耗转为净增殖的时刻。</li>
-<li>启动库存被计算为 <strong>初始库存</strong> 与 <strong>最低库存</strong> 之间的差值。</li>
+<li>In the simulation time series, find the lowest point of the tritium inventory (the Turning Point), which typically represents the moment the system transitions from net consumption to net breeding.</li>
+<li>The startup inventory is calculated as the difference between the <strong>Initial Inventory</strong> and the <strong>Minimum Inventory</strong>.</li>
 </ol>
 <p><code>Startup Inventory = Initial Inventory - Minimum Inventory</code>
-- <strong>解读</strong>: 启动库存是一个关键的经济性指标。<strong>较低的启动库存</strong>意味着系统能更快地达到自持，减少了对外部氚源的依赖和前期投入成本，是氚燃料循环系统设计的优化目标之一。</p>
+- <strong>Interpretation</strong>: Startup inventory is a key economic indicator. A <strong>lower startup inventory</strong> means the system can achieve self-sufficiency faster, reducing reliance on external tritium sources and upfront investment costs, making it a primary optimization target in tritium fuel cycle system design.</p>
 </li>
 </ul>
-<h2 id="2">2. 自持时间<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h2 id="2-self-sufficiency-time">2. Self-Sufficiency Time<a class="headerlink" href="#2-self-sufficiency-time" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>计算函数</strong>: <code>time_of_turning_point</code></li>
-<li><strong>物理意义</strong>: 自持时间是指系统从启动开始，到其总氚库存量达到最低点并开始回升的时刻。这个时间点标志着系统内部的氚增殖速率开始超过消耗和损失速率，系统在理论上实现了“自给自足”。</li>
-<li><strong>计算方法</strong>:<ol>
-<li>该函数首先对库存数据进行平滑处理，以消除噪声干扰，判断是否存在一个真实的“拐点”。</li>
-<li>如果库存曲线是单调下降的（意味着在整个仿真时间内都未达到自持），则返回 <code>NaN</code> (Not a Number)。</li>
-<li>否则，它会返回原始（未平滑的）数据中库存量达到最小值的精确时间点。</li>
+<li><strong>Calculation Function</strong>: <code>time_of_turning_point</code></li>
+<li><strong>Physical Meaning</strong>: Self-sufficiency time is the time from the start of the system's operation until its total tritium inventory reaches its lowest point and begins to increase. This point in time marks when the system's internal tritium breeding rate starts to exceed the rates of consumption and loss, and the system theoretically becomes "self-sufficient."</li>
+<li><strong>Calculation Method</strong>:<ol>
+<li>The function first smooths the inventory data to eliminate noise and determine if a true "turning point" exists.</li>
+<li>If the inventory curve is monotonically decreasing (meaning self-sufficiency is not achieved within the simulation time), it returns <code>NaN</code> (Not a Number).</li>
+<li>Otherwise, it returns the exact time point from the original (unsmoothed) data where the inventory reaches its minimum value.</li>
 </ol>
 </li>
-<li><strong>解读</strong>: 自持时间直接反映了系统达到氚平衡的速度。<strong>更短的自持时间</strong>是理想的，因为它表明系统能更快地摆脱对启动库存的消耗，并开始积累氚，这对快速启动商业聚变电站至关重要。</li>
+<li><strong>Interpretation</strong>: The self-sufficiency time directly reflects the speed at which the system reaches tritium balance. A <strong>shorter self-sufficiency time</strong> is ideal as it indicates the system can more quickly move past consuming the startup inventory and begin accumulating tritium, which is crucial for the rapid commissioning of commercial fusion power plants.</li>
 </ul>
-<h2 id="3">3. 倍增时间<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h2 id="3-doubling-time">3. Doubling Time<a class="headerlink" href="#3-doubling-time" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>计算函数</strong>: <code>calculate_doubling_time</code></li>
-<li><strong>物理意义</strong>: 倍增时间是指在达到氚自持之后，系统内总氚库存量翻倍（即达到初始库存量的两倍）所需的时间。</li>
-<li><strong>计算方法</strong>:<ol>
-<li>首先，确定系统的“拐点”（库存最低点）。</li>
-<li>然后，在拐点之后的库存数据中，寻找第一个时间点，该点库存量大于或等于 <strong>初始库存的两倍</strong>。</li>
-<li>倍增时间就是这个时间点与仿真开始时间之差。如果库存从未达到初始值的两倍，则返回 <code>NaN</code>。</li>
+<li><strong>Calculation Function</strong>: <code>calculate_doubling_time</code></li>
+<li><strong>Physical Meaning</strong>: Doubling time is the time required for the total tritium inventory in the system to double (i.e., reach twice the initial inventory) after achieving tritium self-sufficiency.</li>
+<li><strong>Calculation Method</strong>:<ol>
+<li>First, determine the system's "turning point" (the point of minimum inventory).</li>
+<li>Then, in the inventory data after the turning point, find the first time point where the inventory is greater than or equal to <strong>twice the initial inventory</strong>.</li>
+<li>The doubling time is the difference between this time point and the start of the simulation. If the inventory never reaches twice the initial value, it returns <code>NaN</code>.</li>
 </ol>
 </li>
-<li><strong>解读</strong>: 倍增时间是衡量氚增殖系统“盈利能力”的核心指标。一个有限且合理的倍增时间，意味着该聚变电站不仅能自我维持，还能为启动新的电站提供额外的氚燃料。这是实现聚变能源规模化发展的关键。</li>
+<li><strong>Interpretation</strong>: Doubling time is a core metric for measuring the "profitability" of a tritium breeding system. A finite and reasonable doubling time means the fusion power plant can not only sustain itself but also provide additional tritium fuel to start new plants. This is key to achieving the large-scale development of fusion energy.</li>
 </ul>
-<h2 id="4">4. 约束求解指标<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h2 id="4-constraint-solving-metrics-eg-required_tbr">4. Constraint-Solving Metrics (e.g., Required_TBR)<a class="headerlink" href="#4-constraint-solving-metrics-eg-required_tbr" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>计算方法</strong>: <code>bisection_search</code> (在 <code>tricys.simulation.simulation_analysis</code> 中实现)</li>
-<li><strong>物理意义</strong>: 在许多设计研究中，我们关心的不是在固定的氚增殖比（Tritium Breeding Ratio, TBR）下系统的性能如何，而是反过来：<strong>为了达到某个特定的工程目标（例如，倍增时间小于10年），我们所需要的最低TBR是多少？</strong></li>
-<li><strong>约束求解任务</strong>。<ul>
-<li>当您在 <code>dependent_variables</code> 中包含它时，<code>tricys</code> 会启用一个优化算法（如<a href="../../guides/tricys_analysis/multi_parameter_sensitivity_analysis.html#2-高级用法目标寻求分析">二分查找</a> <code>bisection_search</code>）。</li>
-<li>该算法会以 <code>parameter_to_optimize</code>（通常是模型中的 <code>TBR</code> 参数）为变量，在给定的 <code>search_range</code> 内反复迭代运行仿真。</li>
-<li>在每次迭代中，它会检查关键性能指标（例如 <code>Doubling_Time</code>）是否满足预设的约束条件（例如小于某个 <code>metric_max_value</code>）。</li>
-<li>最终，算法会收敛并输出满足约束条件的<strong>最小TBR值</strong>。</li>
+<li><strong>Calculation Method</strong>: <code>bisection_search</code> (implemented in <code>tricys.simulation.simulation_analysis</code>)</li>
+<li><strong>Physical Meaning</strong>: In many design studies, the concern is not how the system performs at a fixed Tritium Breeding Ratio (TBR), but the reverse: <strong>to achieve a specific engineering goal (e.g., a doubling time of less than 10 years), what is the minimum required TBR?</strong></li>
+<li><strong>Implementation</strong>:<ul>
+<li><code>Required_TBR</code> is not a directly calculated metric but a <strong>constraint-solving task</strong>.</li>
+<li>When you include it in <code>dependent_variables</code>, <code>tricys</code> enables an optimization algorithm (like <a href="../../guides/tricys_analysis/multi_parameter_sensitivity_analysis.html#2-advanced-usage-goal-seeking-analysis"><code>bisection_search</code></a>).</li>
+<li>This algorithm iteratively runs simulations within a given <code>search_range</code>, using a <code>parameter_to_optimize</code> (usually the <code>TBR</code> parameter in the model) as the variable.</li>
+<li>In each iteration, it checks if a key performance indicator (e.g., <code>Doubling_Time</code>) meets a predefined constraint (e.g., is less than a certain <code>metric_max_value</code>).</li>
+<li>Ultimately, the algorithm converges and outputs the <strong>minimum TBR value</strong> that satisfies the constraint.</li>
 </ul>
 </li>
-<li><strong>解读</strong>: 这个“反向”求解的能力非常强大。它将设计问题从“正向验证”转变为“逆向寻优”，帮助工程师快速确定实现关键性能目标所需的最低设计要求，极大地加速了设计迭代过程。</li>
+<li><strong>Interpretation</strong>: This "inverse" solving capability is extremely powerful. It transforms the design problem from "forward validation" to "inverse optimization," helping engineers quickly determine the minimum design requirements to achieve key performance goals, thereby greatly accelerating the design iteration process.</li>
 </ul>
 
 
@@ -2201,7 +2198,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2210,33 +2207,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="analysis_flow.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 自动分析流程">
+          <a href="analysis_flow.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Analysis Flow">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                自动分析流程
+                Analysis Flow
               </div>
             </div>
           </a>
         
         
           
-          <a href="analysis_report.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 生成分析报告">
+          <a href="analysis_report.html" class="md-footer__link md-footer__link--next" aria-label="Next: Generating Analysis Reports">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                生成分析报告
+                Generating Analysis Reports
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2273,7 +2270,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

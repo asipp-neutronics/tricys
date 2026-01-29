@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../en/explanation/architecture.html" hreflang="en">
+          <link rel="alternate" href="architecture.html" hreflang="en">
         
-          <link rel="alternate" href="architecture.html" hreflang="zh">
+          <link rel="alternate" href="../zh/explanation/architecture.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>系统架构设计 - 氚燃料循环集成仿真平台</title>
+        <title>System Architecture - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#1" class="md-skip">
-          跳转至
+        <a href="#1-overall-architecture" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              系统架构设计
+              System Architecture
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../en/explanation/architecture.html" hreflang="en" class="md-select__link">
+            <a href="architecture.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="architecture.html" hreflang="zh" class="md-select__link">
+            <a href="../zh/explanation/architecture.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -270,7 +266,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -480,7 +476,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -496,7 +492,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -516,7 +512,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -560,7 +556,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -576,7 +572,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -596,7 +592,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -648,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -664,7 +660,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -684,7 +680,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -712,7 +708,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -740,7 +736,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -768,7 +764,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -796,7 +792,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -848,7 +844,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -864,7 +860,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -884,7 +880,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -912,7 +908,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -940,7 +936,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -968,7 +964,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -996,7 +992,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1024,7 +1020,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1088,7 +1084,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1104,7 +1100,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1131,7 +1127,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1149,7 +1145,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1161,22 +1157,22 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-overall-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 整体架构
+        1. Overall Architecture
       
     </span>
   </a>
@@ -1184,22 +1180,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-program-layers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 程序分层
+        2. Program Layers
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 程序分层">
+    <nav class="md-nav" aria-label="2. Program Layers">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-user-interface-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 用户界面层
+        2.1. User Interface Layer
       
     </span>
   </a>
@@ -1207,10 +1203,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-simulation-execution-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 仿真执行层
+        2.2. Simulation Execution Layer
       
     </span>
   </a>
@@ -1218,10 +1214,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#23" class="md-nav__link">
+  <a href="#23-core-function-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.3. 核心功能层
+        2.3. Core Function Layer
       
     </span>
   </a>
@@ -1229,10 +1225,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#24" class="md-nav__link">
+  <a href="#24-analysis-post-processing-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.4. 分析与后处理层
+        2.4. Analysis &amp; Post-processing Layer
       
     </span>
   </a>
@@ -1240,10 +1236,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#25" class="md-nav__link">
+  <a href="#25-utility-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.5. 工具函数层
+        2.5. Utility Layer
       
     </span>
   </a>
@@ -1251,10 +1247,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#26" class="md-nav__link">
+  <a href="#26-external-dependency-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.6. 外部依赖层
+        2.6. External Dependency Layer
       
     </span>
   </a>
@@ -1267,10 +1263,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-design-principles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 设计原则
+        3. Design Principles
       
     </span>
   </a>
@@ -1319,7 +1315,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1335,7 +1331,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1355,7 +1351,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1383,7 +1379,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1411,7 +1407,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1466,7 +1462,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1482,7 +1478,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1502,7 +1498,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1530,7 +1526,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1558,7 +1554,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1586,7 +1582,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1645,7 +1641,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1661,7 +1657,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1872,7 +1868,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1888,7 +1884,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1908,7 +1904,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1936,7 +1932,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1964,7 +1960,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1992,7 +1988,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2020,7 +2016,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2055,7 +2051,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2082,7 +2078,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2108,22 +2104,22 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-overall-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 整体架构
+        1. Overall Architecture
       
     </span>
   </a>
@@ -2131,22 +2127,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-program-layers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 程序分层
+        2. Program Layers
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 程序分层">
+    <nav class="md-nav" aria-label="2. Program Layers">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-user-interface-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 用户界面层
+        2.1. User Interface Layer
       
     </span>
   </a>
@@ -2154,10 +2150,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-simulation-execution-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 仿真执行层
+        2.2. Simulation Execution Layer
       
     </span>
   </a>
@@ -2165,10 +2161,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#23" class="md-nav__link">
+  <a href="#23-core-function-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.3. 核心功能层
+        2.3. Core Function Layer
       
     </span>
   </a>
@@ -2176,10 +2172,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#24" class="md-nav__link">
+  <a href="#24-analysis-post-processing-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.4. 分析与后处理层
+        2.4. Analysis &amp; Post-processing Layer
       
     </span>
   </a>
@@ -2187,10 +2183,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#25" class="md-nav__link">
+  <a href="#25-utility-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.5. 工具函数层
+        2.5. Utility Layer
       
     </span>
   </a>
@@ -2198,10 +2194,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#26" class="md-nav__link">
+  <a href="#26-external-dependency-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.6. 外部依赖层
+        2.6. External Dependency Layer
       
     </span>
   </a>
@@ -2214,10 +2210,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-design-principles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 设计原则
+        3. Design Principles
       
     </span>
   </a>
@@ -2244,124 +2240,124 @@
   
 
 
-  <h1>系统架构设计</h1>
+  <h1>System Architecture</h1>
 
-<h2 id="1">1. 整体架构<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>TRICYS 采用分层架构设计，主要包含以下几层：</p>
+<h2 id="1-overall-architecture">1. Overall Architecture<a class="headerlink" href="#1-overall-architecture" title="Permanent link">&para;</a></h2>
+<p>TRICYS adopts a layered architectural design, primarily consisting of the following layers:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────┐
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│               用户界面层             
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│ tricys basic, tricys analysis, tricys gui       
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│               User Interface Layer            │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│  (tricys basic, tricys analysis, tricys gui)  │
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└─────────────────────────────────────────────┘
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                    ↓
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>┌─────────────────────────────────────────────┐
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│               仿真执行层                     
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│     simulation, simulation_analysis    
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│             Simulation Execution Layer        │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│    (simulation, simulation_analysis)        │
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>└─────────────────────────────────────────────┘
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                    ↓
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>┌─────────────────────────────────────────────┐
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│               核心功能层                     
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│      Jobs, Modelica, Interceptor            
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│                 Core Function Layer           │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│        (Jobs, Modelica, Interceptor)          │
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>└─────────────────────────────────────────────┘
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                    ↓
 <a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>┌─────────────────────────────────────────────┐
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│             分析与后处理层                   
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│       Metric, Plot, Report, SALib           
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│           Analysis &amp; Post-processing Layer    │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│         (Metric, Plot, Report, SALib)         │
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>└─────────────────────────────────────────────┘
 <a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                    ↓
 <a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>┌─────────────────────────────────────────────┐
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│               工具函数层                     
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│      Config, File, Log, SQLite Utils        
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│                  Utility Layer                │
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│     (Config, File, Log, SQLite Utils)       │
 <a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>└─────────────────────────────────────────────┘
 <a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>                    ↓
 <a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>┌─────────────────────────────────────────────┐
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│                外部依赖层                    
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│     OpenModelica, Pandas, NumPy, SALib      
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│              External Dependency Layer        │
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│    (OpenModelica, Pandas, NumPy, SALib)     │
 <a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>└─────────────────────────────────────────────┘
 </code></pre></div>
-<h2 id="2">2. 程序分层<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<h3 id="21">2.1. 用户界面层<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
-<p><strong>位置</strong>：<code>tricys/main.py</code></p>
-<p><strong>职责</strong>：</p>
+<h2 id="2-program-layers">2. Program Layers<a class="headerlink" href="#2-program-layers" title="Permanent link">&para;</a></h2>
+<h3 id="21-user-interface-layer">2.1. User Interface Layer<a class="headerlink" href="#21-user-interface-layer" title="Permanent link">&para;</a></h3>
+<p><strong>Location</strong>: <code>tricys/main.py</code></p>
+<p><strong>Responsibilities</strong>:</p>
 <ul>
-<li>提供<a href="../guides/quickstart.html#5-tricys-相关命令">命令行接口（CLI）和图形用户界面（GUI）</a>两种交互方式</li>
-<li>解析用户输入的命令行参数和子命令（<code>basic</code>, <code>analysis</code>, <code>gui</code>, <code>example</code>, <code>archive</code>, <code>unarchive</code>）</li>
-<li>路由请求到相应的仿真执行层模块</li>
-<li>管理用户会话和配置文件加载</li>
+<li>Provides two interaction methods: <a href="../guides/quickstart.html#5-tricys-related-commands">Command-Line Interface (CLI) and Graphical User Interface (GUI)</a>.</li>
+<li>Parses user-input command-line arguments and subcommands (<code>basic</code>, <code>analysis</code>, <code>gui</code>, <code>example</code>, <code>archive</code>, <code>unarchive</code>).</li>
+<li>Routes requests to the appropriate modules in the Simulation Execution Layer.</li>
+<li>Manages user sessions and configuration file loading.</li>
 </ul>
-<p><strong>关键功能</strong>：</p>
+<p><strong>Key Functions</strong>:</p>
 <ul>
-<li>CLI 命令分发：根据子命令或配置文件内容自动识别运行模式</li>
-<li>GUI 交互界面：提供可视化的参数设置、仿真启动和结果查看功能</li>
-<li>示例运行器：集成交互式示例选择和运行功能</li>
-</ul>
-<hr />
-<h3 id="22">2.2. 仿真执行层<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
-<p><strong>位置</strong>：<code>tricys/simulation/</code></p>
-<p><strong>职责</strong>：</p>
-<ul>
-<li><strong>基础仿真模式</strong> (<code>simulation.py</code>)：执行单次或参数扫描仿真任务</li>
-<li><strong>灵敏度分析模式</strong> (<code>simulation_analysis.py</code>)：执行多种敏感性分析工作流</li>
-<li>管理仿真任务的完整生命周期（初始化、执行、后处理）</li>
-<li>协调核心功能层、分析层和后处理层的调用</li>
-</ul>
-<p>详见：<a href="tricys_basic/simulation_flow.html">仿真执行流程</a> 和 <a href="tricys_analysis/analysis_flow.html">自动分析流程</a></p>
-<hr />
-<h3 id="23">2.3. 核心功能层<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
-<p><strong>位置</strong>：<code>tricys/core/</code></p>
-<p><strong>职责</strong>：</p>
-<ul>
-<li><strong>Modelica 交互</strong> (<code>modelica.py</code>)：通过 OMPython 与 OpenModelica 引擎通信</li>
-<li><strong>任务生成</strong> (<code>jobs.py</code>)：根据配置生成参数扫描任务和仿真作业</li>
-<li><strong>拦截器机制</strong> (<code>interceptor.py</code>)：生成和集成拦截器模型，实现<a href="tricys_basic/co_simulation.html">协同仿真</a></li>
-</ul>
-<p>详见：<a href="../api/tricys_core.html">API 参考 - 核心模块 (Core)</a></p>
-<hr />
-<h3 id="24">2.4. 分析与后处理层<a class="headerlink" href="#24" title="Permanent link">&para;</a></h3>
-<p><strong>位置</strong>：<code>tricys/analysis/</code>, <code>tricys/postprocess/</code></p>
-<p><strong>职责</strong>：</p>
-<ul>
-<li><strong>性能指标计算</strong> (<code>analysis/metric.py</code>)：计算启动盘存、倍增时间、转折点等<a href="tricys_analysis/performance_metrics.html">关键指标</a></li>
-<li><strong>数据可视化</strong> (<code>analysis/plot.py</code>)：生成时间序列图、参数扫描图、对比图等</li>
-<li><strong>灵敏度分析</strong> (<code>analysis/salib.py</code>)：集成 SALib 库执行多种<a href="tricys_analysis/salib_integration.html">敏感性分析方法</a></li>
-<li><strong>分析报告生成</strong> (<code>analysis/report.py</code>)：自动生成 Markdown 格式的<a href="tricys_analysis/analysis_report.html">分析报告</a>，支持 AI 增强</li>
-<li><strong>后处理模块</strong> (<code>postprocess/</code>)：提供可扩展的<a href="../guides/tricys_basic/post_processing_module.html">数据后处理功能</a></li>
-</ul>
-<p>详见：<a href="../api/tricys_analysis.html">API 参考 - 分析模块 (Analysis)</a></p>
-<hr />
-<h3 id="25">2.5. 工具函数层<a class="headerlink" href="#25" title="Permanent link">&para;</a></h3>
-<p><strong>位置</strong>：<code>tricys/utils/</code></p>
-<p><strong>职责</strong>：</p>
-<ul>
-<li><strong>配置管理</strong> (<code>config_utils.py</code>)：配置文件加载、验证和预处理</li>
-<li><strong>文件操作</strong> (<code>file_utils.py</code>)：文件路径处理、唯一文件名生成、归档管理</li>
-<li><strong>日志系统</strong> (<code>log_utils.py</code>)：结构化日志记录和配置恢复</li>
-<li><strong>数据库操作</strong> (<code>sqlite_utils.py</code>)：SQLite 数据存储和查询</li>
-</ul>
-<p>详见：<a href="../api/tricys_utils.html">API 参考 - 工具函数 (Utilities)</a></p>
-<hr />
-<h3 id="26">2.6. 外部依赖层<a class="headerlink" href="#26" title="Permanent link">&para;</a></h3>
-<p><strong>主要依赖</strong>：</p>
-<ul>
-<li><strong>OpenModelica</strong>：Modelica 模型编译和仿真执行引擎</li>
-<li><strong>OMPython</strong>：Python 与 OpenModelica 的接口库</li>
-<li><strong>SALib</strong>：<a href="tricys_analysis/salib_integration.html">敏感性分析和不确定性量化库</a></li>
-<li><strong>Pandas/NumPy</strong>：数据处理和数值计算</li>
-<li><strong>Matplotlib/Seaborn</strong>：数据可视化</li>
-<li><strong>OpenAI</strong>（可选）：<a href="tricys_analysis/analysis_report.html">AI 增强的分析报告生成</a></li>
-</ul>
-<p><strong>职责</strong>：</p>
-<ul>
-<li>提供底层的仿真引擎、数值计算和科学计算支持</li>
-<li>确保跨平台兼容性和高性能计算能力</li>
+<li><strong>CLI Command Dispatch</strong>: Automatically identifies the run mode based on subcommands or configuration file content.</li>
+<li><strong>GUI Interaction</strong>: Provides a visual interface for parameter setting, simulation startup, and result viewing.</li>
+<li><strong>Example Runner</strong>: Integrates interactive selection and execution of examples.</li>
 </ul>
 <hr />
-<h2 id="3">3. 设计原则<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="22-simulation-execution-layer">2.2. Simulation Execution Layer<a class="headerlink" href="#22-simulation-execution-layer" title="Permanent link">&para;</a></h3>
+<p><strong>Location</strong>: <code>tricys/simulation/</code></p>
+<p><strong>Responsibilities</strong>:</p>
+<ul>
+<li><strong>Basic Simulation Mode</strong> (<code>simulation.py</code>): Executes single or parameter-sweep simulation tasks.</li>
+<li><strong>Sensitivity Analysis Mode</strong> (<code>simulation_analysis.py</code>): Executes various sensitivity analysis workflows.</li>
+<li>Manages the complete lifecycle of simulation tasks (initialization, execution, post-processing).</li>
+<li>Coordinates calls to the Core Function, Analysis, and Post-processing layers.</li>
+</ul>
+<p>See also: <a href="tricys_basic/simulation_flow.html">Simulation Flow</a> and <a href="tricys_analysis/analysis_flow.html">Analysis Flow</a></p>
+<hr />
+<h3 id="23-core-function-layer">2.3. Core Function Layer<a class="headerlink" href="#23-core-function-layer" title="Permanent link">&para;</a></h3>
+<p><strong>Location</strong>: <code>tricys/core/</code></p>
+<p><strong>Responsibilities</strong>:</p>
+<ul>
+<li><strong>Modelica Interaction</strong> (<code>modelica.py</code>): Communicates with the OpenModelica engine via OMPython.</li>
+<li><strong>Job Generation</strong> (<code>jobs.py</code>): Generates parameter sweep tasks and simulation jobs based on the configuration.</li>
+<li><strong>Interceptor Mechanism</strong> (<code>interceptor.py</code>): Generates and integrates interceptor models to enable <a href="tricys_basic/co_simulation.html">co-simulation</a>.</li>
+</ul>
+<p>See also: <a href="../api/tricys_core.html">API Reference - Core Module</a></p>
+<hr />
+<h3 id="24-analysis-post-processing-layer">2.4. Analysis &amp; Post-processing Layer<a class="headerlink" href="#24-analysis-post-processing-layer" title="Permanent link">&para;</a></h3>
+<p><strong>Location</strong>: <code>tricys/analysis/</code>, <code>tricys/postprocess/</code></p>
+<p><strong>Responsibilities</strong>:</p>
+<ul>
+<li><strong>Performance Metric Calculation</strong> (<code>analysis/metric.py</code>): Calculates <a href="tricys_analysis/performance_metrics.html">key metrics</a> such as startup inventory, doubling time, and turning points.</li>
+<li><strong>Data Visualization</strong> (<code>analysis/plot.py</code>): Generates time-series plots, parameter sweep plots, comparison plots, etc.</li>
+<li><strong>Sensitivity Analysis</strong> (<code>analysis/salib.py</code>): Integrates the SALib library to perform various <a href="tricys_analysis/salib_integration.html">sensitivity analysis methods</a>.</li>
+<li><strong>Analysis Report Generation</strong> (<code>analysis/report.py</code>): Automatically generates analysis <a href="tricys_analysis/analysis_report.html">reports in Markdown format</a>, with optional AI enhancement.</li>
+<li><strong>Post-processing Modules</strong> (<code>postprocess/</code>): Provides extensible <a href="../guides/tricys_basic/post_processing_module.html">data post-processing capabilities</a>.</li>
+</ul>
+<p>See also: <a href="../api/tricys_analysis.html">API Reference - Analysis Module</a></p>
+<hr />
+<h3 id="25-utility-layer">2.5. Utility Layer<a class="headerlink" href="#25-utility-layer" title="Permanent link">&para;</a></h3>
+<p><strong>Location</strong>: <code>tricys/utils/</code></p>
+<p><strong>Responsibilities</strong>:</p>
+<ul>
+<li><strong>Configuration Management</strong> (<code>config_utils.py</code>): Handles configuration file loading, validation, and preprocessing.</li>
+<li><strong>File Operations</strong> (<code>file_utils.py</code>): Manages file paths, unique filename generation, and archiving.</li>
+<li><strong>Logging System</strong> (<code>log_utils.py</code>): Provides structured logging and configuration recovery.</li>
+<li><strong>Database Operations</strong> (<code>sqlite_utils.py</code>): Manages SQLite data storage and querying.</li>
+</ul>
+<p>See also: <a href="../api/tricys_utils.html">API Reference - Utilities</a></p>
+<hr />
+<h3 id="26-external-dependency-layer">2.6. External Dependency Layer<a class="headerlink" href="#26-external-dependency-layer" title="Permanent link">&para;</a></h3>
+<p><strong>Key Dependencies</strong>:</p>
+<ul>
+<li><strong>OpenModelica</strong>: The engine for compiling and executing Modelica models.</li>
+<li><strong>OMPython</strong>: The interface library between Python and OpenModelica.</li>
+<li><strong>SALib</strong>: A library for <a href="tricys_analysis/salib_integration.html">sensitivity analysis and uncertainty quantification</a>.</li>
+<li><strong>Pandas/NumPy</strong>: Used for data processing and numerical computation.</li>
+<li><strong>Matplotlib/Seaborn</strong>: Used for data visualization.</li>
+<li><strong>OpenAI</strong> (Optional): For generating <a href="tricys_analysis/analysis_report.html">AI-enhanced analysis reports</a>.</li>
+</ul>
+<p><strong>Responsibilities</strong>:</p>
+<ul>
+<li>Provides the underlying simulation engine, numerical computation, and scientific computing support.</li>
+<li>Ensures cross-platform compatibility and high-performance computation capabilities.</li>
+</ul>
+<hr />
+<h2 id="3-design-principles">3. Design Principles<a class="headerlink" href="#3-design-principles" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>模块化</strong>：每个功能模块职责单一，相互独立</li>
-<li><strong>可扩展</strong>：易于添加新的<a href="../guides/tricys_basic/post_processing_module.html">后处理模块</a>、<a href="tricys_analysis/performance_metrics.html">性能指标</a>和<a href="../guides/tricys_basic/co_simulation_module.html#3-编写您自己的处理器">协同仿真处理器</a></li>
-<li><strong>配置驱动</strong>：所有仿真任务通过 <a href="../guides/tricys_basic/basic_configuration.html">JSON 配置文件</a>定义</li>
-<li><strong>自动化</strong>：从仿真到<a href="tricys_analysis/analysis_report.html">分析报告生成</a>的全流程自动化</li>
-<li><strong>开放性</strong>：开源设计，支持社区贡献</li>
+<li><strong>Modularity</strong>: Each functional module has a single responsibility and is independent.</li>
+<li><strong>Extensibility</strong>: Easy to add new <a href="../guides/tricys_basic/post_processing_module.html">post-processing modules</a>, <a href="tricys_analysis/performance_metrics.html">performance metrics</a>, and <a href="../guides/tricys_basic/co_simulation_module.html#3-writing-your-own-handler">co-simulation handlers</a>.</li>
+<li><strong>Configuration-Driven</strong>: All simulation tasks are defined through <a href="../guides/tricys_basic/basic_configuration.html">JSON configuration files</a>.</li>
+<li><strong>Automation</strong>: Fully automated workflow from simulation to <a href="tricys_analysis/analysis_report.html">analysis report generation</a>.</li>
+<li><strong>Openness</strong>: Open-source design that encourages community contributions.</li>
 </ol>
 
 
@@ -2386,7 +2382,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2395,33 +2391,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../guides/tricys_analysis/latin_uncertainty_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: Latin不确定性量化分析">
+          <a href="../guides/tricys_analysis/latin_uncertainty_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Latin Uncertainty Analysis">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                Latin不确定性量化分析
+                Latin Uncertainty Analysis
               </div>
             </div>
           </a>
         
         
           
-          <a href="tricys_basic/simulation_flow.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 仿真执行流程">
+          <a href="tricys_basic/simulation_flow.html" class="md-footer__link md-footer__link--next" aria-label="Next: Simulation Flow">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                仿真执行流程
+                Simulation Flow
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2458,7 +2454,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>

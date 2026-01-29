@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/guides/tricys_analysis/baseline_condition_analysis.html" hreflang="en">
+          <link rel="alternate" href="baseline_condition_analysis.html" hreflang="en">
         
-          <link rel="alternate" href="baseline_condition_analysis.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/guides/tricys_analysis/baseline_condition_analysis.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>基准工况分析 - 氚燃料循环集成仿真平台</title>
+        <title>Baseline Condition Analysis - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
-          跳转至
+        <a href="#baseline-condition-analysis" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              基准工况分析
+              Baseline Condition Analysis
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/guides/tricys_analysis/baseline_condition_analysis.html" hreflang="en" class="md-select__link">
+            <a href="baseline_condition_analysis.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="baseline_condition_analysis.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/guides/tricys_analysis/baseline_condition_analysis.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -272,7 +268,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -485,7 +481,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -501,7 +497,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -521,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -568,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -584,7 +580,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -604,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -659,7 +655,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -675,7 +671,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -695,7 +691,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -723,7 +719,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -751,7 +747,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -779,7 +775,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -807,7 +803,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -864,7 +860,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -880,7 +876,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -900,7 +896,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -937,7 +933,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -955,7 +951,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -967,7 +963,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -976,15 +972,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 配置文件示例
+        1. Configuration File Example
       
     </span>
   </a>
@@ -992,10 +988,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-key-configuration-items-explained" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 关键配置项详解
+        2. Key Configuration Items Explained
       
     </span>
   </a>
@@ -1003,10 +999,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-analysis-report-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 分析报告输出
+        3. Analysis Report Output
       
     </span>
   </a>
@@ -1014,22 +1010,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-ai" class="md-nav__link">
+  <a href="#4-ai-enhanced-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. AI 增强分析
+        4. AI-Enhanced Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. AI 增强分析">
+    <nav class="md-nav" aria-label="4. AI-Enhanced Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41" class="md-nav__link">
+  <a href="#41-how-to-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1. 启用方式
+        4.1. How to Enable
       
     </span>
   </a>
@@ -1037,10 +1033,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42" class="md-nav__link">
+  <a href="#42-environment-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2. 环境配置
+        4.2. Environment Setup
       
     </span>
   </a>
@@ -1048,10 +1044,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#43" class="md-nav__link">
+  <a href="#43-output-reports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.3. 输出报告
+        4.3. Output Reports
       
     </span>
   </a>
@@ -1086,7 +1082,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -1114,7 +1110,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1142,7 +1138,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1170,7 +1166,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1229,7 +1225,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1245,7 +1241,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1265,7 +1261,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1309,7 +1305,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1325,7 +1321,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1345,7 +1341,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1373,7 +1369,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1401,7 +1397,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1453,7 +1449,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1469,7 +1465,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1489,7 +1485,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1517,7 +1513,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1545,7 +1541,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1573,7 +1569,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1632,7 +1628,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1648,7 +1644,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1859,7 +1855,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1875,7 +1871,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1895,7 +1891,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1923,7 +1919,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -1951,7 +1947,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -1979,7 +1975,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2007,7 +2003,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2042,7 +2038,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2069,7 +2065,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2095,7 +2091,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2104,15 +2100,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 配置文件示例
+        1. Configuration File Example
       
     </span>
   </a>
@@ -2120,10 +2116,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-key-configuration-items-explained" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 关键配置项详解
+        2. Key Configuration Items Explained
       
     </span>
   </a>
@@ -2131,10 +2127,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-analysis-report-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 分析报告输出
+        3. Analysis Report Output
       
     </span>
   </a>
@@ -2142,22 +2138,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-ai" class="md-nav__link">
+  <a href="#4-ai-enhanced-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. AI 增强分析
+        4. AI-Enhanced Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. AI 增强分析">
+    <nav class="md-nav" aria-label="4. AI-Enhanced Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41" class="md-nav__link">
+  <a href="#41-how-to-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1. 启用方式
+        4.1. How to Enable
       
     </span>
   </a>
@@ -2165,10 +2161,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42" class="md-nav__link">
+  <a href="#42-environment-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2. 环境配置
+        4.2. Environment Setup
       
     </span>
   </a>
@@ -2176,10 +2172,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#43" class="md-nav__link">
+  <a href="#43-output-reports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.3. 输出报告
+        4.3. Output Reports
       
     </span>
   </a>
@@ -2211,11 +2207,11 @@
   
 
 
-<h1 id="_1">基准工况分析<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>基准工况分析（Baseline Condition Analysis）是 <code>tricys</code> 分析工具集中的一项核心功能。它用于对单一、确定的参数配置（即“基准工况”）下的系统行为进行全面评估，并自动生成一份标准化的 Markdown 分析报告。</p>
-<p>该功能本质上是 <code>tricys</code> 的后处理模块，关于后处理模块的通用配置，请参考<a href="../../tricys_basic/post_processing_module.md">后处理模块</a>。关于性能指标的定义、术语表和单位映射等通用配置，请参考<a href="index.html">通用介绍</a>。</p>
-<h2 id="1">1. 配置文件示例<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>该分析的配置文件是<strong>一次单独的仿真</strong>，紧跟着一个特定的<strong>后处理步骤</strong>。因此，配置文件中不包含 <code>sensitivity_analysis</code> 扫描部分。</p>
+<h1 id="baseline-condition-analysis">Baseline Condition Analysis<a class="headerlink" href="#baseline-condition-analysis" title="Permanent link">&para;</a></h1>
+<p>Baseline Condition Analysis is a core feature of the <code>tricys</code> analysis toolset. It is used for a comprehensive evaluation of the system's behavior under a single, fixed parameter configuration (the "baseline condition") and automatically generates a standardized Markdown analysis report.</p>
+<p>This function is essentially a post-processing module of <code>tricys</code>. For general configurations of the post-processing module, please refer to the <a href="../../tricys_basic/post_processing_module.md">Post-Processing Module</a>. For common configurations such as metric definitions, glossaries, and unit maps, please refer to the <a href="index.html">General Introduction</a>.</p>
+<h2 id="1-configuration-file-example">1. Configuration File Example<a class="headerlink" href="#1-configuration-file-example" title="Permanent link">&para;</a></h2>
+<p>The configuration for this analysis consists of a <strong>single simulation</strong> followed by a specific <strong>post-processing step</strong>. Therefore, the configuration file does not include a <code>sensitivity_analysis</code> scanning section.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="nt">&quot;package_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_model_single/example_model.mo&quot;</span>
@@ -2238,35 +2234,35 @@
 <a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="p">]</span>
 <a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="2">2. 关键配置项详解<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>核心在于 <code>post_processing</code> 部分的配置：</p>
+<h2 id="2-key-configuration-items-explained">2. Key Configuration Items Explained<a class="headerlink" href="#2-key-configuration-items-explained" title="Permanent link">&para;</a></h2>
+<p>The core lies in the <code>post_processing</code> section configuration:</p>
 <ul>
-<li><code>module</code>: 固定为 <code>tricys.postprocess.baseline_analysis</code>。</li>
-<li><code>function</code>: 固定为 <code>baseline_analysis</code>。</li>
+<li><code>module</code>: Fixed as <code>tricys.postprocess.baseline_analysis</code>.</li>
+<li><code>function</code>: Fixed as <code>baseline_analysis</code>.</li>
 <li><code>params</code>:<ul>
-<li><code>detailed_var</code> (字符串, 选填):<ul>
-<li><strong>描述</strong>: 指定一个模型中的变量，报告将为该变量生成一张包含“细节视图”的时间演化曲线图，放大其“自持点”附近区域。</li>
+<li><code>detailed_var</code> (string, optional):<ul>
+<li><strong>Description</strong>: Specifies a variable in the model. The report will generate a time evolution curve chart with a "detailed view" for this variable, zooming in on the area around its "self-sufficiency point".</li>
 </ul>
 </li>
-<li><code>glossary_path</code> (字符串, 选填):<ul>
-<li><strong>描述</strong>: 指向一个“术语表” CSV 文件的路径。</li>
-</ul>
-</li>
+<li><code>glossary_path</code> (string, optional):<ul>
+<li><strong>Description</strong>: A path to a "glossary" CSV file.</li>
 </ul>
 </li>
 </ul>
-<h2 id="3">3. 分析报告输出<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<p>报告的结构与<a href="index.html">通用说明</a>中描述的类似，但其核心内容是针对单次运行的快照分析，包含：</p>
+</li>
+</ul>
+<h2 id="3-analysis-report-output">3. Analysis Report Output<a class="headerlink" href="#3-analysis-report-output" title="Permanent link">&para;</a></h2>
+<p>The structure of the report is similar to that described in the <a href="index.html">General Introduction</a>, but its core content is a snapshot analysis of a single run, including:</p>
 <ol>
-<li><strong>关键性能指标 (Key Performance Indicators)</strong>: 基于 <code>detailed_var</code> 计算出的 <code>Startup Inventory</code>, <code>Self-Sufficiency Time</code> 和 <code>Doubling Time</code>。</li>
-<li><strong>模拟结果时序图 (Time-series Plot)</strong>: 包含全局视图和基于 <code>detailed_var</code> 的细节视图。</li>
-<li><strong>模拟结束时各变量最终值 (Final Values Bar Chart)</strong>: 各子系统在仿真结束时的氚库存分布条形图。</li>
-<li><strong>数据表格</strong>: 包括最终值数据表和关键阶段（初始、转折点、结束）的数据切片。</li>
+<li><strong>Key Performance Indicators</strong>: <code>Startup Inventory</code>, <code>Self-Sufficiency Time</code>, and <code>Doubling Time</code> calculated based on <code>detailed_var</code>.</li>
+<li><strong>Time-series Plot of Simulation Results</strong>: Includes a global view and a detailed view based on <code>detailed_var</code>.</li>
+<li><strong>Final Values Bar Chart</strong>: A bar chart showing the distribution of tritium inventory across submodules at the end of the simulation.</li>
+<li><strong>Data Tables</strong>: Includes a table of final values and data slices at key stages (initial, turning point, end).</li>
 </ol>
-<h2 id="4-ai">4. AI 增强分析<a class="headerlink" href="#4-ai" title="Permanent link">&para;</a></h2>
-<p><code>tricys</code> 的所有分析模块都深度集成了大型语言模型（LLM），能够将原始的图表和数据自动转化为结构化的学术风格报告。</p>
-<h3 id="41">4.1. 启用方式<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
-<p>对于基准工况分析，AI 功能是通过在 <code>post_processing</code> 任务的 <code>params</code> 对象中添加 <code>"ai": true</code> 来激活的。</p>
+<h2 id="4-ai-enhanced-analysis">4. AI-Enhanced Analysis<a class="headerlink" href="#4-ai-enhanced-analysis" title="Permanent link">&para;</a></h2>
+<p>All analysis modules in <code>tricys</code> are deeply integrated with Large Language Models (LLMs), capable of automatically converting raw charts and data into structured, academic-style reports.</p>
+<h3 id="41-how-to-enable">4.1. How to Enable<a class="headerlink" href="#41-how-to-enable" title="Permanent link">&para;</a></h3>
+<p>For baseline condition analysis, the AI feature is activated by adding <code>"ai": true</code> to the <code>params</code> object of the <code>post_processing</code> task.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">&quot;post_processing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="p">{</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">       </span><span class="nt">&quot;module&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tricys.postprocess.baseline_analysis&quot;</span><span class="p">,</span>
@@ -2279,18 +2275,18 @@
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">]</span>
 </code></pre></div>
-<h3 id="42">4.2. 环境配置<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
-<p>在使用此功能前，您必须在项目的<strong>根目录</strong>下创建一个名为 <code>.env</code> 的文件，并填入您的大语言模型 API 凭据。这确保了您的密钥安全，不会被提交到版本控制中。</p>
+<h3 id="42-environment-setup">4.2. Environment Setup<a class="headerlink" href="#42-environment-setup" title="Permanent link">&para;</a></h3>
+<p>Before using this feature, you must create a file named <code>.env</code> in the project's <strong>root directory</strong> and fill in your Large Language Model API credentials. This ensures that your keys are kept secure and are not committed to version control.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># .env file in project root
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>API_KEY=&quot;sk-your_api_key_here&quot;
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>BASE_URL=&quot;https://your_api_base_url/v1&quot;
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>AI_MODEL=&quot;your_model_name_here&quot;
 </code></pre></div>
-<h3 id="43">4.3. 输出报告<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
-<p>启用后，除了标准的分析报告 (<code>analysis_report_...md</code>)，<code>tricys</code> 还会在该案例的 <code>report</code> 文件夹内生成两份额外的报告：</p>
+<h3 id="43-output-reports">4.3. Output Reports<a class="headerlink" href="#43-output-reports" title="Permanent link">&para;</a></h3>
+<p>When enabled, in addition to the standard analysis report (<code>analysis_report_...md</code>), <code>tricys</code> will generate two additional reports in the case's <code>report</code> folder:</p>
 <ul>
-<li><strong><code>analysis_report_{case_name}_{model_name}.md</code></strong>: 在核心报告的基础上，末尾追加了由 AI 生成的对数据和图表的深度文字解读。</li>
-<li><strong><code>academic_report_{case_name}_{model_name}.md</code></strong>: 一份完全由 AI 撰写的、结构严谨的学术风格报告。这份报告通常包含摘要、引言、方法、结果与讨论、结论等部分，可以直接作为汇报材料或论文初稿使用。</li>
+<li><strong><code>analysis_report_{case_name}_{model_name}.md</code></strong>: Appends an in-depth textual interpretation of the data and charts, generated by the AI, to the end of the core report.</li>
+<li><strong><code>academic_report_{case_name}_{model_name}.md</code></strong>: A well-structured, academic-style report written entirely by the AI. This report typically includes sections such as Abstract, Introduction, Methods, Results and Discussion, and Conclusion, and can be used directly for presentations or as a draft for a paper.</li>
 </ul>
 
 
@@ -2315,7 +2311,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2324,33 +2320,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="index.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 通用介绍">
+          <a href="index.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Introduction &amp; Common Config">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                通用介绍
+                Introduction & Common Config
               </div>
             </div>
           </a>
         
         
           
-          <a href="single_parameter_sensitivity_analysis.html" class="md-footer__link md-footer__link--next" aria-label="下一页: 单参数敏感性分析">
+          <a href="single_parameter_sensitivity_analysis.html" class="md-footer__link md-footer__link--next" aria-label="Next: Single Parameter Sensitivity Analysis">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                单参数敏感性分析
+                Single Parameter Sensitivity Analysis
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2387,7 +2383,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>

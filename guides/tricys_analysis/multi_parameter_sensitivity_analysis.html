@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -16,9 +16,9 @@
       
       
         
-          <link rel="alternate" href="../../en/guides/tricys_analysis/multi_parameter_sensitivity_analysis.html" hreflang="en">
+          <link rel="alternate" href="multi_parameter_sensitivity_analysis.html" hreflang="en">
         
-          <link rel="alternate" href="multi_parameter_sensitivity_analysis.html" hreflang="zh">
+          <link rel="alternate" href="../../zh/guides/tricys_analysis/multi_parameter_sensitivity_analysis.html" hreflang="zh">
         
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>多参数敏感性分析 - 氚燃料循环集成仿真平台</title>
+        <title>Multi-parameter Sensitivity Analysis - TRitium Integrated CYcle Simulation</title>
       
     
     
@@ -57,10 +57,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -86,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
-          跳转至
+        <a href="#multi-parameter-sensitivity-analysis" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +95,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-header__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-header__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,13 +110,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            氚燃料循环集成仿真平台
+            TRitium Integrated CYcle Simulation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              多参数敏感性分析
+              Multi-parameter Sensitivity Analysis
             
           </span>
         </div>
@@ -146,20 +142,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../en/guides/tricys_analysis/multi_parameter_sensitivity_analysis.html" hreflang="en" class="md-select__link">
+            <a href="multi_parameter_sensitivity_analysis.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="multi_parameter_sensitivity_analysis.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/guides/tricys_analysis/multi_parameter_sensitivity_analysis.html" hreflang="zh" class="md-select__link">
               简体中文
             </a>
           </li>
@@ -180,16 +176,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -202,7 +198,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -214,7 +210,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -235,7 +231,7 @@
         
           
             
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -251,7 +247,7 @@
   
     
   
-  主页
+  Home
 
       </a>
     </li>
@@ -272,7 +268,7 @@
           
   
   
-  入门指南
+  Getting Started
 
         </a>
       </li>
@@ -292,7 +288,7 @@
           
   
   
-  原理解说
+  Explanation
 
         </a>
       </li>
@@ -312,7 +308,7 @@
           
   
   
-  API 参考
+  API Reference
 
         </a>
       </li>
@@ -332,7 +328,7 @@
           
   
   
-  常见问题
+  FAQ
 
         </a>
       </li>
@@ -352,7 +348,7 @@
   
     
   
-  更新日志
+  Changelog
 
       </a>
     </li>
@@ -371,7 +367,7 @@
   
     
   
-  开源许可
+  License
 
       </a>
     </li>
@@ -398,19 +394,19 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../index.html" title="氚燃料循环集成仿真平台" class="md-nav__button md-logo" aria-label="氚燃料循环集成仿真平台" data-md-component="logo">
+    <a href="../../index.html" title="TRitium Integrated CYcle Simulation" class="md-nav__button md-logo" aria-label="TRitium Integrated CYcle Simulation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    氚燃料循环集成仿真平台
+    TRitium Integrated CYcle Simulation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/asipp-neutronics/tricys" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/asipp-neutronics/tricys" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -437,7 +433,7 @@
   <span class="md-ellipsis">
     
   
-    主页
+    Home
   
 
     
@@ -485,7 +481,7 @@
   <span class="md-ellipsis">
     
   
-    入门指南
+    Getting Started
   
 
     
@@ -501,7 +497,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    入门指南
+    Getting Started
   
 
           </label>
@@ -521,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-    快速开始
+    Quick Start
   
 
     
@@ -568,7 +564,7 @@
   <span class="md-ellipsis">
     
   
-    模型概述
+    Model Overview
   
 
     
@@ -584,7 +580,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    模型概述
+    Model Overview
   
 
           </label>
@@ -604,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    氚燃料循环0维系统模型
+    Tritium Fuel Cycle 0D System Model
   
 
     
@@ -659,7 +655,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -675,7 +671,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -695,7 +691,7 @@
   <span class="md-ellipsis">
     
   
-    基础配置
+    Basic Configuration
   
 
     
@@ -723,7 +719,7 @@
   <span class="md-ellipsis">
     
   
-    参数扫描
+    Parameter Sweep
   
 
     
@@ -751,7 +747,7 @@
   <span class="md-ellipsis">
     
   
-    并发运行
+    Concurrent Operation
   
 
     
@@ -779,7 +775,7 @@
   <span class="md-ellipsis">
     
   
-    后处理模块
+    Post-processing Module
   
 
     
@@ -807,7 +803,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真模块
+    Co-simulation Module
   
 
     
@@ -864,7 +860,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -880,7 +876,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -900,7 +896,7 @@
   <span class="md-ellipsis">
     
   
-    通用介绍
+    Introduction & Common Config
   
 
     
@@ -928,7 +924,7 @@
   <span class="md-ellipsis">
     
   
-    基准工况分析
+    Baseline Condition Analysis
   
 
     
@@ -956,7 +952,7 @@
   <span class="md-ellipsis">
     
   
-    单参数敏感性分析
+    Single Parameter Sensitivity Analysis
   
 
     
@@ -993,7 +989,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1011,7 +1007,7 @@
   <span class="md-ellipsis">
     
   
-    多参数敏感性分析
+    Multi-parameter Sensitivity Analysis
   
 
     
@@ -1023,7 +1019,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -1032,27 +1028,27 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-core-concept-parameter-interaction-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 核心概念：参数交互分析
+        1. Core Concept: Parameter Interaction Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 核心概念：参数交互分析">
+    <nav class="md-nav" aria-label="1. Core Concept: Parameter Interaction Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11" class="md-nav__link">
+  <a href="#11-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1. 配置文件示例
+        1.1. Configuration File Example
       
     </span>
   </a>
@@ -1060,10 +1056,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2. 工作原理
+        1.2. How It Works
       
     </span>
   </a>
@@ -1076,22 +1072,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-advanced-usage-goal-seeking-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 高级用法：目标寻求分析
+        2. Advanced Usage: Goal-Seeking Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 高级用法：目标寻求分析">
+    <nav class="md-nav" aria-label="2. Advanced Usage: Goal-Seeking Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 配置文件示例
+        2.1. Configuration File Example
       
     </span>
   </a>
@@ -1099,10 +1095,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 工作原理
+        2.2. How It Works
       
     </span>
   </a>
@@ -1115,10 +1111,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-analysis-report-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 分析报告输出
+        3. Analysis Report Output
       
     </span>
   </a>
@@ -1126,10 +1122,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-full-example-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 完整示例配置
+        4. Full Example Configuration
       
     </span>
   </a>
@@ -1137,22 +1133,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-ai" class="md-nav__link">
+  <a href="#5-ai-enhanced-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. AI 增强分析
+        5. AI-Enhanced Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. AI 增强分析">
+    <nav class="md-nav" aria-label="5. AI-Enhanced Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51" class="md-nav__link">
+  <a href="#51-how-to-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1. 启用方式
+        5.1. How to Enable
       
     </span>
   </a>
@@ -1160,10 +1156,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52" class="md-nav__link">
+  <a href="#52-environment-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2. 环境配置
+        5.2. Environment Setup
       
     </span>
   </a>
@@ -1171,10 +1167,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53" class="md-nav__link">
+  <a href="#53-output-reports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3. 输出报告
+        5.3. Output Reports
       
     </span>
   </a>
@@ -1209,7 +1205,7 @@
   <span class="md-ellipsis">
     
   
-    SOBOL全局敏感性分析
+    SOBOL Global Sensitivity Analysis
   
 
     
@@ -1237,7 +1233,7 @@
   <span class="md-ellipsis">
     
   
-    Latin不确定性量化分析
+    Latin Uncertainty Analysis
   
 
     
@@ -1296,7 +1292,7 @@
   <span class="md-ellipsis">
     
   
-    原理解说
+    Explanation
   
 
     
@@ -1312,7 +1308,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    原理解说
+    Explanation
   
 
           </label>
@@ -1332,7 +1328,7 @@
   <span class="md-ellipsis">
     
   
-    系统架构设计
+    System Architecture
   
 
     
@@ -1376,7 +1372,7 @@
   <span class="md-ellipsis">
     
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
     
@@ -1392,7 +1388,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    基础仿真（TRICYS BASIC）
+    Basic Simulation (TRICYS BASIC)
   
 
           </label>
@@ -1412,7 +1408,7 @@
   <span class="md-ellipsis">
     
   
-    仿真执行流程
+    Simulation Flow
   
 
     
@@ -1440,7 +1436,7 @@
   <span class="md-ellipsis">
     
   
-    协同仿真原理
+    Co-simulation Principle
   
 
     
@@ -1468,7 +1464,7 @@
   <span class="md-ellipsis">
     
   
-    并发计算模式
+    Concurrency Model
   
 
     
@@ -1520,7 +1516,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
     
@@ -1536,7 +1532,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动分析（TRICYS ANALYSIS)
+    Automated Analysis (TRICYS ANALYSIS)
   
 
           </label>
@@ -1556,7 +1552,7 @@
   <span class="md-ellipsis">
     
   
-    自动分析流程
+    Analysis Flow
   
 
     
@@ -1584,7 +1580,7 @@
   <span class="md-ellipsis">
     
   
-    核心性能指标
+    Core Performance Metrics
   
 
     
@@ -1612,7 +1608,7 @@
   <span class="md-ellipsis">
     
   
-    生成分析报告
+    Generating Analysis Reports
   
 
     
@@ -1640,7 +1636,7 @@
   <span class="md-ellipsis">
     
   
-    SALIB集成方法
+    SALIB Integration Methods
   
 
     
@@ -1699,7 +1695,7 @@
   <span class="md-ellipsis">
     
   
-    API 参考
+    API Reference
   
 
     
@@ -1715,7 +1711,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API 参考
+    API Reference
   
 
           </label>
@@ -1926,7 +1922,7 @@
   <span class="md-ellipsis">
     
   
-    常见问题
+    FAQ
   
 
     
@@ -1942,7 +1938,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    常见问题
+    FAQ
   
 
           </label>
@@ -1962,7 +1958,7 @@
   <span class="md-ellipsis">
     
   
-    🚀 安装环境
+    🚀 Installation & Environment
   
 
     
@@ -1990,7 +1986,7 @@
   <span class="md-ellipsis">
     
   
-    ⚙️ 配置运行
+    ⚙️ Configuration & Execution
   
 
     
@@ -2018,7 +2014,7 @@
   <span class="md-ellipsis">
     
   
-    🔬 高级功能
+    🔬 Advanced Features
   
 
     
@@ -2046,7 +2042,7 @@
   <span class="md-ellipsis">
     
   
-    🐛 故障排除
+    🐛 Troubleshooting
   
 
     
@@ -2074,7 +2070,7 @@
   <span class="md-ellipsis">
     
   
-    💡 最佳实践
+    💡 Best Practices
   
 
     
@@ -2109,7 +2105,7 @@
   <span class="md-ellipsis">
     
   
-    更新日志
+    Changelog
   
 
     
@@ -2136,7 +2132,7 @@
   <span class="md-ellipsis">
     
   
-    开源许可
+    License
   
 
     
@@ -2162,7 +2158,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2171,27 +2167,27 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-core-concept-parameter-interaction-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 核心概念：参数交互分析
+        1. Core Concept: Parameter Interaction Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 核心概念：参数交互分析">
+    <nav class="md-nav" aria-label="1. Core Concept: Parameter Interaction Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11" class="md-nav__link">
+  <a href="#11-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1. 配置文件示例
+        1.1. Configuration File Example
       
     </span>
   </a>
@@ -2199,10 +2195,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2. 工作原理
+        1.2. How It Works
       
     </span>
   </a>
@@ -2215,22 +2211,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-advanced-usage-goal-seeking-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 高级用法：目标寻求分析
+        2. Advanced Usage: Goal-Seeking Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 高级用法：目标寻求分析">
+    <nav class="md-nav" aria-label="2. Advanced Usage: Goal-Seeking Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-configuration-file-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1. 配置文件示例
+        2.1. Configuration File Example
       
     </span>
   </a>
@@ -2238,10 +2234,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2. 工作原理
+        2.2. How It Works
       
     </span>
   </a>
@@ -2254,10 +2250,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-analysis-report-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 分析报告输出
+        3. Analysis Report Output
       
     </span>
   </a>
@@ -2265,10 +2261,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#4-full-example-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 完整示例配置
+        4. Full Example Configuration
       
     </span>
   </a>
@@ -2276,22 +2272,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-ai" class="md-nav__link">
+  <a href="#5-ai-enhanced-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. AI 增强分析
+        5. AI-Enhanced Analysis
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. AI 增强分析">
+    <nav class="md-nav" aria-label="5. AI-Enhanced Analysis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51" class="md-nav__link">
+  <a href="#51-how-to-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1. 启用方式
+        5.1. How to Enable
       
     </span>
   </a>
@@ -2299,10 +2295,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52" class="md-nav__link">
+  <a href="#52-environment-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2. 环境配置
+        5.2. Environment Setup
       
     </span>
   </a>
@@ -2310,10 +2306,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53" class="md-nav__link">
+  <a href="#53-output-reports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3. 输出报告
+        5.3. Output Reports
       
     </span>
   </a>
@@ -2345,13 +2341,13 @@
   
 
 
-<h1 id="_1">多参数敏感性分析<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>在单参数敏感性分析的基础上，<code>tricys</code> 提供了功能更强大的<strong>多参数敏感性分析</strong>。该功能允许您在研究一个主独立参数（X轴）对性能指标（Y轴）的影响时，<strong>同时扫描一个或多个背景参数</strong>。</p>
-<p>这使得您可以在一张图上生成一组“敏感性曲线族”，其中每一条曲线代表一个背景参数的特定取值。通过这种方式，您可以深入地理解参数之间的<strong>交互和耦合效应</strong>。此外，该功能还支持一种强大的“目标寻求”式分析。</p>
-<p>关于性能指标的定义、术语表和单位映射等通用配置，请参考<a href="index.html">通用介绍</a>。</p>
-<h2 id="1">1. 核心概念：参数交互分析<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>这是多参数分析最常见的用法，其核心是在 <code>analysis_cases</code> 的某个案例内部，嵌入一个 <code>simulation_parameters</code> 字段。</p>
-<h3 id="11">1.1. 配置文件示例<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<h1 id="multi-parameter-sensitivity-analysis">Multi-Parameter Sensitivity Analysis<a class="headerlink" href="#multi-parameter-sensitivity-analysis" title="Permanent link">&para;</a></h1>
+<p>Building on single-parameter sensitivity analysis, <code>tricys</code> offers a more powerful <strong>multi-parameter sensitivity analysis</strong>. This feature allows you to study the impact of a primary independent parameter (X-axis) on performance metrics (Y-axis) while <strong>simultaneously sweeping one or more background parameters</strong>.</p>
+<p>This enables you to generate a "family of sensitivity curves" on a single chart, where each curve represents a specific value of a background parameter. In this way, you can gain a deep understanding of the <strong>interaction and coupling effects</strong> between parameters. Additionally, this feature supports a powerful "goal-seeking" analysis mode.</p>
+<p>For common configurations such as metric definitions, glossaries, and unit maps, please refer to the <a href="index.html">Automated Analysis Main Page</a>.</p>
+<h2 id="1-core-concept-parameter-interaction-analysis">1. Core Concept: Parameter Interaction Analysis<a class="headerlink" href="#1-core-concept-parameter-interaction-analysis" title="Permanent link">&para;</a></h2>
+<p>This is the most common use of multi-parameter analysis, and its core is to embed a <code>simulation_parameters</code> field inside a case within <code>analysis_cases</code>.</p>
+<h3 id="11-configuration-file-example">1.1. Configuration File Example<a class="headerlink" href="#11-configuration-file-example" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="c1">// ...</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;sensitivity_analysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -2359,42 +2355,42 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nt">&quot;analysis_cases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">            </span><span class="p">{</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DIR_PLASMA_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tep_fep.to_SDS_Fraction[1]&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// 主独立参数 (X轴)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tep_fep.to_SDS_Fraction[1]&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Primary independent parameter (X-axis)</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="p">],</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Required_TBR&quot;</span><span class="w"> </span><span class="p">],</span><span class="w"> </span><span class="c1">// 因变量 (Y轴)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Required_TBR&quot;</span><span class="w"> </span><span class="p">],</span><span class="w"> </span><span class="c1">// Dependent variables (Y-axis)</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">                </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">                    </span><span class="nt">&quot;plasma.fb&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="w"> </span><span class="mf">0.04</span><span class="p">,</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span><span class="w"> </span><span class="mf">0.09</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">],</span><span class="w"> </span><span class="c1">// 背景扫描参数 (生成多条曲线)</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">                    </span><span class="nt">&quot;plasma.nf&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="c1">// 固定的背景参数</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">                    </span><span class="nt">&quot;plasma.fb&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="w"> </span><span class="mf">0.04</span><span class="p">,</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span><span class="w"> </span><span class="mf">0.09</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">],</span><span class="w"> </span><span class="c1">// Background sweep parameter (generates multiple curves)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">                    </span><span class="nt">&quot;plasma.nf&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="c1">// Fixed background parameter</span>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">                </span><span class="p">}</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="p">],</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">        </span><span class="c1">// ... (通用配置)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">        </span><span class="c1">// ... (Common configurations)</span>
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="12">1.2. 工作原理<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<h3 id="12-how-it-works">1.2. How It Works<a class="headerlink" href="#12-how-it-works" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>主独立参数 (<code>independent_variable</code>)</strong>: <code>tep_fep.to_SDS_Fraction[1]</code>，作为图表的 <strong>X轴</strong>。</li>
-<li><strong>背景扫描参数 (<code>simulation_parameters</code>)</strong>:<ul>
-<li><code>plasma.fb</code> 的值是一个<strong>列表</strong>，它将成为图表中的<strong>图例 (Legend)</strong>，每一条曲线对应 <code>plasma.fb</code> 的一个取值。</li>
-<li><code>plasma.nf</code> 的值是一个<strong>标量</strong>，它将在所有仿真中保持不变。</li>
+<li><strong>Primary Independent Parameter (<code>independent_variable</code>)</strong>: <code>tep_fep.to_SDS_Fraction[1]</code>, serves as the <strong>X-axis</strong> of the chart.</li>
+<li><strong>Background Sweep Parameters (<code>simulation_parameters</code>)</strong>:<ul>
+<li>The value of <code>plasma.fb</code> is a <strong>list</strong>, which will become the <strong>Legend</strong> in the chart. Each curve corresponds to one value of <code>plasma.fb</code>.</li>
+<li>The value of <code>plasma.nf</code> is a <strong>scalar</strong>, which will remain constant across all simulations.</li>
 </ul>
 </li>
-<li><strong>执行逻辑</strong>: 程序会执行一个“嵌套循环”。对于 <code>independent_variable</code> 的每一个取值，程序会为 <code>plasma.fb</code> 的每一个值都运行一次仿真。总运行次数为 <code>len(independent_variable_sampling) * len(plasma.fb)</code>。</li>
+<li><strong>Execution Logic</strong>: The program executes a "nested loop". For each value of the <code>independent_variable</code>, the program runs a simulation for each value of <code>plasma.fb</code>. The total number of runs is <code>len(independent_variable_sampling) * len(plasma.fb)</code>.</li>
 </ul>
-<h2 id="2">2. 高级用法：目标寻求分析<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>此功能支持一种“逆向”分析模式，即<strong>目标寻求 (Goal-Seeking)</strong>。您可以指定一个性能指标作为目标，反向求解为了达到这个目标，某个输入参数需要被设置成多少。</p>
-<h3 id="21">2.1. 配置文件示例<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
-<p>关键在于 <code>simulation_parameters</code> 中包含了一个与 <code>metrics_definition</code> 中优化指标同名的特殊对象（本例中为 <code>Required_TBR</code>）。</p>
+<h2 id="2-advanced-usage-goal-seeking-analysis">2. Advanced Usage: Goal-Seeking Analysis<a class="headerlink" href="#2-advanced-usage-goal-seeking-analysis" title="Permanent link">&para;</a></h2>
+<p>This feature supports a "reverse" analysis mode, known as <strong>Goal-Seeking</strong>. You can specify a performance metric as a target and solve for the required value of an input parameter to achieve that target.</p>
+<h3 id="21-configuration-file-example">2.1. Configuration File Example<a class="headerlink" href="#21-configuration-file-example" title="Permanent link">&para;</a></h3>
+<p>The key is that <code>simulation_parameters</code> contains a special object with the same name as an optimization metric in <code>metrics_definition</code> (in this case, <code>Required_TBR</code>).</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DoubleTime_PLASMA_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;plasma.fb&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// 主独立参数 (X轴)</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Required_TBR&quot;</span><span class="w"> </span><span class="p">],</span><span class="w"> </span><span class="c1">// 因变量 (Y轴)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;plasma.fb&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Primary independent parameter (X-axis)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Required_TBR&quot;</span><span class="w"> </span><span class="p">],</span><span class="w"> </span><span class="c1">// Dependent variables (Y-axis)</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">&quot;plasma.nf&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="nt">&quot;Required_TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// 特殊的目标寻求配置</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">            </span><span class="nt">&quot;metric_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Doubling_Time&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// 目标指标</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">            </span><span class="nt">&quot;metric_max_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4380</span><span class="p">,</span><span class="w"> </span><span class="mi">8760</span><span class="p">,</span><span class="w"> </span><span class="mi">13140</span><span class="p">,</span><span class="w"> </span><span class="mi">17530</span><span class="p">]</span><span class="w"> </span><span class="c1">// 目标值的列表 (单位: 小时)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="nt">&quot;Required_TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Special goal-seeking configuration</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">            </span><span class="nt">&quot;metric_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Doubling_Time&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Target metric</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">            </span><span class="nt">&quot;metric_max_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4380</span><span class="p">,</span><span class="w"> </span><span class="mi">8760</span><span class="p">,</span><span class="w"> </span><span class="mi">13140</span><span class="p">,</span><span class="w"> </span><span class="mi">17530</span><span class="p">]</span><span class="w"> </span><span class="c1">// List of target values (unit: hours)</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">        </span><span class="p">}</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">},</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="c1">// ...</span>
@@ -2402,26 +2398,26 @@
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">        </span><span class="c1">// ...</span>
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="nt">&quot;Required_TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">            </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bisection_search&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">            </span><span class="nt">&quot;parameter_to_optimize&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blanket.TBR&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// 需要求解的参数</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">            </span><span class="c1">// ... (bisection_search 的其他配置)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">            </span><span class="nt">&quot;parameter_to_optimize&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blanket.TBR&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Parameter to be solved for</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">            </span><span class="c1">// ... (other configurations for bisection_search)</span>
 <a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">        </span><span class="p">}</span>
 <a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="22">2.2. 工作原理<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<h3 id="22-how-it-works">2.2. How It Works<a class="headerlink" href="#22-how-it-works" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>问题描述</strong>: 此配置旨在回答：“当 <code>plasma.fb</code> 变化时，为了分别实现不同的 <code>Doubling_Time</code> 目标（4380h, 8760h, ...），我们需要的 <code>blanket.TBR</code> 是多少？”</li>
-<li><strong>执行逻辑</strong>: 对于X轴上的每一个 <code>plasma.fb</code> 值，程序会针对 <code>metric_max_value</code> 列表中的<strong>每一个目标值</strong>启动一次 <code>bisection_search</code> 优化循环，以求解出对应的 <code>blanket.TBR</code> 值。</li>
-<li><strong>结果解读</strong>: 最终的图表将展示，在不同的倍增时间目标约束下，所需的TBR是如何随着<code>plasma.fb</code>变化的。</li>
+<li><strong>Problem Description</strong>: This configuration aims to answer the question: "As <code>plasma.fb</code> changes, what is the required <code>blanket.TBR</code> to achieve different <code>Doubling_Time</code> targets (4380h, 8760h, ...)?"</li>
+<li><strong>Execution Logic</strong>: For each value of <code>plasma.fb</code> on the X-axis, the program initiates a <code>bisection_search</code> optimization loop for <strong>each target value</strong> in the <code>metric_max_value</code> list to solve for the corresponding <code>blanket.TBR</code> value.</li>
+<li><strong>Result Interpretation</strong>: The final chart will show how the required TBR changes with <code>plasma.fb</code> under different doubling time target constraints.</li>
 </ul>
-<h2 id="3">3. 分析报告输出<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<p>与单参数分析的主要区别在于<strong>性能指标分析图</strong>：</p>
+<h2 id="3-analysis-report-output">3. Analysis Report Output<a class="headerlink" href="#3-analysis-report-output" title="Permanent link">&para;</a></h2>
+<p>The main difference from single-parameter analysis lies in the <strong>performance metric analysis chart</strong>:</p>
 <ul>
-<li>对于<strong>参数交互分析</strong>，图表将包含一组曲线，图例对应背景参数（如 <code>plasma.fb</code>）的不同取值。</li>
-<li>对于<strong>目标寻求分析</strong>，图表同样包含多条曲线，但图例对应的是不同的性能目标约束（如 <code>Doubling_Time = 4380h</code>）。</li>
+<li>For <strong>parameter interaction analysis</strong>, the chart will contain a set of curves, with the legend corresponding to different values of the background parameter (e.g., <code>plasma.fb</code>).</li>
+<li>For <strong>goal-seeking analysis</strong>, the chart will also contain multiple curves, but the legend will correspond to different performance target constraints (e.g., <code>Doubling_Time = 4380h</code>).</li>
 </ul>
-<p>这使得多维度的数据关系能够被清晰地呈现在一张二维图表中。报告的其他部分与通用结构一致。</p>
-<h2 id="4">4. 完整示例配置<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>This allows multi-dimensional data relationships to be clearly presented in a single two-dimensional chart. The rest of the report follows the common structure.</p>
+<h2 id="4-full-example-configuration">4. Full Example Configuration<a class="headerlink" href="#4-full-example-configuration" title="Permanent link">&para;</a></h2>
 <details>
 <summary>example/analysis/3_multi_parameter_sensitivity_analysis/multi_parameter_sensitivity_analysis.json</summary>
 
@@ -2535,10 +2531,10 @@
 
 </details>
 
-<h2 id="5-ai">5. AI 增强分析<a class="headerlink" href="#5-ai" title="Permanent link">&para;</a></h2>
-<p><code>tricys</code> 的所有分析模块都深度集成了大型语言模型（LLM），能够将原始的图表和数据自动转化为结构化的学术风格报告。</p>
-<h3 id="51">5.1. 启用方式<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
-<p>在您的分析案例配置中（即 <code>analysis_cases</code> 列表中的任意一个对象，或 <code>post_processing</code> 的 <code>params</code> 中），添加 <code>"ai": true</code> 即可为该案例激活 AI 分析功能。</p>
+<h2 id="5-ai-enhanced-analysis">5. AI-Enhanced Analysis<a class="headerlink" href="#5-ai-enhanced-analysis" title="Permanent link">&para;</a></h2>
+<p>All analysis modules in <code>tricys</code> are deeply integrated with Large Language Models (LLMs), capable of automatically converting raw charts and data into structured, academic-style reports.</p>
+<h3 id="51-how-to-enable">5.1. How to Enable<a class="headerlink" href="#51-how-to-enable" title="Permanent link">&para;</a></h3>
+<p>In your analysis case configuration (i.e., within any object in the <code>analysis_cases</code> list or in the <code>params</code> of a <code>post_processing</code> task), add <code>"ai": true</code> to activate the AI analysis feature for that case.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&quot;analysis_cases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">{</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TBR_Analysis_with_AI_Report&quot;</span><span class="p">,</span>
@@ -2549,18 +2545,18 @@
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">]</span>
 </code></pre></div>
-<h3 id="52">5.2. 环境配置<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
-<p>在使用此功能前，您必须在项目的<strong>根目录</strong>下创建一个名为 <code>.env</code> 的文件，并填入您的大语言模型 API 凭据。这确保了您的密钥安全，不会被提交到版本控制中。</p>
+<h3 id="52-environment-setup">5.2. Environment Setup<a class="headerlink" href="#52-environment-setup" title="Permanent link">&para;</a></h3>
+<p>Before using this feature, you must create a file named <code>.env</code> in the project's <strong>root directory</strong> and fill in your Large Language Model API credentials. This ensures that your keys are kept secure and are not committed to version control.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># .env file in project root
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>API_KEY=&quot;sk-your_api_key_here&quot;
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>BASE_URL=&quot;https://your_api_base_url/v1&quot;
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>AI_MODEL=&quot;your_model_name_here&quot;
 </code></pre></div>
-<h3 id="53">5.3. 输出报告<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
-<p>启用后，除了标准的分析报告 (<code>analysis_report_...md</code>)，<code>tricys</code> 还会在该案例的 <code>report</code> 文件夹内生成两份额外的报告：</p>
+<h3 id="53-output-reports">5.3. Output Reports<a class="headerlink" href="#53-output-reports" title="Permanent link">&para;</a></h3>
+<p>When enabled, in addition to the standard analysis report (<code>analysis_report_...md</code>), <code>tricys</code> will generate two additional reports in the case's <code>report</code> folder:</p>
 <ul>
-<li><strong><code>analysis_report_{case_name}_{model_name}.md</code></strong>: 在核心报告的基础上，末尾追加了由 AI 生成的对数据和图表的深度文字解读。</li>
-<li><strong><code>academic_report_{case_name}_{model_name}.md</code></strong>: 一份完全由 AI 撰写的、结构严谨的学术风格报告。这份报告通常包含摘要、引言、方法、结果与讨论、结论等部分，可以直接作为汇报材料或论文初稿使用。</li>
+<li><strong><code>analysis_report_{case_name}_{model_name}.md</code></strong>: Appends an in-depth textual interpretation of the data and charts, generated by the AI, to the end of the core report.</li>
+<li><strong><code>academic_report_{case_name}_{model_name}.md</code></strong>: A well-structured, academic-style report written entirely by the AI. This report typically includes sections such as Abstract, Introduction, Methods, Results and Discussion, and Conclusion, and can be used directly for presentations or as a draft for a paper.</li>
 </ul>
 
 
@@ -2585,7 +2581,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2594,33 +2590,33 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="single_parameter_sensitivity_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: 单参数敏感性分析">
+          <a href="single_parameter_sensitivity_analysis.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Single Parameter Sensitivity Analysis">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                上一页
+                Previous
               </span>
               <div class="md-ellipsis">
-                单参数敏感性分析
+                Single Parameter Sensitivity Analysis
               </div>
             </div>
           </a>
         
         
           
-          <a href="sobol_global_sensitivity_analysis.html" class="md-footer__link md-footer__link--next" aria-label="下一页: SOBOL全局敏感性分析">
+          <a href="sobol_global_sensitivity_analysis.html" class="md-footer__link md-footer__link--next" aria-label="Next: SOBOL Global Sensitivity Analysis">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                下一页
+                Next
               </span>
               <div class="md-ellipsis">
-                SOBOL全局敏感性分析
+                SOBOL Global Sensitivity Analysis
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2657,7 +2653,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "search.highlight", "search.suggest", "navigation.tabs", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
