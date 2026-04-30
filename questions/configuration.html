@@ -696,6 +696,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../guides/tricys_basic/fusion_operation_config.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自定义工况配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../guides/tricys_basic/parameter_sweep.html" class="md-nav__link">
         
   
@@ -1211,6 +1239,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../explanation/tricys_basic/fusion_operation_principle.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自定义工况原理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../explanation/tricys_basic/co_simulation.html" class="md-nav__link">
         
   
@@ -1219,6 +1275,34 @@
     
   
     Co-simulation Principle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explanation/tricys_basic/rpc_worker_architecture.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RPC Worker Architecture
   
 
     
@@ -2145,36 +2229,55 @@
 *   <code>blanket.I[1-5]|div.I[1-5]</code>: Matches multiple specific array variables.</p>
 </details>
 <details class="question">
+<summary>Q: How do I configure a fusion operating schedule (FOC)?</summary>
+<p>FOC uses a top-level <code>foc</code> block instead of placing those fields under <code>simulation</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">&quot;foc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">&quot;foc_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_foc/example_scenario_mix.foc&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nt">&quot;foc_component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pulseSource&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>Key points:</p>
+<ul>
+<li><code>foc_path</code> points to the <code>.foc</code> schedule file</li>
+<li><code>foc_component</code> selects the pulse-like child component to replace</li>
+<li>CLI/basic configs currently use <code>foc_path</code> only</li>
+<li>GUI uploads may use <code>foc_content</code>, but that is a <code>tricys_backend</code> / <code>tricys_visual</code> task transport mode; the backend materializes it into the task workspace and fills the internal <code>foc_path</code></li>
+</ul>
+<p>For a full example, see <a href="../guides/tricys_basic/fusion_operation_config.html">Fusion Operation Configuration</a>. For the rationale, see <a href="../explanation/tricys_basic/fusion_operation_principle.html">Fusion Operation Principle</a>.</p>
+</details>
+<details class="question">
 <summary>Q: The simulation is very slow, how to speed it up?</summary>
 <p>You can take the following optimization measures:</p>
 <p><strong>1. <a href="../guides/tricys_basic/concurrent_operation.html">Enable concurrent execution</a></strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
-</code></pre></div></p>
-<p><strong>2. Reduce the number of output variables</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">O</span><span class="kc">nl</span><span class="err">y</span><span class="w"> </span><span class="err">save</span><span class="w"> </span><span class="err">key</span><span class="w"> </span><span class="err">variables</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">        </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>3. Increase the time step</strong> (trade-off with accuracy):
+<p><strong>2. Reduce the number of output variables</strong>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">I</span><span class="kc">n</span><span class="err">crease</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="mf">1.0</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">O</span><span class="kc">nl</span><span class="err">y</span><span class="w"> </span><span class="err">save</span><span class="w"> </span><span class="err">key</span><span class="w"> </span><span class="err">variables</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>4. Reduce the number of scan points</strong>:
+<p><strong>3. Increase the time step</strong> (trade-off with accuracy):
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1.05:1.15:5&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">Reduce</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="mi">5</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">I</span><span class="kc">n</span><span class="err">crease</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="mf">1.0</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>4. Reduce the number of scan points</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1.05:1.15:5&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">Reduce</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="kc">t</span><span class="err">o</span><span class="w"> </span><span class="mi">5</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="p">}</span>
 </code></pre></div></p>
 </details>
 

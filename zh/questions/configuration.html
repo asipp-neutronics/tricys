@@ -698,6 +698,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../guides/tricys_basic/fusion_operation_config.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自定义工况配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../guides/tricys_basic/parameter_sweep.html" class="md-nav__link">
         
   
@@ -1213,6 +1241,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../explanation/tricys_basic/fusion_operation_principle.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自定义工况原理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../explanation/tricys_basic/co_simulation.html" class="md-nav__link">
         
   
@@ -1221,6 +1277,34 @@
     
   
     协同仿真原理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explanation/tricys_basic/rpc_worker_architecture.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RPC Worker架构
   
 
     
@@ -2147,36 +2231,55 @@
 *   <code>blanket.I[1-5]|div.I[1-5]</code>：匹配多个特定数组变量</p>
 </details>
 <details class="question">
+<summary>问：如何配置聚变运行工况（FOC）？</summary>
+<p>FOC 使用顶层 <code>foc</code> 配置块，而不是放在 <code>simulation</code> 下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">&quot;foc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">&quot;foc_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_foc/example_scenario_mix.foc&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nt">&quot;foc_component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pulseSource&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>关键点如下：</p>
+<ul>
+<li><code>foc_path</code> 指向 <code>.foc</code> 工况文件</li>
+<li><code>foc_component</code> 指定要被替换的 pulse-like 子组件</li>
+<li>CLI/basic 配置当前只使用 <code>foc_path</code></li>
+<li>GUI 上传 <code>.foc</code> 时可以使用 <code>foc_content</code>，但这是 <code>tricys_backend</code> / <code>tricys_visual</code> 的任务传输方式；后端会自动写入任务工作区并补齐内部 <code>foc_path</code></li>
+</ul>
+<p>详细示例请见<a href="../guides/tricys_basic/fusion_operation_config.html">自定义工况配置</a>，设计说明请见<a href="../explanation/tricys_basic/fusion_operation_principle.html">自定义工况原理</a>。</p>
+</details>
+<details class="question">
 <summary>问：仿真时间很长，如何加速？</summary>
 <p>可以采取以下优化措施：</p>
 <p><strong>1. <a href="../guides/tricys_basic/concurrent_operation.html">启用并发运行</a></strong>：
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
-</code></pre></div></p>
-<p><strong>2. 减少输出变量</strong>：
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">只保存关键变量</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">        </span><span class="nt">&quot;max_workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>3. 增大时间步长</strong>（权衡精度）：
+<p><strong>2. 减少输出变量</strong>：
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="err">增加到</span><span class="w"> </span><span class="mf">1.0</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">只保存关键变量</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
 </code></pre></div></p>
-<p><strong>4. 减少扫描点数</strong>：
+<p><strong>3. 增大时间步长</strong>（权衡精度）：
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1.05:1.15:5&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">减少到</span><span class="w"> </span><span class="mi">5</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="err">增加到</span><span class="w"> </span><span class="mf">1.0</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>4. 减少扫描点数</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">        </span><span class="nt">&quot;blanket.TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linspace:1.05:1.15:5&quot;</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">减少到</span><span class="w"> </span><span class="mi">5</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="p">}</span>
 </code></pre></div></p>
 </details>
 <hr />
