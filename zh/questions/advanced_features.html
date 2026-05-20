@@ -2183,6 +2183,71 @@
 <p>在 <code>tricys/analysis/metric.py</code> 中注册您的函数，或直接在配置中引用。</p>
 </details>
 <hr />
+<details class="question">
+<summary>问：如何为子系统设置最大盘存量和最大处理速率？</summary>
+<p>使用 <code>ConstrainedBuffer</code> 组件替换标准子系统模型（如 Blanket），即可获得容量上限和速率上限约束能力。</p>
+<p><strong>核心参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>默认值</th>
+<th>单位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>capacity_max</code></td>
+<td>最大盘存量（总氚当量）</td>
+<td>1e9（无约束）</td>
+<td>g</td>
+</tr>
+<tr>
+<td><code>rate_max</code></td>
+<td>最大出流速率</td>
+<td>1e9（无约束）</td>
+<td>g/h</td>
+</tr>
+<tr>
+<td><code>softness</code></td>
+<td>Sigmoid 软约束系数</td>
+<td>0.02</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>to_Down_Fraction</code></td>
+<td>送往下游的比例</td>
+<td>1.0</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>JSON 配置示例</strong>（设置容量 500g、速率 50 g/h）：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>参数扫描示例</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">],</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000000</span><span class="p">]</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>约束行为</strong>：</p>
+<ul>
+<li>超容量时：入流被 sigmoid 函数软限制，超限部分导出至 <code>overflow_out</code> 端口</li>
+<li>超速率时：出流被限制在 <code>rate_max</code> 以内，超限部分导出至 <code>rate_clip_out</code> 端口</li>
+<li>质量守恒：所有被约束截流的物质均通过对应端口导出，不会凭空消失</li>
+</ul>
+<p><strong>完整示例配置</strong>参见 <code>tricys/example/example_data/basic/6_constrained_buffer/</code>。</p>
+</details>
+<hr />
 
 
 

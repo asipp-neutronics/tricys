@@ -2179,6 +2179,71 @@
 <p>Register your function in <code>tricys/analysis/metric.py</code> or reference it directly in the configuration.</p>
 </details>
 <hr />
+<details class="question">
+<summary>How do I set maximum inventory capacity and processing rate for a subsystem?</summary>
+<p>Use the <code>ConstrainedBuffer</code> component to replace a standard subsystem model (e.g., Blanket) to gain capacity and rate constraint capabilities.</p>
+<p><strong>Key Parameters</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Default</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>capacity_max</code></td>
+<td>Maximum inventory (total tritium equivalent)</td>
+<td>1e9 (unconstrained)</td>
+<td>g</td>
+</tr>
+<tr>
+<td><code>rate_max</code></td>
+<td>Maximum outflow rate</td>
+<td>1e9 (unconstrained)</td>
+<td>g/h</td>
+</tr>
+<tr>
+<td><code>softness</code></td>
+<td>Sigmoid soft constraint coefficient</td>
+<td>0.02</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>to_Down_Fraction</code></td>
+<td>Fraction routed to downstream</td>
+<td>1.0</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>JSON Configuration Example</strong> (cap at 500g, rate at 50 g/h):
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>Parameter Sweep Example</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">],</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000000</span><span class="p">]</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>Constraint Behavior</strong>:</p>
+<ul>
+<li>Over-capacity: Inflow is soft-limited by a sigmoid function; excess is routed to the <code>overflow_out</code> port</li>
+<li>Over-rate: Outflow is capped at <code>rate_max</code>; excess is routed to the <code>rate_clip_out</code> port</li>
+<li>Mass conservation: All constrained mass is exported through the corresponding ports — nothing disappears</li>
+</ul>
+<p><strong>Full example configuration</strong> available at <code>tricys/example/example_data/basic/6_constrained_buffer/</code>.</p>
+</details>
+<hr />
 
 
 
