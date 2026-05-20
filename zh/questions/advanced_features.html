@@ -2184,6 +2184,67 @@
 </details>
 <hr />
 <details class="question">
+<summary>如何为 Blanket 设置盘存与处理速率上限？</summary>
+<p>自 PR #82 起，<code>example_model.Blanket</code> 内置 <strong>sigmoid 软约束</strong>：当氚盘存 <code>I_total</code>
+接近 <code>capacity_max</code> 或瞬时出流接近 <code>rate_max</code> 时，会被平滑地限幅，并把溢出
+部分通过 <code>overflow_out[5]</code> 与 <code>rate_clip_out[5]</code> 端口暴露出来。</p>
+<p><strong>默认行为</strong>：<code>capacity_max = rate_max = 1e9</code>，等价于"无约束"，
+与历史版本完全一致（无回归）。</p>
+<p><strong>通过 JSON 配置启用</strong>：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;package_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_model/package.mo&quot;</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">&quot;model_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_model.Cycle&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|blanket.I[1]|blanket.I_total|blanket.overflow_out[1]|blanket.rate_clip_out[1]|sds.I[1]&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">&quot;stop_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5000.0</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nt">&quot;blanket.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">    </span><span class="nt">&quot;blanket.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">    </span><span class="nt">&quot;blanket.softness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.02</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="p">}</span>
+</code></pre></div>
+<p><strong>参数说明</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>单位</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>blanket.capacity_max</code></td>
+<td>g</td>
+<td>Blanket 总盘存上限（sigmoid 软约束）</td>
+</tr>
+<tr>
+<td><code>blanket.rate_max</code></td>
+<td>g/h</td>
+<td>瞬时出流上限（sigmoid 软约束）</td>
+</tr>
+<tr>
+<td><code>blanket.softness</code></td>
+<td>–</td>
+<td>软过渡区相对宽度，默认 0.02；越小越接近硬约束</td>
+</tr>
+</tbody>
+</table>
+<p><strong>输出端口</strong>：</p>
+<ul>
+<li><code>blanket.overflow_out[i]</code>：因容量约束被拒收的入流（i 对应同位素索引）</li>
+<li><code>blanket.rate_clip_out[i]</code>：因速率约束被截断的出流</li>
+</ul>
+<p><strong>完整示例</strong>：见 <code>tricys/example/example_data/basic/7_blanket_constraints/</code>
+（单点配置 + 4×4 参数扫描）。</p>
+<p><strong>与 ConstrainedBuffer 的关系</strong>：<code>ConstrainedBuffer</code>（PR #81 示例 6）是
+通用的"带约束储罐"组件，<strong>没有</strong> TBR 产氚源；而本特性把同样的约束机制
+<strong>直接嵌入 Blanket</strong>，保留其产氚行为，<strong>不需要替换主模型 <code>Cycle.mo</code> 中的实例</strong>。</p>
+</details>
+<details class="question">
 <summary>问：如何为子系统设置最大盘存量和最大处理速率？</summary>
 <p>使用 <code>ConstrainedBuffer</code> 组件替换标准子系统模型（如 Blanket），即可获得容量上限和速率上限约束能力。</p>
 <p><strong>核心参数</strong>：</p>
@@ -2224,20 +2285,20 @@
 </tbody>
 </table>
 <p><strong>JSON 配置示例</strong>（设置容量 500g、速率 50 g/h）：
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">}</span>
-</code></pre></div></p>
-<p><strong>参数扫描示例</strong>：
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">],</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000000</span><span class="p">]</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>参数扫描示例</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">        </span><span class="nt">&quot;blanket_c.capacity_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">],</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">        </span><span class="nt">&quot;blanket_c.rate_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000000</span><span class="p">]</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">}</span>
 </code></pre></div></p>
 <p><strong>约束行为</strong>：</p>
 <ul>
