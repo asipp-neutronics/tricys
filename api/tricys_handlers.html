@@ -4136,7 +4136,8 @@ tracking columns I_H, I_D, I_T. Output columns use 1-indexed array notation [1],
 <span class="normal"><a href="#__codelineno-0-440">440</a></span>
 <span class="normal"><a href="#__codelineno-0-441">441</a></span>
 <span class="normal"><a href="#__codelineno-0-442">442</a></span>
-<span class="normal"><a href="#__codelineno-0-443">443</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-185" name="__codelineno-0-185"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_aspen_simulation</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-443">443</a></span>
+<span class="normal"><a href="#__codelineno-0-444">444</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-185" name="__codelineno-0-185"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_aspen_simulation</span><span class="p">(</span>
 <a id="__codelineno-0-186" name="__codelineno-0-186"></a>    <span class="n">temp_input_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-0-187" name="__codelineno-0-187"></a>    <span class="n">temp_output_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-0-188" name="__codelineno-0-188"></a>    <span class="n">bkp_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;example_aspenbkp/T2-Threetowers4.bkp&quot;</span><span class="p">,</span>
@@ -4393,8 +4394,9 @@ tracking columns I_H, I_D, I_T. Output columns use 1-indexed array notation [1],
 <a id="__codelineno-0-439" name="__codelineno-0-439"></a>    <span class="k">finally</span><span class="p">:</span>
 <a id="__codelineno-0-440" name="__codelineno-0-440"></a>        <span class="k">if</span> <span class="n">aspen</span><span class="p">:</span>
 <a id="__codelineno-0-441" name="__codelineno-0-441"></a>            <span class="n">aspen</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<a id="__codelineno-0-442" name="__codelineno-0-442"></a>
-<a id="__codelineno-0-443" name="__codelineno-0-443"></a>    <span class="k">return</span> <span class="n">output_placeholder</span>
+<a id="__codelineno-0-442" name="__codelineno-0-442"></a>        <span class="n">pythoncom</span><span class="o">.</span><span class="n">CoUninitialize</span><span class="p">()</span>
+<a id="__codelineno-0-443" name="__codelineno-0-443"></a>
+<a id="__codelineno-0-444" name="__codelineno-0-444"></a>    <span class="k">return</span> <span class="n">output_placeholder</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4545,8 +4547,7 @@ columns for to_SDS[1-5] and to_WDS[1-5]. Returns placeholder dict with format
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>tricys/handlers/i_iss_handler.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-446">446</a></span>
-<span class="normal"><a href="#__codelineno-0-447">447</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-447">447</a></span>
 <span class="normal"><a href="#__codelineno-0-448">448</a></span>
 <span class="normal"><a href="#__codelineno-0-449">449</a></span>
 <span class="normal"><a href="#__codelineno-0-450">450</a></span>
@@ -4613,75 +4614,76 @@ columns for to_SDS[1-5] and to_WDS[1-5]. Returns placeholder dict with format
 <span class="normal"><a href="#__codelineno-0-511">511</a></span>
 <span class="normal"><a href="#__codelineno-0-512">512</a></span>
 <span class="normal"><a href="#__codelineno-0-513">513</a></span>
-<span class="normal"><a href="#__codelineno-0-514">514</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-446" name="__codelineno-0-446"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_dummy_simulation</span><span class="p">(</span><span class="n">temp_input_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temp_output_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<a id="__codelineno-0-447" name="__codelineno-0-447"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a simulation based on fake i_ISS data.</span>
-<a id="__codelineno-0-448" name="__codelineno-0-448"></a>
-<a id="__codelineno-0-449" name="__codelineno-0-449"></a><span class="sd">    Reads data from a source CSV, selects specific columns, and writes them</span>
-<a id="__codelineno-0-450" name="__codelineno-0-450"></a><span class="sd">    to a temporary output CSV.</span>
-<a id="__codelineno-0-451" name="__codelineno-0-451"></a>
-<a id="__codelineno-0-452" name="__codelineno-0-452"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-453" name="__codelineno-0-453"></a><span class="sd">        temp_input_csv: Path to the temporary input CSV file (unused).</span>
-<a id="__codelineno-0-454" name="__codelineno-0-454"></a><span class="sd">        temp_output_csv: Path to the temporary output CSV file.</span>
-<a id="__codelineno-0-455" name="__codelineno-0-455"></a><span class="sd">        **kwargs: Additional keyword arguments (unused).</span>
-<a id="__codelineno-0-456" name="__codelineno-0-456"></a>
-<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="sd">        A placeholder dictionary with output variable mappings.</span>
-<a id="__codelineno-0-459" name="__codelineno-0-459"></a>
-<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">        FileNotFoundError: If the source CSV file cannot be found.</span>
-<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">        ValueError: If the source CSV is missing required columns.</span>
-<a id="__codelineno-0-463" name="__codelineno-0-463"></a>
-<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">    Note:</span>
-<a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">        The temp_input_csv parameter is kept for interface consistency but not used.</span>
-<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">        Reads from i_iss_handler.csv in the same directory as this module. Selects</span>
-<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">        columns for to_SDS[1-5] and to_WDS[1-5]. Returns placeholder dict with format</span>
-<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">        {&quot;to_SDS&quot;: &quot;{1,2,3,4,5,6}&quot;, &quot;to_WDS&quot;: &quot;{1,7,8,9,10,11}&quot;}.</span>
-<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-470" name="__codelineno-0-470"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-0-471" name="__codelineno-0-471"></a>
-<a id="__codelineno-0-472" name="__codelineno-0-472"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<a id="__codelineno-0-473" name="__codelineno-0-473"></a>
-<a id="__codelineno-0-474" name="__codelineno-0-474"></a>    <span class="n">handler_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
-<a id="__codelineno-0-475" name="__codelineno-0-475"></a>    <span class="n">source_csv_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">handler_dir</span><span class="p">,</span> <span class="s2">&quot;i_iss_handler.csv&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-476" name="__codelineno-0-476"></a>
-<a id="__codelineno-0-477" name="__codelineno-0-477"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-478" name="__codelineno-0-478"></a>        <span class="n">source_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">source_csv_path</span><span class="p">)</span>
-<a id="__codelineno-0-479" name="__codelineno-0-479"></a>    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-<a id="__codelineno-0-480" name="__codelineno-0-480"></a>        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[]})</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">temp_output_csv</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="k">raise</span>
-<a id="__codelineno-0-482" name="__codelineno-0-482"></a>
-<a id="__codelineno-0-483" name="__codelineno-0-483"></a>    <span class="n">columns_to_select</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-0-484" name="__codelineno-0-484"></a>        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-485" name="__codelineno-0-485"></a>        <span class="s2">&quot;i_iss.to_SDS[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="s2">&quot;i_iss.to_SDS[2]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-487" name="__codelineno-0-487"></a>        <span class="s2">&quot;i_iss.to_SDS[3]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-488" name="__codelineno-0-488"></a>        <span class="s2">&quot;i_iss.to_SDS[4]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-489" name="__codelineno-0-489"></a>        <span class="s2">&quot;i_iss.to_SDS[5]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-490" name="__codelineno-0-490"></a>        <span class="s2">&quot;i_iss.to_WDS[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-491" name="__codelineno-0-491"></a>        <span class="s2">&quot;i_iss.to_WDS[2]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-492" name="__codelineno-0-492"></a>        <span class="s2">&quot;i_iss.to_WDS[3]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-493" name="__codelineno-0-493"></a>        <span class="s2">&quot;i_iss.to_WDS[4]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-494" name="__codelineno-0-494"></a>        <span class="s2">&quot;i_iss.to_WDS[5]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-495" name="__codelineno-0-495"></a>    <span class="p">]</span>
-<a id="__codelineno-0-496" name="__codelineno-0-496"></a>
-<a id="__codelineno-0-497" name="__codelineno-0-497"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">col</span> <span class="ow">in</span> <span class="n">source_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_to_select</span><span class="p">):</span>
-<a id="__codelineno-0-498" name="__codelineno-0-498"></a>        <span class="n">missing_cols</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-0-499" name="__codelineno-0-499"></a>            <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_to_select</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">source_df</span><span class="o">.</span><span class="n">columns</span>
-<a id="__codelineno-0-500" name="__codelineno-0-500"></a>        <span class="p">]</span>
-<a id="__codelineno-0-501" name="__codelineno-0-501"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-502" name="__codelineno-0-502"></a>            <span class="sa">f</span><span class="s2">&quot;The source file </span><span class="si">{</span><span class="n">source_csv_path</span><span class="si">}</span><span class="s2"> is missing required columns: &quot;</span>
-<a id="__codelineno-0-503" name="__codelineno-0-503"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">missing_cols</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-504" name="__codelineno-0-504"></a>        <span class="p">)</span>
-<a id="__codelineno-0-505" name="__codelineno-0-505"></a>
-<a id="__codelineno-0-506" name="__codelineno-0-506"></a>    <span class="n">output_df</span> <span class="o">=</span> <span class="n">source_df</span><span class="p">[</span><span class="n">columns_to_select</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<a id="__codelineno-0-507" name="__codelineno-0-507"></a>
-<a id="__codelineno-0-508" name="__codelineno-0-508"></a>    <span class="n">output_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">temp_output_csv</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-0-509" name="__codelineno-0-509"></a>
-<a id="__codelineno-0-510" name="__codelineno-0-510"></a>    <span class="n">output_placeholder</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-0-511" name="__codelineno-0-511"></a>        <span class="s2">&quot;to_SDS&quot;</span><span class="p">:</span> <span class="s2">&quot;{1,2,3,4,5,6}&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-512" name="__codelineno-0-512"></a>        <span class="s2">&quot;to_WDS&quot;</span><span class="p">:</span> <span class="s2">&quot;{1,7,8,9,10,11}&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-513" name="__codelineno-0-513"></a>    <span class="p">}</span>
-<a id="__codelineno-0-514" name="__codelineno-0-514"></a>    <span class="k">return</span> <span class="n">output_placeholder</span>
+<span class="normal"><a href="#__codelineno-0-514">514</a></span>
+<span class="normal"><a href="#__codelineno-0-515">515</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-447" name="__codelineno-0-447"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_dummy_simulation</span><span class="p">(</span><span class="n">temp_input_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temp_output_csv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-0-448" name="__codelineno-0-448"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a simulation based on fake i_ISS data.</span>
+<a id="__codelineno-0-449" name="__codelineno-0-449"></a>
+<a id="__codelineno-0-450" name="__codelineno-0-450"></a><span class="sd">    Reads data from a source CSV, selects specific columns, and writes them</span>
+<a id="__codelineno-0-451" name="__codelineno-0-451"></a><span class="sd">    to a temporary output CSV.</span>
+<a id="__codelineno-0-452" name="__codelineno-0-452"></a>
+<a id="__codelineno-0-453" name="__codelineno-0-453"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-454" name="__codelineno-0-454"></a><span class="sd">        temp_input_csv: Path to the temporary input CSV file (unused).</span>
+<a id="__codelineno-0-455" name="__codelineno-0-455"></a><span class="sd">        temp_output_csv: Path to the temporary output CSV file.</span>
+<a id="__codelineno-0-456" name="__codelineno-0-456"></a><span class="sd">        **kwargs: Additional keyword arguments (unused).</span>
+<a id="__codelineno-0-457" name="__codelineno-0-457"></a>
+<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="sd">        A placeholder dictionary with output variable mappings.</span>
+<a id="__codelineno-0-460" name="__codelineno-0-460"></a>
+<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">        FileNotFoundError: If the source CSV file cannot be found.</span>
+<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        ValueError: If the source CSV is missing required columns.</span>
+<a id="__codelineno-0-464" name="__codelineno-0-464"></a>
+<a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">    Note:</span>
+<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">        The temp_input_csv parameter is kept for interface consistency but not used.</span>
+<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">        Reads from i_iss_handler.csv in the same directory as this module. Selects</span>
+<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">        columns for to_SDS[1-5] and to_WDS[1-5]. Returns placeholder dict with format</span>
+<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">        {&quot;to_SDS&quot;: &quot;{1,2,3,4,5,6}&quot;, &quot;to_WDS&quot;: &quot;{1,7,8,9,10,11}&quot;}.</span>
+<a id="__codelineno-0-470" name="__codelineno-0-470"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-471" name="__codelineno-0-471"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-0-472" name="__codelineno-0-472"></a>
+<a id="__codelineno-0-473" name="__codelineno-0-473"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-0-474" name="__codelineno-0-474"></a>
+<a id="__codelineno-0-475" name="__codelineno-0-475"></a>    <span class="n">handler_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+<a id="__codelineno-0-476" name="__codelineno-0-476"></a>    <span class="n">source_csv_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">handler_dir</span><span class="p">,</span> <span class="s2">&quot;i_iss_handler.csv&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-477" name="__codelineno-0-477"></a>
+<a id="__codelineno-0-478" name="__codelineno-0-478"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-479" name="__codelineno-0-479"></a>        <span class="n">source_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">source_csv_path</span><span class="p">)</span>
+<a id="__codelineno-0-480" name="__codelineno-0-480"></a>    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[]})</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">temp_output_csv</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-482" name="__codelineno-0-482"></a>        <span class="k">raise</span>
+<a id="__codelineno-0-483" name="__codelineno-0-483"></a>
+<a id="__codelineno-0-484" name="__codelineno-0-484"></a>    <span class="n">columns_to_select</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-485" name="__codelineno-0-485"></a>        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="s2">&quot;i_iss.to_SDS[1]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-487" name="__codelineno-0-487"></a>        <span class="s2">&quot;i_iss.to_SDS[2]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-488" name="__codelineno-0-488"></a>        <span class="s2">&quot;i_iss.to_SDS[3]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-489" name="__codelineno-0-489"></a>        <span class="s2">&quot;i_iss.to_SDS[4]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-490" name="__codelineno-0-490"></a>        <span class="s2">&quot;i_iss.to_SDS[5]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-491" name="__codelineno-0-491"></a>        <span class="s2">&quot;i_iss.to_WDS[1]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-492" name="__codelineno-0-492"></a>        <span class="s2">&quot;i_iss.to_WDS[2]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-493" name="__codelineno-0-493"></a>        <span class="s2">&quot;i_iss.to_WDS[3]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-494" name="__codelineno-0-494"></a>        <span class="s2">&quot;i_iss.to_WDS[4]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-495" name="__codelineno-0-495"></a>        <span class="s2">&quot;i_iss.to_WDS[5]&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-496" name="__codelineno-0-496"></a>    <span class="p">]</span>
+<a id="__codelineno-0-497" name="__codelineno-0-497"></a>
+<a id="__codelineno-0-498" name="__codelineno-0-498"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">col</span> <span class="ow">in</span> <span class="n">source_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_to_select</span><span class="p">):</span>
+<a id="__codelineno-0-499" name="__codelineno-0-499"></a>        <span class="n">missing_cols</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-500" name="__codelineno-0-500"></a>            <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_to_select</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">source_df</span><span class="o">.</span><span class="n">columns</span>
+<a id="__codelineno-0-501" name="__codelineno-0-501"></a>        <span class="p">]</span>
+<a id="__codelineno-0-502" name="__codelineno-0-502"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-503" name="__codelineno-0-503"></a>            <span class="sa">f</span><span class="s2">&quot;The source file </span><span class="si">{</span><span class="n">source_csv_path</span><span class="si">}</span><span class="s2"> is missing required columns: &quot;</span>
+<a id="__codelineno-0-504" name="__codelineno-0-504"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">missing_cols</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-505" name="__codelineno-0-505"></a>        <span class="p">)</span>
+<a id="__codelineno-0-506" name="__codelineno-0-506"></a>
+<a id="__codelineno-0-507" name="__codelineno-0-507"></a>    <span class="n">output_df</span> <span class="o">=</span> <span class="n">source_df</span><span class="p">[</span><span class="n">columns_to_select</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-0-508" name="__codelineno-0-508"></a>
+<a id="__codelineno-0-509" name="__codelineno-0-509"></a>    <span class="n">output_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">temp_output_csv</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-510" name="__codelineno-0-510"></a>
+<a id="__codelineno-0-511" name="__codelineno-0-511"></a>    <span class="n">output_placeholder</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-512" name="__codelineno-0-512"></a>        <span class="s2">&quot;to_SDS&quot;</span><span class="p">:</span> <span class="s2">&quot;{1,2,3,4,5,6}&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-513" name="__codelineno-0-513"></a>        <span class="s2">&quot;to_WDS&quot;</span><span class="p">:</span> <span class="s2">&quot;{1,7,8,9,10,11}&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-514" name="__codelineno-0-514"></a>    <span class="p">}</span>
+<a id="__codelineno-0-515" name="__codelineno-0-515"></a>    <span class="k">return</span> <span class="n">output_placeholder</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
