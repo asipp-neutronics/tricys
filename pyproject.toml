@@ -63,6 +63,10 @@ docs = [
     "mkdocstrings-python"
 ]
 
+distillation = [
+    "h2iso[solver]>=0.2.0"
+]
+
 [tool.setuptools]
 packages = ["tricys_backend", "tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess", "tricys.example", "tricys.example.example_runner", "tricys.visualizer"]
 
