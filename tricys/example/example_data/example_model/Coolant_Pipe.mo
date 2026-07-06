@@ -41,6 +41,9 @@ model Coolant_Pipe
   parameter Real to_CPS_Fraction = 1e-2;
   parameter Real to_FW_Fraction = 0.6;
 
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
 equation
   // 计算每种物质的动态变化和输出
   for i in 1:5 loop
@@ -50,8 +53,9 @@ equation
     to_CPS[i] = to_CPS_Fraction * (1 - to_WDS_Fraction) * outflow[i];
     to_FW[i] = to_FW_Fraction * (1 - to_CPS_Fraction) * (1 - to_WDS_Fraction) * outflow[i];
     to_DIV[i] = (1 - to_FW_Fraction) * (1 - to_CPS_Fraction) * (1 - to_WDS_Fraction) * outflow[i];
-
-  end for;
+      decay_rate[i] = decay_loss[i]*I[i];
+      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+    end for;
   annotation(
     Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 255, 127}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {1, 1}, extent = {{-73, 37}, {73, -37}}, textString = "Coolant
 Loop", fontName = "Arial")}),

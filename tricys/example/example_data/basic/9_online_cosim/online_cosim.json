@@ -1,0 +1,27 @@
+{
+    "paths": {
+        "package_path": "../../example_model_ssp/ssp/example_model.ssp"
+    },
+    "simulation": {
+        "model_name": "example_model.Cycle",
+        "variableFilter": "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*",
+        "stop_time": 100.0,
+        "step_size": 0.5
+    },
+    "co_simulation": {
+        "engine": "online_oms",
+        "handlers": [
+            {
+                "submodel_name": "CFEDR.I_ISS",
+                "instance_name": "i_iss",
+                "handler_module": "tricys.example.example_data.basic.9_online_cosim.i_iss_processor_base",
+                "handler_function": "I_ISSProcessorBase",
+                "params": {
+                    "bkp_path": "../../example_aspenbkp/T2-Threetowers4.bkp",
+                    "base_inventory_mol": 20.0,
+                    "retime_h": 1.0
+                }
+            }
+        ]
+    }
+}

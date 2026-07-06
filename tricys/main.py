@@ -8,6 +8,7 @@ from pathlib import Path
 from tricys.simulation.simulation import main as simulation_main
 from tricys.simulation.simulation_analysis import main as analysis_main
 from tricys.simulation.simulation_analysis import retry_analysis
+from tricys.simulation.simulation_cosim import main as cosim_main
 from tricys.utils.file_utils import archive_run, unarchive_run
 from tricys.utils.model_parser_cli import parse_model_cli
 
@@ -88,6 +89,8 @@ def main() -> None:
     subparsers.add_parser("basic", help="Run a standard simulation.", add_help=False)
 
     subparsers.add_parser("analysis", help="Run a simulation analysis.", add_help=False)
+
+    subparsers.add_parser("cosim", help="Run a co-simulation workflow.", add_help=False)
 
     subparsers.add_parser(
         "example", help="Run the interactive example runner.", add_help=False
@@ -181,6 +184,31 @@ def main() -> None:
 
             export_csv = main_args.csv or basic_args.csv
             simulation_main(config_path, export_csv=export_csv)
+        elif main_args.command == "cosim":
+            cosim_parser = argparse.ArgumentParser()
+            cosim_parser.add_argument("-c", "--config", type=str, default=None)
+            cosim_parser.add_argument(
+                "--csv", action="store_true", help="Export results to CSV."
+            )
+            cosim_args, _ = cosim_parser.parse_known_args(remaining_argv)
+
+            config_path = cosim_args.config
+            if not config_path:
+                default_config_path = "config.json"
+                if os.path.exists(default_config_path):
+                    config_path = default_config_path
+                    print(
+                        "INFO: No config file specified for 'cosim' command, using default: config.json"
+                    )
+                else:
+                    print(
+                        "Error: 'cosim' command requires a config file via -c or a default 'config.json' must exist.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+
+            export_csv = main_args.csv or cosim_args.csv
+            cosim_main(config_path, export_csv=export_csv)
         elif main_args.command == "analysis":
             # This block replaces the logic in simulation_analysis.py's _parse_command_line_args
             analysis_parser = argparse.ArgumentParser(
@@ -323,6 +351,15 @@ def main() -> None:
             "INFO: Detected 'sensitivity_analysis' in config. Running analysis workflow."
         )
         analysis_main(config_data, base_dir=base_dir)
+    elif "co_simulation" in config_data:
+        print(
+            "INFO: Detected 'co_simulation' in config. Running co-simulation workflow."
+        )
+        cosim_main(
+            config_data,
+            base_dir=base_dir,
+            export_csv=main_args.csv,
+        )
     else:
         print(
             "INFO: No 'sensitivity_analysis' detected in config. Running standard simulation workflow."

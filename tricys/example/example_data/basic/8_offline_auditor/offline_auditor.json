@@ -1,0 +1,33 @@
+{
+    "paths": {
+        "package_path": "../../example_model/package.mo"
+    },
+    "simulation": {
+        "model_name": "example_model.Cycle",
+        "variableFilter": "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*",
+        "stop_time": 2000.0,
+        "step_size": 0.5
+    },
+    "auditor": {
+        "enabled": true,
+        "warn_threshold_g": 0.0,
+        "kill_threshold_g": 0.0,
+        "patterns": {
+            "inventory": [
+                "*.I?1?"
+            ],
+            "cumulative_sources": [
+                "*blanket.cumulative_breed?1?"
+            ],
+            "leak": [
+                "*.leak_rate?1?"
+            ],
+            "decay": [
+                "*.decay_rate?1?"
+            ],
+            "cumulative_burn": [
+                "*plasma.cumulative_burn?1?"
+            ]
+        }
+    }
+}
