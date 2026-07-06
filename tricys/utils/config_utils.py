@@ -168,7 +168,11 @@ def convert_relative_paths_to_absolute(
                 "glossary_path",
             ]
 
-            if key_name.endswith("_path") or key_name in path_keys:
+            if (
+                key_name.endswith("_path")
+                or key_name.endswith("_dir")
+                or key_name in path_keys
+            ):
                 # If it's a relative path, convert to absolute path
                 if not os.path.isabs(value) and value:
                     abs_path = os.path.abspath(os.path.join(base_dir, value))
@@ -292,23 +296,19 @@ def basic_validate_config(
         # 2. Validate variableFilter format
         variable_filter = config.get("simulation", {}).get("variableFilter")
         if variable_filter:
-            # Regex for a valid Modelica identifier (simplified)
-            ident = r"[a-zA-Z_][a-zA-Z0-9_]*"
             # Regex for a valid substring in the filter:
             # - time
             # - class.name
             # - class.name[index]
             # - class.name[start-end]
-            valid_substring_re = re.compile(
-                rf"^time$|^{ident}\.{ident}(\[\d+(-\d+)?\])?$"
-            )
+            # - regex patterns like .* or \.
+            valid_substring_re = re.compile(r"^.+$")
 
             substrings = variable_filter.split("|")
             for sub in substrings:
                 if not valid_substring_re.match(sub):
                     print(
-                        f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format. "
-                        f"Valid formats are 'time', 'classname.typename', 'classname.typename[1]', or 'classname.typename[1-5]'.",
+                        f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format.",
                         file=sys.stderr,
                     )
                     sys.exit(1)
@@ -522,21 +522,14 @@ def analysis_validate_config(
     # 2. Validate variableFilter format
     variable_filter = config.get("simulation", {}).get("variableFilter")
     if variable_filter:
-        # Regex for a valid Modelica identifier (simplified)
-        ident = r"[a-zA-Z_][a-zA-Z0-9_]*"
-        # Regex for a valid substring in the filter:
-        # - time
-        # - class.name
-        # - class.name[index]
-        # - class.name[start-end]
-        valid_substring_re = re.compile(rf"^time$|^{ident}\.{ident}(\[\d+(-\d+)?\])?$")
+
+        valid_substring_re = re.compile(r"^.+$")
 
         substrings = variable_filter.split("|")
         for sub in substrings:
             if not valid_substring_re.match(sub):
                 print(
-                    f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format. "
-                    f"Valid formats are 'time', 'classname.typename', 'classname.typename[1]', or 'classname.typename[1-5]'.",
+                    f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format.",
                     file=sys.stderr,
                 )
                 sys.exit(1)

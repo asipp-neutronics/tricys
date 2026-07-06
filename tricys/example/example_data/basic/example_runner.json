@@ -43,6 +43,12 @@
       "description": "Blanket capacity_max × rate_max 4×4 参数扫描（含 1e9 等价于无约束基线）",
       "path": "7_blanket_constraints",
       "config": "blanket_constraints_sweep.json"
+    },
+    {
+      "name": "BASIC - 全厂质量守恒误差离线审计",
+      "description": "全厂质量守恒误差离线审计",
+      "path": "8_offline_auditor",
+      "config": "offline_auditor.json"
     }
   ]
 }
