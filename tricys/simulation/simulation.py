@@ -310,6 +310,7 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
                 df.drop_duplicates(subset=["time"], keep="last", inplace=True)
                 df.dropna(subset=["time"], inplace=True)
                 df.to_csv(primary_result_filename, index=False)
+
             except Exception as e:
                 logger.warning(
                     "Failed to clean primary result file",
@@ -716,6 +717,7 @@ def _process_h5_result(
     job_id: int,
     params: dict,
     res_path: str,
+    config: dict,
     metrics_definition: dict = None,
     filter_schema: List[Dict[str, Any]] | None = None,
 ):
@@ -740,7 +742,13 @@ def _process_h5_result(
                 )
                 # Cleanup immediately to save disk space
                 job_dir = os.path.dirname(res_path)
-                if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
+                keep_temp = config.get("simulation", {}).get("keep_temp_files", False)
+                if (
+                    not keep_temp
+                    and os.path.exists(job_dir)
+                    and _should_cleanup_job_dir(job_dir, config)
+                    and config.get("co_simulation", {}).get("engine") != "online_oms"
+                ):
                     _cleanup_job_dir(job_dir, job_id)
                 return
 
@@ -751,8 +759,8 @@ def _process_h5_result(
             if col != "job_id" and pd.api.types.is_numeric_dtype(df[col]):
                 df[col] = df[col].astype(float)
 
-        # Use 'append' with data_columns=True for queryability if needed
-        store.append("results", df, index=False, data_columns=True)
+        # Use 'append' with data_columns=["job_id"] for queryability to avoid 512 column limit
+        store.append("results", df, index=False, data_columns=["job_id"])
 
         # Calculate and Save Summary Metrics
         if metrics_definition:
@@ -781,11 +789,11 @@ def _process_h5_result(
                 )
 
         param_df = pd.DataFrame([params])
-        param_df["job_id"] = job_id
+        param_df["id"] = job_id
 
-        # Force all numeric columns (except job_id) to float to avoid HDF5 schema conflicts
+        # Force all numeric columns (except id) to float to avoid HDF5 schema conflicts
         for col in param_df.columns:
-            if col != "job_id" and pd.api.types.is_numeric_dtype(param_df[col]):
+            if col != "id" and pd.api.types.is_numeric_dtype(param_df[col]):
                 param_df[col] = param_df[col].astype(float)
 
         # Force object dtype only for string/object columns to avoid HDF5 issues with StringDtype
@@ -796,10 +804,29 @@ def _process_h5_result(
 
         # Cleanup immediately to save disk space
         job_dir = os.path.dirname(res_path)
-        if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
+        keep_temp = config.get("simulation", {}).get("keep_temp_files", False)
+        if (
+            not keep_temp
+            and os.path.exists(job_dir)
+            and _should_cleanup_job_dir(job_dir, config)
+            and config.get("co_simulation", {}).get("engine") != "online_oms"
+        ):
             _cleanup_job_dir(job_dir, job_id)
     except Exception as e:
         logger.error(f"Failed to process HDF5 result for job {job_id}: {e}")
+
+
+def _should_cleanup_job_dir(job_dir: str, config: dict) -> bool:
+    temp_dir = os.path.abspath(config["paths"].get("temp_dir", "temp"))
+    normalized_job_dir = os.path.abspath(job_dir)
+
+    if "job_" not in os.path.basename(normalized_job_dir):
+        return False
+
+    try:
+        return os.path.commonpath([normalized_job_dir, temp_dir]) == temp_dir
+    except ValueError:
+        return False
 
 
 def _cleanup_job_dir(job_dir: str, job_id: int, retries: int = 8, delay: float = 0.5):
@@ -1169,12 +1196,18 @@ def _run_fast_subprocess_job(
     override_pairs = [f"{k}={v}" for k, v in job_params.items()]
     override_pairs.append(f"stopTime={sim_config['stop_time']}")
     override_pairs.append(f"stepSize={sim_config['step_size']}")
-    override_pairs.append("outputFormat=csv")
-    if variable_filter:
-        override_pairs.append(f"variableFilter={variable_filter}")
     override_str = ",".join(override_pairs)
 
-    cmd = [run_exe_path, "-override", override_str, "-r", result_filename]
+    cmd = [
+        run_exe_path,
+        "-override",
+        override_str,
+        "-r",
+        result_filename,
+        "-outputFormat=csv",
+    ]
+    if variable_filter:
+        cmd.append(f"-variableFilter={variable_filter}")
 
     env = os.environ.copy()
     if sys.platform == "win32":
@@ -1365,6 +1398,7 @@ def run_simulation(config: Dict[str, Any], export_csv: bool = False) -> None:
                                 job_id,
                                 job_p,
                                 result_path,
+                                config,
                                 metrics_definition,
                                 filter_schema=filter_schema,
                             )
@@ -1395,6 +1429,7 @@ def run_simulation(config: Dict[str, Any], export_csv: bool = False) -> None:
                                 job_id,
                                 job_params,
                                 result_path,
+                                config,
                                 metrics_definition,
                                 filter_schema=filter_schema,
                             )
@@ -1410,6 +1445,7 @@ def run_simulation(config: Dict[str, Any], export_csv: bool = False) -> None:
                             idx + 1,
                             params,
                             res_path,
+                            config,
                             metrics_definition,
                             filter_schema=filter_schema,
                         )
@@ -1438,6 +1474,33 @@ def run_simulation(config: Dict[str, Any], export_csv: bool = False) -> None:
     run_post_processing(
         config, None, post_processing_output_dir, results_file_path=hdf_path
     )
+
+    # Auditor Phase
+    auditor_config_dict = config.get("auditor", {})
+    if auditor_config_dict.get("enabled", False):
+        logger.info("Starting offline mass balance audit...")
+        try:
+            from tricys.auditor.offline import (
+                parse_auditor_config,
+                perform_offline_audit,
+            )
+
+            auditor_cfg = parse_auditor_config(config)
+            audit_result = perform_offline_audit(hdf_path, auditor_cfg)
+
+            report_path = os.path.join(results_dir, "auditor_report.json")
+            with open(report_path, "w", encoding="utf-8") as f:
+                json.dump(audit_result, f, indent=4)
+
+            if audit_result.get("status") == "success":
+                err_val = audit_result.get("mass_balance_error", 0.0)
+                logger.info(f"Mass balance audit completed. Error: {err_val:.6e} g")
+                logger.info(f"Auditor report saved to {report_path}")
+            else:
+                logger.warning(f"Auditor returned error: {audit_result.get('error')}")
+
+        except Exception as e:
+            logger.error(f"Failed to run offline auditor: {e}", exc_info=True)
 
     # Cleanup
     if not sim_config.get("keep_temp_files", True):

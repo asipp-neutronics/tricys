@@ -31,6 +31,10 @@ model Plasma
   parameter Real to_FW_fraction[5] = {1e-4, 1e-4, 1e-4, 1e-1, 1e-2} "流向第一壁的比例，无单位";
   parameter Real He_yield = 4.002602 / 3.01693 "氦产额 (每单位质量氚+氘生成的氦质量，无单位)";
 
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
+    Real cumulative_burn[5](start = {0, 0, 0, 0, 0}) "累计燃烧";
 equation
   // 计算氦生成（仅在脉冲开启时生成）
   He_generated = if pulseInput > 0 then He_yield * pulseInput else 0;
@@ -49,7 +53,10 @@ equation
     to_FW[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * to_FW_fraction[i];
     to_Div[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * to_Div_fraction[i];
     to_Pump[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * (1 - to_Div_fraction[i] - to_FW_fraction[i] - fb * nf);
-  end for;
+      decay_rate[i] = 0;
+      leak_rate[i] = 0;
+      der(cumulative_burn[i]) = from_Fueling_System[i] * fb * nf;
+    end for;
 
 annotation(
     Diagram,
