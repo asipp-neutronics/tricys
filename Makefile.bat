@@ -64,7 +64,7 @@ goto :eof
 
 :install
 echo --^> Installing project in editable mode...
-call pip install -e .
+call pip install -e . || exit /b 1
 call omc ./script/modelica_install/install.mos
 echo --^> Installation complete.
 goto :eof
@@ -72,7 +72,7 @@ goto :eof
 
 :dev-install
 echo --^> Installing project with development dependencies...
-call pip install -e ".[dev]"
+call pip install -e ".[dev]" || exit /b 1
 call pre-commit install
 call omc ./script/modelica_install/install.mos
 echo --^> Development installation complete.
@@ -80,7 +80,7 @@ goto :eof
 
 :docs-install
 echo --^> Installing documentation dependencies...
-call pip install -e ".[docs]"
+call pip install -e ".[docs]" || exit /b 1
 echo --^> Documentation dependencies installed.
 goto :eof
 
@@ -96,7 +96,7 @@ goto :eof
 
 :install-all
 echo --^> Installing project with ALL dependencies...
-call pip install -e ".[dev,docs]"
+call pip install -e ".[dev,docs]" || exit /b 1
 call pre-commit install
 call omc ./script/modelica_install/install.mos
 echo --^> Full installation complete.

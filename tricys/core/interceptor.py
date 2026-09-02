@@ -80,14 +80,14 @@ def _generate_interceptor(
             equation_code += (
                 f"  // Element-wise connection for {port_name}\n"
                 f"  for i in 1:{port['dim']} loop\n"
-                f"    final_{port_name}[i] = if columns_{port_name}[i+1] <> 1 then {table_name}.y[i] else physical_{port_name}[i];\n"
+                f"    final_{port_name}[i] = if columns_{port_name}[i+1] <> 1 then {table_name}.y[i+1] else physical_{port_name}[i];\n"
                 f"  end for;\n"
             )
         else:
             # Scalar port: Use a simpler if-statement
             equation_code += (
                 f"  // Connection for {port_name}\n"
-                f"  final_{port_name} = if columns_{port_name}[2] <> 1 then {table_name}.y[1] else physical_{port_name};\n"
+                f"  final_{port_name} = if columns_{port_name}[2] <> 1 then {table_name}.y[2] else physical_{port_name};\n"
             )
 
         # Assemble the final model string
@@ -184,13 +184,16 @@ def _integrate_interceptor_single_file(
             for comp in components:
                 if comp[0] == "Modelica.Blocks.Interfaces.RealOutput":
                     dim = int(comp[11][0]) if comp[11] else 1
+                    default_col = column_config.get(comp[1], "")
+                    if not default_col:
+                        default_col = f"{{{','.join(['1'] * (dim + 1))}}}"
                     output_ports.append(
                         {
                             "name": comp[1],
                             "type": comp[0],
                             "dim": dim,
                             "comment": comp[2],
-                            "default_column": column_config.get(comp[1], ""),
+                            "default_column": default_col,
                         }
                     )
 
@@ -1310,12 +1313,12 @@ def _generate_replaced_model_code(
             new_code_parts.append(f"  // Vector port: {port_name}[{dim}]")
             new_code_parts.append(f"  for i in 1:{dim} loop")
             new_code_parts.append(
-                f"    {port_name}[i] = if columns_{port_name}[i+1] == 1 then 0.0 else {table_name}.y[i];"
+                f"    {port_name}[i] = if columns_{port_name}[i+1] == 1 then 0.0 else {table_name}.y[i+1];"
             )
             new_code_parts.append("  end for;")
-        else:
+        if port_info["dim"] == 1:
             new_code_parts.append(
-                f"  {port_name} = if columns_{port_name}[2] == 1 then 0.0 else {table_name}.y[1];"
+                f"  {port_name} = if columns_{port_name}[2] == 1 then 0.0 else {table_name}.y[2];"
             )
 
     new_code_parts.append("")

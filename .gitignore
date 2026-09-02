@@ -58,4 +58,6 @@ tricys_visual/*
 tricys_goview/*
 
 # Local runtime artifacts created inside submodules
-tricys_backend/hdf5_contexts/
+tricys_backend/hdf5_contexts/paper/
+
+paper/

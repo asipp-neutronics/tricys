@@ -38,6 +38,10 @@ def analyze_rise_dip(results_file_path: str, output_dir: str, **kwargs) -> None:
                 return
 
             jobs_df = store.select(jobs_key)
+            if "job_id" not in jobs_df.columns:
+                jobs_df = jobs_df.reset_index()
+            if "job_id" not in jobs_df.columns:
+                jobs_df["job_id"] = jobs_df.index + 1
             jobs_map = jobs_df.set_index("job_id").to_dict(orient="index")
             job_ids = sorted(jobs_map.keys())
 
