@@ -45,6 +45,33 @@ from tricys.utils.log_utils import setup_logging
 # Standard logger setup
 logger = logging.getLogger(__name__)
 
+# Modelica's built-in `time` is in seconds, and the CFEDR family models are
+# second-native. TRICYS configs (simulation.stop_time / step_size) are authored
+# and documented in HOURS; this factor converts them to seconds before they are
+# handed to OMC.
+HOURS_TO_SECONDS = 3600.0
+
+
+def _sim_time_to_seconds(sim_config: dict) -> dict:
+    """Convert hour-valued simulation time fields to seconds, in place.
+
+    TRICYS configs express ``stop_time`` / ``step_size`` in hours (see
+    docs/en/guides/tricys_basic/basic_configuration.md). OMC and the CFEDR
+    models operate on seconds, so the framework converts here — user-facing
+    config semantics stay hour-based (zero breakage for existing configs).
+
+    Idempotent: a private ``_time_unit`` marker records that the conversion has
+    already been applied, so repeated calls (there are several entry points that
+    all read ``config["simulation"]``) do not multiply by 3600 more than once.
+    """
+    if sim_config.get("_time_unit") == "second":
+        return sim_config
+    for key in ("stop_time", "step_size"):
+        if key in sim_config and sim_config[key] is not None:
+            sim_config[key] = float(sim_config[key]) * HOURS_TO_SECONDS
+    sim_config["_time_unit"] = "second"
+    return sim_config
+
 
 def _resolve_built_model_paths(build_result: list, build_dir: str) -> tuple[str, str]:
     executable_artifact = str(
@@ -96,7 +123,7 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
         stage 2 runs with interceptor model.
     """
     paths_config = config["paths"]
-    sim_config = config["simulation"]
+    sim_config = _sim_time_to_seconds(config["simulation"])
 
     base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
     # The temp_dir from the config is now the self-contained workspace's temp folder.
@@ -527,7 +554,7 @@ def run_sequential_sweep(
         More efficient than parallel mode for small job counts.
     """
     paths_config = config["paths"]
-    sim_config = config["simulation"]
+    sim_config = _sim_time_to_seconds(config["simulation"])
 
     base_temp_dir = os.path.abspath(paths_config.get("temp_dir", "temp"))
     # The temp_dir is now the self-contained workspace's temp folder.
@@ -1014,7 +1041,7 @@ def _build_model_only(config: dict) -> tuple[str, str, str]:
     Builds the model once and returns paths to the executable and init xml.
     """
     paths_config = config["paths"]
-    sim_config = config["simulation"]
+    sim_config = _sim_time_to_seconds(config["simulation"])
 
     # Use a dedicated build directory to keep things clean
     build_dir = os.path.abspath(
@@ -1213,7 +1240,7 @@ def run_simulation(config: Dict[str, Any], export_csv: bool = False) -> None:
     os.makedirs(results_dir, exist_ok=True)
     os.makedirs(temp_dir, exist_ok=True)
 
-    sim_config = config["simulation"]
+    sim_config = _sim_time_to_seconds(config["simulation"])
     foc_config = config.get("foc") or {}
     foc_path = foc_config.get("foc_path")
     foc_component = foc_config.get("foc_component")

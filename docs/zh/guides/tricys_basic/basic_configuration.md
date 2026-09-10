@@ -93,12 +93,12 @@ TRICYS 的所有仿真任务都由一个 JSON 配置文件驱动。这个文件�
 
 #### `stop_time` (浮点数, 必填)
 
-- **描述**: 仿真的总时长（单位：秒）。仿真将从 `0` 时刻运行到 `stop_time`。
+- **描述**: 仿真的总时长。仿真将从 `0` 时刻运行到 `stop_time`。
 - **单位**: 小时
 
 #### `step_size` (浮点数, 必填)
 
-- **描述**: 仿真的时间步长（单位：秒）。这也是结果输出的时间间隔。
+- **描述**: 仿真的时间步长。这也是结果输出的时间间隔。
 - **权衡**: 
   - 较小的步长：精度更高，但仿真时间更长，输出文件更大
   - 较大的步长：速度更快，但可能丢失快速变化的细节
@@ -174,8 +174,8 @@ TRICYS 的所有仿真任务都由一个 JSON 配置文件驱动。这个文件�
     "simulation": {
         "model_name": "YourModel.Name",
         "variableFilter": "time|key_var1|key_var2",
-        "stop_time": 86400.0,
-        "step_size": 10.0,
+        "stop_time": 24.0,
+        "step_size": 0.5,
         "keep_temp_files": false
     },
     "logging": {

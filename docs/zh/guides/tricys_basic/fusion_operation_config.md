@@ -67,9 +67,9 @@ TIME_CONVERSION <source_unit>_to_<target_unit>
 
 常见写法如下：
 
-- `TIME_UNIT hour`：仅声明当前 FOC 中的时间按小时书写，本身不触发转换
 - 当 `TIME_UNIT` 和 `TIME_CONVERSION` 都未出现时，默认 FOC 时间单位为秒，且不做转换
 - `TIME_UNIT hour`：仅声明当前 FOC 中的时间按小时书写，本身不触发转换
+- FOC 的**有效**时间基准（经过 `TIME_CONVERSION` 之后）必须是**秒**——CFEDR 系列模型的时间轴 `time` 以秒为单位；若有效基准为小时/天/年（或裸数字因子），程序会发出告警，且调度会以错误速度推进
 - `TIME_CONVERSION NONE`：不做额外时间换算，直接使用 FOC 中写入的时间值
 - `TIME_CONVERSION 3600`：把后续时间统一乘以 `3600`
 - `TIME_CONVERSION second_to_hour`：把以秒写入的 FOC 时间转换为模型所需的小时单位，`hour_to_second` 等反向命名转换同样支持
@@ -90,12 +90,14 @@ TIME_CONVERSION hour_to_second
 PULSE 1500 0.9 0.1 300
 ```
 
-示例 1b：FOC 按小时编写，但仅声明单位、不做转换
+示例 1b：FOC 按小时编写，但仅声明单位、不做转换 —— 对秒基准模型是**错误用法**
 
 ```text
 TIME_UNIT hour
 PULSE 1500 0.9 0.1 300
 ```
+
+`TIME_UNIT` 只声明单位，**不触发转换**。CFEDR 系列模型的时间轴 `time` 以**秒**为单位，因此停留在小时的调度会快约 3600 倍。当 FOC 的有效时间基准不是秒时 TRICYS 会发出告警；按示例 1 加上 `TIME_CONVERSION hour_to_second` 即可修正。仅当你写入的时间本来就以模型时间基准（秒）为单位时，才使用这种只声明单位的写法。
 
 示例 2：FOC 按秒编写，但模型内部使用小时
 

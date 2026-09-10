@@ -174,8 +174,8 @@ This template is suitable for formal, long-duration simulations. It saves only k
     "simulation": {
         "model_name": "YourModel.Name",
         "variableFilter": "time|key_var1|key_var2",
-        "stop_time": 86400.0,
-        "step_size": 10.0,
+        "stop_time": 24.0,
+        "step_size": 0.5,
         "keep_temp_files": false
     },
     "logging": {
