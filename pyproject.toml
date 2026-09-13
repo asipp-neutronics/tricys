@@ -21,7 +21,6 @@ dependencies = [
     "numpy",
     "matplotlib",
     "seaborn",
-    "pathlib",
     "OMPython >= 4.0",
     "openai",
     "python-dotenv",
