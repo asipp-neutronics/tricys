@@ -1096,6 +1096,10 @@ def _run_fast_subprocess_job(
     """
     Executes a single simulation job using the pre-compiled executable.
     """
+    # Enforce the seconds-native invariant locally: this is the choke point that
+    # emits ``stopTime=`` to the model, and it may be reached from paths that did
+    # not pre-convert the config. ``_sim_time_to_seconds`` is idempotent.
+    sim_config = _sim_time_to_seconds(sim_config)
     job_workspace = os.path.join(base_temp_dir, f"job_{job_id}")
     os.makedirs(job_workspace, exist_ok=True)
 
