@@ -12,7 +12,12 @@ These tests pin:
 3. ``None`` / missing-key safety.
 """
 
-from tricys.simulation.simulation import HOURS_TO_SECONDS, _sim_time_to_seconds
+import pytest
+
+from tricys.simulation.simulation import (
+    HOURS_TO_SECONDS,
+    _sim_time_to_seconds,
+)
 
 
 def test_hours_to_seconds_factor():
@@ -49,3 +54,56 @@ def test_missing_field_is_safe():
     sim = {"step_size": 10.0}
     _sim_time_to_seconds(sim)
     assert sim == {"step_size": 36_000.0, "_time_unit": "second"}
+
+
+# --------------------------------------------------------------------------- #
+# simulation.time_base switching
+# --------------------------------------------------------------------------- #
+
+def test_time_base_hour_passes_values_through():
+    from tricys.simulation.simulation import _sim_time_to_seconds
+
+    sim = {"stop_time": 1200.0, "step_size": 0.5, "time_base": "hour"}
+    _sim_time_to_seconds(sim)
+    assert sim["stop_time"] == 1200.0
+    assert sim["step_size"] == 0.5
+    assert sim["_time_unit"] == "hour"
+
+
+def test_time_base_default_is_second():
+    from tricys.simulation.simulation import _sim_time_to_seconds
+
+    sim = {"stop_time": 1200.0}
+    _sim_time_to_seconds(sim)
+    assert sim["stop_time"] == 4_320_000.0
+    assert sim["_time_unit"] == "second"
+
+
+def test_time_base_invalid_raises():
+    from tricys.simulation.simulation import _sim_time_to_seconds
+
+    with pytest.raises(ValueError, match="time_base"):
+        _sim_time_to_seconds({"stop_time": 1.0, "time_base": "fortnight"})
+
+
+# --------------------------------------------------------------------------- #
+# variableFilter normalisation (OMPython >= 4 full-name regex)
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("time", "time"),
+        ("time|sds.I[1]", r"time|sds\.I\[1\]"),
+        ("time|sds.I[1-5]", r"time|sds\.I\[[1-5]\]"),
+        (
+            "time|sds.I[1]|blanket.I[1-5]",
+            r"time|sds\.I\[1\]|blanket\.I\[[1-5]\]",
+        ),
+        ("time|.*", "time|.*"),
+    ],
+)
+def test_normalise_variable_filter(raw, expected):
+    from tricys.simulation.simulation import normalise_variable_filter
+
+    assert normalise_variable_filter(raw) == expected

@@ -1,5 +1,6 @@
 within example_model;
 model SDS
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 输入端口：来自I_ISS的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_I_ISS[5] "来自I_ISS 的输入" annotation(
@@ -28,7 +29,7 @@ model SDS
 equation
   for i in 1:5 loop
     // 只对 T, D, H 进行计算
-    der(I[i]) = from_I_ISS[i] + from_O_ISS[i] + from_TEP_FEP[i] - (1 + nonradio_loss[i]) * to_FS[i]  - decay_loss[i] * I[i];
+    der(I[i]) = (from_I_ISS[i] + from_O_ISS[i] + from_TEP_FEP[i] - (1 + nonradio_loss[i]) * to_FS[i]  - decay_loss[i] * I[i]) / time_scale;
   end for;
 
 annotation(

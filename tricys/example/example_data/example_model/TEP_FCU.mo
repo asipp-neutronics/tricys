@@ -1,5 +1,6 @@
 within example_model;
 model TEP_FCU
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 输入端口：来自TEP_IP的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_TEP_IP[5] "来自TEP_IP的输入" annotation(
@@ -23,7 +24,7 @@ model TEP_FCU
 equation
   // 计算每个维度流体的动态变化
   for i in 1:5 loop
-    der(I[i]) = from_TEP_IP[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = (from_TEP_IP[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
     // 输出流分配到I_ISS
     outflow[i] = I[i]/T;
     to_I_ISS[i] = I[i] / T;

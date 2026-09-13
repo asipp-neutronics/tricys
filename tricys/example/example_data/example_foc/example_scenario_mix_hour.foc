@@ -1,0 +1,19 @@
+# Mixed operating scenario (hour-based time axis)
+# Same schedule as example_scenario_mix.foc, but durations stay in HOURS.
+# Pair this with simulation.time_base="hour" and time_scale=1.
+TIME_UNIT hour
+
+# First, a short pulse cycle (power 1500 MW, burn 0.9 h, dwell 0.1 h, 300 cycles)
+PULSE 1500 0.9 0.1 300
+
+# Long shutdown for 100 h
+DWELL 100
+
+# Then execute a schedule block (mixed long and short operations)
+BEGIN_SCHEDULE
+  PULSE 2000 0.9 0.1 100
+  POWER 1000
+  BURN 200
+  DWELL 100
+END_SCHEDULE
+REPEAT 2

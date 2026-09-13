@@ -6,8 +6,8 @@ seconds. These tests pin the contract that:
 1. ``parse_foc_content_with_unit`` / ``parse_foc_file_with_unit`` report the
    *effective* time unit of the parsed durations (after any explicit
    ``TIME_CONVERSION``), not merely the declared ``TIME_UNIT``.
-2. ``_warn_if_not_second_based`` emits exactly one warning when the effective
-   base is not seconds, and stays silent for a seconds-based FOC.
+2. ``_warn_on_time_base_mismatch`` emits exactly one warning when the effective
+   base differs from the model time base, and stays silent when they agree.
 3. The public 2-tuple API (``parse_foc_content`` / ``parse_foc_file``) is
    unchanged.
 4. The shipped example FOC resolves to seconds and stays consistent with its
@@ -105,36 +105,49 @@ class _CaptureHandler(logging.Handler):
         self.records.append(record)
 
 
-def _capture_warnings(unit, foc_path="/tmp/unit.foc"):
+def _capture_warnings(unit, model_time_base="second", foc_path="/tmp/unit.foc"):
     handler = _CaptureHandler()
     foc.logger.addHandler(handler)
     previous_level = foc.logger.level
     foc.logger.setLevel(logging.WARNING)
     try:
-        foc._warn_if_not_second_based(unit, foc_path)
+        foc._warn_on_time_base_mismatch(unit, model_time_base, foc_path)
     finally:
         foc.logger.removeHandler(handler)
         foc.logger.setLevel(previous_level)
     return handler.records
 
 
-@pytest.mark.parametrize("unit", ["second"])
-def test_no_warning_for_second_base(unit):
-    assert _capture_warnings(unit) == []
+@pytest.mark.parametrize(
+    ("unit", "model_time_base"),
+    [("second", "second"), ("hour", "hour")],
+)
+def test_no_warning_when_base_matches_model(unit, model_time_base):
+    assert _capture_warnings(unit, model_time_base) == []
 
 
-@pytest.mark.parametrize("unit", ["hour", "day", "week", "year", "scaled"])
-def test_warning_for_non_second_base(unit):
-    records = _capture_warnings(unit)
+@pytest.mark.parametrize(
+    ("unit", "model_time_base"),
+    [
+        ("hour", "second"),
+        ("day", "second"),
+        ("week", "second"),
+        ("year", "second"),
+        ("scaled", "second"),
+        ("second", "hour"),
+    ],
+)
+def test_warning_on_time_base_mismatch(unit, model_time_base):
+    records = _capture_warnings(unit, model_time_base)
     assert len(records) == 1
     record = records[0]
     assert record.__dict__.get("effective_time_unit") == unit
-    assert "second" in record.getMessage()
-    assert unit in record.getMessage()
+    assert record.__dict__.get("model_time_base") == model_time_base
+    assert model_time_base in record.getMessage()
 
 
 def test_warning_message_suggests_named_conversion_for_known_unit():
-    record = _capture_warnings("hour")[0]
+    record = _capture_warnings("hour", "second")[0]
     assert "hour_to_second" in record.getMessage()
 
 

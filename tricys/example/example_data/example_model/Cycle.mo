@@ -1,7 +1,8 @@
 within example_model;
 model Cycle
+  inner parameter Real time_scale = 3600 "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 实例化脉冲信号模块
-  Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 500, width = 100) annotation(
+  Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 500 * time_scale, width = 100) annotation(
     Placement(transformation(origin = {-120, -20}, extent = {{-60, 20}, {-40, 40}})));
   // 实例化 plasma 模型
   Plasma plasma annotation(

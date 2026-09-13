@@ -103,6 +103,16 @@ This section contains the core parameters required to run the simulation.
   - Smaller step size: higher accuracy, but longer simulation time and larger output files.
   - Larger step size: faster, but may miss fast-changing details.
 
+#### `time_base` (string, optional)
+
+- **Description**: The model's time base — how the model integrates Modelica's built-in `time`.
+- **Default**: `"second"`
+- **Values**:
+  - `"second"` — the model is *seconds-native* (like the CFEDR family, whose equations are divided by `3600`). The framework multiplies the hour-valued `stop_time` / `step_size` by `3600` before handing them to OMC.
+  - `"hour"` — a legacy *hour-native* model reads `time` as hours, so the values are passed through unchanged.
+
+`stop_time` / `step_size` are authored in **hours** in both cases. Use `"hour"` only for older models written before the seconds-native migration. The shipped example models expose a matching `time_scale` parameter (`1` for hour base, `3600` for second base), so one model source can be driven either way and cross-checked — see `tricys/example/example_data/basic/8_time_base_crosscheck/`.
+
 ---
 
 ## 3. Default Configuration Items

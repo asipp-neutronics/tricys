@@ -1,5 +1,6 @@
 within example_model;
 model WDS
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 输入端口：来自I_ISS的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_I_ISS[5] "来自I_ISS的输入" annotation(
@@ -36,10 +37,10 @@ equation
   for i in 1:5 loop
     // 根据储存量是否超过阈值，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_I_ISS[i] + from_CL[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i];
+      der(I[i]) = (from_I_ISS[i] + from_CL[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
       outflow[i] = (1 - threshold / I_total) * I[i] / T;
     else
-      der(I[i]) = from_I_ISS[i] + from_CL[i] -  nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
+      der(I[i]) = (from_I_ISS[i] + from_CL[i] -  nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i]) / time_scale;
       outflow[i] = 0;
     end if;
     // 输出流分配到O_ISS

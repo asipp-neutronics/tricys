@@ -1,5 +1,6 @@
 within example_model;
 model FW
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 输入端口：来自plasma（5维）
   Modelica.Blocks.Interfaces.RealInput from_plasma[5] annotation(
@@ -33,7 +34,7 @@ model FW
 equation
   // 计算每种物质的动态变化和输出
   for i in 1:5 loop
-    der(I[i]) = from_plasma[i] + from_CL[i] + from_CPS[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = (from_plasma[i] + from_CL[i] + from_CPS[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
     outflow[i] = I[i] / T;
     to_CL[i] = outflow[i];
   end for;

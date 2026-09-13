@@ -1,9 +1,10 @@
 within example_model;
 model Cycle_Constrained
   "系统顶层模型：使用 ConstrainedBuffer 替换 Blanket，验证容量/速率约束"
+  inner parameter Real time_scale = 3600 "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 实例化脉冲信号模块
-  Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 500, width = 100) annotation(
+  Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 500 * time_scale, width = 100) annotation(
     Placement(transformation(origin = {-120, -20}, extent = {{-60, 20}, {-40, 40}})));
 
   // 氚增殖源（pulseSource * TBR → from_Upstream[1]）

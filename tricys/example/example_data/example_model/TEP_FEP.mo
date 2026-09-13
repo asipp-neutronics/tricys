@@ -1,5 +1,6 @@
 within example_model;
 model TEP_FEP
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 输入端口：来自Pump_System的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_pump[5] "来自Pump_System的输入" annotation(
@@ -30,7 +31,7 @@ model TEP_FEP
 equation
   // 计算每个维度流体的动态变化
   for i in 1:5 loop
-    der(I[i]) = from_pump[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = (from_pump[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
     outflow[i] = I[i]/T;
     // 输出流分配到SDS和TEP_IP
     to_SDS[i] = outflow[i] * to_SDS_Fraction[i];

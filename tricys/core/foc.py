@@ -183,32 +183,37 @@ def _resolve_effective_time_unit(
     return "scaled"
 
 
-def _warn_if_not_second_based(effective_unit, foc_path):
-    """Emit a loud warning when a FOC's time base is not seconds.
+def _warn_on_time_base_mismatch(effective_unit, model_time_base, foc_path):
+    """Warn when the FOC's effective time base differs from the model's.
 
-    Second-native models (CFEDR family) advance ``time`` in seconds, so a FOC
-    whose durations are still in hours/days/years — or in an unknown scaled unit
-    — would produce a schedule off by a constant factor. The conversion contract
-    is explicit-only, so this is surfaced rather than silently rewritten.
+    A mismatch means the embedded schedule advances at the wrong rate: an
+    hour-based FOC (e.g. ``TIME_UNIT hour`` with no conversion) driving a
+    seconds-native model runs ~3600x too fast, and vice versa. The conversion
+    contract is explicit-only, so this is surfaced rather than silently
+    rewritten.
     """
-    if effective_unit == "second":
+    if effective_unit == model_time_base:
         return
     if effective_unit == "scaled":
         hint = (
-            "The FOC uses a bare numeric TIME_CONVERSION factor, so its time scale is "
-            "user-defined and cannot be matched to the seconds-based model automatically."
+            "The FOC uses a bare numeric TIME_CONVERSION factor, so its time scale "
+            "is user-defined and cannot be matched to the %s-based model "
+            "automatically." % model_time_base
         )
     else:
         hint = (
-            "Add 'TIME_CONVERSION %s_to_second' (or express the schedule in seconds) "
-            "to keep it aligned with the seconds-based model." % effective_unit
+            "Add 'TIME_CONVERSION %s_to_%s' (or express the schedule in %ss) to "
+            "keep it aligned with the %s-based model."
+            % (effective_unit, model_time_base, model_time_base, model_time_base)
         )
     logger.warning(
-        "FOC schedule time base is %r but the model time axis is in seconds "
-        "(effective_time_unit=%s). %s" % (effective_unit, effective_unit, hint),
+        "FOC schedule time base is %r but the model time base is %r "
+        "(effective_time_unit=%s). %s"
+        % (effective_unit, model_time_base, effective_unit, hint),
         extra={
             "foc_path": str(foc_path),
             "effective_time_unit": effective_unit,
+            "model_time_base": model_time_base,
         },
     )
 
@@ -880,6 +885,7 @@ def prepare_foc_simulation_package(
     workspace_dir,
     strategy="table",
     foc_component=None,
+    model_time_base="second",
 ):
     package_path = Path(package_path).resolve()
     foc_path = Path(foc_path).resolve()
@@ -896,7 +902,7 @@ def prepare_foc_simulation_package(
     workspace_dir.mkdir(parents=True, exist_ok=True)
 
     amplitudes, durations, effective_unit = parse_foc_file_with_unit(foc_path)
-    _warn_if_not_second_based(effective_unit, foc_path)
+    _warn_on_time_base_mismatch(effective_unit, model_time_base, foc_path)
 
     if package_path.is_file() and package_path.name != "package.mo":
         generated_package_path = workspace_dir / package_path.name

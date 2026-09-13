@@ -6,6 +6,7 @@ import json
 import logging
 import multiprocessing
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -52,24 +53,89 @@ logger = logging.getLogger(__name__)
 HOURS_TO_SECONDS = 3600.0
 
 
-def _sim_time_to_seconds(sim_config: dict) -> dict:
-    """Convert hour-valued simulation time fields to seconds, in place.
+SUPPORTED_TIME_BASES = ("second", "hour")
 
-    TRICYS configs express ``stop_time`` / ``step_size`` in hours (see
-    docs/en/guides/tricys_basic/basic_configuration.md). OMC and the CFEDR
-    models operate on seconds, so the framework converts here — user-facing
-    config semantics stay hour-based (zero breakage for existing configs).
 
-    Idempotent: a private ``_time_unit`` marker records that the conversion has
-    already been applied, so repeated calls (there are several entry points that
-    all read ``config["simulation"]``) do not multiply by 3600 more than once.
+_MODELICA_NAME_RE = re.compile(r"^[A-Za-z_][\w.]*(?:\[\d+(?:-\d+)?\])*$")
+
+
+def normalise_variable_filter(variable_filter: str) -> str:
+    """Convert a tricys ``variableFilter`` into a regex OMPython >= 4 understands.
+
+    The documented convention is a ``|``-separated list of Modelica variable
+    names (with ``[k]`` indices and ``[a-b]`` ranges) plus optional regex
+    fragments such as ``.*``. OMPython >= 4 matches ``variableFilter`` as a
+    *full-name regex*, so the literal name parts must be escaped:
+    ``sds.I[1]`` -> ``sds\\.I\\[1\\]`` and ``blanket.I[1-5]`` ->
+    ``blanket\\.I\\[[1-5]\\]``. Tokens that are not plain Modelica names are
+    passed through, so an explicit regex keeps working.
     """
-    if sim_config.get("_time_unit") == "second":
+    if not variable_filter:
+        return variable_filter
+    out = []
+    for token in variable_filter.split("|"):
+        if _MODELICA_NAME_RE.match(token):
+            token = re.sub(r"\[(\d+)-(\d+)\]", r"\\[[\1-\2]\\]", token)
+            token = re.sub(r"\[(\d+)\]", r"\\[\1\\]", token)
+            token = token.replace(".", r"\.")
+        out.append(token)
+    return "|".join(out)
+
+
+def build_modelica_system(package_path, model_name, variable_filter=None, is_regex=False):
+    """Create a ``ModelicaSystem`` whose variable filter works on OMPython >= 4.
+
+    OMPython >= 4 escapes ``variableFilter=`` passed to the constructor (treating
+    it as a literal), which silently drops every requested variable. Build the
+    system without a filter and set the (un-escaped) filter explicitly instead.
+
+    Args:
+        variable_filter: tricys filter string. Normalised unless ``is_regex``.
+        is_regex: True when the caller already supplies a ready regex.
+    """
+    mod = ModelicaSystem(
+        fileName=Path(package_path).as_posix(),
+        modelName=model_name,
+    )
+    if variable_filter:
+        flt = variable_filter if is_regex else normalise_variable_filter(variable_filter)
+        mod.set_variable_filter(flt, escape=False)
+    return mod
+
+
+def _sim_time_to_seconds(sim_config: dict) -> dict:
+    """Normalise hour-authored simulation time fields to the model's time base.
+
+    TRICYS configs express ``stop_time`` / ``step_size`` in HOURS (see
+    docs/en/guides/tricys_basic/basic_configuration.md). The model's time base is
+    selected with ``simulation.time_base``:
+
+    * ``"second"`` (default) — the model advances Modelica's built-in ``time`` in
+      seconds (the seconds-native CFEDR family), so hours are multiplied by 3600;
+    * ``"hour"`` — a legacy hour-native model reads ``time`` as hours, so the
+      values are passed through unchanged.
+
+    Either way the user-facing config semantics stay hour-based. This lets a
+    single model source (see the ``time_scale`` parameter used by the example
+    models) be driven in both bases and cross-checked.
+
+    Idempotent: a private ``_time_unit`` marker records the base already applied,
+    so repeated calls (several entry points read ``config["simulation"]``) do not
+    convert twice.
+    """
+    time_base = str(sim_config.get("time_base", "second")).strip().lower()
+    if time_base not in SUPPORTED_TIME_BASES:
+        raise ValueError(
+            f"Unsupported simulation.time_base {time_base!r}; "
+            f"expected one of {SUPPORTED_TIME_BASES}."
+        )
+    if sim_config.get("_time_unit") == time_base:
         return sim_config
+    factor = HOURS_TO_SECONDS if time_base == "second" else 1.0
     for key in ("stop_time", "step_size"):
         if key in sim_config and sim_config[key] is not None:
-            sim_config[key] = float(sim_config[key]) * HOURS_TO_SECONDS
-    sim_config["_time_unit"] = "second"
+            sim_config[key] = float(sim_config[key]) * factor
+    sim_config["_time_unit"] = time_base
     return sim_config
 
 
@@ -293,10 +359,8 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
 
         variable_filter = "time|" + "|".join(all_input_vars)
 
-        mod = ModelicaSystem(
-            fileName=Path(isolated_package_path).as_posix(),
-            modelName=model_name,
-            variableFilter=variable_filter,
+        mod = build_modelica_system(
+            isolated_package_path, model_name, variable_filter, is_regex=True
         )
         mod.setSimulationOptions(
             [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
@@ -452,10 +516,8 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
                 else Path(isolated_package_path).as_posix()
             )
 
-        verif_mod = ModelicaSystem(
-            fileName=final_model_file,
-            modelName=final_model_name,
-            variableFilter=verif_config,
+        verif_mod = build_modelica_system(
+            final_model_file, final_model_name, verif_config
         )
         verif_mod.setSimulationOptions(
             [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
@@ -576,10 +638,8 @@ def run_sequential_sweep(
         if not load_modelica_package(omc, Path(package_path).as_posix()):
             raise RuntimeError("Failed to load Modelica package for sequential sweep.")
 
-        mod = ModelicaSystem(
-            fileName=Path(package_path).as_posix(),
-            modelName=sim_config["model_name"],
-            variableFilter=sim_config["variableFilter"],
+        mod = build_modelica_system(
+            package_path, sim_config["model_name"], sim_config["variableFilter"]
         )
 
         mod.setSimulationOptions(
@@ -1258,6 +1318,7 @@ def run_simulation(config: Dict[str, Any], export_csv: bool = False) -> None:
             foc_workspace,
             strategy="table",
             foc_component=foc_component,
+            model_time_base=sim_config.get("time_base", "second"),
         )
         config["paths"]["package_path"] = foc_result["package_path"]
         if sim_config["stop_time"] < foc_result["schedule_duration"]:

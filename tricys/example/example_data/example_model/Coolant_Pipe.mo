@@ -1,5 +1,6 @@
 within example_model;
 model Coolant_Pipe
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
 
   // 输入端口：来自FW的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_FW[5] "来自FW的输入" annotation(
@@ -44,7 +45,7 @@ model Coolant_Pipe
 equation
   // 计算每种物质的动态变化和输出
   for i in 1:5 loop
-    der(I[i]) = from_DIV[i] + from_FW[i] + from_BZ[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = (from_DIV[i] + from_FW[i] + from_BZ[i] - (1 + nonradio_loss[i]) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
     outflow[i] = I[i] / T;
     to_WDS[i] = to_WDS_Fraction * outflow[i];
     to_CPS[i] = to_CPS_Fraction * (1 - to_WDS_Fraction) * outflow[i];
