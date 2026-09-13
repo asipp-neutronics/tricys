@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Union
@@ -82,20 +83,45 @@ def normalise_variable_filter(variable_filter: str) -> str:
     return "|".join(out)
 
 
+def stage_modelica_package(package_path):
+    """Stage a multi-file Modelica package in a correctly named directory.
+
+    OMPython >= 4 copies only the given file into a randomly named work
+    directory, which breaks multi-file packages: the sibling ``*.mo`` files are
+    lost and OMC requires the enclosing directory to match the package name.
+    Copy the whole package under a directory named after it and build there.
+
+    Single-file packages are returned unchanged (their name already matches).
+    """
+    file_path = Path(package_path)
+    if file_path.name != "package.mo" or not (file_path.parent / "package.order").exists():
+        return file_path, None
+    staging_root = Path(tempfile.mkdtemp(prefix="tricys_pkg_"))
+    staging = staging_root / file_path.parent.name
+    shutil.copytree(file_path.parent, staging)
+    return staging / "package.mo", staging
+
+
 def build_modelica_system(package_path, model_name, variable_filter=None, is_regex=False):
     """Create a ``ModelicaSystem`` whose variable filter works on OMPython >= 4.
 
-    OMPython >= 4 escapes ``variableFilter=`` passed to the constructor (treating
-    it as a literal), which silently drops every requested variable. Build the
-    system without a filter and set the (un-escaped) filter explicitly instead.
+    Two OMPython >= 4 behaviours are worked around:
+
+    * ``variableFilter=`` passed to the constructor is escaped (treated as a
+      literal), which silently drops every requested variable — build without a
+      filter and set the (un-escaped) filter explicitly instead;
+    * a multi-file package is copied file-by-file into a randomly named work
+      directory — stage the package first (see ``stage_modelica_package``).
 
     Args:
         variable_filter: tricys filter string. Normalised unless ``is_regex``.
         is_regex: True when the caller already supplies a ready regex.
     """
+    staged_path, build_dir = stage_modelica_package(package_path)
     mod = ModelicaSystem(
-        fileName=Path(package_path).as_posix(),
+        fileName=staged_path.as_posix(),
         modelName=model_name,
+        customBuildDirectory=build_dir.as_posix() if build_dir else None,
     )
     if variable_filter:
         flt = variable_filter if is_regex else normalise_variable_filter(variable_filter)
