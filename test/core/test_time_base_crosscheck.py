@@ -10,6 +10,7 @@ This test drives the same model source both ways via OMC and checks they agree.
 It is skipped when OpenModelica/OMPython is unavailable.
 """
 import os
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -17,8 +18,9 @@ import pytest
 
 pytest.importorskip("OMPython")
 
-_OMC = os.environ.get("OPENMODELICAHOME")
-pytestmark = pytest.mark.skipif(not _OMC, reason="OPENMODELICAHOME not set")
+# OMC can be located either via OPENMODELICAHOME or simply on PATH.
+_OMC_AVAILABLE = bool(os.environ.get("OPENMODELICAHOME")) or shutil.which("omc") is not None
+pytestmark = pytest.mark.skipif(not _OMC_AVAILABLE, reason="OpenModelica (omc) not available")
 
 _MODEL = (
     Path(__file__).resolve().parents[2]

@@ -1,0 +1,62 @@
+name: Time-base cross-check (hour vs second)
+
+# Regression gate: the hour-based and second-based time axes must describe the
+# same physical trajectory. Runs the OMC-backed cross-check test plus the
+# dedicated example (both configs + a comparison script); any deviation beyond
+# the tolerance fails the job.
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  crosscheck:
+    name: hour-base vs second-base agreement
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      # OpenModelica >= 1.26 is required: OMPython >= 4 passes simulation options
+      # as direct arguments (OpenModelica/OpenModelica#14813).
+      image: openmodelica/openmodelica:v1.27.0-ompython
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create non-root user (OMC refuses to run its server as root)
+        run: useradd -m appuser
+
+      - name: Install tricys and dependencies
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install -e ".[dev]"
+
+      - name: Cross-check gate
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          chown -R appuser "$WORKSPACE"
+          su -s /bin/bash - appuser -c "
+            set -euo pipefail
+            export HOME=/home/appuser
+            cd '$WORKSPACE'
+            omc script/modelica_install/install.mos
+            python3 -m pytest -v test/core/test_time_base_crosscheck.py
+            cd '$WORKSPACE/tricys/example/example_data/basic/8_time_base_crosscheck'
+            tricys -c time_base_second.json
+            tricys -c time_base_hour.json
+            python3 compare_time_bases.py
+          "
+
+      - name: Upload run logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: time-base-crosscheck-logs
+          path: tricys/example/example_data/basic/8_time_base_crosscheck/**/log/*.log
+          if-no-files-found: ignore

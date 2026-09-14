@@ -118,14 +118,24 @@ def build_modelica_system(package_path, model_name, variable_filter=None, is_reg
         is_regex: True when the caller already supplies a ready regex.
     """
     staged_path, build_dir = stage_modelica_package(package_path)
-    mod = ModelicaSystem(
-        fileName=staged_path.as_posix(),
-        modelName=model_name,
-        customBuildDirectory=build_dir.as_posix() if build_dir else None,
-    )
-    if variable_filter:
-        flt = variable_filter if is_regex else normalise_variable_filter(variable_filter)
-        mod.set_variable_filter(flt, escape=False)
+    kwargs = {
+        "fileName": staged_path.as_posix(),
+        "modelName": model_name,
+    }
+    if build_dir is not None:
+        kwargs["customBuildDirectory"] = build_dir.as_posix()
+
+    if hasattr(ModelicaSystem, "set_variable_filter"):
+        # OMPython >= 4: the constructor escapes variableFilter as a literal, so
+        # build first and apply the normalised (regex) filter explicitly.
+        mod = ModelicaSystem(**kwargs)
+        if variable_filter:
+            flt = variable_filter if is_regex else normalise_variable_filter(variable_filter)
+            mod.set_variable_filter(flt, escape=False)
+    else:
+        # OMPython < 4: the constructor takes the filter as-is.
+        kwargs["variableFilter"] = variable_filter or None
+        mod = ModelicaSystem(**kwargs)
     return mod
 
 
