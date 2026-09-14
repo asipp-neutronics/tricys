@@ -2,8 +2,7 @@ pandas
 numpy
 matplotlib
 seaborn
-pathlib
-OMPython == 3.6.0
+OMPython >= 4.1
 openai
 python-dotenv
 SALib

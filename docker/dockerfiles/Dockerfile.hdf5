@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM openmodelica/openmodelica:v1.24.5-ompython
+FROM openmodelica/openmodelica:v1.27.0-ompython
 
 USER root
 

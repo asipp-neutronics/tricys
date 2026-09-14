@@ -39,7 +39,7 @@ COPY tricys_goview/ ./
 
 RUN npm run build
 
-FROM openmodelica/openmodelica:v1.24.5-ompython AS base_om
+FROM openmodelica/openmodelica:v1.27.0-ompython AS base_om
 
 USER root
 
