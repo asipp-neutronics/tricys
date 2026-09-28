@@ -4,6 +4,7 @@
 Tricys Analysis Example Runner
 Specially designed for running tricys analysis command example configurations
 """
+
 import json
 import shutil
 import subprocess

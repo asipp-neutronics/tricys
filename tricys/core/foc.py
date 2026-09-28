@@ -40,6 +40,7 @@ def _build_table_pulse_block(output_names):
     return f"""block FOC_TablePulse
     "External FOC table driven pulse source"
     parameter Real conversion_factor = 6.3935e-3 "Tritium consumption rate for 1MW";
+    parameter Real amplitude_scale = 1.0 "Global pulse amplitude / power scale factor";
     parameter String fileName = "foc_table.txt" "Python generated table file path";
 
 {outputs}
@@ -55,7 +56,7 @@ protected
     Real source_value;
 
 equation
-    source_value = table.y[1] * conversion_factor;
+    source_value = table.y[1] * conversion_factor * amplitude_scale;
 {equations}
 end FOC_TablePulse;
 """
@@ -67,6 +68,7 @@ def _build_array_pulse_block(output_names):
     return f"""block FOC_ArrayPulse
     "Array driven discrete pulse source"
     parameter Real conversion_factor = 6.3935e-3 "Tritium consumption rate for 1MW";
+    parameter Real amplitude_scale = 1.0 "Global pulse amplitude / power scale factor";
     parameter Real amplitudes[:] = {{0.0}};
     parameter Real durations[:] = {{1.0}};
 
@@ -78,7 +80,7 @@ protected
     Real source_value;
 
 equation
-    source_value = conversion_factor * sum({{if time >= cumulative_times[i] and time < cumulative_times[i + 1] then amplitudes[i] else 0.0 for i in 1:n_steps}});
+    source_value = conversion_factor * amplitude_scale * sum({{if time >= cumulative_times[i] and time < cumulative_times[i + 1] then amplitudes[i] else 0.0 for i in 1:n_steps}});
 {equations}
 end FOC_ArrayPulse;
 """

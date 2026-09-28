@@ -417,3 +417,45 @@ def extract_metrics_from_hdf5(
         return pd.DataFrame()
 
     return pd.DataFrame(rows)
+
+
+def get_optimization_tasks(config: dict) -> list[str]:
+    """Identifies all valid optimization tasks from the configuration.
+
+    A valid optimization task is a dependent variable (or metric) that is defined
+    in metrics_definition with bisection_search and required parameters.
+    """
+    optimization_tasks = []
+    sensitivity_analysis = config.get("sensitivity_analysis", {})
+    metrics_definition = sensitivity_analysis.get("metrics_definition", {})
+    analysis_case = sensitivity_analysis.get("analysis_case")
+    if analysis_case is None:
+        cases = sensitivity_analysis.get("analysis_cases")
+        if cases and isinstance(cases, list) and len(cases) > 0:
+            analysis_case = cases[0]
+        else:
+            analysis_case = {}
+
+    dependent_vars = analysis_case.get("dependent_variables", [])
+
+    for var in dependent_vars:
+        if var.startswith("Required_") and var not in optimization_tasks:
+            if var in metrics_definition:
+                required_config = metrics_definition[var]
+                if (
+                    isinstance(required_config, dict)
+                    and required_config.get("method") == "bisection_search"
+                ):
+                    optimization_tasks.append(var)
+
+    # Also allow direct detection from metrics_definition
+    if not optimization_tasks:
+        for var, required_config in metrics_definition.items():
+            if (
+                isinstance(required_config, dict)
+                and required_config.get("method") == "bisection_search"
+            ):
+                if var not in optimization_tasks:
+                    optimization_tasks.append(var)
+
+    return optimization_tasks

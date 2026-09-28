@@ -4,6 +4,7 @@
 Tricys BASIC Example Runner
 A BASIC sample configuration specifically designed for running tricys commands
 """
+
 import json
 import shutil
 import subprocess

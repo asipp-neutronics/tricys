@@ -65,8 +65,23 @@ docs = [
     "mkdocstrings-python"
 ]
 
-[tool.setuptools]
-packages = ["tricys_backend", "tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess", "tricys.example", "tricys.example.example_runner", "tricys.visualizer", "tricys.online_cosim"]
+packages = [
+    "tricys_backend",
+    "tricys",
+    "tricys.workflow",
+    "tricys.preprocessing",
+    "tricys.simulation",
+    "tricys.simulation.engines",
+    "tricys.utils",
+    "tricys.core",
+    "tricys.analysis",
+    "tricys.postprocess",
+    "tricys.postprocess.plugins",
+    "tricys.example",
+    "tricys.example.example_runner",
+    "tricys.visualizer",
+    "tricys.online_cosim",
+]
 
 [tool.setuptools.package-data]
 tricys = ["example/example_data/**/*"]

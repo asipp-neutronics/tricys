@@ -619,12 +619,12 @@ def _generate_postprocess_report(
                         "变量 (Variable)": col,
                         "启动库存 (Startup Inventory)": f"{startup_inventory:.4f}",
                         "自持时间 (Self-Sufficiency Time)": (
-                            f"{turning_point_time/24:.2f} 天"
+                            f"{turning_point_time / 24:.2f} 天"
                             if pd.notna(turning_point_time)
                             else "N/A"
                         ),
                         "倍增时间 (Doubling Time)": (
-                            f"{doubling_time/24:.2f} 天"
+                            f"{doubling_time / 24:.2f} 天"
                             if pd.notna(doubling_time)
                             else "N/A"
                         ),
@@ -1002,12 +1002,12 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
                             "变量 (Variable)": label,
                             "启动库存 (Startup Inventory)": f"{startup_inventory:.4f}",
                             "自持时间 (Self-Sufficiency Time)": (
-                                f"{turning_point_time/24:.2f} 天"
+                                f"{turning_point_time / 24:.2f} 天"
                                 if pd.notna(turning_point_time)
                                 else "N/A"
                             ),
                             "倍增时间 (Doubling Time)": (
-                                f"{doubling_time/24:.2f} 天"
+                                f"{doubling_time / 24:.2f} 天"
                                 if pd.notna(doubling_time)
                                 else "N/A"
                             ),

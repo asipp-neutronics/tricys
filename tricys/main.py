@@ -11,10 +11,9 @@ import json
 import subprocess
 from pathlib import Path
 
+from tricys.analysis.runner import retry_analysis
+from tricys.simulation.simulation import main as cosim_main
 from tricys.simulation.simulation import main as simulation_main
-from tricys.simulation.simulation_analysis import main as analysis_main
-from tricys.simulation.simulation_analysis import retry_analysis
-from tricys.simulation.simulation_cosim import main as cosim_main
 from tricys.utils.file_utils import archive_run, unarchive_run
 from tricys.utils.model_parser_cli import parse_model_cli
 
@@ -280,9 +279,8 @@ def main() -> None:
                         file=sys.stderr,
                     )
                     analysis_parser.print_help(sys.stderr)
-                    sys.exit(1)
-
-            analysis_main(config_path)
+            export_csv = main_args.csv
+            simulation_main(config_path, export_csv=export_csv)
         elif main_args.command == "example":
             run_example_runner()
         elif main_args.command == "hdf5":
@@ -354,9 +352,13 @@ def main() -> None:
 
     if is_analysis:
         print(
-            "INFO: Detected 'sensitivity_analysis' in config. Running analysis workflow."
+            "INFO: Detected 'sensitivity_analysis' in config. Running unified analysis pipeline."
         )
-        analysis_main(config_data, base_dir=base_dir)
+        simulation_main(
+            config_data,
+            base_dir=base_dir,
+            export_csv=main_args.csv,
+        )
     elif "co_simulation" in config_data:
         print(
             "INFO: Detected 'co_simulation' in config. Running co-simulation workflow."

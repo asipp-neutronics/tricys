@@ -1051,9 +1051,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
         jobs_df = _get_jobs_df(jobs_data)
         if jobs_df.empty:
             return dash.no_update
-        df_wide, final_df = pd.DataFrame(data), pd.DataFrame(
-            {"time": pd.DataFrame(data)["time"].unique()}
-        ).sort_values("time")
+        df_wide, final_df = (
+            pd.DataFrame(data),
+            pd.DataFrame({"time": pd.DataFrame(data)["time"].unique()}).sort_values(
+                "time"
+            ),
+        )
         for job_id in df_wide["job_id"].unique():
             params = jobs_df.loc[jobs_df["id"] == job_id].iloc[0]
             params_str = "(" + ", ".join([f"{k}={v}" for k, v in params.items()]) + ")"
@@ -1323,7 +1326,6 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
                         h5_file, "results", where=f"job_id == {job_id_int}"
                     )
                     if not full_df.empty:
-
                         # Calculate metrics for all available columns except time and job_id
                         metric_rows = []
                         data_cols = [

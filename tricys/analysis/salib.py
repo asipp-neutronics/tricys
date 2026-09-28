@@ -604,7 +604,7 @@ class TricysSALibAnalyzer:
             # Call the Tricys simulation engine
             from datetime import datetime
 
-            from tricys.simulation.simulation_analysis import run_simulation
+            from tricys.analysis.runner import run_simulation
 
             tricys_config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -1230,7 +1230,7 @@ class TricysSALibAnalyzer:
                     )
                 report_lines.append("\n")
                 plot_filename = (
-                    f'sobol_sensitivity_indices_{metric_name.replace(" ", "_")}.png'
+                    f"sobol_sensitivity_indices_{metric_name.replace(' ', '_')}.png"
                 )
                 report_lines.append(
                     f"![Sobol Analysis for {metric_name}]({plot_filename})\n\n"
@@ -1253,7 +1253,7 @@ class TricysSALibAnalyzer:
                     )
                 report_lines.append("\n")
                 plot_filename = (
-                    f'morris_sensitivity_analysis_{metric_name.replace(" ", "_")}.png'
+                    f"morris_sensitivity_analysis_{metric_name.replace(' ', '_')}.png"
                 )
                 report_lines.append(
                     f"![Morris Analysis for {metric_name}]({plot_filename})\n\n"
@@ -1269,7 +1269,7 @@ class TricysSALibAnalyzer:
                     report_lines.append(f"| {param_name} | {s1:.4f} | {st:.4f} |\n")
                 report_lines.append("\n")
                 plot_filename = (
-                    f'fast_sensitivity_indices_{metric_name.replace(" ", "_")}.png'
+                    f"fast_sensitivity_indices_{metric_name.replace(' ', '_')}.png"
                 )
                 report_lines.append(
                     f"![FAST Analysis for {metric_name}]({plot_filename})\n\n"
@@ -1295,16 +1295,16 @@ class TricysSALibAnalyzer:
                 report_lines.append("### 统计摘要\n\n")
                 lhs_data = metric_results["latin"]
                 report_lines.append(
-                    f"- 均值: {lhs_data['mean']/factor:.4f}{unit_str}\n"
+                    f"- 均值: {lhs_data['mean'] / factor:.4f}{unit_str}\n"
                 )
                 report_lines.append(
-                    f"- 标准差: {lhs_data['std']/factor:.4f}{unit_str}\n"
+                    f"- 标准差: {lhs_data['std'] / factor:.4f}{unit_str}\n"
                 )
                 report_lines.append(
-                    f"- 最小值: {lhs_data['min']/factor:.4f}{unit_str}\n"
+                    f"- 最小值: {lhs_data['min'] / factor:.4f}{unit_str}\n"
                 )
                 report_lines.append(
-                    f"- 最大值: {lhs_data['max']/factor:.4f}{unit_str}\n\n"
+                    f"- 最大值: {lhs_data['max'] / factor:.4f}{unit_str}\n\n"
                 )
                 # 2. Calculate more percentiles
                 if len(Y_clean) > 0:
@@ -1312,25 +1312,25 @@ class TricysSALibAnalyzer:
                     percentile_values = np.percentile(Y_clean, percentiles_to_calc)
                     report_lines.append("### 分布关键点 (CDF)\n\n")
                     report_lines.append(
-                        f"- 5%分位数: {percentile_values[0]/factor:.4f}{unit_str}\n"
+                        f"- 5%分位数: {percentile_values[0] / factor:.4f}{unit_str}\n"
                     )
                     report_lines.append(
-                        f"- 10%分位数: {percentile_values[1]/factor:.4f}{unit_str}\n"
+                        f"- 10%分位数: {percentile_values[1] / factor:.4f}{unit_str}\n"
                     )
                     report_lines.append(
-                        f"- 25%分位数 (Q1): {percentile_values[2]/factor:.4f}{unit_str}\n"
+                        f"- 25%分位数 (Q1): {percentile_values[2] / factor:.4f}{unit_str}\n"
                     )
                     report_lines.append(
-                        f"- 50%分位数 (中位数): {percentile_values[3]/factor:.4f}{unit_str}\n"
+                        f"- 50%分位数 (中位数): {percentile_values[3] / factor:.4f}{unit_str}\n"
                     )
                     report_lines.append(
-                        f"- 75%分位数 (Q3): {percentile_values[4]/factor:.4f}{unit_str}\n"
+                        f"- 75%分位数 (Q3): {percentile_values[4] / factor:.4f}{unit_str}\n"
                     )
                     report_lines.append(
-                        f"- 90%分位数: {percentile_values[5]/factor:.4f}{unit_str}\n"
+                        f"- 90%分位数: {percentile_values[5] / factor:.4f}{unit_str}\n"
                     )
                     report_lines.append(
-                        f"- 95%分位数: {percentile_values[6]/factor:.4f}{unit_str}\n\n"
+                        f"- 95%分位数: {percentile_values[6] / factor:.4f}{unit_str}\n\n"
                     )
                     # 3. Calculate histogram data
                     hist_freq, bin_edges = np.histogram(Y_clean, bins=10)
@@ -1345,7 +1345,7 @@ class TricysSALibAnalyzer:
                             f"| {lower_bound:.2f} - {upper_bound:.2f} | {freq} |\n"
                         )
                     report_lines.append("\n")
-                plot_filename = f'lhs_analysis_{metric_name.replace(" ", "_")}.png'
+                plot_filename = f"lhs_analysis_{metric_name.replace(' ', '_')}.png"
                 report_lines.append(
                     f"![LHS Analysis for {metric_name}]({plot_filename})\n\n"
                 )
@@ -1416,7 +1416,7 @@ class TricysSALibAnalyzer:
 
             plt.tight_layout()
             filename = (
-                f'sobol_sensitivity_indices_{metric_display_name.replace(" ", "_")}.png'
+                f"sobol_sensitivity_indices_{metric_display_name.replace(' ', '_')}.png"
             )
             plt.savefig(os.path.join(save_dir, filename), dpi=300, bbox_inches="tight")
 
@@ -1488,7 +1488,7 @@ class TricysSALibAnalyzer:
             ax2.grid(True, alpha=0.3)
 
             plt.tight_layout()
-            filename = f'morris_sensitivity_analysis_{metric_display_name.replace(" ", "_")}.png'
+            filename = f"morris_sensitivity_analysis_{metric_display_name.replace(' ', '_')}.png"
             plt.savefig(os.path.join(save_dir, filename), dpi=300, bbox_inches="tight")
 
             logger.info(f"Morris result chart has been saved: {filename}")
@@ -1557,7 +1557,7 @@ class TricysSALibAnalyzer:
 
             plt.tight_layout()
             filename = (
-                f'fast_sensitivity_indices_{metric_display_name.replace(" ", "_")}.png'
+                f"fast_sensitivity_indices_{metric_display_name.replace(' ', '_')}.png"
             )
             plt.savefig(os.path.join(save_dir, filename), dpi=300, bbox_inches="tight")
 
@@ -1649,7 +1649,7 @@ class TricysSALibAnalyzer:
             ax2.grid(True, alpha=0.3)
 
             plt.tight_layout()
-            filename = f'lhs_analysis_{metric_display_name.replace(" ", "_")}.png'
+            filename = f"lhs_analysis_{metric_display_name.replace(' ', '_')}.png"
             plt.savefig(os.path.join(save_dir, filename), dpi=300, bbox_inches="tight")
 
             logger.info(f"LHS分析结果图表已保存: {filename}")
@@ -1692,7 +1692,7 @@ class TricysSALibAnalyzer:
                             }
                         )
                         filename = (
-                            f'sobol_indices_{metric_display_name.replace(" ", "_")}.csv'
+                            f"sobol_indices_{metric_display_name.replace(' ', '_')}.csv"
                         )
                         sobol_df.to_csv(os.path.join(save_dir, filename), index=False)
                         logger.info(f"Sobol results have been saved: {filename}")
@@ -1707,7 +1707,7 @@ class TricysSALibAnalyzer:
                                 "mu_star_conf": results["mu_star_conf"],
                             }
                         )
-                        filename = f'morris_indices_{metric_display_name.replace(" ", "_")}.csv'
+                        filename = f"morris_indices_{metric_display_name.replace(' ', '_')}.csv"
                         morris_df.to_csv(os.path.join(save_dir, filename), index=False)
                         logger.info(f"Morris results have been saved: {filename}")
 
@@ -1720,7 +1720,7 @@ class TricysSALibAnalyzer:
                             }
                         )
                         filename = (
-                            f'fast_indices_{metric_display_name.replace(" ", "_")}.csv'
+                            f"fast_indices_{metric_display_name.replace(' ', '_')}.csv"
                         )
                         fast_df.to_csv(os.path.join(save_dir, filename), index=False)
                         logger.info(f"FAST results have been saved: {filename}")
@@ -1739,7 +1739,7 @@ class TricysSALibAnalyzer:
                             }
                         )
                         filename_stats = (
-                            f'lhs_stats_{metric_display_name.replace(" ", "_")}.csv'
+                            f"lhs_stats_{metric_display_name.replace(' ', '_')}.csv"
                         )
                         lhs_stats_df.to_csv(
                             os.path.join(save_dir, filename_stats), index=False
@@ -1944,7 +1944,7 @@ def call_llm_for_academic_report(
 
             ACADEMIC_REPORT_PROMPT_WRAPPER = f"""**角色：** 您是一位在核聚变工程，特别是氚燃料循环领域，具有深厚学术背景的资深科学家。
 
-**任务：** 您收到了一个关于**SALib {selected_method['name']} 方法敏感性分析**的程序生成的初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
+**任务：** 您收到了一个关于**SALib {selected_method["name"]} 方法敏感性分析**的程序生成的初步报告和一份专业术语表。请您基于这两份文件，撰写一份更加专业、正式、符合学术发表标准的深度分析总结报告。
 
 **指令：**
 
@@ -1958,9 +1958,9 @@ def call_llm_for_academic_report(
 4.  **结构化报告：** 您的报告是关于一项**敏感性分析**。报告应包含以下部分：
     *   **摘要 (Abstract):** 简要概括本次敏感性研究的目的，明确指明分析的输入参数是 {param_names_str}，总结哪些参数对关键性能指标 ({metric_names_str}) 影响最显著，并陈述核心结论。
     *   **引言 (Introduction):** 描述进行这项敏感性分析的背景和重要性。阐述研究目标，即量化评估输入参数的变化对氚燃料循环系统性能的影响。
-    *   **方法 (Methodology):** {selected_method['methodology']} 说明被评估的关键性能指标是 {metric_names_str}，以及输入参数 {param_names_str} 的变化范围。
+    *   **方法 (Methodology):** {selected_method["methodology"]} 说明被评估的关键性能指标是 {metric_names_str}，以及输入参数 {param_names_str} 的变化范围。
     *   **结果与讨论 (Results and Discussion):** 这是报告的核心。请结合初步报告中的数据和您嵌入的图表，分点详细论述：
-{selected_method['results_discussion']}
+{selected_method["results_discussion"]}
     *   **结论 (Conclusion):** 总结本次敏感性分析得出的主要学术结论，并对反应堆设计或未来研究方向提出具体建议。
 5.  **输出格式：** 请直接输出完整的学术分析报告正文，确保所有内容都遵循正确的Markdown语法。
 

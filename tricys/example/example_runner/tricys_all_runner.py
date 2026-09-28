@@ -4,6 +4,7 @@
 Tricys All-in-One Example Runner
 A unified runner for running all tricys command examples (BASIC and ANALYSIS)
 """
+
 import json
 import shutil
 import subprocess

@@ -35,8 +35,10 @@ from tricys.online_cosim.topology import (
     build_component_type_map,
     extract_model_topology,
 )
+from tricys.simulation.engines.online_cosim import OnlineOmsCoSimEngine
 
 __all__ = [
+    "OnlineOmsCoSimEngine",
     "AbstractTrackProcessor",
     "ModelComponent",
     "ModelConnection",

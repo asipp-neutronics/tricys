@@ -53,7 +53,7 @@ def _generate_interceptor(
         extra={"ports": [p["name"] for p in output_ports]},
     )
     for port in output_ports:
-        dim_str = f'[{port["dim"]}]' if port["dim"] > 1 else ""
+        dim_str = f"[{port['dim']}]" if port["dim"] > 1 else ""
         port_name = port["name"]
 
         # 1. Generate Input and Output port declarations (no change)
@@ -1313,12 +1313,12 @@ def _generate_replaced_model_code(
             new_code_parts.append(f"  // Vector port: {port_name}[{dim}]")
             new_code_parts.append(f"  for i in 1:{dim} loop")
             new_code_parts.append(
-                f"    {port_name}[i] = if columns_{port_name}[i+1] == 1 then 0.0 else {table_name}.y[i+1];"
+                f"    {port_name}[i] = if columns_{port_name}[i+1] == 1 then 0.0 else {table_name}.y[i];"
             )
             new_code_parts.append("  end for;")
         if port_info["dim"] == 1:
             new_code_parts.append(
-                f"  {port_name} = if columns_{port_name}[2] == 1 then 0.0 else {table_name}.y[2];"
+                f"  {port_name} = if columns_{port_name}[2] == 1 then 0.0 else {table_name}.y[1];"
             )
 
     new_code_parts.append("")

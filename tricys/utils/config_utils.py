@@ -522,7 +522,6 @@ def analysis_validate_config(
     # 2. Validate variableFilter format
     variable_filter = config.get("simulation", {}).get("variableFilter")
     if variable_filter:
-
         valid_substring_re = re.compile(r"^.+$")
 
         substrings = variable_filter.split("|")
@@ -932,7 +931,7 @@ def analysis_setup_analysis_cases_workspaces(
             case_configs.append(case_info)
 
             logger.info(
-                f"Workspace for case {i+1} created successfully",
+                f"Workspace for case {i + 1} created successfully",
                 extra={
                     "case_index": i,
                     "case_name": analysis_case.get("name", f"case_{i}"),
