@@ -742,13 +742,13 @@ def _replace_submodel_with_csv(
             new_code_parts.append(f"  // Vector port: {port_name}[{dim}]")
             new_code_parts.append(f"  for i in 1:{dim} loop")
             new_code_parts.append(
-                f"    {port_name}[i] = if columns_{port_name}[i+1] == 1 then 0.0 else {table_name}.y[i];"
+                f"    {port_name}[i] = if columns_{port_name}[i+1] == 1 then 0.0 else {table_name}.y[i+1];"
             )
             new_code_parts.append("  end for;")
         else:
             # Scalar port with conditional logic
             new_code_parts.append(
-                f"  {port_name} = if columns_{port_name}[2] == 1 then 0.0 else {table_name}.y[1];"
+                f"  {port_name} = if columns_{port_name}[2] == 1 then 0.0 else {table_name}.y[2];"
             )
 
     new_code_parts.append("")

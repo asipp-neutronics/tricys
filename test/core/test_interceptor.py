@@ -172,7 +172,7 @@ def test_integrate_replacement_single_file():
     assert os.path.exists(result["system_model_path"])
 
     modified_code = Path(result["system_model_path"]).read_text(encoding="utf-8")
-    assert "y = if columns_y[2] == 1 then 0.0 else table_y.y[1];" in modified_code
+    assert "y = if columns_y[2] == 1 then 0.0 else table_y.y[2];" in modified_code
 
 
 def test_integrate_replacement_multi_file():
@@ -203,4 +203,4 @@ def test_integrate_replacement_multi_file():
     assert os.path.exists(modified_submodel_path)
 
     modified_code = Path(modified_submodel_path).read_text(encoding="utf-8")
-    assert "y = if columns_y[2] == 1 then 0.0 else table_y.y[1];" in modified_code
+    assert "y = if columns_y[2] == 1 then 0.0 else table_y.y[2];" in modified_code
