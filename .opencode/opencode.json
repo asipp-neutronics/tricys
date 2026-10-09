@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "git push *": "ask",
+      "git commit *": "ask",
+      "rm -rf *": "deny",
+      "*": "allow"
+    }
+  },
+  "agent": {
+    "tricys-dev": {
+      "description": "Primary agent for TRICYS tritium cycle simulation development. Handles Python code, Modelica integration, parameter scanning, and report generation.",
+      "mode": "primary",
+      "permission": {
+        "edit": "allow",
+        "bash": { "*": "allow" }
+      }
+    },
+    "tricys-test": {
+      "description": "Test runner for the TRICYS project. Runs pytest, checks coverage, and validates simulation outputs.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "bash": { "pytest *": "allow", "make test": "allow", "*": "ask" }
+      }
+    }
+  }
+}
