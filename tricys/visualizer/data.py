@@ -104,9 +104,37 @@ def load_h5_data(file_path):
                         "Failed to load log payload", extra={"file_path": file_path}
                     )
 
-        # Process Options
+        # Process Options: strictly filter out metadata identifiers and non-numerical columns
         v_opts = [col for col in results_cols if col not in ["time", "job_id"]]
-        p_opts = [col for col in jobs_df.columns if col != "job_id"]
+        ignored_p_names = {
+            "id",
+            "job_id",
+            "name",
+            "job_name",
+            "case_name",
+            "job",
+            "title",
+            "description",
+            "comment",
+            "status",
+        }
+        # Identify known metrics to ensure they are not listed as parameters
+        metric_names = set()
+        if c_data:
+            t_m = (
+                c_data.get("task", {}).get("metrics", {})
+                if isinstance(c_data.get("task"), dict)
+                else {}
+            )
+            metric_names |= set(t_m.keys())
+            metric_names |= set(c_data.get("metrics_definition", {}).keys())
+
+        p_opts = []
+        for col in jobs_df.columns:
+            if str(col).strip().lower() in ignored_p_names or col in metric_names:
+                continue
+            if pd.to_numeric(jobs_df[col], errors="coerce").notna().any():
+                p_opts.append(col)
 
         jobs_table = jobs_df.copy()
         if "job_id" in jobs_table.columns:

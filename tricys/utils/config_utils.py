@@ -340,20 +340,110 @@ def basic_prepare_config(
     try:
         if isinstance(config_or_path, str):
             config_path = os.path.abspath(config_or_path)
-            with open(config_path, "r") as f:
-                base_config = json.load(f)
+            if config_path.endswith((".yaml", ".yml")):
+                import yaml
+
+                with open(config_path, "r", encoding="utf-8") as f:
+                    base_config = yaml.safe_load(f)
+            else:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    base_config = json.load(f)
             original_config_dir = os.path.dirname(config_path)
         else:
             base_config = config_or_path
             original_config_dir = base_dir if base_dir else os.getcwd()
 
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+    except Exception as e:
         # Logger is not set up yet, so print directly to stderr
         print(
             f"ERROR: Failed to load or parse config: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    from tricys.core.schema import TricysV2Config, is_v2_config
+
+    if is_v2_config(base_config):
+        TricysV2Config.model_validate(base_config)
+
+        config = json.loads(json.dumps(base_config))
+        model_cfg = config.get("model", {})
+        if "fileName" in model_cfg and model_cfg["fileName"]:
+            if not os.path.isabs(model_cfg["fileName"]):
+                model_cfg["fileName"] = os.path.abspath(
+                    os.path.join(original_config_dir, model_cfg["fileName"])
+                )
+
+        pulse_cfg = config.get("scenario", {}).get("pulse", {})
+        if pulse_cfg and pulse_cfg.get("foc_file"):
+            if not os.path.isabs(pulse_cfg["foc_file"]):
+                pulse_cfg["foc_file"] = os.path.abspath(
+                    os.path.join(original_config_dir, pulse_cfg["foc_file"])
+                )
+
+        config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_workspace = os.path.abspath(config["run_timestamp"])
+
+        workspace_cfg = config.get("workspace", {})
+        results_dir_name = workspace_cfg.get("results_dir", "results")
+        temp_dir_name = workspace_cfg.get("temp_dir", "temp")
+        log_dir_name = workspace_cfg.get("log_dir", "log")
+
+        if "paths" not in config:
+            config["paths"] = {}
+        config["paths"]["package_path"] = model_cfg.get("fileName", "")
+        config["paths"]["log_dir"] = os.path.join(run_workspace, log_dir_name)
+        config["paths"]["temp_dir"] = os.path.join(run_workspace, temp_dir_name)
+        config["paths"]["results_dir"] = os.path.join(run_workspace, results_dir_name)
+
+        if "simulation" not in config:
+            config["simulation"] = {}
+        scenario_cfg = config.get("scenario", {})
+        config["simulation"]["model_name"] = model_cfg.get("modelName", "")
+        config["simulation"]["cflags"] = model_cfg.get("cflags", "")
+        config["simulation"]["loadModel"] = model_cfg.get("loadModel", [])
+        config["simulation"]["target"] = model_cfg.get("target") or "gcc"
+
+        stop_time = float(scenario_cfg.get("stopTime", 1000.0))
+        num_intervals = scenario_cfg.get("numberOfIntervals")
+        if num_intervals and int(num_intervals) > 0:
+            step_size = stop_time / float(num_intervals)
+        else:
+            step_size = float(scenario_cfg.get("stepSize", 1.0))
+
+        config["simulation"]["stop_time"] = stop_time
+        config["simulation"]["start_time"] = float(scenario_cfg.get("startTime", 0.0))
+        config["simulation"]["step_size"] = step_size
+        config["simulation"]["numberOfIntervals"] = num_intervals
+        vf = scenario_cfg.get("variableFilter", ".*")
+        if "[" in vf and "\\[" not in vf:
+            vf = vf.replace("[", "\\[").replace("]", "\\]")
+        config["simulation"]["variableFilter"] = vf
+        config["simulation"]["method"] = scenario_cfg.get("method", "dassl")
+        config["simulation"]["tolerance"] = float(scenario_cfg.get("tolerance", 1e-6))
+        config["simulation"]["outputFormat"] = scenario_cfg.get("outputFormat", "csv")
+        config["simulation"]["simflags"] = scenario_cfg.get("simflags", "")
+
+        if pulse_cfg and pulse_cfg.get("foc_file"):
+            config["foc"] = {
+                "foc_path": pulse_cfg["foc_file"],
+                "component_name": pulse_cfg.get("foc_component", ""),
+                "variable_mapping": pulse_cfg.get("variable_mapping", {}),
+            }
+
+        task_cfg = config.get("task", {})
+        if isinstance(task_cfg, dict):
+            if task_cfg.get("metrics"):
+                config["metrics_definition"] = task_cfg["metrics"]
+            if task_cfg.get("parallel"):
+                config["simulation"]["concurrent"] = True
+                config["simulation"]["max_workers"] = task_cfg.get("max_workers")
+
+        os.makedirs(config["paths"]["log_dir"], exist_ok=True)
+        os.makedirs(config["paths"]["temp_dir"], exist_ok=True)
+        os.makedirs(config["paths"]["results_dir"], exist_ok=True)
+
+        return config, base_config
 
     absolute_config = convert_relative_paths_to_absolute(
         base_config, original_config_dir

@@ -10,7 +10,7 @@
     },
     "post_processing": [
         {
-           "module": "tricys.postprocess.baseline_analysis",
+           "module": "tricys.analysis.baseline_analysis",
            "function": "baseline_analysis",
            "params": {
                 "detailed_var": "sds.I[1]",

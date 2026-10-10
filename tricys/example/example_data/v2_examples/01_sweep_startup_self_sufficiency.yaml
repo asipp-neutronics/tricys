@@ -1,0 +1,46 @@
+version: "2.0"
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|tep_fep.I[1]|i_iss.I[1]"
+
+task:
+  type: "sweep"
+  parallel: true
+  max_workers: 4
+  parameters:
+    - name: "Case_1_Direct_DT_Baseline"
+      blanket.TBR: 1.10
+      wds.threshold: 1000.0
+    - name: "Case_2_DD_Staging_Conservative"
+      blanket.TBR: 1.08
+      wds.threshold: 800.0
+    - name: "Case_3_Advanced_High_Breeding"
+      blanket.TBR: 1.22
+      wds.threshold: 1200.0
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+    startup_inventory:
+      source: "sds.I[1]"
+      evaluate: "startup_inventory"
+
+report:
+  enabled: true
+  # template: "sweep"  # 默认不填自动与 task.type ("sweep") 保持一致
+  title: "TRICYS 聚变堆多工况参数扫描与氚自持评估工程报告"
+  formats: ["markdown", "docx", "pdf"]
+
+visualizer:
+  enabled: true
+  launch_on_finish: true

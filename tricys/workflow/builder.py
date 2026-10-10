@@ -115,7 +115,11 @@ class PipelineBuilder:
 
         # 1.4 Modelica static compilation for concurrent runs
         sim_cfg = config.get("simulation", {})
-        if sim_cfg.get("concurrent", False) and not is_co_sim:
+        task_cfg = config.get("task", {})
+        is_parallel = sim_cfg.get("concurrent", False) or (
+            isinstance(task_cfg, dict) and task_cfg.get("parallel", False)
+        )
+        if is_parallel and not is_co_sim:
             compiler_cls = PluginRegistry.get_preprocess_class("compiler")
             if compiler_cls:
                 preprocessors.append(compiler_cls())
@@ -144,9 +148,16 @@ class PipelineBuilder:
         # 3.1 Data persistence & export service (metrics + HDF5 + optional CSV)
         storage_cls = PluginRegistry.get_postprocess_class("storage")
         if storage_cls:
-            metrics_def = config.get("metrics_definition") or config.get(
-                "sensitivity_analysis", {}
-            ).get("metrics_definition", {})
+            task_metrics = (
+                task_cfg.get("metrics") or task_cfg.get("metrics_definition")
+                if isinstance(task_cfg, dict)
+                else None
+            )
+            metrics_def = (
+                config.get("metrics_definition")
+                or task_metrics
+                or config.get("sensitivity_analysis", {}).get("metrics_definition", {})
+            )
             postprocessors.append(
                 storage_cls(
                     export_csv=export_csv,
@@ -154,11 +165,17 @@ class PipelineBuilder:
                 )
             )
 
-        # 3.2 System condition analysis & report generation tasks
-        if config.get("post_processing"):
+        # 3.2 Engineering report generation & multi-format delivery
+        report_cfg = config.get("report") or config.get("visualizer", {}).get("report")
+        if report_cfg or config.get("post_processing"):
             report_cls = PluginRegistry.get_postprocess_class("report")
             if report_cls:
-                postprocessors.append(report_cls(tasks=config.get("post_processing")))
+                postprocessors.append(
+                    report_cls(
+                        report_config=report_cfg,
+                        tasks=config.get("post_processing"),
+                    )
+                )
 
         # 3.3 Safety margin & mass balance conservation auditor
         auditor_enabled = config.get("auditor", {}).get("enabled", False)
@@ -175,11 +192,43 @@ class PipelineBuilder:
 
         # 3.4 Sensitivity & uncertainty analysis
         sensitivity_cfg = config.get("sensitivity_analysis", {})
-        if sensitivity_cfg.get("enabled", False):
+        is_v2_sensitivity = (
+            isinstance(task_cfg, dict) and task_cfg.get("type") == "sensitivity"
+        )
+        if sensitivity_cfg.get("enabled", False) or is_v2_sensitivity:
             sens_cls = PluginRegistry.get_postprocess_class("sensitivity_analysis")
             if sens_cls:
                 postprocessors.append(
-                    sens_cls(enabled=True, sensitivity_config=sensitivity_cfg)
+                    sens_cls(
+                        enabled=True,
+                        sensitivity_config=(
+                            sensitivity_cfg if not is_v2_sensitivity else task_cfg
+                        ),
+                    )
+                )
+
+        # ----------------------------------------------------
+        # 4. Explicit V2 Plugins Configuration
+        # ----------------------------------------------------
+        explicit_plugins = config.get("plugins", {})
+        for p_spec in explicit_plugins.get("preprocess", []):
+            try:
+                plugin = PluginRegistry.resolve_preprocess_plugin(p_spec)
+                if plugin:
+                    preprocessors.append(plugin)
+            except Exception as e:
+                logger.warning(
+                    f"Could not load explicit preprocess plugin: {p_spec}. {e}"
+                )
+
+        for p_spec in explicit_plugins.get("postprocess", []):
+            try:
+                plugin = PluginRegistry.resolve_postprocess_plugin(p_spec)
+                if plugin:
+                    postprocessors.append(plugin)
+            except Exception as e:
+                logger.warning(
+                    f"Could not load explicit postprocess plugin: {p_spec}. {e}"
                 )
 
         return WorkflowPipeline(

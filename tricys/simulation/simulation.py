@@ -19,8 +19,8 @@ except ImportError:
 
 import pandas as pd
 
-from tricys.postprocess.plugins.report_plugin import LegacyTaskPlugin
-from tricys.postprocess.plugins.storage_plugin import (
+from tricys.plugins.report_plugin import LegacyTaskPlugin
+from tricys.plugins.storage_plugin import (
     export_hdf5_to_csv,
     process_and_store_job_result,
 )
@@ -333,8 +333,9 @@ def main(
         },
     )
     try:
-        run_simulation(config, export_csv=export_csv, base_dir=base_dir)
+        context = run_simulation(config, export_csv=export_csv, base_dir=base_dir)
         logger.info("Main execution completed successfully")
+        return context
     except Exception as exc:
         logger.error(
             "Main execution failed", exc_info=True, extra={"exception": str(exc)}

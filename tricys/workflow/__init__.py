@@ -33,6 +33,6 @@ __all__ = [
 ]
 
 # Auto-register all built-in plugins and engines
-import tricys.postprocess.plugins  # noqa: F401
+import tricys.plugins  # noqa: F401
 import tricys.preprocessing  # noqa: F401
 import tricys.simulation.engines  # noqa: F401

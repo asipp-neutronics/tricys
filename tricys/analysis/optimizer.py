@@ -43,26 +43,88 @@ class BisectionOptimizer:
         fast_context: Dict[str, Any],
     ) -> Tuple[Dict[str, float], Dict[str, float]]:
         """Performs bisection search using pre-compiled executable (Fast Mode)."""
-        sensitivity_analysis = config.get("sensitivity_analysis", {})
-        metrics_definition = sensitivity_analysis.get("metrics_definition", {})
-        optimization_config = metrics_definition.get(optimization_metric_name, {})
+        # 1. Resolve optimization_config from multiple possible locations (V2 task.metrics, metrics_definition, sensitivity_analysis)
+        task_metrics = (
+            config.get("task", {}).get("metrics", {})
+            if isinstance(config.get("task"), dict)
+            else {}
+        )
+        optimization_config = (
+            task_metrics.get(optimization_metric_name)
+            or config.get("metrics_definition", {}).get(optimization_metric_name)
+            or config.get("sensitivity_analysis", {})
+            .get("metrics_definition", {})
+            .get(optimization_metric_name)
+            or {}
+        )
+        if hasattr(optimization_config, "model_dump"):
+            optimization_config = optimization_config.model_dump()
+        elif hasattr(optimization_config, "dict"):
+            optimization_config = optimization_config.dict()
 
-        if (
-            not optimization_config
-            or "parameter_to_optimize" not in optimization_config
-        ):
+        param_to_optimize = optimization_config.get(
+            "parameter"
+        ) or optimization_config.get("parameter_to_optimize")
+        bounds = optimization_config.get("search_bounds") or optimization_config.get(
+            "search_range"
+        )
+
+        if not optimization_config or not param_to_optimize or not bounds:
             raise ValueError(
-                f"Optimization config for '{optimization_metric_name}' invalid."
+                f"Optimization config for '{optimization_metric_name}' invalid: must specify parameter and search_bounds/search_range."
             )
 
-        param_to_optimize = optimization_config["parameter_to_optimize"]
-        low_orig, high_orig = optimization_config["search_range"]
-        tolerance = optimization_config.get("tolerance", 0.001)
-        max_iterations = optimization_config.get("max_iterations", 10)
-        stop_time = config["simulation"]["stop_time"]
-        metric_max_value = optimization_config.get("metric_max_value", stop_time)
-        metric_name = optimization_config.get("metric_name", "Self_Sufficiency_Time")
-        source_column = optimization_config.get("source_column", "sds.inventory")
+        low_orig, high_orig = float(bounds[0]), float(bounds[1])
+        tolerance = float(optimization_config.get("tolerance", 0.001))
+        max_iterations = int(optimization_config.get("max_iterations", 15))
+        stop_time = float(config.get("simulation", {}).get("stop_time", 1000.0))
+
+        # 2. Target metric extraction: Support both V2 target_metric dict and legacy flat fields
+        target_metric = optimization_config.get("target_metric")
+        if isinstance(target_metric, dict):
+            source_column = (
+                target_metric.get("source")
+                or optimization_config.get("source_column")
+                or "sds.I[1]"
+            )
+            t_eval = (
+                target_metric.get("evaluate") or target_metric.get("operator") or ""
+            ).lower()
+            t_thresh = (
+                target_metric.get("threshold")
+                if target_metric.get("threshold") is not None
+                else target_metric.get("target_value")
+            )
+            if t_thresh is None:
+                t_thresh = target_metric.get("max_value")
+
+            if "doubling" in t_eval or "倍增" in t_eval:
+                metric_name = "Doubling_Time"
+            elif (
+                "turn" in t_eval
+                or "self" in t_eval
+                or "拐点" in t_eval
+                or "自持" in t_eval
+            ):
+                metric_name = "Self_Sufficiency_Time"
+            elif "min" in t_eval or "startup" in t_eval or "亏空" in t_eval:
+                metric_name = "Startup_Inventory"
+            else:
+                metric_name = optimization_config.get("metric_name", "Doubling_Time")
+
+            metric_max_value = (
+                float(t_thresh)
+                if t_thresh is not None
+                else float(optimization_config.get("metric_max_value", stop_time))
+            )
+        else:
+            source_column = optimization_config.get("source_column") or "sds.I[1]"
+            metric_name = optimization_config.get(
+                "metric_name", "Self_Sufficiency_Time"
+            )
+            metric_max_value = float(
+                optimization_config.get("metric_max_value", stop_time)
+            )
 
         metric_max_values = (
             metric_max_value
@@ -107,18 +169,32 @@ class BisectionOptimizer:
                     if result_path and os.path.exists(result_path):
                         try:
                             results_df = pd.read_csv(result_path)
-                            if source_column in results_df.columns:
+                            target_col = (
+                                source_column
+                                if source_column in results_df.columns
+                                else None
+                            )
+                            if not target_col:
+                                from tricys.analysis.tritium_cycle import (
+                                    detect_sds_column,
+                                )
+
+                                auto_col = detect_sds_column(results_df)
+                                if auto_col and auto_col in results_df.columns:
+                                    target_col = auto_col
+
+                            if target_col and target_col in results_df.columns:
                                 if metric_name == "Self_Sufficiency_Time":
                                     metric_value = time_of_turning_point(
-                                        results_df[source_column], results_df["time"]
+                                        results_df[target_col], results_df["time"]
                                     )
                                 elif metric_name == "Doubling_Time":
                                     metric_value = calculate_doubling_time(
-                                        results_df[source_column], results_df["time"]
+                                        results_df[target_col], results_df["time"]
                                     )
                                 elif metric_name == "Startup_Inventory":
                                     metric_value = calculate_startup_inventory(
-                                        results_df[source_column]
+                                        results_df[target_col]
                                     )
 
                             job_dir = os.path.dirname(result_path)
@@ -127,7 +203,16 @@ class BisectionOptimizer:
                         except Exception:
                             pass
 
-                    if metric_value < min(stop_time, current_metric_max_value):
+                    upper_limit = (
+                        current_metric_max_value
+                        if current_metric_max_value is not None
+                        else stop_time
+                    )
+                    if (
+                        metric_value is not None
+                        and not pd.isna(metric_value)
+                        and metric_value <= upper_limit
+                    ):
                         best_successful_param = mid_param
                         best_successful_value = metric_value
                         high = mid_param

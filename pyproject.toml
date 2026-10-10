@@ -75,11 +75,13 @@ packages = [
     "tricys.utils",
     "tricys.core",
     "tricys.analysis",
-    "tricys.postprocess",
-    "tricys.postprocess.plugins",
+    "tricys.plugins",
+    "tricys.plugins.auditor",
+    "tricys.handlers",
     "tricys.example",
     "tricys.example.example_runner",
     "tricys.visualizer",
+    "tricys.visualizer.report",
     "tricys.online_cosim",
 ]
 
@@ -102,6 +104,7 @@ ignore = ["E501","E722"]
 known-first-party = ["tricys"]
 
 [tool.pytest.ini_options]
+testpaths = ["test"]
 markers = [
     "build_test: marks tests for github action",
     "slow: marks tests that take longer to run (e.g. real Modelica simulations)",

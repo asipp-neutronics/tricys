@@ -79,15 +79,30 @@ class PipelineContext:
             else os.path.abspath(os.path.join(resolved_base_dir, raw_pkg_path))
         )
 
-        metrics_def = cfg.get("metrics_definition") or cfg.get(
-            "sensitivity_analysis", {}
-        ).get("metrics_definition", {})
+        task_cfg = cfg.get("task", {})
+        task_metrics = (
+            task_cfg.get("metrics") or task_cfg.get("metrics_definition")
+            if isinstance(task_cfg, dict)
+            else None
+        )
+        metrics_def = (
+            cfg.get("metrics_definition")
+            or task_metrics
+            or cfg.get("sensitivity_analysis", {}).get("metrics_definition", {})
+        )
 
         typed_cfg = None
         try:
-            from tricys.core.schema import TricysConfig
+            from tricys.core.schema import (
+                TricysConfig,
+                TricysV2Config,
+                is_v2_config,
+            )
 
-            typed_cfg = TricysConfig.from_dict(cfg)
+            if is_v2_config(cfg):
+                typed_cfg = TricysV2Config.from_dict(cfg)
+            else:
+                typed_cfg = TricysConfig.from_dict(cfg)
         except Exception:
             pass
 

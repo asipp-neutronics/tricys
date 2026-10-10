@@ -1,0 +1,36 @@
+version: "2.0"
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  stopTime: 500.0
+  stepSize: 1.0
+  method: "dassl"
+  variableFilter: "time|sds.I[1]"
+
+task:
+  type: "sensitivity"
+  method: "sobol"
+  samples: 8
+  seed: 42
+  parallel: true
+  max_workers: 4
+  parameters:
+    blanket.TBR: [1.05, 1.30]
+    wds.threshold: [800.0, 1400.0]
+  metrics:
+    final_storage:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+report:
+  enabled: true
+  # template: "sensitivity"  # 默认不填自动与 task.type ("sensitivity") 保持一致
+  title: "TRICYS 高维参数全局灵敏度与方差分解专题报告"
+  formats: ["markdown", "docx", "pdf"]
+
+visualizer:
+  enabled: true
+  launch_on_finish: true

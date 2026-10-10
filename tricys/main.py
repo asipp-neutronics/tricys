@@ -102,7 +102,19 @@ def main() -> None:
     )
 
     subparsers.add_parser(
-        "hdf5", help="Launch the HDF5 results visualizer.", add_help=False
+        "run",
+        help="Run a simulation or task from a configuration file.",
+        add_help=False,
+    )
+
+    subparsers.add_parser(
+        "visualize", help="Launch the interactive results visualizer.", add_help=False
+    )
+
+    subparsers.add_parser(
+        "hdf5",
+        help="Launch the HDF5 results visualizer (legacy alias for visualize).",
+        add_help=False,
     )
 
     archive_parser = subparsers.add_parser(
@@ -283,28 +295,69 @@ def main() -> None:
             simulation_main(config_path, export_csv=export_csv)
         elif main_args.command == "example":
             run_example_runner()
-        elif main_args.command == "hdf5":
+        elif main_args.command in ("visualize", "hdf5"):
             from tricys.visualizer.main import start as visualizer_main
 
             # Reconstruct argv for the visualizer's argument parser
             sys.argv = [f"{original_argv[0]} {main_args.command}"] + remaining_argv
             visualizer_main()
+            return
+        elif main_args.command == "run":
+            run_parser = argparse.ArgumentParser(
+                description="Run a simulation or task from a configuration file."
+            )
+            run_parser.add_argument(
+                "-c",
+                "--config",
+                type=str,
+                default=None,
+                help="Path to the configuration file (.json, .yaml, or .yml).",
+            )
+            run_parser.add_argument(
+                "--csv", action="store_true", help="Export results to CSV format."
+            )
+            run_parser.add_argument(
+                "--enhanced",
+                action="store_true",
+                help="Run in parallel/enhanced execution mode.",
+            )
+            run_parser.add_argument(
+                "--turbo",
+                action="store_true",
+                help="Maximize worker processes.",
+            )
+            run_args, _ = run_parser.parse_known_args(remaining_argv)
+            if run_args.config:
+                main_args.config = run_args.config
+            if run_args.csv:
+                main_args.csv = True
+            if run_args.enhanced:
+                main_args.enhanced = True
+            if run_args.turbo:
+                main_args.turbo = True
+            # Proceed to config determination and execution
         elif main_args.command == "archive":
             archive_run(main_args.timestamp)
+            return
         elif main_args.command == "unarchive":
             unarchive_run(main_args.zip_file)
+            return
         elif main_args.command == "parse":
             parse_model_cli(main_args.package_path, main_args.model_name)
-        return
+            return
 
     # 2. Determine config path (explicit -c or default)
     config_path = main_args.config
     if not config_path:
-        if os.path.exists("config.json"):
-            print("INFO: No command or config specified, using default: config.json")
-            config_path = "config.json"
+        for candidate in ["config.yaml", "config.yml", "config.json"]:
+            if os.path.exists(candidate):
+                print(
+                    f"INFO: No command or config specified, using default: {candidate}"
+                )
+                config_path = candidate
+                break
         else:
-            # No command, no -c, no default config.json -> show help and exit
+            # No command, no -c, no default config found -> show help and exit
             parser.print_help(sys.stderr)
             sys.exit(1)
 
@@ -314,21 +367,72 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            config_data = json.load(f)
-    except (json.JSONDecodeError, IOError, UnicodeDecodeError) as e:
+        if config_path.endswith((".yaml", ".yml")):
+            import yaml
+
+            with open(config_path, "r", encoding="utf-8") as f:
+                config_data = yaml.safe_load(f)
+        else:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config_data = json.load(f)
+    except Exception as e:
         print(
             f"Error reading or parsing config file '{config_path}': {e}",
             file=sys.stderr,
         )
-        if isinstance(e, UnicodeDecodeError):
-            print(
-                "The file appears to be a binary file, not a text/JSON file.",
-                file=sys.stderr,
-            )
         sys.exit(1)
 
-    # Decide which main to call based on config content
+    # Determine base directory for resolving relative paths in config_data
+    base_dir = os.path.dirname(os.path.abspath(config_path))
+
+    # Check for TRICYS 2.0 configuration
+    from tricys.core.schema import is_v2_config
+
+    if is_v2_config(config_data):
+        print(f"INFO: Detected TRICYS 2.0 configuration ({config_path}).")
+        task_cfg = config_data.get("task", {})
+        task_type = task_cfg.get("type", "simulate")
+
+        if main_args.enhanced:
+            task_cfg["parallel"] = True
+            print("INFO: Enhanced parallel mode enabled via command line flag.")
+        if main_args.turbo:
+            task_cfg["parallel"] = True
+            task_cfg["max_workers"] = os.cpu_count() or 4
+            print(f"INFO: Turbo mode enabled! Using {task_cfg['max_workers']} workers.")
+
+        print(f"INFO: Dispatching TRICYS 2.0 task '{task_type}' to simulation engine.")
+        ctx = simulation_main(
+            config_data,
+            base_dir=base_dir,
+            export_csv=main_args.csv,
+        )
+
+        # Handle visualizer auto-launch if configured
+        vis_cfg = config_data.get("visualizer", {})
+        if vis_cfg.get("launch_on_finish", False):
+            print("INFO: 'launch_on_finish' is enabled. Launching visualizer...")
+            try:
+                from tricys.visualizer.main import start as visualizer_main
+
+                vis_argv = [original_argv[0]]
+                if (
+                    ctx
+                    and hasattr(ctx, "results_store_path")
+                    and ctx.results_store_path
+                ):
+                    vis_argv.append(ctx.results_store_path)
+                if "port" in vis_cfg:
+                    vis_argv.extend(["--port", str(vis_cfg["port"])])
+                if "host" in vis_cfg:
+                    vis_argv.extend(["--host", str(vis_cfg["host"])])
+                sys.argv = vis_argv
+                visualizer_main()
+            except Exception as e:
+                print(f"WARNING: Visualizer launch failed: {e}", file=sys.stderr)
+        return
+
+    # Legacy 1.0 configuration handling
     is_analysis = "sensitivity_analysis" in config_data and config_data.get(
         "sensitivity_analysis", {}
     ).get("enabled", False)
@@ -336,7 +440,7 @@ def main() -> None:
     if "simulation" not in config_data:
         config_data["simulation"] = {}
 
-    # 4. Handle --enhanced and --turbo overrides
+    # 4. Handle --enhanced and --turbo overrides for 1.0
     if main_args.enhanced:
         config_data["simulation"]["execute_mode"] = "enhanced"
         config_data["simulation"]["concurrent"] = True
@@ -345,10 +449,6 @@ def main() -> None:
     if main_args.turbo:
         config_data["simulation"]["maximize_workers"] = True
         print("INFO: Turbo mode enabled! Using maximum available resources.")
-
-    # Determine base directory for resolving relative paths in config_data
-    # since we are passing a dictionary now.
-    base_dir = os.path.dirname(os.path.abspath(config_path))
 
     if is_analysis:
         print(

@@ -251,7 +251,13 @@ def extract_metrics(
 
             if method_name == "final_value":
                 calculation_func = get_final_value
-            elif method_name == "calculate_startup_inventory":
+            elif method_name in (
+                "calculate_startup_inventory",
+                "startup_inventory",
+                "startup",
+                "startup_inv",
+                "startup_inventory_deficit",
+            ):
                 calculation_func = calculate_startup_inventory
             elif method_name == "time_of_turning_point":
                 calculation_func = time_of_turning_point
@@ -295,16 +301,70 @@ def extract_metrics(
         return pd.DataFrame()
 
 
+def get_peak_value(series: pd.Series, time_series: Optional[pd.Series] = None) -> float:
+    """Gets the peak (maximum) value of a time series."""
+    return float(series.max())
+
+
+def get_min_value(series: pd.Series, time_series: Optional[pd.Series] = None) -> float:
+    """Gets the minimum value of a time series."""
+    return float(series.min())
+
+
+def get_max_value(series: pd.Series, time_series: Optional[pd.Series] = None) -> float:
+    """Gets the maximum value of a time series."""
+    return float(series.max())
+
+
+def get_mean_value(series: pd.Series, time_series: Optional[pd.Series] = None) -> float:
+    """Gets the mean (average) value of a time series."""
+    return float(series.mean())
+
+
+def get_integral_value(
+    series: pd.Series, time_series: Optional[pd.Series] = None
+) -> float:
+    """Calculates the time integral of a series using the trapezoidal rule."""
+    if time_series is not None and len(series) == len(time_series) and len(series) > 1:
+        trapz_fn = getattr(np, "trapezoid", getattr(np, "trapz", None))
+        if trapz_fn:
+            return float(trapz_fn(series.values, time_series.values))
+    return float(series.sum())
+
+
+def get_settling_time(
+    series: pd.Series, time_series: Optional[pd.Series] = None, tolerance: float = 0.02
+) -> float:
+    """Calculates settling time when series enters and remains within a tolerance band around final value."""
+    if time_series is None or len(series) == 0:
+        return np.nan
+    final_val = series.iloc[-1]
+    band = abs(final_val * tolerance) if final_val != 0 else tolerance
+    out_of_band = (series - final_val).abs() > band
+    if not out_of_band.any():
+        return float(time_series.iloc[0])
+    last_out_idx = out_of_band[::-1].idxmax()
+    loc = series.index.get_loc(last_out_idx)
+    if loc + 1 < len(time_series):
+        return float(time_series.iloc[loc + 1])
+    return float(time_series.iloc[-1])
+
+
 def calculate_single_job_metrics(
     job_df: pd.DataFrame,
     metrics_definition: Dict[str, Any],
+    filter_schema: Optional[Any] = None,
 ) -> Dict[str, float]:
     """Calculates metrics for a single simulation job.
+
+    Supports both TRICYS 1.0 schema (method, source_column) and
+    TRICYS 2.0 schema (evaluate, source, MetricConfig).
 
     Args:
         job_df: A DataFrame containing the results of a single job.
             Must have 'time' column and variable columns.
         metrics_definition: Dictionary defining the metrics to calculate.
+        filter_schema: Optional filter schema (ignored, kept for API compatibility).
 
     Returns:
         A dictionary mapping metric names to their calculated values.
@@ -313,30 +373,52 @@ def calculate_single_job_metrics(
     if not metrics_definition:
         return results
 
-    for metric_name, definition in metrics_definition.items():
-        # Skip metrics that require complex optimization (bisection)
-        # We only calculate scalar metrics extractable from a single run.
-        if definition.get("method") == "bisection_search":
+    for metric_name, raw_def in metrics_definition.items():
+        if isinstance(raw_def, dict):
+            method_name = raw_def.get("evaluate") or raw_def.get("method")
+            source_col = raw_def.get("source") or raw_def.get("source_column")
+        elif hasattr(raw_def, "evaluate") and hasattr(raw_def, "source"):
+            method_name = getattr(raw_def, "evaluate")
+            source_col = getattr(raw_def, "source")
+        else:
             continue
 
-        source_col = definition.get("source_column")
-        method_name = definition.get("method")
+        if method_name == "bisection_search":
+            continue
 
-        if source_col not in job_df.columns:
+        if not source_col or source_col not in job_df.columns:
             continue
 
         series = job_df[source_col]
         time_series = job_df["time"] if "time" in job_df.columns else None
 
         calculation_func = None
-        if method_name == "final_value":
+        if method_name in ("final_value", "final"):
             calculation_func = get_final_value
-        elif method_name == "calculate_startup_inventory":
+        elif method_name in ("peak_value", "peak", "max"):
+            calculation_func = get_peak_value
+        elif method_name == "min":
+            calculation_func = get_min_value
+        elif method_name in ("mean", "average"):
+            calculation_func = get_mean_value
+        elif method_name == "integral":
+            calculation_func = get_integral_value
+        elif method_name == "settling_time":
+            calculation_func = get_settling_time
+        elif method_name in (
+            "calculate_startup_inventory",
+            "startup_inventory",
+            "startup",
+            "startup_inv",
+            "startup_inventory_deficit",
+        ):
             calculation_func = calculate_startup_inventory
-        elif method_name == "time_of_turning_point":
+        elif method_name in ("time_of_turning_point", "turning_point"):
             calculation_func = time_of_turning_point
-        elif method_name == "calculate_doubling_time":
+        elif method_name in ("calculate_doubling_time", "doubling_time"):
             calculation_func = calculate_doubling_time
+        elif method_name == "net_tritium_balance":
+            calculation_func = net_tritium_balance
 
         if calculation_func:
             try:
@@ -348,7 +430,6 @@ def calculate_single_job_metrics(
                     val = None
                 results[metric_name] = val
             except Exception:
-                # If metric calc fails, skip it or store None
                 pass
 
     return results
@@ -356,24 +437,45 @@ def calculate_single_job_metrics(
 
 def build_single_job_summary_df(
     job_id: int,
-    single_job_metrics: Dict[str, float],
-    metrics_definition: Dict[str, Any],
+    single_job_metrics: Dict[str, Any],
+    metrics_definition: Optional[Dict[str, Any]] = None,
 ) -> pd.DataFrame:
     """Build a stable-schema one-row summary DataFrame for HDF5 appends."""
     summary_row = {"job_id": int(job_id)}
     has_metric_value = False
 
-    for metric_name, definition in metrics_definition.items():
-        if definition.get("method") == "bisection_search":
-            continue
+    if metrics_definition:
+        for metric_name, raw_def in metrics_definition.items():
+            method = (
+                raw_def.get("evaluate") or raw_def.get("method")
+                if isinstance(raw_def, dict)
+                else getattr(raw_def, "evaluate", None)
+            )
+            if method == "bisection_search":
+                metric_value = single_job_metrics.get(metric_name)
+                if metric_value is not None:
+                    try:
+                        summary_row[metric_name] = float(metric_value)
+                        has_metric_value = True
+                    except (ValueError, TypeError):
+                        summary_row[metric_name] = metric_value
+                        has_metric_value = True
+                continue
 
-        metric_value = single_job_metrics.get(metric_name)
-        if metric_value is None:
-            summary_row[metric_name] = float("nan")
-            continue
+            metric_value = single_job_metrics.get(metric_name)
+            if metric_value is None:
+                summary_row[metric_name] = float("nan")
+                continue
 
-        summary_row[metric_name] = float(metric_value)
-        has_metric_value = True
+            summary_row[metric_name] = float(metric_value)
+            has_metric_value = True
+    else:
+        for k, v in single_job_metrics.items():
+            try:
+                summary_row[k] = float(v)
+                has_metric_value = True
+            except (ValueError, TypeError):
+                summary_row[k] = v
 
     if not has_metric_value:
         return pd.DataFrame()
@@ -423,11 +525,27 @@ def get_optimization_tasks(config: dict) -> list[str]:
     """Identifies all valid optimization tasks from the configuration.
 
     A valid optimization task is a dependent variable (or metric) that is defined
-    in metrics_definition with bisection_search and required parameters.
+    in task.metrics, metrics_definition, or sensitivity_analysis with bisection_search.
     """
-    optimization_tasks = []
+    optimization_tasks: list[str] = []
+
+    metrics_sources: list[dict] = []
+    task_metrics = (
+        config.get("task", {}).get("metrics", {})
+        if isinstance(config.get("task"), dict)
+        else {}
+    )
+    if task_metrics and isinstance(task_metrics, dict):
+        metrics_sources.append(task_metrics)
+    if config.get("metrics_definition") and isinstance(
+        config.get("metrics_definition"), dict
+    ):
+        metrics_sources.append(config["metrics_definition"])
+    sens_metrics = config.get("sensitivity_analysis", {}).get("metrics_definition", {})
+    if sens_metrics and isinstance(sens_metrics, dict):
+        metrics_sources.append(sens_metrics)
+
     sensitivity_analysis = config.get("sensitivity_analysis", {})
-    metrics_definition = sensitivity_analysis.get("metrics_definition", {})
     analysis_case = sensitivity_analysis.get("analysis_case")
     if analysis_case is None:
         cases = sensitivity_analysis.get("analysis_cases")
@@ -438,24 +556,30 @@ def get_optimization_tasks(config: dict) -> list[str]:
 
     dependent_vars = analysis_case.get("dependent_variables", [])
 
-    for var in dependent_vars:
-        if var.startswith("Required_") and var not in optimization_tasks:
-            if var in metrics_definition:
-                required_config = metrics_definition[var]
-                if (
-                    isinstance(required_config, dict)
-                    and required_config.get("method") == "bisection_search"
-                ):
-                    optimization_tasks.append(var)
+    for src in metrics_sources:
+        for var in dependent_vars:
+            if var.startswith("Required_") and var not in optimization_tasks:
+                if var in src:
+                    cfg_val = src[var]
+                    method = (
+                        cfg_val.get("evaluate") or cfg_val.get("method")
+                        if isinstance(cfg_val, dict)
+                        else getattr(cfg_val, "evaluate", None)
+                    )
+                    if method == "bisection_search":
+                        optimization_tasks.append(var)
 
-    # Also allow direct detection from metrics_definition
+    # Also allow direct detection from any metrics source
     if not optimization_tasks:
-        for var, required_config in metrics_definition.items():
-            if (
-                isinstance(required_config, dict)
-                and required_config.get("method") == "bisection_search"
-            ):
-                if var not in optimization_tasks:
-                    optimization_tasks.append(var)
+        for src in metrics_sources:
+            for var, cfg_val in src.items():
+                method = (
+                    cfg_val.get("evaluate") or cfg_val.get("method")
+                    if isinstance(cfg_val, dict)
+                    else getattr(cfg_val, "evaluate", None)
+                )
+                if method == "bisection_search":
+                    if var not in optimization_tasks:
+                        optimization_tasks.append(var)
 
     return optimization_tasks

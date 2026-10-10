@@ -208,6 +208,30 @@ class SamplingEngine:
     @classmethod
     def from_config(cls, config: Dict[str, Any]) -> Optional[SamplingEngine]:
         """Factory method to construct a SamplingEngine by auto-detecting config schema."""
+        # 0. Schema 2.0 Task Pillar: task.type in ("sensitivity", "sweep")
+        task_cfg = config.get("task", {})
+        if isinstance(task_cfg, dict):
+            task_type = task_cfg.get("type", "").lower()
+            if task_type == "sensitivity":
+                method = task_cfg.get("method", "sobol").lower()
+                sample_n = task_cfg.get("samples", 64)
+                seed = task_cfg.get("seed")
+                specs = task_cfg.get("parameters", {})
+                if specs:
+                    return cls(
+                        specs=specs,
+                        method=method,
+                        sample_n=int(sample_n),
+                        seed=seed,
+                    )
+            elif task_type == "sweep":
+                sweep_p = task_cfg.get("parameters")
+                if isinstance(sweep_p, dict) and "file" not in sweep_p:
+                    return cls(
+                        specs=sweep_p,
+                        method="grid",
+                    )
+
         # 1. Schema 2.0 explicit sampling: preprocess.sampling or root-level sampling
         sampling_cfg = config.get("preprocess", {}).get("sampling") or config.get(
             "sampling"

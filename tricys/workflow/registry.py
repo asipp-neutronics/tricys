@@ -78,7 +78,7 @@ class PluginRegistry:
         class_name: Optional[str] = None
 
         if isinstance(source, dict):
-            script_path_str = source.get("script_path")
+            script_path_str = source.get("script") or source.get("script_path")
             module_name_str = source.get("module")
             class_name = source.get("class") or source.get("class_name")
         elif isinstance(source, str):
@@ -156,13 +156,17 @@ class PluginRegistry:
             return loaded_cls()
 
         if isinstance(spec, dict):
-            name = spec.get("name")
+            plugin_key = spec.get("plugin") or spec.get("name")
             params = spec.get("params", {})
-            if name:
-                plugin_cls = cls.get_preprocess_class(name)
+            if plugin_key:
+                plugin_cls = cls.get_preprocess_class(plugin_key)
                 if plugin_cls:
                     return plugin_cls(**params)
-            # Try loading from script_path or module
+            if spec.get("name"):
+                plugin_cls = cls.get_preprocess_class(spec["name"])
+                if plugin_cls:
+                    return plugin_cls(**params)
+            # Try loading from script or module
             loaded_cls = cls.load_class_from_source(
                 spec, expected_base=PreprocessPlugin
             )
@@ -187,10 +191,14 @@ class PluginRegistry:
             return loaded_cls()
 
         if isinstance(spec, dict):
-            name = spec.get("name")
+            plugin_key = spec.get("plugin") or spec.get("name")
             params = spec.get("params", {})
-            if name:
-                plugin_cls = cls.get_postprocess_class(name)
+            if plugin_key:
+                plugin_cls = cls.get_postprocess_class(plugin_key)
+                if plugin_cls:
+                    return plugin_cls(**params)
+            if spec.get("name"):
+                plugin_cls = cls.get_postprocess_class(spec["name"])
                 if plugin_cls:
                     return plugin_cls(**params)
             loaded_cls = cls.load_class_from_source(

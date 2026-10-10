@@ -1,6 +1,7 @@
 import json
 import logging
 import math
+import os
 from datetime import datetime
 from urllib.parse import parse_qs
 
@@ -8,7 +9,8 @@ import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
-from dash import Input, Output, State, ctx, dcc, html
+import plotly.graph_objects as go
+from dash import Input, Output, State, ctx, dcc, html, no_update
 
 from tricys.analysis import metric
 from tricys.visualizer.context import resolve_context_token
@@ -144,7 +146,7 @@ def _apply_figure_theme(figure, height=None):
 
 
 def _empty_figure(kind="line"):
-    figure = px.line() if kind == "line" else px.scatter()
+    figure = go.Figure()
     figure.update_layout(
         showlegend=False,
         margin=dict(l=0, r=0, t=0, b=0),
@@ -698,9 +700,27 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
         if not metrics_data:
             return []
         df = pd.DataFrame(metrics_data)
-        # Filter numeric columns for parallel coordinates
+        # Filter numeric columns for parallel coordinates, strictly exclude identifiers
+        ignored_dims = {
+            "id",
+            "job_id",
+            "name",
+            "job_name",
+            "case_name",
+            "job",
+            "title",
+            "description",
+            "comment",
+            "status",
+            "status_text",
+            "condition",
+        }
         numeric_cols = df.select_dtypes(include=["number"]).columns
-        options = [{"label": col, "value": col} for col in numeric_cols if col != "id"]
+        options = [
+            {"label": col, "value": col}
+            for col in numeric_cols
+            if str(col).strip().lower() not in ignored_dims
+        ]
         return options
 
     @app.callback(
@@ -812,6 +832,53 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
                     if k != "job_id":
                         table_row[k] = v
 
+                # 自愈回退逻辑：若 startup_inventory 未计算或为 NaN/None，自动根据时序数据补充计算
+                if "startup_inventory" in table_row and (
+                    pd.isna(table_row["startup_inventory"])
+                    or table_row["startup_inventory"] is None
+                ):
+                    try:
+                        with pd.HDFStore(h5_file, mode="r") as store:
+                            if "/results" in store.keys():
+                                res = store.select(
+                                    "results", where=f"job_id == {job_id}"
+                                )
+                                if not res.empty:
+                                    inv_col = next(
+                                        (
+                                            c
+                                            for c in [
+                                                "sds.I[1]",
+                                                "sds.I[2]",
+                                                "i_iss.I[1]",
+                                            ]
+                                            if c in res.columns
+                                        ),
+                                        None,
+                                    )
+                                    if not inv_col:
+                                        inv_col = next(
+                                            (c for c in res.columns if ".I[" in c), None
+                                        )
+                                    if inv_col:
+                                        from tricys.analysis.metric import (
+                                            calculate_startup_inventory,
+                                        )
+
+                                        s_val = calculate_startup_inventory(
+                                            res[inv_col], res.get("time")
+                                        )
+                                        if hasattr(s_val, "item"):
+                                            s_val = s_val.item()
+                                        table_row["startup_inventory"] = float(s_val)
+                    except Exception as e:
+                        logger.debug(f"Failed to backfill startup_inventory: {e}")
+
+                # 适度四舍五入数值列以提升展示美观度
+                for k, v in list(table_row.items()):
+                    if isinstance(v, float) and not pd.isna(v):
+                        table_row[k] = round(v, 4)
+
                 metrics_data.append(table_row)
 
             return metrics_data
@@ -833,8 +900,10 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
         Output("heatmap-z-dropdown", "options"),
         Input("metrics-data-store", "data"),
         State("full-jobs-data-store", "data"),
+        State("config-store", "data"),
+        State("viewer-context-store", "data"),
     )
-    def update_metrics_ui(metrics_data, jobs_data):
+    def update_metrics_ui(metrics_data, jobs_data, config_data, viewer_context):
         if not metrics_data:
             return [], [], [], [], [], [], []
 
@@ -849,15 +918,63 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             if k != "id"
         ]
 
-        # Metric options
-        metric_keys = [
-            k
-            for k in metrics_data[0].keys()
-            if k not in jobs_df.columns and k != "Job" and k != "id"
-        ]
+        ignored_col_names = {
+            "id",
+            "job_id",
+            "name",
+            "job_name",
+            "case_name",
+            "job",
+            "title",
+            "description",
+            "comment",
+            "status",
+            "status_text",
+            "condition",
+        }
 
-        # Param options
-        param_keys = [c for c in jobs_df.columns if c != "id"]
+        # Collect known metric names from config and summary table
+        known_metric_names = set()
+        if config_data and isinstance(config_data, dict):
+            t_m = (
+                config_data.get("task", {}).get("metrics", {})
+                if isinstance(config_data.get("task"), dict)
+                else {}
+            )
+            known_metric_names |= set(t_m.keys())
+            known_metric_names |= set(config_data.get("metrics_definition", {}).keys())
+
+        h5_file = _get_h5_file(viewer_context) if viewer_context else None
+        if h5_file:
+            try:
+                s_recs = load_summary_data(h5_file)
+                if s_recs:
+                    known_metric_names |= {k for k in s_recs[0].keys() if k != "job_id"}
+            except Exception:
+                pass
+
+        # Param options: 仅筛选具有物理意义的数值参数，严格剔除标识符以及输出指标 (Metrics)
+        param_keys = []
+        for c in jobs_df.columns:
+            if str(c).strip().lower() in ignored_col_names or c in known_metric_names:
+                continue
+            # 严格确保该参数列包含有效数值
+            num_series = pd.to_numeric(jobs_df[c], errors="coerce")
+            if num_series.notna().any():
+                param_keys.append(c)
+
+        # Metric options: 仅筛选具有数值意义的求解指标，严格剔除标识符及输入参数列
+        df_metrics = pd.DataFrame(metrics_data)
+        metric_keys = []
+        for k in df_metrics.columns:
+            if str(k).strip().lower() in ignored_col_names or k == "Job":
+                continue
+            if k in known_metric_names or (
+                k not in jobs_df.columns and k not in param_keys
+            ):
+                num_s = pd.to_numeric(df_metrics[k], errors="coerce")
+                if num_s.notna().any() and k not in metric_keys:
+                    metric_keys.append(k)
 
         return (
             metrics_data,
@@ -887,8 +1004,26 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             df[yaxis].astype(str).str.replace(",", ""), errors="coerce"
         )
 
-        # Identify grouping parameters (all parameters except job_id and the selected xaxis)
-        all_params = [c for c in jobs_df.columns if c != "id"]
+        ignored_group_names = {
+            "id",
+            "job_id",
+            "name",
+            "job_name",
+            "case_name",
+            "job",
+            "title",
+            "description",
+            "comment",
+            "status",
+            "condition",
+        }
+        # Identify grouping parameters (only real numerical parameters excluding xaxis)
+        all_params = [
+            c
+            for c in jobs_df.columns
+            if str(c).strip().lower() not in ignored_group_names
+            and pd.to_numeric(jobs_df[c], errors="coerce").notna().any()
+        ]
         grouping_cols = [c for c in all_params if c != xaxis]
 
         if grouping_cols:
@@ -1141,7 +1276,14 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
         Input("analysis-selection-feedback-store", "data"),
     )
     def update_analysis_selection_panel_class(analysis_selection, feedback_state):
-        classes = ["selection-stage-panel", "selection-stage-panel--applied", "h-100"]
+        classes = [
+            "selection-stage-panel",
+            "selection-stage-panel--applied",
+            "d-flex",
+            "align-items-center",
+            "px-2",
+            "py-1",
+        ]
         if _normalize_job_ids(analysis_selection):
             classes.append("selection-stage-panel--active")
         if feedback_state and feedback_state.get("flash"):
@@ -1387,3 +1529,320 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             return not is_open, html.Div(
                 f"Error loading details: {str(e)}", className="text-danger"
             )
+
+    # ----------------------------------------------------
+    # Report Generation & Multi-Format Export Callbacks
+    # ----------------------------------------------------
+    @app.callback(
+        [
+            Output("report-markdown-preview", "children"),
+            Output("report-markdown-store", "data"),
+            Output("report-task-badge", "children"),
+            Output("report-active-title", "children"),
+            Output("report-source-indicator", "children"),
+        ],
+        [
+            Input("btn-refresh-report", "n_clicks"),
+            Input("full-jobs-data-store", "data"),
+            Input("analysis-selection-store", "data"),
+            Input("metrics-data-store", "data"),
+            Input("config-store", "data"),
+            Input("viewer-context-store", "data"),
+        ],
+        prevent_initial_call=False,
+    )
+    def update_report_preview(
+        n_refresh,
+        jobs_data,
+        applied_jobs,
+        metrics_data,
+        config_data,
+        viewer_context,
+    ):
+        from tricys.visualizer.report import (
+            TEMPLATES_CATALOG,
+            normalize_template_id,
+            render_report,
+        )
+        from tricys.visualizer.report.figures import generate_all_report_figures
+
+        cfg = config_data or {}
+        task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
+        report_cfg = cfg.get("report", {})
+
+        # 1. 确定当前 task 专属绑定的模板 ID（默认不填跟 task.type 一致）
+        target_template_id = normalize_template_id(
+            report_cfg.get("template"), task_type
+        )
+
+        meta = next(
+            (t for t in TEMPLATES_CATALOG if t["id"] == target_template_id), None
+        )
+        badge_label = (
+            meta.get("badge", f"{task_type.upper()} Dedicated")
+            if meta
+            else f"{task_type.upper()} Dedicated"
+        )
+        title_label = (
+            meta.get("name", target_template_id) if meta else target_template_id
+        )
+
+        all_jobs = jobs_data or []
+        h5_file = _get_h5_file(viewer_context)
+
+        # 检查是否在配置文件中开启了 AI 洞见 (未配置则不启用)
+        ai_enabled = bool(
+            report_cfg.get("ai_insight", False)
+            or report_cfg.get("ai_enabled", False)
+            or report_cfg.get("ai", False)
+        )
+
+        # 2. 优先从 HDF5 的 /report 数据库中读取仿真时保存的预计算报告（保证与导出的文档 100% 一致）
+        if h5_file and os.path.exists(h5_file) and not n_refresh:
+            try:
+                with pd.HDFStore(h5_file, mode="r") as store:
+                    if "/report" in store.keys():
+                        rdf = store.select("report")
+                        if not rdf.empty and "report_json" in rdf.columns:
+                            payload = json.loads(rdf["report_json"].iloc[0])
+                            cached_md = payload.get("markdown")
+                            cached_template = normalize_template_id(
+                                payload.get("template"), task_type
+                            )
+                            cached_title = payload.get("title")
+                            if (
+                                cached_md
+                                and cached_template == target_template_id
+                                and "达到氚自持转折时滞" not in cached_md
+                                and "必需首炉外供氚装量" not in cached_md
+                            ):
+                                if cached_template:
+                                    c_meta = next(
+                                        (
+                                            t
+                                            for t in TEMPLATES_CATALOG
+                                            if t["id"] == cached_template
+                                        ),
+                                        None,
+                                    )
+                                    if c_meta:
+                                        badge_label = c_meta.get("badge", badge_label)
+                                        title_label = cached_title or c_meta.get("name")
+                                elif cached_title:
+                                    title_label = cached_title
+                                source_indicator = "(✓ Synced Disk Report)"
+                                return (
+                                    cached_md,
+                                    cached_md,
+                                    badge_label,
+                                    title_label,
+                                    source_indicator,
+                                )
+            except Exception as exc:
+                logger.debug(f"Failed to load cached report from HDF5: {exc}")
+
+        # 3. 动态实时渲染（无预存报告或用户点击刷新时执行）
+        if applied_jobs:
+            applied_set = set(applied_jobs)
+            eval_jobs = [j for j in all_jobs if j.get("id") in applied_set]
+        else:
+            eval_jobs = all_jobs
+
+        metrics_df = None
+        if metrics_data:
+            try:
+                metrics_df = pd.DataFrame(metrics_data)
+            except Exception:
+                metrics_df = None
+
+        results_df = None
+        if h5_file and os.path.exists(h5_file):
+            try:
+                with pd.HDFStore(h5_file, mode="r") as store:
+                    if "/results" in store.keys():
+                        results_df = store.select("results")
+                    if metrics_df is None and "/summary" in store.keys():
+                        metrics_df = store.select("summary")
+            except Exception:
+                results_df = None
+
+        jobs_df = pd.DataFrame(eval_jobs) if eval_jobs else None
+        figures = generate_all_report_figures(
+            results_df=results_df,
+            jobs_df=jobs_df,
+            metrics_df=metrics_df,
+            task_type=task_type,
+            task_config=cfg,
+        )
+
+        ai_insight = None
+        if ai_enabled:
+            from tricys.visualizer.report import generate_ai_insight
+
+            try:
+                ai_insight = generate_ai_insight(
+                    summary_df=metrics_df if metrics_df is not None else pd.DataFrame(),
+                    report_content="",
+                    config=cfg,
+                )
+            except Exception:
+                ai_insight = None
+
+        md_content = render_report(
+            template_id=target_template_id,
+            config=cfg,
+            jobs=eval_jobs,
+            results_df=results_df,
+            metrics_df=metrics_df,
+            figures=figures,
+            ai_insight=ai_insight,
+        )
+
+        # 若是用户主动点击刷新且 HDF5 存在，尝试将刷新后的结果写回 HDF5 /report
+        if n_refresh and h5_file and os.path.exists(h5_file):
+            try:
+                with pd.HDFStore(h5_file, mode="a") as store:
+                    report_payload = {
+                        "markdown": md_content,
+                        "template": target_template_id,
+                        "title": title_label,
+                    }
+                    report_df = pd.DataFrame(
+                        {"report_json": [json.dumps(report_payload)]}
+                    ).astype(object)
+                    store.put("report", report_df, format="fixed")
+            except Exception as e:
+                logger.debug(f"Failed to update /report cache on refresh: {e}")
+
+        source_indicator = "(⚡ Live Rendered)"
+        return md_content, md_content, badge_label, title_label, source_indicator
+
+    def _get_export_markdown_content(md_content, viewer_context, config_data):
+        if md_content and str(md_content).strip():
+            return md_content
+        h5_file = _get_h5_file(viewer_context)
+        if h5_file and os.path.exists(h5_file):
+            try:
+                with pd.HDFStore(h5_file, mode="r") as store:
+                    if "/report" in store.keys():
+                        rdf = store.select("report")
+                        if not rdf.empty and "report_json" in rdf.columns:
+                            payload = json.loads(rdf["report_json"].iloc[0])
+                            cached = payload.get("markdown")
+                            if cached:
+                                return cached
+            except Exception:
+                pass
+        return None
+
+    @app.callback(
+        Output("download-report-md", "data"),
+        Input("btn-export-report-md", "n_clicks"),
+        [
+            State("report-markdown-store", "data"),
+            State("viewer-context-store", "data"),
+            State("config-store", "data"),
+        ],
+        prevent_initial_call=True,
+    )
+    def export_report_markdown(n_clicks, md_content, viewer_context, config_data):
+        if not n_clicks:
+            return no_update
+        from dash import dcc
+
+        from tricys.visualizer.report import (
+            ReportExporter,
+            get_recommended_template_for_task,
+        )
+
+        md = _get_export_markdown_content(md_content, viewer_context, config_data)
+        if not md:
+            return no_update
+
+        cfg = config_data or {}
+        task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
+        template_id = cfg.get("report", {}).get(
+            "template"
+        ) or get_recommended_template_for_task(task_type)
+        content = ReportExporter.export_markdown(md)
+        return dcc.send_string(
+            content,
+            filename=f"engineering_report_{template_id}.md",
+            type="text/markdown; charset=utf-8",
+        )
+
+    @app.callback(
+        Output("download-report-docx", "data"),
+        Input("btn-export-report-docx", "n_clicks"),
+        [
+            State("report-markdown-store", "data"),
+            State("viewer-context-store", "data"),
+            State("config-store", "data"),
+        ],
+        prevent_initial_call=True,
+    )
+    def export_report_docx(n_clicks, md_content, viewer_context, config_data):
+        if not n_clicks:
+            return no_update
+        from dash import dcc
+
+        from tricys.visualizer.report import (
+            ReportExporter,
+            get_recommended_template_for_task,
+        )
+
+        md = _get_export_markdown_content(md_content, viewer_context, config_data)
+        if not md:
+            return no_update
+
+        cfg = config_data or {}
+        task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
+        template_id = cfg.get("report", {}).get(
+            "template"
+        ) or get_recommended_template_for_task(task_type)
+        title = cfg.get("report", {}).get("title", "TRICYS 聚变氚循环工程分析报告")
+
+        docx_bytes = ReportExporter.export_docx(md, title=title)
+        return dcc.send_bytes(
+            docx_bytes,
+            filename=f"engineering_report_{template_id}.docx",
+            type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+    @app.callback(
+        Output("download-report-pdf", "data"),
+        Input("btn-export-report-pdf", "n_clicks"),
+        [
+            State("report-markdown-store", "data"),
+            State("viewer-context-store", "data"),
+            State("config-store", "data"),
+        ],
+        prevent_initial_call=True,
+    )
+    def export_report_pdf(n_clicks, md_content, viewer_context, config_data):
+        if not n_clicks:
+            return no_update
+        from dash import dcc
+
+        from tricys.visualizer.report import (
+            ReportExporter,
+            get_recommended_template_for_task,
+        )
+
+        md = _get_export_markdown_content(md_content, viewer_context, config_data)
+        if not md:
+            return no_update
+
+        cfg = config_data or {}
+        task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
+        template_id = cfg.get("report", {}).get(
+            "template"
+        ) or get_recommended_template_for_task(task_type)
+        title = cfg.get("report", {}).get("title", "TRICYS 聚变氚循环工程分析报告")
+
+        pdf_bytes = ReportExporter.export_pdf(md, title=title)
+        return dcc.send_bytes(
+            pdf_bytes,
+            filename=f"engineering_report_{template_id}.pdf",
+            type="application/pdf",
+        )

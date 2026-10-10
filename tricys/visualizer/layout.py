@@ -322,125 +322,95 @@ def create_layout(
                                                 html.Div(
                                                     [
                                                         html.Div(
+                                                            id="current-selection-summary",
+                                                            style={"display": "none"},
+                                                        ),
+                                                        html.Div(
+                                                            id="current-selection-detail",
+                                                            style={"display": "none"},
+                                                        ),
+                                                        html.Div(
                                                             [
-                                                                html.Div(
-                                                                    "Selection",
-                                                                    className="selection-stage-label",
+                                                                dbc.Checkbox(
+                                                                    id="select-all-checkbox",
+                                                                    label="Select all on current page",
+                                                                    value=False,
+                                                                    className="mb-0",
                                                                 ),
-                                                                html.Div(
-                                                                    "Current Table Selection",
-                                                                    className="selection-stage-title",
-                                                                ),
-                                                                html.Div(
-                                                                    "No jobs currently selected",
-                                                                    id="current-selection-summary",
-                                                                    className="selection-stage-value",
-                                                                ),
-                                                                html.Div(
-                                                                    "You can change the selection freely. Nothing updates until Apply is clicked.",
-                                                                    id="current-selection-detail",
-                                                                    className="selection-stage-detail",
+                                                                dbc.Button(
+                                                                    "Apply Selection",
+                                                                    id="btn-apply-selection",
+                                                                    size="sm",
+                                                                    color="primary",
+                                                                    disabled=True,
                                                                 ),
                                                             ],
-                                                            className="selection-stage-copy",
-                                                        ),
-                                                        html.Div(
-                                                            dbc.Checkbox(
-                                                                id="select-all-checkbox",
-                                                                label="Select all jobs on the current page",
-                                                                value=False,
-                                                            ),
-                                                            className="selection-stage-inline-control",
-                                                        ),
-                                                        html.Div(
-                                                            dbc.Button(
-                                                                "Apply Selection",
-                                                                id="btn-apply-selection",
-                                                                size="sm",
-                                                                color="primary",
-                                                                disabled=True,
-                                                            ),
-                                                            className="selection-stage-actions",
+                                                            className="d-flex align-items-center gap-3 flex-wrap",
                                                         ),
                                                     ],
-                                                    className="selection-stage-panel selection-stage-panel--current h-100",
+                                                    className="selection-stage-panel selection-stage-panel--current d-flex align-items-center px-3 py-1",
+                                                    style={
+                                                        "minHeight": "40px",
+                                                        "width": "fit-content",
+                                                    },
                                                 ),
                                                 lg=6,
-                                                className="mb-3",
+                                                className="mb-2 d-flex align-items-center",
                                             ),
                                             dbc.Col(
                                                 html.Div(
                                                     [
                                                         html.Div(
-                                                            [
-                                                                html.Div(
-                                                                    "Applied",
-                                                                    className="selection-stage-label",
-                                                                ),
-                                                                html.Div(
-                                                                    "Active Analysis Selection",
-                                                                    className="selection-stage-title",
-                                                                ),
-                                                                html.Div(
-                                                                    "No jobs applied",
-                                                                    id="analysis-selection-summary",
-                                                                    className="selection-stage-value",
-                                                                ),
-                                                                html.Div(
-                                                                    "Charts, metrics, and exports use only this applied job set.",
-                                                                    id="analysis-selection-detail",
-                                                                    className="selection-stage-detail",
-                                                                ),
-                                                            ],
-                                                            className="selection-stage-copy",
+                                                            id="analysis-selection-summary",
+                                                            style={"display": "none"},
+                                                        ),
+                                                        html.Div(
+                                                            id="analysis-selection-detail",
+                                                            style={"display": "none"},
                                                         ),
                                                         html.Div(
                                                             [
-                                                                html.Div(
-                                                                    "Actions",
-                                                                    className="selection-toolbar-label",
+                                                                dbc.Button(
+                                                                    "Clear",
+                                                                    id="btn-clear-analysis-selection",
+                                                                    size="sm",
+                                                                    color="secondary",
+                                                                    outline=True,
+                                                                    disabled=True,
+                                                                    className="selection-toolbar-button",
                                                                 ),
-                                                                html.Div(
-                                                                    [
-                                                                        dbc.Button(
-                                                                            "Clear",
-                                                                            id="btn-clear-analysis-selection",
-                                                                            size="sm",
-                                                                            color="secondary",
-                                                                            outline=True,
-                                                                            disabled=True,
-                                                                            className="selection-toolbar-button",
-                                                                        ),
-                                                                        dbc.Button(
-                                                                            "Batch CSV",
-                                                                            id="btn-download-selected",
-                                                                            size="sm",
-                                                                            color="secondary",
-                                                                            outline=True,
-                                                                            disabled=True,
-                                                                            className="selection-toolbar-button",
-                                                                        ),
-                                                                        dbc.Button(
-                                                                            "Wide CSV",
-                                                                            id="btn-download-all",
-                                                                            size="sm",
-                                                                            className="selection-toolbar-button selection-toolbar-button--primary",
-                                                                        ),
-                                                                    ],
-                                                                    className="selection-toolbar",
+                                                                dbc.Button(
+                                                                    "Batch CSV",
+                                                                    id="btn-download-selected",
+                                                                    size="sm",
+                                                                    color="secondary",
+                                                                    outline=True,
+                                                                    disabled=True,
+                                                                    className="selection-toolbar-button",
+                                                                ),
+                                                                dbc.Button(
+                                                                    "Wide CSV",
+                                                                    id="btn-download-all",
+                                                                    size="sm",
+                                                                    className="selection-toolbar-button selection-toolbar-button--primary",
                                                                 ),
                                                             ],
-                                                            className="selection-stage-actions selection-stage-actions--wrap",
+                                                            className="d-flex align-items-center justify-content-end gap-2",
                                                         ),
                                                     ],
                                                     id="analysis-selection-panel",
-                                                    className="selection-stage-panel selection-stage-panel--applied h-100",
+                                                    className="selection-stage-panel selection-stage-panel--applied d-flex align-items-center px-2 py-1",
+                                                    style={
+                                                        "minHeight": "40px",
+                                                        "width": "fit-content",
+                                                        "marginLeft": "auto",
+                                                    },
                                                 ),
                                                 lg=6,
-                                                className="mb-3",
+                                                className="mb-2 d-flex justify-content-end align-items-center",
                                             ),
                                         ],
-                                        className="jobs-workspace-row",
+                                        className="jobs-workspace-row align-items-center",
                                     ),
                                     dcc.Download(id="download-selected-csv"),
                                     dcc.Download(id="download-all-csv"),
@@ -850,6 +820,148 @@ def create_layout(
                                     ),
                                 ],
                                 className="plot-metrics-card-body",
+                            ),
+                        ],
+                        className="mb-4",
+                    ),
+                    # 4. Engineering Report & Multi-Format Delivery Hub
+                    dbc.Card(
+                        [
+                            dbc.CardHeader(
+                                dbc.Row(
+                                    [
+                                        dbc.Col(
+                                            [
+                                                html.Span(
+                                                    "4. Engineering Report Hub (Multi-Format Export)",
+                                                    className="fw-bold",
+                                                ),
+                                                html.Div(
+                                                    "Built-in engineering report template rendering with live preview and multi-format export (Markdown, Word .docx, PDF)",
+                                                    className="text-muted small mt-1",
+                                                ),
+                                            ],
+                                            md=8,
+                                        ),
+                                        dbc.Col(
+                                            [
+                                                dbc.Button(
+                                                    "Export MD",
+                                                    id="btn-export-report-md",
+                                                    size="sm",
+                                                    color="secondary",
+                                                    outline=True,
+                                                    className="me-2",
+                                                ),
+                                                dbc.Button(
+                                                    "Export Word (.docx)",
+                                                    id="btn-export-report-docx",
+                                                    size="sm",
+                                                    color="primary",
+                                                    outline=True,
+                                                    className="me-2",
+                                                ),
+                                                dbc.Button(
+                                                    "Export PDF (.pdf)",
+                                                    id="btn-export-report-pdf",
+                                                    size="sm",
+                                                    color="danger",
+                                                    outline=True,
+                                                ),
+                                            ],
+                                            md=4,
+                                            className="text-end d-flex justify-content-end align-items-center",
+                                        ),
+                                    ],
+                                    align="center",
+                                )
+                            ),
+                            dbc.CardBody(
+                                [
+                                    dcc.Download(id="download-report-md"),
+                                    dcc.Download(id="download-report-docx"),
+                                    dcc.Download(id="download-report-pdf"),
+                                    dcc.Store(id="report-markdown-store"),
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Label(
+                                                        "Task Dedicated Engineering Report:",
+                                                        className="fw-bold small mb-1",
+                                                    ),
+                                                    html.Div(
+                                                        [
+                                                            html.Div(
+                                                                [
+                                                                    dbc.Badge(
+                                                                        "Dedicated",
+                                                                        id="report-task-badge",
+                                                                        color="primary",
+                                                                        className="me-2 p-2 align-middle",
+                                                                    ),
+                                                                    html.Span(
+                                                                        "Matching engineering task template...",
+                                                                        id="report-active-title",
+                                                                        className="fw-bold text-light align-middle me-2",
+                                                                    ),
+                                                                    html.Small(
+                                                                        id="report-source-indicator",
+                                                                        className="text-info align-middle",
+                                                                    ),
+                                                                ],
+                                                                className="d-flex align-items-center flex-wrap me-auto",
+                                                            ),
+                                                            dbc.Button(
+                                                                html.I(
+                                                                    className="bi bi-arrow-clockwise fs-5"
+                                                                ),
+                                                                id="btn-refresh-report",
+                                                                size="sm",
+                                                                color="info",
+                                                                outline=True,
+                                                                title="Refresh Report Preview",
+                                                                className="rounded-circle d-flex align-items-center justify-content-center p-0 ms-2",
+                                                                style={
+                                                                    "width": "34px",
+                                                                    "height": "34px",
+                                                                    "minWidth": "34px",
+                                                                },
+                                                            ),
+                                                            dbc.Tooltip(
+                                                                "Refresh Report Preview",
+                                                                target="btn-refresh-report",
+                                                                placement="left",
+                                                            ),
+                                                        ],
+                                                        className="p-2 border rounded bg-dark d-flex align-items-center justify-content-between flex-wrap",
+                                                        style={"minHeight": "42px"},
+                                                    ),
+                                                ],
+                                                md=12,
+                                            ),
+                                        ],
+                                        className="mb-3",
+                                    ),
+                                    html.Div(
+                                        dcc.Loading(
+                                            dcc.Markdown(
+                                                id="report-markdown-preview",
+                                                children="*Loading report preview...*",
+                                                dangerously_allow_html=True,
+                                                mathjax=True,
+                                                className="report-markdown-view p-4 rounded border",
+                                                style={
+                                                    "backgroundColor": "#0d1117",
+                                                    "color": "#e6edf3",
+                                                    "minHeight": "260px",
+                                                    "maxHeight": "850px",
+                                                    "overflowY": "auto",
+                                                },
+                                            )
+                                        )
+                                    ),
+                                ]
                             ),
                         ],
                         className="mb-4",

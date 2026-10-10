@@ -5,8 +5,8 @@ import logging
 import os
 from typing import Any, Dict, List, Optional
 
-from tricys.auditor.offline import parse_auditor_config, perform_offline_audit
-from tricys.postprocess.static_alarm import check_thresholds
+from tricys.plugins.auditor.offline import parse_auditor_config, perform_offline_audit
+from tricys.plugins.static_alarm import check_thresholds
 from tricys.workflow.base import PostprocessPlugin
 from tricys.workflow.context import PipelineContext
 from tricys.workflow.registry import register_postprocess_plugin
@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 @register_postprocess_plugin("safety")
 @register_postprocess_plugin("safety_auditor")
 @register_postprocess_plugin("audit")
+@register_postprocess_plugin("auditor")
+@register_postprocess_plugin("mass_conservation")
 @register_postprocess_plugin("offline_auditor")
 @register_postprocess_plugin("static_alarm")
 class SafetyAuditorPlugin(PostprocessPlugin):

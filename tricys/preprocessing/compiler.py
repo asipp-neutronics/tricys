@@ -90,6 +90,45 @@ def build_model_artifacts(
     try:
         omc.sendExpression(f'cd("{Path(build_dir).as_posix()}")')
 
+        # Load additional model libraries if specified
+        load_models = []
+        if cfg:
+            load_models = cfg.get("model", {}).get("loadModel") or cfg.get(
+                "simulation", {}
+            ).get("loadModel", [])
+        for lib in load_models:
+            omc.sendExpression(f"loadModel({lib})")
+
+        # Set C compiler flags if specified
+        cflags = ""
+        target = ""
+        if cfg:
+            cflags = cfg.get("model", {}).get("cflags") or cfg.get(
+                "simulation", {}
+            ).get("cflags", "")
+            target = cfg.get("model", {}).get("target") or cfg.get(
+                "simulation", {}
+            ).get("target", "")
+        if cflags:
+            omc.sendExpression(f'setCommandLineOptions("+cflags={cflags}")')
+        if target:
+            target_str = str(target).strip().lower()
+            if target_str == "openmodelica":
+                target_str = "gcc"
+            valid_targets = {
+                "gcc",
+                "msvc",
+                "msvc10",
+                "msvc12",
+                "msvc13",
+                "msvc15",
+                "msvc19",
+                "vxworks69",
+                "debugrt",
+            }
+            if target_str in valid_targets:
+                omc.sendExpression(f'setCommandLineOptions("+target={target_str}")')
+
         if not load_modelica_package(omc, Path(pkg_p).as_posix()):
             raise RuntimeError(f"Failed to load Modelica package at: {pkg_p}")
 
@@ -125,6 +164,7 @@ class ModelCompilerPlugin(PreprocessPlugin):
             package_path=context.package_path,
             model_name=context.model_name,
             temp_dir=context.temp_dir,
+            config=context.config,
         )
         context.compiled_artifacts = {
             "exe": exe,

@@ -6,8 +6,8 @@ import zipfile
 from dataclasses import dataclass
 from typing import Any
 
-from tricys.auditor.offline import AuditorConfig
 from tricys.online_cosim.oms_runtime import OmsSystemRuntime
+from tricys.plugins.auditor.offline import AuditorConfig
 
 
 @dataclass(slots=True)

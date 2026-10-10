@@ -82,7 +82,28 @@ class SimulationSetupPlugin(PreprocessPlugin):
     def _expand_simulation_jobs(self, context: PipelineContext) -> None:
         if context.jobs:
             logger.debug("Simulation jobs already generated in context, skipping")
-            return
+        # Schema 2.0 Task Handling
+        task_cfg = context.config.get("task", {})
+        if isinstance(task_cfg, dict):
+            task_type = task_cfg.get("type", "").lower()
+            if task_type == "simulate":
+                jobs = [dict(task_cfg.get("parameters", {}))]
+                context.jobs = jobs
+                context.set_metadata("sampling_method", "simulate")
+                context.set_metadata("total_jobs", 1)
+                logger.info(
+                    "Generated 1 single-point simulation job for 'simulate' task"
+                )
+                return
+            elif task_type == "sweep" and isinstance(task_cfg.get("parameters"), list):
+                jobs = [dict(c) for c in task_cfg["parameters"]]
+                context.jobs = jobs
+                context.set_metadata("sampling_method", "discrete_sweep")
+                context.set_metadata("total_jobs", len(jobs))
+                logger.info(
+                    f"Generated {len(jobs)} discrete sweep job(s) from task.parameters"
+                )
+                return
 
         engine = SamplingEngine.from_config(context.config)
         if engine is not None:

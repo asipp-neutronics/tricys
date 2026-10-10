@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 # Functional capability plugins
-from tricys.postprocess.plugins.report_plugin import (
+from tricys.plugins.report_plugin import (
     AnalysisReportPlugin,
     BaselinePlotPlugin,
     LegacyTaskPlugin,
 )
-from tricys.postprocess.plugins.safety_plugin import (
+from tricys.plugins.safety_plugin import (
     OfflineAuditorPlugin,
     SafetyAuditorPlugin,
     StaticAlarmPlugin,
 )
-from tricys.postprocess.plugins.sensitivity_plugin import (
+from tricys.plugins.sensitivity_plugin import (
     SensitivityAnalysisPlugin,
     execute_sensitivity_analysis,
 )
-from tricys.postprocess.plugins.storage_plugin import (
+from tricys.plugins.storage_plugin import (
     CSVExportPlugin,
     HDF5StoragePlugin,
     MetricCalculatorPlugin,

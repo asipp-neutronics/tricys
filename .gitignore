@@ -61,3 +61,10 @@ tricys_goview/*
 tricys_backend/hdf5_contexts/paper/
 
 paper/
+
+# Simulation runtime timestamp outputs
+[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*/
+**/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*/
+
+# Test artifacts
+test/visualizer/test_artifacts/

@@ -1509,7 +1509,7 @@ def baseline_analysis(results_file_path: str, output_dir: str, **kwargs) -> None
 
 
 # {
-# #   "module": "tricys.postprocess.baseline_analysis",
+# #   "module": "tricys.analysis.baseline_analysis",
 # #   "function": "baseline_analysis",
 # #   "params": {
 # #        "detailed_var": "sds.I[1]",

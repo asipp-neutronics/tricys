@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import shutil
@@ -5,13 +7,17 @@ import shutil
 import pandas as pd
 import pytest
 
-from tricys.postprocess.static_alarm import check_thresholds
+from tricys.plugins.safety_plugin import SafetyAuditorPlugin
+from tricys.plugins.static_alarm import check_thresholds
+from tricys.workflow.context import PipelineContext
 
 # --- Fixtures and Setup ---
 TEST_DIR = "temp_static_alarm_test"
 
 
-def create_hdf5_fixture(file_path, jobs_df, results_df):
+def create_hdf5_fixture(
+    file_path: str, jobs_df: pd.DataFrame, results_df: pd.DataFrame
+) -> None:
     with pd.HDFStore(file_path, mode="w") as store:
         store.put("jobs", jobs_df, format="table", data_columns=True)
         store.append("results", results_df, index=False, data_columns=True)
@@ -21,14 +27,14 @@ def create_hdf5_fixture(file_path, jobs_df, results_df):
 def setup_and_teardown_test_dir():
     """Fixture to create and cleanup the test directory for each test."""
     if os.path.exists(TEST_DIR):
-        shutil.rmtree(TEST_DIR)
-    os.makedirs(TEST_DIR)
+        shutil.rmtree(TEST_DIR, ignore_errors=True)
+    os.makedirs(TEST_DIR, exist_ok=True)
     yield
     if os.path.exists(TEST_DIR):
-        shutil.rmtree(TEST_DIR)
+        shutil.rmtree(TEST_DIR, ignore_errors=True)
 
 
-# --- Tests for static_alarm.py ---
+# --- Tests for static_alarm.py & SafetyAuditorPlugin ---
 
 
 @pytest.mark.build_test
@@ -50,7 +56,7 @@ def test_check_thresholds_no_alarm():
 
     report_path = os.path.join(TEST_DIR, "alarm_report.json")
     assert os.path.exists(report_path)
-    with open(report_path, "r") as f:
+    with open(report_path, "r", encoding="utf-8") as f:
         report = json.load(f)
     assert not any(item["has_alarm"] for item in report if item["variable"] == "var1")
 
@@ -68,7 +74,8 @@ def test_check_thresholds_max_exceeded():
     check_thresholds(h5_path, TEST_DIR, rules)
 
     report_path = os.path.join(TEST_DIR, "alarm_report.json")
-    with open(report_path, "r") as f:
+    assert os.path.exists(report_path)
+    with open(report_path, "r", encoding="utf-8") as f:
         report = json.load(f)
     assert any(item["has_alarm"] for item in report if item["variable"] == "var1")
 
@@ -86,7 +93,8 @@ def test_check_thresholds_min_exceeded():
     check_thresholds(h5_path, TEST_DIR, rules)
 
     report_path = os.path.join(TEST_DIR, "alarm_report.json")
-    with open(report_path, "r") as f:
+    assert os.path.exists(report_path)
+    with open(report_path, "r", encoding="utf-8") as f:
         report = json.load(f)
     assert any(item["has_alarm"] for item in report if item["variable"] == "var1")
 
@@ -108,7 +116,8 @@ def test_check_thresholds_sweep_task():
     check_thresholds(h5_path, TEST_DIR, rules)
 
     report_path = os.path.join(TEST_DIR, "alarm_report.json")
-    with open(report_path, "r") as f:
+    assert os.path.exists(report_path)
+    with open(report_path, "r", encoding="utf-8") as f:
         report = json.load(f)
 
     alarm_p1 = next(item["has_alarm"] for item in report if item["p"] == "1")
@@ -116,3 +125,31 @@ def test_check_thresholds_sweep_task():
 
     assert not alarm_p1
     assert alarm_p2
+
+
+@pytest.mark.build_test
+def test_safety_auditor_plugin_execution():
+    """Tests the functional SafetyAuditorPlugin execution on PipelineContext."""
+    h5_path = os.path.join(TEST_DIR, "results.h5")
+    jobs_df = pd.DataFrame({"job_id": [1]})
+    df = pd.DataFrame({"time": [0, 1], "safety_var": [10.0, 99.0], "job_id": [1, 1]})
+    create_hdf5_fixture(h5_path, jobs_df, df)
+
+    rules = [{"columns": ["safety_var"], "min": 0.0, "max": 50.0}]
+    plugin = SafetyAuditorPlugin(alarm_rules=rules)
+
+    context = PipelineContext(
+        config={"static_alarm": {"rules": rules}},
+        results_dir=TEST_DIR,
+        results_store_path=h5_path,
+    )
+
+    assert plugin.validate(context) is True
+    plugin.run(context)
+
+    # Post_processing report directory
+    report_path = os.path.join(TEST_DIR, "post_processing", "alarm_report.json")
+    assert os.path.exists(report_path)
+    with open(report_path, "r", encoding="utf-8") as f:
+        report = json.load(f)
+    assert any(item["has_alarm"] for item in report if item["variable"] == "safety_var")

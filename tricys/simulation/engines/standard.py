@@ -79,22 +79,41 @@ def run_fast_subprocess_job(
     if not run_exe_path:
         return ""
 
-    override_pairs = [f"{k}={v}" for k, v in job_params.items()]
+    override_pairs = [
+        f"{k}={v}"
+        for k, v in job_params.items()
+        if k not in ("name", "job_id") and not str(k).startswith("_")
+    ]
 
+    output_fmt = sim_config.get("outputFormat", "csv")
     cmd = [
         run_exe_path,
         "-r",
         result_filename,
-        "-outputFormat=csv",
+        f"-outputFormat={output_fmt}",
         f"-stopTime={sim_config['stop_time']}",
         f"-stepSize={sim_config['step_size']}",
     ]
+
+    if "tolerance" in sim_config and sim_config["tolerance"] is not None:
+        cmd.append(f"-tolerance={sim_config['tolerance']}")
+
+    if "start_time" in sim_config and float(sim_config.get("start_time", 0.0)) > 0:
+        cmd.append(f"-startTime={sim_config['start_time']}")
+
+    if "method" in sim_config and sim_config["method"]:
+        cmd.append(f"-s={sim_config['method']}")
 
     if override_pairs:
         override_str = ",".join(override_pairs)
         cmd.extend(["-override", override_str])
     if variable_filter:
         cmd.append(f"-variableFilter={variable_filter}")
+
+    if sim_config.get("simflags"):
+        import shlex
+
+        cmd.extend(shlex.split(sim_config["simflags"]))
 
     env = os.environ.copy()
     if sys.platform == "win32":
@@ -166,11 +185,18 @@ class StandardSimulationEngine(BaseSimulationEngine):
 
     def execute(self, context: PipelineContext) -> None:
         sim_cfg = context.config.get("simulation", {})
+        task_cfg = context.config.get("task", {})
         jobs = context.jobs or [{}]
-        use_concurrent = sim_cfg.get("concurrent", False)
+
+        use_concurrent = sim_cfg.get("concurrent", False) or (
+            isinstance(task_cfg, dict) and task_cfg.get("parallel", False)
+        )
         maximize_workers = sim_cfg.get("maximize_workers", False)
+        configured_workers = sim_cfg.get("max_workers") or (
+            task_cfg.get("max_workers") if isinstance(task_cfg, dict) else None
+        )
         max_workers = get_safe_max_workers(
-            sim_cfg.get("max_workers"),
+            configured_workers,
             maximize=maximize_workers,
             task_count=len(jobs),
         )
@@ -278,14 +304,16 @@ class StandardSimulationEngine(BaseSimulationEngine):
                     variableFilter=sim_cfg.get("variableFilter", ".*"),
                 )
 
-                mod.setSimulationOptions(
-                    {
-                        "stopTime": context.stop_time,
-                        "tolerance": 1e-6,
-                        "outputFormat": "csv",
-                        "stepSize": context.step_size,
-                    }
-                )
+                sim_options = {
+                    "stopTime": context.stop_time,
+                    "tolerance": float(sim_cfg.get("tolerance", 1e-6)),
+                    "outputFormat": sim_cfg.get("outputFormat", "csv"),
+                    "stepSize": context.step_size,
+                    "solver": sim_cfg.get("method", "dassl"),
+                }
+                if float(sim_cfg.get("start_time", 0.0)) > 0:
+                    sim_options["startTime"] = float(sim_cfg["start_time"])
+                mod.setSimulationOptions(sim_options)
 
                 for i, job_params in enumerate(jobs, 1):
                     logger.info(f"Job {i} of {len(jobs)}")

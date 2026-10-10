@@ -28,6 +28,7 @@ def process_and_store_job_result(
     config: dict,
     metrics_definition: Optional[dict] = None,
     filter_schema: Optional[list] = None,
+    jobs_min_itemsize: Optional[dict] = None,
 ) -> None:
     """Processes a single job's CSV result, appends to HDF5, and cleans up transient workspace."""
     if not res_path or not os.path.exists(res_path):
@@ -41,14 +42,22 @@ def process_and_store_job_result(
         # Summary calculations
         if metrics_definition:
             try:
-                metrics_res = calculate_single_job_metrics(
-                    df,
-                    metrics_definition,
-                    filter_schema=filter_schema,
+                metrics_res = (
+                    calculate_single_job_metrics(
+                        df,
+                        metrics_definition,
+                        filter_schema=filter_schema,
+                    )
+                    or {}
                 )
+                if params and isinstance(params, dict):
+                    for m_name in metrics_definition.keys():
+                        if m_name in params and m_name not in metrics_res:
+                            metrics_res[m_name] = params[m_name]
+
                 if metrics_res:
                     summary_df = build_single_job_summary_df(
-                        job_id, params, metrics_res
+                        job_id, metrics_res, metrics_definition
                     )
                     for col in summary_df.columns:
                         if col != "job_id" and pd.api.types.is_numeric_dtype(
@@ -57,20 +66,65 @@ def process_and_store_job_result(
                             summary_df[col] = summary_df[col].astype(float)
                         elif col != "job_id":
                             summary_df[col] = summary_df[col].astype(object)
-                    store.append("summary", summary_df, index=False, data_columns=True)
+
+                    sum_str_cols = {
+                        col: 256
+                        for col in summary_df.select_dtypes(
+                            include=["object", "string"]
+                        ).columns
+                    }
+                    if "/summary" not in store.keys() and sum_str_cols:
+                        store.append(
+                            "summary",
+                            summary_df,
+                            index=False,
+                            data_columns=True,
+                            min_itemsize=sum_str_cols,
+                        )
+                    else:
+                        store.append(
+                            "summary",
+                            summary_df,
+                            index=False,
+                            data_columns=True,
+                        )
             except Exception as e:
                 logger.warning(
                     f"Failed to calculate/save summary metrics for job {job_id}: {e}"
                 )
 
-        param_df = pd.DataFrame([params])
+        clean_params = {
+            k: v
+            for k, v in params.items()
+            if not metrics_definition or k not in metrics_definition
+        }
+        param_df = pd.DataFrame([clean_params])
         param_df["job_id"] = job_id
         for col in param_df.columns:
             if col != "job_id" and pd.api.types.is_numeric_dtype(param_df[col]):
                 param_df[col] = param_df[col].astype(float)
         for col in param_df.select_dtypes(include=["object", "string"]).columns:
             param_df[col] = param_df[col].astype(object)
-        store.append("jobs", param_df, index=False, data_columns=True)
+
+        param_str_cols = {
+            col: 256
+            for col in param_df.select_dtypes(include=["object", "string"]).columns
+        }
+        if jobs_min_itemsize:
+            param_str_cols.update(
+                {k: v for k, v in jobs_min_itemsize.items() if k in param_df.columns}
+            )
+
+        if "/jobs" not in store.keys() and param_str_cols:
+            store.append(
+                "jobs",
+                param_df,
+                index=False,
+                data_columns=True,
+                min_itemsize=param_str_cols,
+            )
+        else:
+            store.append("jobs", param_df, index=False, data_columns=True)
 
         # Cleanup intermediate job files if keep_temp_files is False
         keep_temp = config.get("simulation", {}).get("keep_temp_files", False)
@@ -213,6 +267,17 @@ class SimulationStoragePlugin(PostprocessPlugin):
                 except Exception as e:
                     logger.warning(f"Failed to save config to HDF5: {e}")
 
+                # Precompute string column sizes across all jobs to prevent PyTables overflow
+                jobs_min_itemsize = {}
+                for item in context.raw_results:
+                    for k, v in item.get("params", {}).items():
+                        if isinstance(v, str):
+                            jobs_min_itemsize[k] = max(
+                                jobs_min_itemsize.get(k, 256),
+                                len(v) * 2,
+                                256,
+                            )
+
                 # Save raw results and calculate job metrics
                 for item in context.raw_results:
                     job_id = item["job_id"]
@@ -226,6 +291,7 @@ class SimulationStoragePlugin(PostprocessPlugin):
                         config=context.config,
                         metrics_definition=metrics_def,
                         filter_schema=filter_schema,
+                        jobs_min_itemsize=jobs_min_itemsize,
                     )
 
             context.results_store_path = hdf_path
