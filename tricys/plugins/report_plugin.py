@@ -40,8 +40,8 @@ class AnalysisReportPlugin(PostprocessPlugin):
         )
         report_cfg = (
             self.params.get("report_config")
-            or context.config.get("report")
             or context.config.get("visualizer", {}).get("report")
+            or context.config.get("report")
         )
         has_report = bool(report_cfg and report_cfg.get("enabled", True))
         return has_tasks or has_report or self.run_baseline_plot
@@ -58,8 +58,8 @@ class AnalysisReportPlugin(PostprocessPlugin):
         # 1. Execute automated engineering report generation if configured
         report_cfg = (
             self.params.get("report_config")
-            or context.config.get("report")
             or context.config.get("visualizer", {}).get("report")
+            or context.config.get("report")
         )
         if report_cfg and report_cfg.get("enabled", True):
             self._generate_engineering_report(context, report_cfg)

@@ -5,6 +5,7 @@ model:
   modelName: "example_model.Cycle"
 
 scenario:
+  time_base: "hour"
   stopTime: 2000.0
   stepSize: 0.5
   method: "dassl"
@@ -41,12 +42,11 @@ task:
         evaluate: "doubling_time"
         threshold: 63072000.0  # 2年自持倍增时间约束阈值
 
-report:
-  enabled: true
-  # template: "sweep"  # 默认不填自动与 task.type ("sweep") 保持一致
-  title: "TRICYS 脉冲占空比变工况自持启动亏空与临界产氚比分析报告"
-  formats: ["markdown", "docx", "pdf"]
-
 visualizer:
   enabled: true
   launch_on_finish: true
+  report:
+    enabled: true
+    # template: "sweep"  # 默认不填自动与 task.type ("sweep") 保持一致
+    title: "TRICYS 脉冲占空比变工况自持启动亏空与临界产氚比分析报告"
+    formats: ["markdown", "docx", "pdf"]

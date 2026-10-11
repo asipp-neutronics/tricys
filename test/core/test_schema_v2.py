@@ -395,3 +395,43 @@ def test_tricys_config_from_dict_polymorphic(minimal_v2_simulate_dict):
     legacy_result = TricysConfig.from_dict(legacy_data)
     assert isinstance(legacy_result, TricysConfig)
     assert legacy_result.simulation.model_name == "OldModel"
+
+
+def test_v2_canonical_task_auditor_and_visualizer_report(minimal_v2_simulate_dict):
+    """Verify that task.auditor and visualizer.report parse cleanly and synchronize with top-level accessors."""
+    v2_data = minimal_v2_simulate_dict.copy()
+    v2_data["task"] = {
+        "type": "simulate",
+        "parameters": {"WDS.threshold": 1200.0},
+        "auditor": {
+            "enabled": True,
+            "warn_threshold_g": 0.5,
+            "kill_threshold_g": 20.0,
+            "patterns": {
+                "inventory": ["*.I?1?"],
+                "cumulative_sources": ["*blanket.cumulative_breed?1?"],
+            },
+        },
+    }
+    v2_data["visualizer"] = {
+        "enabled": True,
+        "report": {
+            "enabled": True,
+            "title": "Custom Mass Balance Report",
+            "formats": ["markdown", "pdf"],
+        },
+    }
+
+    config = TricysV2Config.from_dict(v2_data)
+    # Check canonical locations
+    assert config.task.auditor is not None
+    assert config.task.auditor.enabled is True
+    assert config.task.auditor.warn_threshold_g == 0.5
+    assert config.visualizer.report is not None
+    assert config.visualizer.report.title == "Custom Mass Balance Report"
+
+    # Check synchronized accessors
+    assert config.auditor is not None
+    assert config.auditor.warn_threshold_g == 0.5
+    assert config.report is not None
+    assert config.report.title == "Custom Mass Balance Report"

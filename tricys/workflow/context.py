@@ -22,6 +22,7 @@ class PipelineContext:
     model_name: str = ""
     stop_time: float = 0.0
     step_size: float = 0.0
+    time_base: str = "second"
 
     # Preprocessing Artifacts
     jobs: List[Dict[str, Any]] = field(default_factory=list)
@@ -116,6 +117,7 @@ class PipelineContext:
             model_name=sim_cfg.get("model_name", ""),
             stop_time=float(sim_cfg.get("stop_time", 0.0)),
             step_size=float(sim_cfg.get("step_size", 0.0)),
+            time_base=str(sim_cfg.get("time_base", "second")),
             metrics_definition=metrics_def,
             typed_config=typed_cfg,
         )

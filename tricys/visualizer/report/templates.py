@@ -14,6 +14,7 @@ Design Principles:
 
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -138,6 +139,81 @@ def _format_figures_to_markdown(figures: Optional[List[Dict[str, Any]]]) -> str:
     return "\n".join(lines)
 
 
+def format_foc_scenario_overview(config: Optional[Dict[str, Any]]) -> Optional[str]:
+    """Extracts and formats Fusion Operation Cycle (FOC) dynamic pulse injection scenario overview.
+
+    Returns formatted markdown text if FOC configuration is detected, otherwise None.
+    """
+    if not config or not isinstance(config, dict):
+        return None
+
+    pulse_cfg = (
+        config.get("scenario", {}).get("pulse")
+        if isinstance(config.get("scenario"), dict)
+        else None
+    )
+    foc_cfg = config.get("foc")
+
+    foc_file = None
+    foc_comp = None
+    strategy = "table"
+
+    if pulse_cfg and isinstance(pulse_cfg, dict):
+        foc_file = pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")
+        foc_comp = pulse_cfg.get("foc_component") or pulse_cfg.get("target_component")
+        strategy = pulse_cfg.get("strategy", "table")
+
+    if not foc_file and foc_cfg and isinstance(foc_cfg, dict):
+        foc_file = foc_cfg.get("foc_path") or foc_cfg.get("foc_file")
+        foc_comp = foc_cfg.get("foc_component") or foc_cfg.get("component_name")
+        strategy = foc_cfg.get("strategy", strategy)
+
+    if not foc_file:
+        return None
+
+    foc_comp = foc_comp or "pulseSource"
+    strategy_desc = (
+        "FOC_TablePulse (高精度时序离散插值表)"
+        if strategy == "table"
+        else "FOC_ArrayPulse (紧凑离散脉冲数组)"
+    )
+
+    foc_filename = os.path.basename(str(foc_file))
+    lines = [
+        "### ⚡ 聚变运行周期 (FOC) 动态脉冲工况配置",
+        "",
+        "| 工况要素 | 配置取值 | 物理/工程说明 |",
+        "| :--- | :---: | :--- |",
+        f"| **工况脚本名称** | `{foc_filename}` | 调度描述文件: `{foc_file}` |",
+        f"| **目标注入组件** | `{foc_comp}` | 动态替换底层 Modelica 系统的信号源实例 |",
+        f"| **脉冲注入策略** | `{strategy}` | {strategy_desc} |",
+    ]
+
+    # Try parsing schedule metadata from .foc DSL file if available
+    if os.path.exists(str(foc_file)):
+        try:
+            from tricys.core.foc import parse_foc_file_with_unit
+
+            amps, durs, unit = parse_foc_file_with_unit(str(foc_file))
+            total_duration_sec = sum(durs)
+            pulse_count = len([a for a in amps if a > 0])
+            max_amp = max(amps) if amps else 0.0
+
+            lines.extend(
+                [
+                    f"| **工况时间基准单位** | `{unit}` | FOC 脚本原生声明时间尺度 |",
+                    f"| **单周期总调度跨度** | `{total_duration_sec:.1f} s ({total_duration_sec / 3600.0:.2f} h)` | 单完整周期/调度计划时间长度 |",
+                    f"| **工况有效脉冲数** | `{pulse_count} 个` | 包含有效功率驱动的燃烧期脉冲阶段 |",
+                    f"| **峰值脉冲功率/幅度** | `{max_amp:.1f}` | 聚变燃烧阶段最大标称驱动强度 |",
+                ]
+            )
+        except Exception:
+            pass
+
+    lines.append("")
+    return "\n".join(lines)
+
+
 # ==============================================================================
 # 1. Universal Simulate Template: Single Scenario & Dynamic Transient Audit
 # ==============================================================================
@@ -152,7 +228,11 @@ def render_simulate(
 ) -> str:
     """Renders Universal Dynamic Simulation Engineering Report."""
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_cfg = config.get("report", {})
+    report_cfg = (
+        config.get("visualizer", {}).get("report")
+        if isinstance(config.get("visualizer"), dict)
+        else None
+    ) or config.get("report", {})
     title = (
         report_cfg.get("title") or "TRICYS 聚变堆氚燃料循环单工况动态仿真工程分析报告"
     )
@@ -206,6 +286,14 @@ def render_simulate(
                     if net_change >= 0
                     else "净消耗状态 (终值低于初值)"
                 )
+                time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
+                if time_base == "hour":
+                    t_turn_str = f"{t_turn / 3600.0:.2f} h ({t_turn:.0f} s)"
+                    t_turn_unit = "h"
+                else:
+                    t_turn_str = f"{t_turn:.2f}"
+                    t_turn_unit = "s"
+
                 storage_facts = [
                     {
                         "物理参量": "监控主储罐变量列",
@@ -233,8 +321,8 @@ def render_simulate(
                     },
                     {
                         "物理参量": "达自持转折点时间 (t_turning)",
-                        "实测数值 / 状态": f"{t_turn:.2f}",
-                        "单位": "s",
+                        "实测数值 / 状态": t_turn_str,
+                        "单位": t_turn_unit,
                         "工程说明": "库存由净消耗转为净积累的拐点时刻",
                     },
                     {
@@ -257,6 +345,28 @@ def render_simulate(
                     },
                 ]
 
+    time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
+    time_base_desc = "hour (小时基准)" if time_base == "hour" else "second (秒基准)"
+    try:
+        st_val = float(stop_time)
+        stop_time_display = (
+            f"{st_val:g} h ({st_val * 3600.0:.0f} s)"
+            if time_base == "hour"
+            else f"{st_val:g} s"
+        )
+    except Exception:
+        stop_time_display = f"{stop_time} {'h' if time_base == 'hour' else 's'}"
+
+    try:
+        ss_val = float(step_size)
+        step_size_display = (
+            f"{ss_val:g} h ({ss_val * 3600.0:.1f} s)"
+            if time_base == "hour"
+            else f"{ss_val:g} s"
+        )
+    except Exception:
+        step_size_display = f"{step_size} {'h' if time_base == 'hour' else 's'}"
+
     md = [
         f"# {title}",
         f"**生成时间**: {now_str}  |  **任务类型**: SIMULATE (单工况动态时序仿真)  |  **仿真模型**: `{model_name}`",
@@ -269,8 +379,9 @@ def render_simulate(
         "| :--- | :---: | :--- |",
         f"| **仿真底层模型** | `{model_name}` | 模型文件: `{model_file}` |",
         f"| **数值求解算法** | `{solver_method}` | 变步长常微分代数方程求解器 |",
-        f"| **仿真终止时间** | `{stop_time} s` | 计算时间窗口跨度 |",
-        f"| **输出采样步长** | `{step_size} s` | 时序数据离散记录间隔 |",
+        f"| **工况时间基准 (time_base)** | `{time_base_desc}` | 系统声明时间尺度 |",
+        f"| **仿真终止时间** | `{stop_time_display}` | 计算时间窗口跨度 |",
+        f"| **输出采样步长** | `{step_size_display}` | 时序数据离散记录间隔 |",
     ]
 
     # Append model-specific real physical parameters if present
@@ -287,6 +398,11 @@ def render_simulate(
                 if item and item.get("desc"):
                     param_desc = item["desc"]
             md.append(f"| **{param_label}** | `{v}` | {param_desc} |")
+
+    # Fusion Operation Cycle (FOC) dynamic pulse injection section (if configured)
+    foc_overview = format_foc_scenario_overview(config)
+    if foc_overview:
+        md.extend(["", foc_overview])
 
     # Target Metrics and Optimization Goals (if configured)
     task_metrics_facts = []
@@ -438,7 +554,7 @@ def render_simulate(
     else:
         md.extend(
             [
-                "- **物料平衡审计状态**: 未配置全厂边界源汇审计规则 (`auditor.patterns`)",
+                "- **物料平衡审计状态**: 未配置全厂边界源汇审计规则 (`task.auditor.patterns` 或 `auditor.patterns`)",
                 "- **客观核查事实说明**: 当前任务未配置系统进出口边界流股（加料、燃耗、排废、泄漏）与各组件内部滞留量的完整规则映射，不满足闭环质量守恒积分核查前提条件，已如实记录并跳过全厂闭环质量审计。",
                 "",
             ]
@@ -477,7 +593,11 @@ def render_sweep(
 ) -> str:
     """Renders Universal Parameter Sweep Engineering Report."""
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_cfg = config.get("report", {})
+    report_cfg = (
+        config.get("visualizer", {}).get("report")
+        if isinstance(config.get("visualizer"), dict)
+        else None
+    ) or config.get("report", {})
     title = (
         report_cfg.get("title") or "TRICYS 聚变堆氚燃料循环多工况参数扫描工程分析报告"
     )
@@ -756,6 +876,11 @@ def render_sweep(
     else:
         md.append("*（无工况参数清单）*\n\n")
 
+    # Fusion Operation Cycle (FOC) dynamic pulse injection section (if configured)
+    foc_overview = format_foc_scenario_overview(config)
+    if foc_overview:
+        md.extend([foc_overview, ""])
+
     md.extend(
         [
             "---",
@@ -817,7 +942,11 @@ def render_sensitivity(
 ) -> str:
     """Renders Universal Global Sensitivity Analysis (GSA) Engineering Report."""
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_cfg = config.get("report", {})
+    report_cfg = (
+        config.get("visualizer", {}).get("report")
+        if isinstance(config.get("visualizer"), dict)
+        else None
+    ) or config.get("report", {})
     title = report_cfg.get("title") or "TRICYS 聚变堆氚燃料循环全局敏感性分析工程报告"
 
     task_cfg = config.get("task", {})

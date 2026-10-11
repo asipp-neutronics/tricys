@@ -20,6 +20,32 @@ from tricys.utils.hdf5_schema import RESULTS_KEY, load_jobs_df
 
 logger = logging.getLogger(__name__)
 
+HOURS_PER_DAY = 24.0
+SECONDS_PER_HOUR = 3600.0
+SECONDS_PER_DAY = 86400.0
+SECONDS_PER_YEAR = 31536000.0
+
+
+def _get_time_to_days_factor(
+    time_series: Optional[pd.Series] = None, kwargs: Optional[dict] = None
+) -> float:
+    """Return factor to convert time series or time values to days.
+
+    In TRICYS 2.0 (SI seconds-native), dividing seconds by SECONDS_PER_DAY yields days.
+    For legacy hour-based data, dividing hours by HOURS_PER_DAY yields days.
+    """
+    kwargs = kwargs or {}
+    unit = kwargs.get("time_unit") or kwargs.get("time_base")
+    if unit in ("h", "hour", "hours"):
+        return HOURS_PER_DAY
+    if unit in ("s", "sec", "second", "seconds"):
+        return SECONDS_PER_DAY
+    if time_series is not None and len(time_series) > 0:
+        max_val = float(time_series.max())
+        if max_val <= 200.0:
+            return HOURS_PER_DAY
+    return SECONDS_PER_DAY
+
 
 _english_glossary_map = {}
 _chinese_glossary_map = {}
@@ -259,7 +285,8 @@ def _plot_time_series_with_zoom(df: pd.DataFrame, output_dir: str, **kwargs) -> 
     detailed_var = kwargs.get("detailed_var", "sds.I[1]")
     color_map = kwargs.get("color_map", {})
 
-    time_days = df["time"] / 24
+    day_factor = _get_time_to_days_factor(df["time"], kwargs)
+    time_days = df["time"] / day_factor
     all_plot_columns = sorted([col for col in df.columns if col != "time"])
     primary_var_columns = [
         col for col in all_plot_columns if col.startswith(detailed_var)
@@ -613,18 +640,19 @@ def _generate_postprocess_report(
                 startup_inventory = _calculate_startup_inventory(series, time_series)
                 turning_point_time = _time_of_turning_point(series, time_series)
                 doubling_time = _calculate_doubling_time(series, time_series)
+                day_factor = _get_time_to_days_factor(time_series, kwargs)
 
                 metrics_data.append(
                     {
                         "变量 (Variable)": col,
                         "启动库存 (Startup Inventory)": f"{startup_inventory:.4f}",
                         "自持时间 (Self-Sufficiency Time)": (
-                            f"{turning_point_time / 24:.2f} 天"
+                            f"{turning_point_time / day_factor:.2f} 天"
                             if pd.notna(turning_point_time)
                             else "N/A"
                         ),
                         "倍增时间 (Doubling Time)": (
-                            f"{doubling_time / 24:.2f} 天"
+                            f"{doubling_time / day_factor:.2f} 天"
                             if pd.notna(doubling_time)
                             else "N/A"
                         ),
@@ -996,18 +1024,19 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
                     )
                     turning_point_time = _time_of_turning_point(series, time_series)
                     doubling_time = _calculate_doubling_time(series, time_series)
+                    day_factor = _get_time_to_days_factor(time_series, kwargs)
 
                     metrics_data.append(
                         {
                             "变量 (Variable)": label,
                             "启动库存 (Startup Inventory)": f"{startup_inventory:.4f}",
                             "自持时间 (Self-Sufficiency Time)": (
-                                f"{turning_point_time / 24:.2f} 天"
+                                f"{turning_point_time / day_factor:.2f} 天"
                                 if pd.notna(turning_point_time)
                                 else "N/A"
                             ),
                             "倍增时间 (Doubling Time)": (
-                                f"{doubling_time / 24:.2f} 天"
+                                f"{doubling_time / day_factor:.2f} 天"
                                 if pd.notna(doubling_time)
                                 else "N/A"
                             ),
@@ -1101,7 +1130,8 @@ def _plot_time_series_with_zoom_from_hdf5(
                 continue
 
             job_df = job_df.reset_index(drop=True)
-            time_days = job_df["time"] / 24
+            day_factor = _get_time_to_days_factor(job_df["time"], kwargs)
+            time_days = job_df["time"] / day_factor
 
             for variable_name in result_columns:
                 if variable_name not in job_df.columns:
@@ -1144,7 +1174,8 @@ def _plot_time_series_with_zoom_from_hdf5(
                     continue
 
                 job_df = job_df.reset_index(drop=True)
-                time_days = job_df["time"] / 24
+                day_factor = _get_time_to_days_factor(job_df["time"], kwargs)
+                time_days = job_df["time"] / day_factor
 
                 for variable_name in result_columns:
                     if variable_name not in job_df.columns:

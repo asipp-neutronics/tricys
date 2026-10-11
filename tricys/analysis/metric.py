@@ -6,6 +6,66 @@ import pandas as pd
 from tricys.analysis.hdf5_support import iter_hdf5_job_results
 from tricys.utils.hdf5_schema import load_jobs_df
 
+TIME_UNIT_FACTORS = {
+    "s": 1.0,
+    "sec": 1.0,
+    "second": 1.0,
+    "seconds": 1.0,
+    "min": 60.0,
+    "minute": 60.0,
+    "minutes": 60.0,
+    "h": 3600.0,
+    "hr": 3600.0,
+    "hour": 3600.0,
+    "hours": 3600.0,
+    "d": 86400.0,
+    "day": 86400.0,
+    "days": 86400.0,
+    "y": 31536000.0,
+    "yr": 31536000.0,
+    "year": 31536000.0,
+    "years": 31536000.0,
+}
+
+TIME_OPERATOR_METHODS = {
+    "time_of_turning_point",
+    "turning_point",
+    "calculate_doubling_time",
+    "doubling_time",
+    "settling_time",
+    "get_settling_time",
+}
+
+
+def apply_metric_unit_scaling(val: Any, method_name: str, raw_def: Any) -> Any:
+    """Scale metric value according to conversion_factor or unit definitions."""
+    if val is None or pd.isna(val):
+        return val
+
+    conv_factor = None
+    unit = None
+    if isinstance(raw_def, dict):
+        conv_factor = raw_def.get("conversion_factor")
+        unit = raw_def.get("unit")
+    else:
+        conv_factor = getattr(raw_def, "conversion_factor", None)
+        unit = getattr(raw_def, "unit", None)
+
+    if conv_factor is not None:
+        try:
+            return float(val) / float(conv_factor)
+        except (ValueError, TypeError, ZeroDivisionError):
+            return val
+
+    if unit is not None and isinstance(unit, str):
+        normalized_unit = unit.strip().lower()
+        if method_name in TIME_OPERATOR_METHODS:
+            factor = TIME_UNIT_FACTORS.get(normalized_unit)
+            if factor is not None:
+                return float(val) / factor
+
+    return val
+
 
 def get_final_value(
     series: pd.Series, time_series: Optional[pd.Series] = None
@@ -272,6 +332,9 @@ def extract_metrics(
                 continue
 
             metric_value = calculation_func(results_df[col_name], results_df["time"])
+            metric_value = apply_metric_unit_scaling(
+                metric_value, method_name, definition
+            )
 
             result_row = params.copy()
             result_row["metric_name"] = metric_name
@@ -428,6 +491,8 @@ def calculate_single_job_metrics(
                     val = val.item()
                 if pd.isna(val):
                     val = None
+                else:
+                    val = apply_metric_unit_scaling(val, method_name, raw_def)
                 results[metric_name] = val
             except Exception:
                 pass

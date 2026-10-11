@@ -151,6 +151,75 @@ def _parse_time_unit(raw_value, line_no):
     return normalized_value
 
 
+def _resolve_effective_time_unit(
+    foc_time_unit,
+    time_conversion_factor,
+    time_conversion_target_unit,
+    time_conversion_source_unit,
+    time_conversion_explicit,
+):
+    """Return the unit of the durations that leave the parser.
+
+    The CFEDR family models are second-native (Modelica's built-in ``time`` is in
+    seconds), so FOC durations must end up in seconds. This mirrors the parser's
+    own conversion semantics:
+
+    * no ``TIME_CONVERSION`` declared → durations keep the declared ``TIME_UNIT``
+      (default ``"second"``);
+    * a named ``<src>_to_<tgt>`` conversion → durations are in ``<tgt>``;
+    * ``NONE``/``OFF``/``IDENTITY`` → no re-scaling, keep ``TIME_UNIT``;
+    * a bare numeric factor (``TIME_CONVERSION 3600``) → the output scale is
+      user-defined, reported as ``"scaled"`` so callers cannot mistake it for a
+      known unit.
+    """
+    if not time_conversion_explicit:
+        return foc_time_unit
+    if time_conversion_source_unit is None:
+        # No named source unit: either NONE/OFF/IDENTITY (factor 1.0 → unit
+        # unchanged) or a bare numeric factor (unit is user-defined → "scaled").
+        return foc_time_unit if time_conversion_factor == 1.0 else "scaled"
+    if time_conversion_target_unit is not None:
+        return time_conversion_target_unit
+    # Unreachable: a non-None source unit only comes from a named conversion,
+    # which always carries a target unit. Kept defensive for future parsers.
+    return "scaled"
+
+
+def _warn_on_time_base_mismatch(effective_unit, model_time_base, foc_path):
+    """Warn when the FOC's effective time base differs from the model's.
+
+    A mismatch means the embedded schedule advances at the wrong rate: an
+    hour-based FOC (e.g. ``TIME_UNIT hour`` with no conversion) driving a
+    seconds-native model runs ~3600x too fast, and vice versa. The conversion
+    contract is explicit-only, so this is surfaced rather than silently
+    rewritten.
+    """
+    if effective_unit == model_time_base:
+        return
+    if effective_unit == "scaled":
+        hint = (
+            "The FOC uses a bare numeric TIME_CONVERSION factor, so its time scale "
+            "is user-defined and cannot be matched to the %s-based model "
+            "automatically." % model_time_base
+        )
+    else:
+        hint = (
+            "Add 'TIME_CONVERSION %s_to_%s' (or express the schedule in %ss) to "
+            "keep it aligned with the %s-based model."
+            % (effective_unit, model_time_base, model_time_base, model_time_base)
+        )
+    logger.warning(
+        "FOC schedule time base is %r but the model time base is %r "
+        "(effective_time_unit=%s). %s"
+        % (effective_unit, model_time_base, effective_unit, hint),
+        extra={
+            "foc_path": str(foc_path),
+            "effective_time_unit": effective_unit,
+            "model_time_base": model_time_base,
+        },
+    )
+
+
 def _build_time_conversion_factor(source_unit, target_unit):
     return SUPPORTED_TIME_UNITS[source_unit] / SUPPORTED_TIME_UNITS[target_unit]
 
@@ -228,6 +297,7 @@ def _parse_foc_lines(lines):
     time_conversion_factor = 1.0
     time_conversion_explicit = False
     time_conversion_source_unit = None
+    time_conversion_target_unit = None
     saw_non_header_command = False
 
     def append_step(amplitude, duration):
@@ -280,7 +350,7 @@ def _parse_foc_lines(lines):
             (
                 time_conversion_factor,
                 time_conversion_source_unit,
-                _,
+                time_conversion_target_unit,
             ) = _parse_time_conversion(parts[1], line_no)
             if (
                 time_unit_explicit
@@ -364,15 +434,28 @@ def _parse_foc_lines(lines):
         raise FOCParseError("Schedule block was not closed with END_SCHEDULE.")
 
     _validate_step_series(amplitudes, durations)
-    return amplitudes, durations
+    effective_unit = _resolve_effective_time_unit(
+        foc_time_unit,
+        time_conversion_factor,
+        time_conversion_target_unit,
+        time_conversion_source_unit,
+        time_conversion_explicit,
+    )
+    return amplitudes, durations, effective_unit
 
 
 def parse_foc_content(content):
+    """Public API: ``(amplitudes, durations)`` for FOC content."""
+    return parse_foc_content_with_unit(content)[:2]
+
+
+def parse_foc_content_with_unit(content):
+    """Parse FOC content into ``(amplitudes, durations, effective_time_unit)``."""
     return _parse_foc_lines(content.splitlines())
 
 
 def build_foc_preview(content):
-    amplitudes, durations = parse_foc_content(content)
+    amplitudes, durations, effective_unit = parse_foc_content_with_unit(content)
     rows = _build_time_power_rows(amplitudes, durations)
     return {
         "amplitudes": amplitudes,
@@ -380,6 +463,7 @@ def build_foc_preview(content):
         "rows": rows,
         "schedule_duration": float(sum(durations)),
         "step_count": len(amplitudes),
+        "effective_time_unit": effective_unit,
     }
 
 
@@ -772,6 +856,12 @@ def _resolve_modelica_target_file(package_path, model_name):
 
 
 def parse_foc_file(filepath):
+    """Public API: ``(amplitudes, durations)`` for a FOC file."""
+    return parse_foc_file_with_unit(filepath)[:2]
+
+
+def parse_foc_file_with_unit(filepath):
+    """Parse a FOC file into ``(amplitudes, durations, effective_time_unit)``."""
     with open(filepath, "r", encoding="utf-8") as file_handle:
         return _parse_foc_lines(file_handle.readlines())
 
@@ -797,6 +887,7 @@ def prepare_foc_simulation_package(
     workspace_dir,
     strategy="table",
     foc_component=None,
+    model_time_base="second",
 ):
     package_path = Path(package_path).resolve()
     foc_path = Path(foc_path).resolve()
@@ -812,7 +903,8 @@ def prepare_foc_simulation_package(
 
     workspace_dir.mkdir(parents=True, exist_ok=True)
 
-    amplitudes, durations = parse_foc_file(foc_path)
+    amplitudes, durations, effective_unit = parse_foc_file_with_unit(foc_path)
+    _warn_on_time_base_mismatch(effective_unit, model_time_base, foc_path)
 
     if package_path.is_file() and package_path.name != "package.mo":
         generated_package_path = workspace_dir / package_path.name

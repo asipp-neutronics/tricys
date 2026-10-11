@@ -1,6 +1,7 @@
 within example_model;
 model Plasma
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 定义输入端口
   Modelica.Blocks.Interfaces.RealInput pulseInput "等离子体脉冲控制信号，单位: g/h" annotation(
     Placement(transformation(origin = {-122, 90}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{-10, -10}, {10, 10}})));
@@ -55,7 +56,7 @@ equation
     to_Pump[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0)) * (1 - to_Div_fraction[i] - to_FW_fraction[i] - fb * nf);
       decay_rate[i] = 0;
       leak_rate[i] = 0;
-      der(cumulative_burn[i]) = from_Fueling_System[i] * fb * nf;
+      der(cumulative_burn[i]) = (from_Fueling_System[i] * fb * nf) / time_scale;
     end for;
 
 annotation(

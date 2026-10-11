@@ -5,6 +5,7 @@ model:
   modelName: "example_model.Cycle"
 
 scenario:
+  time_base: "hour"
   stopTime: 2000.0
   stepSize: 0.5
   method: "dassl"
@@ -33,13 +34,12 @@ task:
         source: "sds.I[1]"
         evaluate: "doubling_time"
         threshold: 63072000.0  # 2年（秒: 2 * 365 * 86400 s）; 若模型单位为年则填 2.0
-        
-report:
-  enabled: true
-  # template: "simulate"  # 默认不填自动与 task.type ("simulate") 保持一致
-  title: "TRICYS 单堆瞬态脉冲响应与全系统质量平衡审查报告"
-  formats: ["markdown", "docx", "pdf"]
 
 visualizer:
   enabled: true
   launch_on_finish: true
+  report:
+    enabled: true
+    # template: "simulate"  # 默认不填自动与 task.type ("simulate") 保持一致
+    title: "TRICYS 单堆瞬态脉冲响应与全系统质量平衡审查报告"
+    formats: ["markdown", "docx", "pdf"]

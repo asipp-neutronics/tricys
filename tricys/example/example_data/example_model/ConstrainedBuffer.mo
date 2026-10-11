@@ -83,9 +83,9 @@ equation
   for i in 1:5 loop
     outflow[i] = rate_scale * outflow_nominal[i];
     inflow_admit[i] = admit_scale * inflow_total[i];
-    der(I[i]) = inflow_admit[i]
+    der(I[i]) = (inflow_admit[i]
               - (1 + nonradio_loss[i]) * outflow[i]
-              - decay_loss[i] * I[i];
+              - decay_loss[i] * I[i]) / time_scale;
     to_Downstream[i] = to_Down_Fraction * outflow[i];
     overflow_out[i] = (1.0 - admit_scale) * inflow_total[i]
                     + (1.0 - to_Down_Fraction) * outflow[i];

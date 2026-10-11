@@ -1,5 +1,6 @@
 # Mixed operating scenario
 TIME_UNIT hour
+TIME_CONVERSION hour_to_second
 
 # First, a short pulse cycle (power 1500 MW, burn 0.9 h, dwell 0.1 h, 600 cycles)
 PULSE 1500 0.9 0.1 300

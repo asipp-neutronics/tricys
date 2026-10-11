@@ -14,7 +14,7 @@ from __future__ import annotations
 import base64
 import io
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib
 
@@ -24,6 +24,8 @@ import numpy as np
 import pandas as pd
 
 from tricys.analysis.tritium_cycle import (
+    SECONDS_PER_DAY,
+    SECONDS_PER_HOUR,
     detect_sds_column,
     extract_startup_inventory_metrics,
     load_glossary_mapping,
@@ -32,6 +34,45 @@ from tricys.analysis.tritium_cycle import (
 
 # Standard CFEDR Publication Palette
 PALETTE = ["#D9534F", "#F0AD4E", "#2E7D32", "#1F77B4", "#9467BD", "#8C564B", "#17BECF"]
+
+
+def resolve_plot_time_scale(
+    t_max: float, config: Optional[Dict[str, Any]] = None
+) -> Tuple[str, float]:
+    """Resolves truthful time unit and scale factor based on config and data span.
+
+    If config explicitly declares scenario.time_base == 'hour', hours ('h', 3600.0) is
+    strictly prioritized to align with user engineering scenario specification.
+    If scenario.time_base == 'second', seconds ('s', 1.0) is used unless time span is huge.
+    Otherwise adapts based on magnitude.
+    """
+    tb = None
+    if config:
+        tb = (
+            config.get("time_base")
+            or config.get("scenario", {}).get("time_base")
+            or config.get("simulation", {}).get("time_base")
+        )
+        if isinstance(tb, str):
+            tb = tb.strip().lower()
+
+    if tb == "hour":
+        return "h", SECONDS_PER_HOUR
+    elif tb == "second":
+        if t_max > SECONDS_PER_DAY * 7:
+            return "d", SECONDS_PER_DAY
+        elif t_max > SECONDS_PER_HOUR * 2:
+            return "h", SECONDS_PER_HOUR
+        else:
+            return "s", 1.0
+
+    # Fallback adaptive
+    if t_max > SECONDS_PER_DAY * 2:
+        return "d", SECONDS_PER_DAY
+    elif t_max > 7200.0:
+        return "h", SECONDS_PER_HOUR
+    else:
+        return "s", 1.0
 
 
 def _init_plot_style() -> None:
@@ -90,6 +131,7 @@ def generate_inventory_trajectories_plot(
     jobs_df: Optional[pd.DataFrame] = None,
     output_path: Optional[str] = None,
     target_var: Optional[str] = None,
+    config: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Fig 1: Full-timeline storage inventory trajectories with valley & end-point annotations."""
     if results_df is None or results_df.empty or "time" not in results_df.columns:
@@ -107,6 +149,10 @@ def generate_inventory_trajectories_plot(
             name = r.get("name") or r.get("job_name") or f"工况 {jid}"
             t_dd = r.get("t_DD_end") or r.get("t_dd") or 0.0
             job_info_map[jid] = {"name": name, "t_dd": float(t_dd)}
+
+    # Determine truthful time unit
+    t_max = float(results_df["time"].max()) if "time" in results_df.columns else 0.0
+    time_unit, time_scale = resolve_plot_time_scale(t_max, config=config)
 
     _init_plot_style()
     fig, ax = plt.subplots(figsize=(10.5, 5.5), facecolor="#ffffff")
@@ -129,7 +175,7 @@ def generate_inventory_trajectories_plot(
         if subset.empty:
             continue
 
-        t = subset["time"].values
+        t = subset["time"].values / time_scale
         y = subset[plot_var].values
         info = job_info_map.get(jid, {"name": f"工况 {jid}", "t_dd": 0.0})
         label = info["name"]
@@ -164,7 +210,10 @@ def generate_inventory_trajectories_plot(
         # D-D phase background shading if present
         t_dd = float(info["t_dd"])
         if t_dd > 0:
-            ax.axvspan(0, t_dd, color=color, alpha=0.06, label=f"{label} (调试阶段)")
+            t_dd_scaled = t_dd / time_scale
+            ax.axvspan(
+                0, t_dd_scaled, color=color, alpha=0.06, label=f"{label} (调试阶段)"
+            )
 
     # Reference limits
     ax.axhline(
@@ -187,7 +236,7 @@ def generate_inventory_trajectories_plot(
         fontweight="bold",
         pad=12,
     )
-    ax.set_xlabel("仿真时间 (hours)", color="#1F2937", fontsize=11)
+    ax.set_xlabel(f"仿真时间 ({time_unit})", color="#1F2937", fontsize=11)
     ax.set_ylabel("SDS 储罐在役存量 (g)", color="#1F2937", fontsize=11)
     ax.grid(True, linestyle=":", color="#E2E8F0", alpha=0.9)
     ax.legend(loc="upper left", framealpha=0.9, fontsize=9, ncol=2)
@@ -206,6 +255,7 @@ def generate_valley_comparison_plot(
     jobs_df: Optional[pd.DataFrame] = None,
     output_path: Optional[str] = None,
     target_var: Optional[str] = None,
+    config: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Fig 2: Zoomed-in startup valley aligned at transient start."""
     if results_df is None or results_df.empty or "time" not in results_df.columns:
@@ -248,15 +298,7 @@ def generate_valley_comparison_plot(
 
     # Determine truthful time unit
     t_max = float(results_df["time"].max()) if "time" in results_df.columns else 0.0
-    if t_max > 86400 * 2:
-        time_unit = "d"
-        time_scale = 86400.0
-    elif t_max > 7200:
-        time_unit = "h"
-        time_scale = 3600.0
-    else:
-        time_unit = "s"
-        time_scale = 1.0
+    time_unit, time_scale = resolve_plot_time_scale(t_max, config=config)
 
     _init_plot_style()
     fig, ax = plt.subplots(figsize=(9.8, 5.2), facecolor="#ffffff")
@@ -399,17 +441,20 @@ def generate_subsystem_dynamics_plot(
     elif target_job_id is not None:
         case_name = f"工况 {target_job_id}"
 
-    # Filter post ignition and clip to 600h
+    # Filter post ignition
     sub_post = subset[subset["time"] >= t_ign].copy()
     if sub_post.empty:
         sub_post = subset.copy()
         t_ign = 0.0
 
     t_rel = sub_post["time"].values - t_ign
-    mask = t_rel <= 600.0 if t_rel[-1] > 600 else np.ones_like(t_rel, dtype=bool)
+    t_max_raw = float(t_rel[-1]) if len(t_rel) > 0 else 0.0
 
-    t_plot = t_rel[mask]
-    sub_plot = sub_post[mask]
+    # Determine truthful time unit and scale factor
+    time_unit, time_scale = resolve_plot_time_scale(t_max_raw, config=config)
+
+    t_plot = t_rel / time_scale
+    sub_plot = sub_post
 
     _init_plot_style()
     fig, (ax1, ax2) = plt.subplots(
@@ -509,9 +554,8 @@ def generate_subsystem_dynamics_plot(
     turning_rel = float(t_plot[np.argmin(sub_plot[sds_col].values)])
     ax2.plot(turning_rel, sds_min, marker="o", markersize=7, color="crimson")
 
-    # Time unit detection
     t_max = float(t_plot.max()) if len(t_plot) > 0 else 0.0
-    time_unit = "s" if t_max <= 7200 else "h"
+    offset_x = max(t_max * 0.03, 0.5)
 
     if i_0_job > sds_min + 1e-3:
         ax2.axvline(
@@ -526,7 +570,7 @@ def generate_subsystem_dynamics_plot(
         ax2.annotate(
             f"启动外供亏空: {i_0_job - sds_min:.1f} g\n拐点时刻: {turning_rel:.1f} {time_unit}",
             xy=(turning_rel, sds_min),
-            xytext=(turning_rel + max(t_max * 0.03, 10.0), sds_min + offset_y),
+            xytext=(turning_rel + offset_x, sds_min + offset_y),
             arrowprops=dict(arrowstyle="->", color="crimson", lw=1.1),
             fontsize=9.0,
             fontweight="bold",
@@ -545,7 +589,7 @@ def generate_subsystem_dynamics_plot(
         ax2.annotate(
             f"初始装填: {i_0_job:.1f} g\n运行期未见外供亏空",
             xy=(turning_rel, sds_min),
-            xytext=(turning_rel + max(t_max * 0.03, 10.0), sds_min + 200),
+            xytext=(turning_rel + offset_x, sds_min + 200),
             arrowprops=dict(arrowstyle="->", color="navy", lw=1.1),
             fontsize=9.0,
             fontweight="bold",
@@ -966,7 +1010,7 @@ def generate_all_report_figures(
                 else None
             )
             f1 = generate_inventory_trajectories_plot(
-                results_df, jobs_df, output_path=p1
+                results_df, jobs_df, output_path=p1, config=task_config
             )
             if f1:
                 figures.append(f1)
@@ -976,7 +1020,9 @@ def generate_all_report_figures(
                 if fig_dir
                 else None
             )
-            f2 = generate_valley_comparison_plot(results_df, jobs_df, output_path=p2)
+            f2 = generate_valley_comparison_plot(
+                results_df, jobs_df, output_path=p2, config=task_config
+            )
             if f2:
                 figures.append(f2)
 

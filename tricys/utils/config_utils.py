@@ -375,11 +375,18 @@ def basic_prepare_config(
                 )
 
         pulse_cfg = config.get("scenario", {}).get("pulse", {})
-        if pulse_cfg and pulse_cfg.get("foc_file"):
-            if not os.path.isabs(pulse_cfg["foc_file"]):
-                pulse_cfg["foc_file"] = os.path.abspath(
-                    os.path.join(original_config_dir, pulse_cfg["foc_file"])
+        foc_target = (
+            pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")
+            if pulse_cfg
+            else None
+        )
+        if pulse_cfg and foc_target:
+            if not os.path.isabs(foc_target):
+                foc_target = os.path.abspath(
+                    os.path.join(original_config_dir, foc_target)
                 )
+            pulse_cfg["foc_file"] = foc_target
+            pulse_cfg["foc_path"] = foc_target
 
         config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_workspace = os.path.abspath(config["run_timestamp"])
@@ -424,10 +431,28 @@ def basic_prepare_config(
         config["simulation"]["outputFormat"] = scenario_cfg.get("outputFormat", "csv")
         config["simulation"]["simflags"] = scenario_cfg.get("simflags", "")
 
-        if pulse_cfg and pulse_cfg.get("foc_file"):
+        time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
+        config["simulation"]["time_base"] = time_base
+        if time_base == "hour":
+            config["simulation"]["stop_time"] = stop_time * 3600.0
+            config["simulation"]["step_size"] = step_size * 3600.0
+            config["simulation"]["start_time"] = (
+                config["simulation"]["start_time"] * 3600.0
+            )
+        config["simulation"]["_time_unit"] = "second"
+
+        if pulse_cfg and (pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")):
+            foc_target_path = pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")
+            comp_name = (
+                pulse_cfg.get("foc_component")
+                or pulse_cfg.get("target_component")
+                or ""
+            )
             config["foc"] = {
-                "foc_path": pulse_cfg["foc_file"],
-                "component_name": pulse_cfg.get("foc_component", ""),
+                "foc_path": foc_target_path,
+                "foc_component": comp_name,
+                "component_name": comp_name,
+                "strategy": pulse_cfg.get("strategy", "table"),
                 "variable_mapping": pulse_cfg.get("variable_mapping", {}),
             }
 
@@ -438,6 +463,17 @@ def basic_prepare_config(
             if task_cfg.get("parallel"):
                 config["simulation"]["concurrent"] = True
                 config["simulation"]["max_workers"] = task_cfg.get("max_workers")
+            if task_cfg.get("auditor"):
+                config["auditor"] = task_cfg["auditor"]
+            elif config.get("auditor") and not task_cfg.get("auditor"):
+                task_cfg["auditor"] = config["auditor"]
+
+        vis_cfg = config.get("visualizer", {})
+        if isinstance(vis_cfg, dict):
+            if vis_cfg.get("report"):
+                config["report"] = vis_cfg["report"]
+            elif config.get("report") and not vis_cfg.get("report"):
+                vis_cfg["report"] = config["report"]
 
         os.makedirs(config["paths"]["log_dir"], exist_ok=True)
         os.makedirs(config["paths"]["temp_dir"], exist_ok=True)
@@ -464,6 +500,12 @@ def basic_prepare_config(
     config["simulation"]["variableFilter"] = original_string.replace(
         "[", "\\[["
     ).replace("]", "]\\]")
+
+    sim_cfg = config.get("simulation", {})
+    if "time_base" in sim_cfg and sim_cfg["time_base"] == "hour":
+        from tricys.simulation.simulation import _sim_time_to_seconds
+
+        _sim_time_to_seconds(sim_cfg)
 
     config["paths"]["log_dir"] = os.path.join(
         run_workspace, base_config["paths"].get("log_dir", "log")

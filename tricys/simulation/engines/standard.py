@@ -85,6 +85,10 @@ def run_fast_subprocess_job(
         if k not in ("name", "job_id") and not str(k).startswith("_")
     ]
 
+    from tricys.simulation.simulation import _sim_time_to_seconds
+
+    _sim_time_to_seconds(sim_config)
+
     output_fmt = sim_config.get("outputFormat", "csv")
     cmd = [
         run_exe_path,

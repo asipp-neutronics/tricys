@@ -206,3 +206,76 @@ def test_v2_example_04_pulse_width_sweep_config():
     assert metrics["startup_inventory"]["evaluate"] == "startup_inventory"
     assert metrics["Required_TBR"]["evaluate"] == "bisection_search"
     assert metrics["Required_TBR"]["parameter"] == "blanket.TBR"
+
+
+def test_v2_example_05_foc_pulsed_scenario_config():
+    """Verify that 05_simulate_foc_pulsed_scenario.yaml parses cleanly as valid V2 config with FOC injection."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "05_simulate_foc_pulsed_scenario.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "simulate"
+    assert runtime_cfg["simulation"]["stop_time"] == 1200.0 * 3600.0
+    assert runtime_cfg["simulation"]["step_size"] == 0.5 * 3600.0
+
+    # Verify FOC configuration
+    assert "foc" in runtime_cfg
+    assert runtime_cfg["foc"]["foc_component"] == "pulseSource"
+    assert runtime_cfg["foc"]["strategy"] == "table"
+    assert os.path.exists(runtime_cfg["foc"]["foc_path"])
+
+    # Verify pipeline auto-inference
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert any(p.name == "foc" for p in pipeline.preprocessors)
+
+
+def test_v2_example_06_mass_conservation_audit_config():
+    """Verify that 06_simulate_mass_conservation_audit.yaml parses cleanly as valid V2 config with mass auditor."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "06_simulate_mass_conservation_audit.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "simulate"
+    assert runtime_cfg["simulation"]["stop_time"] == 2000.0 * 3600.0
+    assert runtime_cfg["simulation"]["step_size"] == 0.5 * 3600.0
+
+    # Verify auditor configuration under task (and propagated runtime alias)
+    assert "auditor" in runtime_cfg["task"]
+    auditor_cfg = runtime_cfg["task"]["auditor"]
+    assert auditor_cfg["enabled"] is True
+    assert auditor_cfg["warn_threshold_g"] == 0.5
+    assert auditor_cfg["kill_threshold_g"] == 50.0
+    patterns = auditor_cfg["patterns"]
+    assert "*.I?1?" in patterns["inventory"]
+    assert "*blanket.cumulative_breed?1?" in patterns["cumulative_sources"]
+    assert "*.leak_rate?1?" in patterns["leak"]
+    assert "*.decay_rate?1?" in patterns["decay"]
+    assert "*plasma.cumulative_burn?1?" in patterns["cumulative_burn"]
+
+    # Verify report configuration under visualizer
+    assert "visualizer" in runtime_cfg
+    assert "report" in runtime_cfg["visualizer"]
+    assert runtime_cfg["visualizer"]["report"]["enabled"] is True
+
+    # Verify pipeline auto-inference attaches safety auditor and report
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert any(p.name in ["safety", "auditor"] for p in pipeline.postprocessors)
+    assert any(p.name == "report" for p in pipeline.postprocessors)

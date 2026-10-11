@@ -5,6 +5,7 @@ model:
   modelName: "example_model.Cycle"
 
 scenario:
+  time_base: "hour"
   stopTime: 2000.0
   stepSize: 0.5
   method: "dassl"
@@ -35,12 +36,11 @@ task:
       source: "sds.I[1]"
       evaluate: "startup_inventory"
 
-report:
-  enabled: true
-  # template: "sweep"  # 默认不填自动与 task.type ("sweep") 保持一致
-  title: "TRICYS 聚变堆多工况参数扫描与氚自持评估工程报告"
-  formats: ["markdown", "docx", "pdf"]
-
 visualizer:
   enabled: true
   launch_on_finish: true
+  report:
+    enabled: true
+    # template: "sweep"  # 默认不填自动与 task.type ("sweep") 保持一致
+    title: "TRICYS 聚变堆多工况参数扫描与氚自持评估工程报告"
+    formats: ["markdown", "docx", "pdf"]

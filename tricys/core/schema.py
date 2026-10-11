@@ -65,11 +65,17 @@ class PulseConfig(BaseDTO):
     foc_file: Optional[str] = Field(
         default=None, description="Path to .foc schedule DSL file"
     )
+    foc_path: Optional[str] = Field(
+        default=None, description="Alternative alias for foc_file"
+    )
     target_component: Optional[str] = Field(
         default=None, description="Target Modelica instance name to replace"
     )
     foc_component: Optional[str] = Field(
         default=None, description="Alternative alias for target_component"
+    )
+    strategy: str = Field(
+        default="table", description="FOC pulse injection strategy ('table' or 'array')"
     )
     variable_mapping: Dict[str, str] = Field(
         default_factory=dict, description="Mapping from foc signal to modelica variable"
@@ -80,6 +86,20 @@ class PulseConfig(BaseDTO):
     params: Dict[str, Any] = Field(
         default_factory=dict, description="Dynamic pulse source parameters"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def unify_aliases(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "foc_path" in data and "foc_file" not in data:
+                data["foc_file"] = data["foc_path"]
+            elif "foc_file" in data and "foc_path" not in data:
+                data["foc_path"] = data["foc_file"]
+            if "target_component" in data and "foc_component" not in data:
+                data["foc_component"] = data["target_component"]
+            elif "foc_component" in data and "target_component" not in data:
+                data["target_component"] = data["foc_component"]
+        return data
 
 
 class ScenarioConfig(BaseDTO):
@@ -93,6 +113,10 @@ class ScenarioConfig(BaseDTO):
     )
     stepSize: float = Field(
         default=1.0, description="Communication step size in SI seconds"
+    )
+    time_base: Literal["second", "hour"] = Field(
+        default="second",
+        description="Base time unit for simulation conditions: 'second' (default native SI) or 'hour' (auto-scaled).",
     )
     numberOfIntervals: Optional[int] = Field(
         default=None,
@@ -173,6 +197,9 @@ class MetricConfig(BaseDTO):
     unit: Optional[str] = Field(
         default=None, description="Physical unit label for plotting"
     )
+    conversion_factor: Optional[float] = Field(
+        default=None, description="Scaling factor to convert raw seconds to target unit"
+    )
     threshold: Optional[float] = Field(
         default=None, description="Upper/lower safety threshold"
     )
@@ -236,16 +263,43 @@ class MetricConfig(BaseDTO):
         return data
 
 
+class SafetyAuditorConfig(BaseDTO):
+    """Mass Balance Auditor configuration."""
+
+    enabled: bool = Field(
+        default=False, description="Whether mass balance audit is enabled"
+    )
+    warn_threshold_g: float = Field(
+        default=0.5, description="Warning threshold for mass balance error in grams"
+    )
+    kill_threshold_g: float = Field(
+        default=50.0, description="Kill threshold for mass balance error in grams"
+    )
+    tolerance: float = Field(
+        default=1e-4, description="Relative tolerance for mass conservation"
+    )
+    patterns: Dict[str, List[str]] = Field(
+        default_factory=dict, description="Pattern definitions for mass balance audit"
+    )
+    subsystems: List[str] = Field(
+        default_factory=list, description="Subsystems to include in audit"
+    )
+
+
 class SimulateTaskConfig(BaseDTO):
     """Level 2 task configuration for single-run simulation / single-point bisection."""
 
     type: Literal["simulate"] = "simulate"
+    parallel: bool = Field(default=False, description="Enable parallel execution")
     parameters: Dict[str, Any] = Field(
         default_factory=dict,
         description="Single-point initial value / parameter override",
     )
     metrics: Dict[str, MetricConfig] = Field(
         default_factory=dict, description="Feature extraction or bisection metrics"
+    )
+    auditor: Optional[SafetyAuditorConfig] = Field(
+        default=None, description="Task-level mass balance auditor configuration"
     )
 
 
@@ -266,6 +320,9 @@ class SweepTaskConfig(BaseDTO):
     )
     metrics: Dict[str, MetricConfig] = Field(
         default_factory=dict, description="Summary metrics to compute across all cases"
+    )
+    auditor: Optional[SafetyAuditorConfig] = Field(
+        default=None, description="Task-level mass balance auditor configuration"
     )
 
     @field_validator("parameters")
@@ -313,6 +370,9 @@ class SensitivityTaskConfig(BaseDTO):
     metrics: Dict[str, MetricConfig] = Field(
         description="Sensitivity target responses Y (supports bisection_search)"
     )
+    auditor: Optional[SafetyAuditorConfig] = Field(
+        default=None, description="Task-level mass balance auditor configuration"
+    )
 
 
 class SubsystemSpec(BaseDTO):
@@ -354,6 +414,9 @@ class CosimTaskConfig(BaseDTO):
     )
     metrics: Dict[str, MetricConfig] = Field(
         default_factory=dict, description="Co-simulation extraction metrics"
+    )
+    auditor: Optional[SafetyAuditorConfig] = Field(
+        default=None, description="Task-level mass balance auditor configuration"
     )
 
 
@@ -479,9 +542,9 @@ class TricysV2Config(BaseDTO):
     Structured strictly around the 5 Core Pillars:
     1. model: Physical model & compiler settings
     2. scenario: Simulation conditions & solver settings
-    3. task: Scientific calculation task (simulate, sweep, sensitivity, cosim)
-    4. visualizer: Interactive Web dashboard & report generation
-    5. plugins: Lifecycle extension hooks (auditor, archive, etc.)
+    3. task: Scientific calculation task (simulate, sweep, sensitivity, cosim) + task.auditor
+    4. visualizer: Interactive Web dashboard & report generation (including visualizer.report)
+    5. plugins: Lifecycle extension hooks
     """
 
     version: str = Field(default="2.0", description="TRICYS specification version")
@@ -497,13 +560,40 @@ class TricysV2Config(BaseDTO):
     visualizer: Optional[VisualizerConfig] = Field(
         default=None, description="Level 1 Pillar: Dashboard and report delivery"
     )
-    report: Optional[ReportConfig] = Field(
-        default=None,
-        description="Level 1 Pillar / Extension: Automated engineering report delivery",
-    )
     plugins: Optional[PluginsConfig] = Field(
         default=None, description="Level 1 Pillar: Lifecycle plugins"
     )
+    report: Optional[ReportConfig] = Field(
+        default=None,
+        description="Legacy root-level report delivery engine (canonical location: visualizer.report)",
+    )
+    auditor: Optional[SafetyAuditorConfig] = Field(
+        default=None,
+        description="Legacy root-level mass balance auditor configuration (canonical location: task.auditor)",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_v2_canonical_structure(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            # 1. Normalize auditor: canonical is task.auditor
+            task_dict = data.get("task")
+            if isinstance(task_dict, dict):
+                if "auditor" in task_dict and "auditor" not in data:
+                    data["auditor"] = task_dict["auditor"]
+                elif "auditor" in data and "auditor" not in task_dict:
+                    task_dict["auditor"] = data["auditor"]
+
+            # 2. Normalize report: canonical is visualizer.report
+            vis_dict = data.get("visualizer")
+            if isinstance(vis_dict, dict):
+                if "report" in vis_dict and "report" not in data:
+                    data["report"] = vis_dict["report"]
+                elif "report" in data and "report" not in vis_dict:
+                    vis_dict["report"] = data["report"]
+            elif "report" in data and vis_dict is None:
+                data["visualizer"] = {"report": data["report"]}
+        return data
 
     # Backwards-compatibility synthetic accessors for legacy plugins
     @property
@@ -522,6 +612,7 @@ class TricysV2Config(BaseDTO):
             step_size=self.scenario.stepSize,
             variableFilter=self.scenario.variableFilter,
             execute_mode="standard",
+            time_base=self.scenario.time_base,
         )
 
     @classmethod
@@ -559,6 +650,7 @@ class SimulationConfig(BaseDTO):
     model_name: str = Field(default="", description="Modelica model class name")
     stop_time: float = Field(default=0.0, description="Simulation stop time in seconds")
     step_size: float = Field(default=0.0, description="Solver communication step size")
+    time_base: str = Field(default="second", description="Time base: second or hour")
     variableFilter: Optional[str] = Field(
         default=None, description="Regex filter for saved variables"
     )
@@ -588,20 +680,6 @@ class FOCConfig(BaseDTO):
     )
     strategy: str = Field(
         default="table", description="Injection strategy: table, block, parameter"
-    )
-
-
-class SafetyAuditorConfig(BaseDTO):
-    """Legacy 1.0 Safety Auditor settings."""
-
-    enabled: bool = Field(
-        default=False, description="Whether mass balance audit is enabled"
-    )
-    tolerance: float = Field(
-        default=1e-4, description="Relative tolerance for mass conservation"
-    )
-    subsystems: List[str] = Field(
-        default_factory=list, description="Subsystems to include in audit"
     )
 
 

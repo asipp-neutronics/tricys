@@ -19,6 +19,47 @@ from tricys.utils.hdf5_schema import load_jobs_df
 
 _use_chinese_labels = False
 
+HOURS_PER_DAY = 24.0
+SECONDS_PER_HOUR = 3600.0
+SECONDS_PER_DAY = 86400.0
+SECONDS_PER_YEAR = 31536000.0
+
+
+def _convert_time_series_to_days(
+    time_series: pd.Series, unit_config: Any = None
+) -> pd.Series:
+    """Convert time series to days without hardcoded dimension division."""
+    if unit_config:
+        factor = (
+            unit_config.get("conversion_factor")
+            if isinstance(unit_config, dict)
+            else getattr(unit_config, "conversion_factor", None)
+        )
+        if factor:
+            try:
+                return time_series / float(factor)
+            except (ValueError, TypeError, ZeroDivisionError):
+                pass
+        unit = (
+            unit_config.get("unit")
+            if isinstance(unit_config, dict)
+            else getattr(unit_config, "unit", None)
+        )
+        if unit in ("h", "hour", "hours"):
+            return time_series / HOURS_PER_DAY
+        if unit in ("s", "sec", "second", "seconds"):
+            return time_series / SECONDS_PER_DAY
+
+    if time_series is not None and len(time_series) > 0:
+        max_val = float(time_series.max())
+        if max_val >= 86400.0:
+            return time_series / SECONDS_PER_DAY
+        elif max_val <= 200.0:
+            return time_series / HOURS_PER_DAY
+        return time_series / SECONDS_PER_DAY
+    return time_series / SECONDS_PER_DAY
+
+
 # Add a dictionary for UI text translations
 _ui_text = {
     "en": {
@@ -868,9 +909,13 @@ def _create_subplot(
             if unit:
                 final_x_var_label = f"{x_var_label} ({_get_text(unit)})"
     else:
-        # Fallback to old hard-coded logic if no unit_map is provided
+        # Fallback to old logic if no unit_map is provided
         if y_var in ["Doubling_Time", "Self_Sufficiency_Time"]:
-            plot_data[y_var] = plot_data[y_var] / 24
+            max_val = (
+                float(plot_data[y_var].max()) if not plot_data[y_var].empty else 0.0
+            )
+            day_factor = SECONDS_PER_DAY if max_val >= 86400.0 else HOURS_PER_DAY
+            plot_data[y_var] = plot_data[y_var] / day_factor
             final_y_var_label = f"{y_var_display} ({_get_text('days')})"
         elif y_var == "Startup_Inventory":
             plot_data[y_var] = plot_data[y_var] / 1000.0
@@ -1038,7 +1083,7 @@ def plot_sweep_time_series(
         for _, job_params, job_df in iter_hdf5_job_results(
             csv_path, jobs_df=jobs_df, columns=y_var_columns
         ):
-            time_days = job_df["time"] / 24
+            time_days = _convert_time_series_to_days(job_df["time"])
             for variable_name in y_var_columns:
                 if variable_name not in job_df.columns:
                     continue
@@ -1206,8 +1251,8 @@ def plot_sweep_time_series(
         print(f"Error: 'time' column not found in {csv_path}")
         return []
 
-    # Convert time from hours to days
-    time_days = df["time"] / 24
+    # Convert time to days
+    time_days = _convert_time_series_to_days(df["time"])
 
     # Use alias if provided, otherwise format the original name
     raw_plot_alias = (

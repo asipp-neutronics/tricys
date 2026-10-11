@@ -235,8 +235,8 @@ def test_calculate_real_sensitivity_indices():
         "names": ["blanket.TBR", "wds.threshold"],
         "bounds": [[1.05, 1.30], [800.0, 1400.0]],
     }
-    # 8 samples * (2 + 2) = 32 runs for calc_second_order=False
-    X = sobol_sample.sample(problem, 8, calc_second_order=False)
+    # 16 samples * (2 + 2) = 64 runs for calc_second_order=False
+    X = sobol_sample.sample(problem, 16, calc_second_order=False)
     jobs_df = pd.DataFrame(X, columns=["blanket.TBR", "wds.threshold"])
     jobs_df["job_id"] = np.arange(1, len(jobs_df) + 1)
 
@@ -284,3 +284,41 @@ def test_calculate_real_sensitivity_indices():
     assert "方差贡献率 (R²)" in sens_arb.columns
     assert "单参数回归与相关性分析" in sens_arb.iloc[0]["分析方法"]
     assert sens_arb.iloc[0]["方差贡献率 (R²)"] > 0.9
+
+
+def test_extract_startup_inventory_metrics_hour_scaling():
+    """Verify that OMC simulation output (seconds, up to 7.2e6 s) is accurately converted to hours."""
+    # 2000 hours in seconds: 7,200,000 s
+    times = np.linspace(0, 7200000.0, 101)
+    sds_inv = 8000.0 - 1000.0 * np.sin(np.pi * times / 7200000.0)
+    df = pd.DataFrame({"time": times, "sds.I[1]": sds_inv, "job_id": 1})
+    jobs_df = pd.DataFrame([{"job_id": 1, "name": "Case 2000h", "t_DD_end": 0.0}])
+
+    cfg = {"scenario": {"time_base": "hour", "stopTime": 2000.0}}
+    metrics = extract_startup_inventory_metrics(df, jobs_df, config=cfg)
+
+    assert len(metrics) == 1
+    row = metrics.iloc[0]
+    # Total simulation duration must be exactly 2000.0 hours, NOT 7,200,000 hours!
+    assert row["总仿真时长_h"] == pytest.approx(2000.0, rel=1e-3)
+    # Turning point at half-sine (1000.0 hours):
+    assert row["自持转折相对时滞_h"] == pytest.approx(1000.0, rel=1e-3)
+
+
+def test_plot_time_scale_resolution():
+    """Verify resolve_plot_time_scale respects scenario.time_base."""
+    from tricys.visualizer.report.figures import resolve_plot_time_scale
+
+    # Hour config with 7.2e6 seconds
+    unit_h, factor_h = resolve_plot_time_scale(
+        7200000.0, config={"scenario": {"time_base": "hour"}}
+    )
+    assert unit_h == "h"
+    assert factor_h == 3600.0
+
+    # Second config
+    unit_s, factor_s = resolve_plot_time_scale(
+        1800.0, config={"scenario": {"time_base": "second"}}
+    )
+    assert unit_s == "s"
+    assert factor_s == 1.0

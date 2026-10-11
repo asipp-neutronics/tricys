@@ -74,6 +74,7 @@ class FOCInjectorPlugin(PreprocessPlugin):
         logger.info(
             f"Injecting FOC schedule from: {foc_path} into model: {context.model_name}"
         )
+        model_time_base = getattr(context, "time_base", "second") or "second"
         foc_result = prepare_foc_simulation_package(
             context.package_path,
             context.model_name,
@@ -81,6 +82,7 @@ class FOCInjectorPlugin(PreprocessPlugin):
             foc_workspace,
             strategy=strategy,
             foc_component=foc_component,
+            model_time_base=model_time_base,
         )
 
         resolved_component = (

@@ -22,6 +22,11 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+HOURS_PER_DAY = 24.0
+SECONDS_PER_HOUR = 3600.0
+SECONDS_PER_DAY = 86400.0
+SECONDS_PER_YEAR = 31536000.0
+
 
 # Deprecated subsystem registry preserved only for backward compatibility.
 # Do not use for hardcoded translation: use load_glossary_mapping instead.
@@ -678,21 +683,48 @@ def extract_startup_inventory_metrics(
             else None
         )
 
+        time_base_cfg = None
+        if config:
+            time_base_cfg = (
+                config.get("time_base")
+                or config.get("scenario", {}).get("time_base")
+                or config.get("simulation", {}).get("time_base")
+            )
+
+        # In TRICYS 2.0, simulation output results_df['time'] is natively in SI seconds.
+        # When time_base is "hour", the simulation engine scales stop_time to seconds (e.g. 7.2e6 s for 2000 h),
+        # so results_df['time'] values are in SI seconds and must be converted to hours via SECONDS_PER_HOUR.
+        if time_base_cfg == "second":
+            is_seconds_native = True
+        elif time_base_cfg == "hour":
+            is_seconds_native = float(t[-1]) > 7200.0 or float(t[-1]) >= 86400.0
+        else:
+            is_seconds_native = float(t[-1]) >= 86400.0
+
+        time_to_days_factor = SECONDS_PER_DAY if is_seconds_native else HOURS_PER_DAY
+        time_to_hours_factor = SECONDS_PER_HOUR if is_seconds_native else 1.0
+
+        t_min_rel_h = t_min_rel / time_to_hours_factor
+        t_min_rel_d = t_min_rel / time_to_days_factor
+
         records.append(
             {
                 "job_id": jid,
                 "工况名称": info["name"],
-                "点火起始时间_h": round(t_ign, 1),
-                "总仿真时长_h": round(float(t[-1]), 1),
+                "点火起始时间_h": round(t_ign / time_to_hours_factor, 1),
+                "总仿真时长_h": round(float(t[-1]) / time_to_hours_factor, 1),
                 "初始装填I_0_g": round(i_0, 1),
                 "点火起点存量_g": round(i_at_dt, 1),
                 "前期阶段净增量_g": round(dd_gain, 1),
                 "最低谷底存量I_min_g": round(i_min, 1),
                 "必需首炉外供氚量_g": round(deficit, 1),
                 "点火后最大下探亏空_g": round(dt_drawdown, 1),
-                "自持转折绝对时间_h": round(t_min_abs, 1),
-                "自持转折相对时滞_h": round(t_min_rel, 1),
-                "自持转折相对时滞_d": round(t_min_rel / 24.0, 2),
+                "自持转折绝对时间_h": round(t_min_abs / time_to_hours_factor, 1),
+                "自持转折相对时滞_h": round(t_min_rel_h, 1),
+                "自持转折相对时滞_d": round(t_min_rel_d, 2),
+                "自持转折相对时滞_s": round(
+                    t_min_rel if is_seconds_native else t_min_rel * SECONDS_PER_HOUR, 1
+                ),
                 "必需产氚比_TBR_Required": (
                     round(tbr_req, 4) if tbr_req is not None else None
                 ),
@@ -705,10 +737,14 @@ def extract_startup_inventory_metrics(
                     else None
                 ),
                 "恢复非负相对时间_h": (
-                    round(t_zero_rel, 1) if not np.isnan(t_zero_rel) else None
+                    round(t_zero_rel / time_to_hours_factor, 1)
+                    if not np.isnan(t_zero_rel)
+                    else None
                 ),
                 "恢复初始储备相对时滞_h": (
-                    round(t_rec_rel, 1) if not np.isnan(t_rec_rel) else None
+                    round(t_rec_rel / time_to_hours_factor, 1)
+                    if not np.isnan(t_rec_rel)
+                    else None
                 ),
                 "期末储罐存量_g": round(i_end, 1),
                 "全周期净氚增量_g": round(net_change, 1),
@@ -821,11 +857,25 @@ def analyze_subsystem_holdup_dynamics(
 
         total_holdup += ss_mean
 
+        time_base_sub = None
+        if config:
+            time_base_sub = (
+                config.get("time_base")
+                or config.get("scenario", {}).get("time_base")
+                or config.get("simulation", {}).get("time_base")
+            )
+        # In TRICYS 2.0, simulation output results_df['time'] is natively in SI seconds.
+        is_sub_sec = True
+        if len(t_post) > 0 and float(t_post[-1]) <= 7200.0 and time_base_sub == "hour":
+            is_sub_sec = False
+
+        sub_time_h_factor = SECONDS_PER_HOUR if is_sub_sec else 1.0
+
         rec_entry = {
             "key": meta["key"],
             "子系统": meta["name"],
-            "t95稳态铺底时间_h": round(t_95, 1),
-            "t99终态铺底时间_h": round(t_99, 1),
+            "t95稳态铺底时间_h": round(t_95 / sub_time_h_factor, 1),
+            "t99终态铺底时间_h": round(t_99 / sub_time_h_factor, 1),
             "稳态滞留均值_g": round(ss_mean, 1),
             "脉冲波动区间_g": f"{ss_min:.1f} ~ {ss_max:.1f}",
             "_raw_ss_mean": ss_mean,
@@ -925,14 +975,14 @@ def generate_tritium_mass_flows_proof_table(
             "工艺流路节点": "TEP 短流程直返 (TEP -> SDS)",
             "平顶瞬时流率_gh": round(m_tep_dir_peak, 2),
             "放电周期平均流率_gh": round(m_tep_dir_peak * duty, 2),
-            "物理功能与平衡依据": f"直接内循环 (DIR {dir_ratio*100:.0f}%) 快速回流",
+            "物理功能与平衡依据": f"直接内循环 (DIR {dir_ratio * 100:.0f}%) 快速回流",
         },
         {
             "流路编号": "F06",
             "工艺流路节点": "TEP 送内同位素分离 (TEP -> I-ISS)",
             "平顶瞬时流率_gh": round(m_tep_iss_peak, 2),
             "放电周期平均流率_gh": round(m_tep_iss_peak * duty, 2),
-            "物理功能与平衡依据": f"分流深冷精馏 ({(1.0-dir_ratio)*100:.0f}%) 深度提纯",
+            "物理功能与平衡依据": f"分流深冷精馏 ({(1.0 - dir_ratio) * 100:.0f}%) 深度提纯",
         },
         {
             "流路编号": "F07",
@@ -1009,7 +1059,11 @@ def analyze_simulation_mass_conservation(
         }
 
     cfg = config or {}
-    auditor_data = cfg.get("auditor", {})
+    auditor_data = (
+        cfg.get("task", {}).get("auditor")
+        if isinstance(cfg.get("task"), dict)
+        else None
+    ) or cfg.get("auditor", {})
     if not auditor_data:
         patterns = cfg.get("patterns", {})
         if patterns:

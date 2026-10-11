@@ -1568,7 +1568,11 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
 
         cfg = config_data or {}
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        report_cfg = cfg.get("report", {})
+        report_cfg = (
+            cfg.get("visualizer", {}).get("report")
+            if isinstance(cfg.get("visualizer"), dict)
+            else None
+        ) or cfg.get("report", {})
 
         # 1. 确定当前 task 专属绑定的模板 ID（默认不填跟 task.type 一致）
         target_template_id = normalize_template_id(
@@ -1760,10 +1764,15 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             return no_update
 
         cfg = config_data or {}
+        report_cfg = (
+            cfg.get("visualizer", {}).get("report")
+            if isinstance(cfg.get("visualizer"), dict)
+            else None
+        ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = cfg.get("report", {}).get(
-            "template"
-        ) or get_recommended_template_for_task(task_type)
+        template_id = report_cfg.get("template") or get_recommended_template_for_task(
+            task_type
+        )
         content = ReportExporter.export_markdown(md)
         return dcc.send_string(
             content,
@@ -1796,11 +1805,16 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             return no_update
 
         cfg = config_data or {}
+        report_cfg = (
+            cfg.get("visualizer", {}).get("report")
+            if isinstance(cfg.get("visualizer"), dict)
+            else None
+        ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = cfg.get("report", {}).get(
-            "template"
-        ) or get_recommended_template_for_task(task_type)
-        title = cfg.get("report", {}).get("title", "TRICYS 聚变氚循环工程分析报告")
+        template_id = report_cfg.get("template") or get_recommended_template_for_task(
+            task_type
+        )
+        title = report_cfg.get("title", "TRICYS 聚变氚循环工程分析报告")
 
         docx_bytes = ReportExporter.export_docx(md, title=title)
         return dcc.send_bytes(
@@ -1834,11 +1848,16 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             return no_update
 
         cfg = config_data or {}
+        report_cfg = (
+            cfg.get("visualizer", {}).get("report")
+            if isinstance(cfg.get("visualizer"), dict)
+            else None
+        ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = cfg.get("report", {}).get(
-            "template"
-        ) or get_recommended_template_for_task(task_type)
-        title = cfg.get("report", {}).get("title", "TRICYS 聚变氚循环工程分析报告")
+        template_id = report_cfg.get("template") or get_recommended_template_for_task(
+            task_type
+        )
+        title = report_cfg.get("title", "TRICYS 聚变氚循环工程分析报告")
 
         pdf_bytes = ReportExporter.export_pdf(md, title=title)
         return dcc.send_bytes(

@@ -1,0 +1,44 @@
+version: "2.0"
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  # 仿真时间基准治理：声明以小时 (hour) 为基准
+  # 系统在底层仿真与 OMC 阶段将自动缩放至 SI 秒 (1200 h -> 4,320,000 s)
+  time_base: "hour"
+  stopTime: 1200.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|tep_fep.I[1]|i_iss.I[1]|plasma.I[1]|pulseSource.y"
+
+  # 聚变运行周期 (Fusion Operation Cycle, FOC) 动态脉冲注入配置
+  pulse:
+    foc_file: "../example_foc/example_scenario_mix.foc"
+    foc_component: "pulseSource"
+    strategy: "table"  # 可选 "table" (FOC_TablePulse) 或 "array" (FOC_ArrayPulse)
+
+task:
+  type: "simulate"
+  parameters:
+    blanket.TBR: 1.15
+    wds.threshold: 1000.0
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+    startup_inventory:
+      source: "sds.I[1]"
+      evaluate: "startup_inventory"
+
+visualizer:
+  enabled: true
+  launch_on_finish: true
+  report:
+    enabled: true
+    title: "TRICYS 聚变运行周期 (FOC) 动态脉冲混合工况仿真审查报告"
+    formats: ["markdown", "docx", "pdf"]

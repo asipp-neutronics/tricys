@@ -52,7 +52,45 @@ _mp_run_co_simulation_job_wrapper = mp_cosim_job_worker
 _process_h5_result = process_and_store_job_result
 export_results_to_csv = export_hdf5_to_csv
 
+HOURS_TO_SECONDS = 3600.0
+SUPPORTED_TIME_BASES = ("second", "hour")
+
+
+def _sim_time_to_seconds(sim_config: dict) -> dict:
+    """Normalise simulation time fields to SI seconds.
+
+    In TRICYS 2.0 (Schema 2.0), time fields (stop_time, step_size) are native SI seconds
+    by default (time_base='second').
+    When time_base='hour' is configured, the hour-authored values are multiplied by 3600.0.
+
+    Idempotent: a private `_time_unit` marker records that conversion has already
+    been applied ('second'), preventing multiple multiplications by 3600.0.
+    """
+    if not isinstance(sim_config, dict):
+        return sim_config
+    if sim_config.get("_time_unit") == "second":
+        return sim_config
+
+    time_base = str(sim_config.get("time_base", "second")).strip().lower()
+    if time_base not in SUPPORTED_TIME_BASES:
+        raise ValueError(
+            f"Unsupported simulation.time_base {time_base!r}; "
+            f"expected one of {SUPPORTED_TIME_BASES}."
+        )
+
+    factor = HOURS_TO_SECONDS if time_base == "hour" else 1.0
+    for key in ("stop_time", "step_size"):
+        if key in sim_config and sim_config[key] is not None:
+            sim_config[key] = float(sim_config[key]) * factor
+
+    sim_config["_time_unit"] = "second"
+    return sim_config
+
+
 __all__ = [
+    "HOURS_TO_SECONDS",
+    "SUPPORTED_TIME_BASES",
+    "_sim_time_to_seconds",
     "run_simulation",
     "main",
     "run_sequential_sweep",

@@ -48,7 +48,15 @@ class SafetyAuditorPlugin(PostprocessPlugin):
                 return self.auditor_config.model_dump()
             elif isinstance(self.auditor_config, dict):
                 return self.auditor_config
-        return self.params.get("auditor_config") or context.config.get("auditor", {})
+        return (
+            self.params.get("auditor_config")
+            or (
+                context.config.get("task", {}).get("auditor")
+                if isinstance(context.config.get("task"), dict)
+                else None
+            )
+            or context.config.get("auditor", {})
+        )
 
     def _resolve_rules(self, context: PipelineContext) -> List[Dict[str, Any]]:
         if self.alarm_rules is not None:

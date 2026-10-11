@@ -166,7 +166,11 @@ class PipelineBuilder:
             )
 
         # 3.2 Engineering report generation & multi-format delivery
-        report_cfg = config.get("report") or config.get("visualizer", {}).get("report")
+        report_cfg = (
+            config.get("visualizer", {}).get("report")
+            if isinstance(config.get("visualizer"), dict)
+            else None
+        ) or config.get("report")
         if report_cfg or config.get("post_processing"):
             report_cls = PluginRegistry.get_postprocess_class("report")
             if report_cls:
@@ -178,14 +182,19 @@ class PipelineBuilder:
                 )
 
         # 3.3 Safety margin & mass balance conservation auditor
-        auditor_enabled = config.get("auditor", {}).get("enabled", False)
+        auditor_cfg = (
+            config.get("task", {}).get("auditor")
+            if isinstance(config.get("task"), dict)
+            else None
+        ) or config.get("auditor", {})
+        auditor_enabled = bool(auditor_cfg.get("enabled", False))
         alarm_rules = config.get("static_alarm", {}).get("rules", [])
         if auditor_enabled or alarm_rules:
             safety_cls = PluginRegistry.get_postprocess_class("safety")
             if safety_cls:
                 postprocessors.append(
                     safety_cls(
-                        auditor_config=config.get("auditor", {}),
+                        auditor_config=auditor_cfg,
                         alarm_rules=alarm_rules,
                     )
                 )

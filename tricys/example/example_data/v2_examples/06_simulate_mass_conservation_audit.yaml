@@ -1,0 +1,49 @@
+version: "2.0"
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "hour"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*"
+
+task:
+  type: "simulate"
+  parallel: true
+  parameters:
+    blanket.TBR: 1.10
+    wds.threshold: 1000.0
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+  auditor:
+    enabled: true
+    warn_threshold_g: 0.5
+    kill_threshold_g: 50.0
+    patterns:
+      inventory:
+        - "*.I?1?"
+      cumulative_sources:
+        - "*blanket.cumulative_breed?1?"
+      leak:
+        - "*.leak_rate?1?"
+      decay:
+        - "*.decay_rate?1?"
+      cumulative_burn:
+        - "*plasma.cumulative_burn?1?"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 全厂动态物料平衡与闭环质量守恒审计工况报告"
+    formats: ["markdown", "docx", "pdf"]
