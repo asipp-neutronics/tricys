@@ -38,6 +38,9 @@ jobs:
       - name: Cross-check gate
         env:
           WORKSPACE: ${{ github.workspace }}
+        # Container jobs default to `sh` (dash), which does not support
+        # `set -o pipefail`; the gate script relies on bash semantics.
+        shell: bash
         run: |
           set -euo pipefail
           chown -R appuser "$WORKSPACE"
