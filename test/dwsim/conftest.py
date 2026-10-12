@@ -6,14 +6,13 @@ and utility functions for running test cases.
 
 import os
 import sys
+
 import pytest
 
 # Paths
 DWSIM_DIR = os.environ.get("DWSIM_DIR", "/usr/local/lib/dwsim")
 DOTNET_ROOT = os.environ.get("DOTNET_ROOT", "/usr/lib/dotnet")
-SCRIPT_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "script", "dwsim"
-)
+SCRIPT_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "script", "dwsim")
 BASELINE_DIR = os.path.join(
     os.path.dirname(__file__), "..", "..", "example", "example_dwsim"
 )
@@ -22,23 +21,40 @@ BASELINE_DIR = os.path.join(
 def _setup_dwsim_runtime():
     """Initialize .NET runtime and DWSIM references (once per process)."""
     os.environ["DOTNET_ROOT"] = DOTNET_ROOT
-    from pythonnet import set_runtime
-    from clr_loader import get_coreclr
 
-    rt = get_coreclr(dotnet_root=DOTNET_ROOT)
-    set_runtime(rt)
+    try:
+        from clr_loader import get_coreclr
+        from pythonnet import set_runtime
+    except ImportError as exc:
+        pytest.skip(f"DWSIM tests require pythonnet/clr_loader: {exc}")
 
-    import clr
+    try:
+        rt = get_coreclr(dotnet_root=DOTNET_ROOT)
+        set_runtime(rt)
+    except Exception as exc:
+        pytest.skip(f"DWSIM tests require a working .NET runtime: {exc}")
+
+    try:
+        import clr
+    except Exception as exc:
+        pytest.skip(f"DWSIM tests could not import clr: {exc}")
+
     sys.path.append(DWSIM_DIR)
-    clr.AddReference("DWSIM.Automation")
-    clr.AddReference("DWSIM.Interfaces")
+    try:
+        clr.AddReference("DWSIM.Automation")
+        clr.AddReference("DWSIM.Interfaces")
+    except Exception as exc:
+        pytest.skip(f"DWSIM assemblies are not available: {exc}")
 
 
 @pytest.fixture(scope="session")
 def dwsim_interf():
     """Session-scoped DWSIM Automation3 interface."""
     _setup_dwsim_runtime()
-    from DWSIM.Automation import Automation3
+    try:
+        from DWSIM.Automation import Automation3
+    except Exception as exc:
+        pytest.skip(f"DWSIM.Automation is not available: {exc}")
     return Automation3()
 
 
@@ -50,7 +66,7 @@ def dwsim_flowsheet(dwsim_interf):
     """
     script_dir = os.path.abspath(SCRIPT_DIR)
     sys.path.insert(0, script_dir)
-    from build_dwsim_flowsheet import configure_srk_bip, build_three_towers
+    from build_dwsim_flowsheet import build_three_towers, configure_srk_bip
     from register_compounds import register_compounds
 
     sim = dwsim_interf.CreateFlowsheet()

@@ -7,12 +7,105 @@ simulation.
 
 import logging
 import os
+import pathlib
 import re
+import xml.etree.ElementTree as ET
 from typing import Any, Dict, List
 
-from OMPython import ModelicaSystem, OMCSessionZMQ
+from OMPython import ModelicaSystem as OMPythonModelicaSystem
+from OMPython import OMCSessionZMQ
 
 logger = logging.getLogger(__name__)
+
+
+class ModelicaSystem(OMPythonModelicaSystem):
+    """Local compatibility wrapper for OMPython.ModelicaSystem.
+
+    OMPython 4 reads generated XML files using the process default text
+    encoding. On Windows systems configured with a non-UTF-8 locale this can
+    fail with UnicodeDecodeError when OpenModelica emits UTF-8 encoded XML.
+    This wrapper makes XML parsing explicit and stable for the repository.
+    """
+
+    def _xmlparse(self, xml_file: pathlib.Path):
+        if not xml_file.is_file():
+            raise RuntimeError(f"XML file not generated: {xml_file}")
+
+        xml_content = None
+        encodings_to_try = ("utf-8", "utf-8-sig", "gb18030")
+        last_error = None
+        for encoding in encodings_to_try:
+            try:
+                xml_content = xml_file.read_text(encoding=encoding)
+                break
+            except UnicodeDecodeError as exc:
+                last_error = exc
+
+        if xml_content is None:
+            raise (
+                last_error
+                if last_error is not None
+                else RuntimeError(f"Failed to read XML file: {xml_file}")
+            )
+
+        tree = ET.ElementTree(ET.fromstring(xml_content))
+        rootCQ = tree.getroot()
+
+        self._quantities = []
+        self._params = {}
+        self._inputs = {}
+        self._outputs = {}
+        self._continuous = {}
+        self._simulate_options = {}
+
+        for attr in rootCQ.iter("DefaultExperiment"):
+            for key in (
+                "startTime",
+                "stopTime",
+                "stepSize",
+                "tolerance",
+                "solver",
+                "outputFormat",
+            ):
+                self._simulate_options[key] = str(attr.get(key))
+
+        for sv in rootCQ.iter("ScalarVariable"):
+            translations = {
+                "alias": "alias",
+                "aliasvariable": "aliasVariable",
+                "causality": "causality",
+                "changeable": "isValueChangeable",
+                "description": "description",
+                "name": "name",
+                "variability": "variability",
+            }
+
+            scalar: dict[str, Any] = {}
+            for key_dst, key_src in translations.items():
+                val = sv.get(key_src)
+                scalar[key_dst] = None if val is None else str(val)
+
+            for att in list(sv):
+                scalar["start"] = att.get("start")
+                scalar["min"] = att.get("min")
+                scalar["max"] = att.get("max")
+                scalar["unit"] = att.get("unit")
+
+            if scalar["variability"] == "parameter":
+                if scalar["name"] in self._override_variables:
+                    self._params[scalar["name"]] = self._override_variables[
+                        scalar["name"]
+                    ]
+                else:
+                    self._params[scalar["name"]] = scalar["start"]
+            if scalar["variability"] == "continuous":
+                self._continuous[scalar["name"]] = scalar["start"]
+            if scalar["causality"] == "input":
+                self._inputs[scalar["name"]] = scalar["start"]
+            if scalar["causality"] == "output":
+                self._outputs[scalar["name"]] = scalar["start"]
+
+            self._quantities.append(scalar)
 
 
 def get_om_session() -> OMCSessionZMQ:
@@ -246,6 +339,22 @@ def format_parameter_value(name: str, value: Any) -> str:
         Lists are formatted as {v1,v2,...}. Strings are quoted with double quotes.
         Numbers and booleans use direct string conversion.
     """
+    return f"{name}={format_parameter_override_value(value)}"
+
+
+def format_parameter_override_value(value: Any) -> str:
+    """Formats a parameter value as a Modelica literal.
+
+    Args:
+        value: The value of the parameter (can be number, string, list, or bool).
+
+    Returns:
+        A Modelica-compatible literal string without the parameter name.
+
+    Note:
+        This helper is used by OMPython 4-style dictionary setters, where keys
+        and values are provided separately.
+    """
     if isinstance(value, list):
         # In Modelica, strings in records should be quoted.
         # This regex checks if the string is already quoted.
@@ -257,14 +366,29 @@ def format_parameter_value(name: str, value: Any) -> str:
                     return f'"{elem}"'
             return str(elem)
 
-        return f"{name}={{{','.join(map(format_element, value))}}}"
+        return f"{{{','.join(map(format_element, value))}}}"
     elif isinstance(value, bool):
-        return f"{name}={str(value).lower()}"
+        return str(value).lower()
     elif isinstance(value, str):
         # Format strings as "value"
-        return f'{name}="{value}"'
+        return f'"{value}"'
     # For numbers, direct string conversion is fine
-    return f"{name}={value}"
+    return str(value)
+
+
+def build_modelica_parameter_map(parameters: Dict[str, Any]) -> Dict[str, str]:
+    """Builds a ModelicaSystem-compatible parameter dictionary.
+
+    Args:
+        parameters: Parameter names mapped to raw Python values.
+
+    Returns:
+        A dictionary whose values are Modelica-compatible literal strings.
+    """
+    return {
+        name: format_parameter_override_value(value)
+        for name, value in parameters.items()
+    }
 
 
 def _parse_om_value(value_str: str) -> Any:

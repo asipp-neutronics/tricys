@@ -439,6 +439,7 @@ def run_aspen_simulation(
     finally:
         if aspen:
             aspen.close()
+        pythoncom.CoUninitialize()
 
     return output_placeholder
 

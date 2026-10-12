@@ -13,12 +13,12 @@ unavailable.
 
 from __future__ import annotations
 
-import csv
 import math
-import shutil
 from pathlib import Path
 
 import pytest
+
+from tricys.core.modelica import get_om_session
 
 try:
     from OMPython import OMCSessionZMQ
@@ -31,12 +31,7 @@ except ImportError:  # pragma: no cover
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_PATH = (
-    REPO_ROOT
-    / "tricys"
-    / "example"
-    / "example_data"
-    / "example_model"
-    / "package.mo"
+    REPO_ROOT / "tricys" / "example" / "example_data" / "example_model" / "package.mo"
 )
 MODEL_NAME = "example_model.Cycle"
 STOP_TIME = 5000.0
@@ -54,7 +49,7 @@ def omc():
         pytest.skip("OMPython not available")
     if not PACKAGE_PATH.exists():
         pytest.skip(f"Package not found: {PACKAGE_PATH}")
-    session = OMCSessionZMQ()
+    session = get_om_session()
     try:
         loaded = session.sendExpression(f'loadFile("{PACKAGE_PATH.as_posix()}")')
         if loaded is not True:
@@ -86,10 +81,10 @@ def _simulate(
     override_str = ""
     if overrides:
         override_str = (
-            "simflags=\""
+            'simflags="'
             + "-override="
             + ",".join(f"{k}={v}" for k, v in overrides.items())
-            + "\", "
+            + '", '
         )
     expr = (
         f"simulate({MODEL_NAME}, stopTime={stop_time}, "
@@ -124,7 +119,7 @@ def _sample_via_val(omc, stop_time: float) -> dict[str, list[float]]:
     for name in var_names:
         col: list[float] = []
         for t in times:
-            v = omc.sendExpression(f'val({name}, {t})')
+            v = omc.sendExpression(f"val({name}, {t})")
             col.append(float(v))
         data[name] = col
     return data
@@ -156,13 +151,13 @@ def test_capacity_constraint_effective(omc, workdir):
     i_total_max = max(data["blanket.I_total"])
     # Sigmoid softness=0.02 → I_total may exceed cap by ~softness*cap fraction;
     # allow up to 5% margin
-    assert i_total_max <= 105.0, (
-        f"With capacity_max=100, I_total should be ≤105, got {i_total_max}"
-    )
+    assert (
+        i_total_max <= 105.0
+    ), f"With capacity_max=100, I_total should be ≤105, got {i_total_max}"
     overflow_max = max(data["blanket.overflow_out[1]"])
-    assert overflow_max > 0, (
-        f"With capacity_max=100, overflow should be > 0, got {overflow_max}"
-    )
+    assert (
+        overflow_max > 0
+    ), f"With capacity_max=100, overflow should be > 0, got {overflow_max}"
 
 
 def test_rate_constraint_effective(omc, workdir):
@@ -173,9 +168,9 @@ def test_rate_constraint_effective(omc, workdir):
         overrides={"blanket.capacity_max": 1e9, "blanket.rate_max": 2.0},
     )
     rate_clip_max = max(data["blanket.rate_clip_out[1]"])
-    assert rate_clip_max > 0, (
-        f"With rate_max=2, rate_clip_out should be > 0, got {rate_clip_max}"
-    )
+    assert (
+        rate_clip_max > 0
+    ), f"With rate_max=2, rate_clip_out should be > 0, got {rate_clip_max}"
 
 
 def test_mass_conservation(omc, workdir):
@@ -183,6 +178,7 @@ def test_mass_conservation(omc, workdir):
     overrides = {"blanket.capacity_max": 200.0, "blanket.rate_max": 20.0}
     data = _simulate(omc, workdir, overrides=overrides)
     times = data["time"]
+
     # Integrate overflow + rate_clip via trapezoidal rule
     def trapz(y: list[float]) -> float:
         return sum(
@@ -209,6 +205,6 @@ def test_hard_constraint(omc, workdir):
     }
     data = _simulate(omc, workdir, overrides=overrides)
     i_total_max = max(data["blanket.I_total"])
-    assert i_total_max <= 102.0, (
-        f"Near-hard constraint should bound I_total ≤102, got {i_total_max}"
-    )
+    assert (
+        i_total_max <= 102.0
+    ), f"Near-hard constraint should bound I_total ≤102, got {i_total_max}"

@@ -5,15 +5,15 @@ from pathlib import Path
 import pytest
 
 from tricys.core.interceptor import integrate_interceptor_model
+from tricys.core.modelica import get_om_session
 
 
 def _require_omc():
     """Skip the calling test if OMPython + OMC are not available."""
     try:
-        from OMPython import OMCSessionZMQ  # noqa: F401
-
-        omc = OMCSessionZMQ()
+        omc = get_om_session()
         omc.sendExpression("getVersion()")
+        omc.sendExpression("quit()")
     except Exception as exc:
         pytest.skip(f"OMCSessionZMQ not available: {exc}")
 

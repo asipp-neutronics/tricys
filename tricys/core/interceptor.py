@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict
 
-from OMPython import OMCSessionZMQ
+from tricys.core.modelica import get_om_session
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ def _integrate_interceptor_single_file(
         with open(package_path, "r", encoding="utf-8") as f:
             original_package_code = f.read()
 
-        omc = OMCSessionZMQ()
+        omc = get_om_session()
         omc.sendExpression(f'loadFile("{Path(package_path).as_posix()}")')
 
         output_dir = os.path.dirname(package_path)
@@ -381,7 +381,7 @@ def _integrate_interceptor_multi_file(
         },
     )
     try:
-        omc = OMCSessionZMQ()
+        omc = get_om_session()
         omc.sendExpression(f'loadFile("{Path(package_path).as_posix()}")')
 
         logger.info("Proceeding with multi-interceptor model generation")

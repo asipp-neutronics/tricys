@@ -1,4 +1,5 @@
 import argparse
+import copy
 import glob
 import importlib
 import importlib.util
@@ -11,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Union
@@ -24,7 +26,6 @@ except ImportError:
     pass
 
 import pandas as pd
-from OMPython import ModelicaSystem
 
 from tricys.analysis.metric import (
     build_single_job_summary_df,
@@ -34,6 +35,8 @@ from tricys.core.foc import prepare_foc_simulation_package
 from tricys.core.interceptor import integrate_interceptor_model
 from tricys.core.jobs import generate_simulation_jobs
 from tricys.core.modelica import (
+    ModelicaSystem,
+    build_modelica_parameter_map,
     format_parameter_value,
     get_om_session,
     load_modelica_package,
@@ -293,7 +296,9 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
         # Parse co_simulation config - new format with mode at top level
         co_sim_config = config["co_simulation"]
         mode = co_sim_config.get("mode", "interceptor")  # Get mode from top level
-        handlers = co_sim_config.get("handlers", [])  # Get handlers array
+        handlers = copy.deepcopy(
+            co_sim_config.get("handlers", [])
+        )  # Get handlers array
 
         # Validate that handlers is a list
         if not isinstance(handlers, list):
@@ -399,18 +404,23 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
             isolated_package_path, model_name, variable_filter, is_regex=True
         )
         mod.setSimulationOptions(
-            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
+            {
+                "stopTime": stop_time,
+                "stepSize": step_size,
+                "outputFormat": "csv",
+            }
         )
 
-        param_settings = [
-            format_parameter_value(name, value) for name, value in job_params.items()
-        ]
+        param_settings = build_modelica_parameter_map(job_params)
         if param_settings:
             logger.info(
                 "Applying parameters for job",
                 extra={
                     "job_id": job_id,
-                    "param_settings": param_settings,
+                    "param_settings": [
+                        format_parameter_value(name, value)
+                        for name, value in job_params.items()
+                    ],
                 },
             )
             mod.setParameters(param_settings)
@@ -505,6 +515,15 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
                 **handler_config.get("params", {}),
             )
 
+            if not output_placeholder:
+                raise RuntimeError(
+                    f"Co-simulation handler returned no output mapping for instance {instance_name}."
+                )
+            if not os.path.exists(co_sim_output_filename):
+                raise FileNotFoundError(
+                    f"Co-simulation handler did not create output CSV: {co_sim_output_filename}"
+                )
+
             interception_config = {
                 "submodel_name": handler_config["submodel_name"],
                 "instance_name": handler_config["instance_name"],
@@ -556,7 +575,11 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
             final_model_file, final_model_name, verif_config
         )
         verif_mod.setSimulationOptions(
-            [f"stopTime={stop_time}", f"stepSize={step_size}", "outputFormat=csv"]
+            {
+                "stopTime": stop_time,
+                "stepSize": step_size,
+                "outputFormat": "csv",
+            }
         )
         if param_settings:
             verif_mod.setParameters(param_settings)
@@ -679,12 +702,12 @@ def run_sequential_sweep(
         )
 
         mod.setSimulationOptions(
-            [
-                f"stopTime={sim_config['stop_time']}",
-                "tolerance=1e-6",
-                "outputFormat=csv",
-                f"stepSize={sim_config['step_size']}",
-            ]
+            {
+                "stopTime": sim_config["stop_time"],
+                "tolerance": 1e-6,
+                "outputFormat": "csv",
+                "stepSize": sim_config["step_size"],
+            }
         )
         # mod.buildModel()
 
@@ -700,10 +723,7 @@ def run_sequential_sweep(
                         "job_params": job_params,
                     },
                 )
-                param_settings = [
-                    format_parameter_value(name, value)
-                    for name, value in job_params.items()
-                ]
+                param_settings = build_modelica_parameter_map(job_params)
                 if param_settings:
                     mod.setParameters(param_settings)
 
@@ -844,7 +864,7 @@ def _process_h5_result(
                 # Cleanup immediately to save disk space
                 job_dir = os.path.dirname(res_path)
                 if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
-                    shutil.rmtree(job_dir)
+                    _cleanup_job_dir(job_dir, job_id)
                 return
 
         df["job_id"] = job_id
@@ -900,9 +920,41 @@ def _process_h5_result(
         # Cleanup immediately to save disk space
         job_dir = os.path.dirname(res_path)
         if os.path.exists(job_dir) and "job_" in os.path.basename(job_dir):
-            shutil.rmtree(job_dir)
+            _cleanup_job_dir(job_dir, job_id)
     except Exception as e:
         logger.error(f"Failed to process HDF5 result for job {job_id}: {e}")
+
+
+def _cleanup_job_dir(job_dir: str, job_id: int, retries: int = 8, delay: float = 0.5):
+    """Remove a job workspace with retries for transient Windows file locks."""
+
+    def _on_rm_error(func, path, exc_info):
+        try:
+            os.chmod(path, 0o666)
+            func(path)
+        except Exception:
+            pass
+
+    last_error = None
+    for attempt in range(1, retries + 1):
+        try:
+            shutil.rmtree(job_dir, onerror=_on_rm_error)
+            logger.info(
+                "Cleaned up job workspace after HDF5 processing",
+                extra={"job_id": job_id, "workspace": job_dir, "attempt": attempt},
+            )
+            return
+        except FileNotFoundError:
+            return
+        except Exception as exc:
+            last_error = exc
+            if attempt < retries:
+                time.sleep(delay)
+
+    logger.warning(
+        "Failed to cleanup job workspace after retries",
+        extra={"job_id": job_id, "workspace": job_dir, "error": str(last_error)},
+    )
 
 
 def export_results_to_csv(results_dir: str, hdf_path: str):

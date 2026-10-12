@@ -1,4 +1,5 @@
 import shutil
+from importlib.util import find_spec
 from pathlib import Path
 
 import pytest
@@ -9,12 +10,11 @@ from tricys.core.foc import (
     parse_foc_file,
     prepare_foc_simulation_package,
 )
+from tricys.core.modelica import get_om_session
 
-try:
-    from OMPython import OMCSessionZMQ
-
+if find_spec("OMPython") is not None:
     OMPYTHON_AVAILABLE = True
-except ImportError:
+else:
     OMPYTHON_AVAILABLE = False
 
 
@@ -270,7 +270,7 @@ def test_table_pulse_integration_builds_in_openmodelica(tmp_path):
     prepared_dir = prepared_model.parent
     cleanup_roots = [Path.cwd(), prepared_dir]
 
-    omc = OMCSessionZMQ()
+    omc = get_om_session()
     try:
         assert omc.sendExpression(f'cd("{prepared_dir.as_posix()}")')
         assert omc.sendExpression("loadModel(Modelica)")
