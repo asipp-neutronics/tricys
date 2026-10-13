@@ -1,20 +1,95 @@
 from __future__ import annotations
 
+import ast
 import importlib
 import importlib.util
 import inspect
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from tricys.workflow.base import (
     BaseSimulationEngine,
     PipelineError,
     PostprocessPlugin,
     PreprocessPlugin,
+    SecurityValidationError,
 )
 
 logger = logging.getLogger(__name__)
+
+FORBIDDEN_MODULES = {
+    "subprocess",
+    "pty",
+    "commands",
+    "multiprocessing",
+    "threading",
+    "socket",
+    "urllib.request",
+    "http.client",
+    "requests",
+}
+
+FORBIDDEN_CALLS = {
+    "eval",
+    "exec",
+    "compile",
+    "__import__",
+}
+
+FORBIDDEN_ATTR_CALLS = {
+    ("os", "system"),
+    ("os", "popen"),
+    ("os", "spawn"),
+    ("os", "exec"),
+    ("os", "remove"),
+    ("os", "unlink"),
+    ("os", "rmdir"),
+    ("shutil", "rmtree"),
+}
+
+
+def validate_script_ast_safety(source_code: str, file_path: str = "") -> None:
+    """Statically validates Python source code to prevent malicious system calls."""
+    try:
+        tree = ast.parse(source_code)
+    except SyntaxError as e:
+        raise SecurityValidationError(f"Plugin script syntax error: {e}") from e
+
+    for node in ast.walk(tree):
+        # 1. Check forbidden module imports
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                mod_root = alias.name.split(".")[0]
+                if mod_root in FORBIDDEN_MODULES:
+                    raise SecurityValidationError(
+                        f"Security violation at line {node.lineno}: import of '{alias.name}' is strictly forbidden in plugin sandbox."
+                    )
+        elif isinstance(node, ast.ImportFrom):
+            mod_root = (node.module or "").split(".")[0]
+            if mod_root in FORBIDDEN_MODULES:
+                raise SecurityValidationError(
+                    f"Security violation at line {node.lineno}: from '{node.module}' import is strictly forbidden in plugin sandbox."
+                )
+
+        # 2. Check forbidden calls
+        elif isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name):
+                if node.func.id in FORBIDDEN_CALLS:
+                    raise SecurityValidationError(
+                        f"Security violation at line {node.lineno}: call to '{node.func.id}()' is strictly forbidden in plugin sandbox."
+                    )
+            elif isinstance(node.func, ast.Attribute):
+                attr_name = node.func.attr
+                if isinstance(node.func.value, ast.Name):
+                    caller = node.func.value.id
+                    if (caller, attr_name) in FORBIDDEN_ATTR_CALLS or any(
+                        caller == f_caller and attr_name.startswith(f_attr)
+                        for f_caller, f_attr in FORBIDDEN_ATTR_CALLS
+                    ):
+                        raise SecurityValidationError(
+                            f"Security violation at line {node.lineno}: call to '{caller}.{attr_name}()' is strictly forbidden in plugin sandbox."
+                        )
 
 
 class PluginRegistry:
@@ -60,12 +135,71 @@ class PluginRegistry:
         return cls._engine_registry.get(name.lower())
 
     @classmethod
+    def introspect(cls) -> Dict[str, List[Dict[str, Any]]]:
+        """Collects structured metadata for all registered plugins and engines."""
+        import tricys.workflow  # noqa: F401
+
+        categories = {
+            "preprocess": cls._preprocess_registry,
+            "engine": cls._engine_registry,
+            "postprocess": cls._postprocess_registry,
+        }
+
+        result: Dict[str, List[Dict[str, Any]]] = {}
+        for cat_name, registry in categories.items():
+            seen_classes = set()
+            cat_list = []
+            for name, plugin_cls in registry.items():
+                if plugin_cls in seen_classes:
+                    continue
+                seen_classes.add(plugin_cls)
+                aliases = sorted([k for k, v in registry.items() if v is plugin_cls])
+                if hasattr(plugin_cls, "get_metadata") and callable(
+                    plugin_cls.get_metadata
+                ):
+                    meta = plugin_cls.get_metadata().to_dict()
+                else:
+                    meta = {
+                        "name": name,
+                        "category": cat_name,
+                        "description": (plugin_cls.__doc__ or "").strip(),
+                        "version": "2.0.0",
+                        "author": "TRICYS Core Team",
+                        "parameters_schema": {},
+                        "input_requirements": [],
+                        "output_artifacts": [],
+                    }
+                meta["aliases"] = aliases
+                cat_list.append(meta)
+            result[cat_name] = cat_list
+        return result
+
+    @classmethod
+    def get_plugin_info(cls, name: str) -> Optional[Dict[str, Any]]:
+        """Retrieves metadata for a specific plugin by name."""
+        name_lower = name.lower()
+        plugin_cls = (
+            cls.get_preprocess_class(name_lower)
+            or cls.get_postprocess_class(name_lower)
+            or cls.get_engine_class(name_lower)
+        )
+        if not plugin_cls:
+            return None
+        if hasattr(plugin_cls, "get_metadata") and callable(plugin_cls.get_metadata):
+            return plugin_cls.get_metadata().to_dict()
+        return {
+            "name": name,
+            "description": (plugin_cls.__doc__ or "").strip(),
+        }
+
+    @classmethod
     def load_class_from_source(
         cls,
         source: Union[str, Dict[str, Any]],
         expected_base: Optional[Type[Any]] = None,
+        base_dir: Optional[str] = None,
     ) -> Type[Any]:
-        """Dynamically load a class from a script path or python module path.
+        """Dynamically load a class from a script path or python module path with AST security guard.
 
         Supported formats:
         - dict with 'script_path' (and optional 'class_name' or 'class')
@@ -89,9 +223,28 @@ class PluginRegistry:
 
         loaded_module = None
         if script_path_str:
-            path = Path(script_path_str).resolve()
+            path = Path(script_path_str)
+            if not path.is_absolute() and base_dir:
+                candidate = (Path(base_dir) / path).resolve()
+                if candidate.is_file():
+                    path = candidate
+                else:
+                    path = path.resolve()
+            else:
+                path = path.resolve()
+
+            if not path.is_file() and base_dir:
+                candidate = (Path(base_dir) / script_path_str).resolve()
+                if candidate.is_file():
+                    path = candidate
+
             if not path.is_file():
                 raise PipelineError(f"Plugin script not found at {path}")
+
+            # AST Security Sandboxing Guard
+            code_text = path.read_text(encoding="utf-8")
+            validate_script_ast_safety(code_text, str(path))
+
             mod_name = path.stem
             spec = importlib.util.spec_from_file_location(mod_name, path)
             if not spec or not spec.loader:
@@ -101,7 +254,6 @@ class PluginRegistry:
         elif module_name_str:
             if "." in module_name_str and not class_name:
                 parts = module_name_str.split(".")
-                # Check if last part is capitalized (likely class name)
                 if parts[-1][0].isupper():
                     class_name = parts[-1]
                     module_name_str = ".".join(parts[:-1])
@@ -140,7 +292,9 @@ class PluginRegistry:
 
     @classmethod
     def resolve_preprocess_plugin(
-        cls, spec: Union[str, Dict[str, Any], PreprocessPlugin]
+        cls,
+        spec: Union[str, Dict[str, Any], PreprocessPlugin],
+        base_dir: Optional[str] = None,
     ) -> PreprocessPlugin:
         if isinstance(spec, PreprocessPlugin):
             return spec
@@ -151,7 +305,7 @@ class PluginRegistry:
                 return plugin_cls()
             # Try loading as dynamic source
             loaded_cls = cls.load_class_from_source(
-                spec, expected_base=PreprocessPlugin
+                spec, expected_base=PreprocessPlugin, base_dir=base_dir
             )
             return loaded_cls()
 
@@ -168,7 +322,7 @@ class PluginRegistry:
                     return plugin_cls(**params)
             # Try loading from script or module
             loaded_cls = cls.load_class_from_source(
-                spec, expected_base=PreprocessPlugin
+                spec, expected_base=PreprocessPlugin, base_dir=base_dir
             )
             return loaded_cls(**params)
 
@@ -176,7 +330,9 @@ class PluginRegistry:
 
     @classmethod
     def resolve_postprocess_plugin(
-        cls, spec: Union[str, Dict[str, Any], PostprocessPlugin]
+        cls,
+        spec: Union[str, Dict[str, Any], PostprocessPlugin],
+        base_dir: Optional[str] = None,
     ) -> PostprocessPlugin:
         if isinstance(spec, PostprocessPlugin):
             return spec
@@ -186,7 +342,7 @@ class PluginRegistry:
             if plugin_cls:
                 return plugin_cls()
             loaded_cls = cls.load_class_from_source(
-                spec, expected_base=PostprocessPlugin
+                spec, expected_base=PostprocessPlugin, base_dir=base_dir
             )
             return loaded_cls()
 
@@ -202,7 +358,7 @@ class PluginRegistry:
                 if plugin_cls:
                     return plugin_cls(**params)
             loaded_cls = cls.load_class_from_source(
-                spec, expected_base=PostprocessPlugin
+                spec, expected_base=PostprocessPlugin, base_dir=base_dir
             )
             return loaded_cls(**params)
 

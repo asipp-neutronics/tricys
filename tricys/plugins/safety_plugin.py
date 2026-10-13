@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from tricys.plugins.auditor.offline import parse_auditor_config, perform_offline_audit
 from tricys.plugins.static_alarm import check_thresholds
-from tricys.workflow.base import PostprocessPlugin
+from tricys.workflow.base import PluginMetadata, PostprocessPlugin
 from tricys.workflow.context import PipelineContext
 from tricys.workflow.registry import register_postprocess_plugin
 
@@ -30,6 +30,34 @@ class SafetyAuditorPlugin(PostprocessPlugin):
     """
 
     name = "safety"
+
+    @classmethod
+    def get_metadata(cls) -> PluginMetadata:
+        from tricys.workflow.base import PluginMetadata
+
+        return PluginMetadata(
+            name=cls.name,
+            category="postprocess",
+            description="Plant-wide mass conservation balance audit and safety threshold monitoring.",
+            version="2.0.0",
+            author="TRICYS Safety & Core Team",
+            parameters_schema={
+                "auditor_config": {
+                    "type": "object",
+                    "description": "AuditorConfig dictionary or model.",
+                },
+                "alarm_rules": {
+                    "type": "array",
+                    "description": "List of StaticAlarmRule definitions.",
+                },
+            },
+            input_requirements=["simulation_results", "trajectory"],
+            output_artifacts=[
+                "audit_report.json",
+                "mass_balance_summary.csv",
+                "alarm_violations.json",
+            ],
+        )
 
     def __init__(
         self,

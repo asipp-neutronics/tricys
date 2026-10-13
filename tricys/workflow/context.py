@@ -5,6 +5,37 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+import pandas as pd
+
+from tricys.core.semantic import PhysicsSemanticResolver
+
+
+@dataclass
+class SimulationJobResult:
+    """Strongly-typed contract for an individual simulation job execution result."""
+
+    job_id: int
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    result_path: str = ""
+    dataframe: Optional[pd.DataFrame] = None
+    time_column: str = "time"
+    time_unit: str = "second"
+    metrics: Dict[str, Any] = field(default_factory=dict)
+    # Extensible task-level payload for plugins (Open-Closed Principle)
+    extra: Dict[str, Any] = field(default_factory=dict)
+
+    def get_dataframe(self) -> Optional[pd.DataFrame]:
+        """Lazy-loads and caches pandas DataFrame from result_path if not already in memory."""
+        if self.dataframe is not None:
+            return self.dataframe
+        if self.result_path and os.path.exists(self.result_path):
+            try:
+                self.dataframe = pd.read_csv(self.result_path)
+                return self.dataframe
+            except Exception:
+                return None
+        return None
+
 
 @dataclass
 class PipelineContext:
@@ -32,16 +63,76 @@ class PipelineContext:
     # Simulation Outputs
     results_store_path: Optional[str] = None  # Path to HDF5 results
     raw_results: List[Dict[str, Any]] = field(default_factory=list)
+    results: List[SimulationJobResult] = field(default_factory=list)
     execution_status: str = "initialized"
     execution_error: Optional[str] = None
 
-    # Extensible payload for plugins and inter-stage metadata
+    # Physics Semantic Bus Resolver
+    semantic_resolver: Optional[PhysicsSemanticResolver] = None
+
+    # Extensible payload for plugins and inter-stage metadata (Open-Closed Principle)
     metadata: Dict[str, Any] = field(default_factory=dict)
     metrics: Dict[str, Any] = field(default_factory=dict)
     metrics_definition: Dict[str, Any] = field(default_factory=dict)
     artifacts: Dict[str, Any] = field(default_factory=dict)
     logs: List[Dict[str, Any]] = field(default_factory=list)
     typed_config: Optional[Any] = None
+
+    def __post_init__(self) -> None:
+        if self.semantic_resolver is None:
+            custom_map = self.config.get("semantic_mapping")
+            self.semantic_resolver = PhysicsSemanticResolver(custom_mapping=custom_map)
+
+    def sync_typed_results(self) -> List[SimulationJobResult]:
+        """Synchronizes legacy raw_results list into strongly-typed SimulationJobResult objects."""
+        if not self.results and self.raw_results:
+            synced = []
+            for item in self.raw_results:
+                r_obj = SimulationJobResult(
+                    job_id=int(item.get("job_id", 1)),
+                    parameters=dict(item.get("params", {})),
+                    result_path=str(item.get("result_path", "")),
+                    dataframe=item.get("dataframe"),
+                    metrics=dict(item.get("metrics", {})),
+                    extra=dict(item.get("extra", {})),
+                )
+                synced.append(r_obj)
+            self.results = synced
+        return self.results
+
+    def resolve_physics_variable(
+        self,
+        df: pd.DataFrame,
+        concept: str,
+    ) -> Optional[pd.Series]:
+        """Resolves a standardized physics concept (e.g. 'sds_inventory') from timeseries dataframe."""
+        if self.semantic_resolver:
+            return self.semantic_resolver.resolve_variable(df, concept)
+        return None
+
+    def get_matched_column(
+        self,
+        columns_or_df: Any,
+        concept: str,
+    ) -> Optional[str]:
+        """Discovers the concrete Modelica column name for a standardized physics concept."""
+        if self.semantic_resolver:
+            cols = (
+                columns_or_df.columns
+                if hasattr(columns_or_df, "columns")
+                else columns_or_df
+            )
+            return self.semantic_resolver.get_matched_column(cols, concept)
+        return None
+
+    def get_all_inventories(
+        self,
+        df: pd.DataFrame,
+    ) -> Dict[str, pd.Series]:
+        """Extracts all component inventories present in dataframe as a clean dictionary."""
+        if self.semantic_resolver:
+            return self.semantic_resolver.get_all_inventories(df)
+        return {}
 
     @classmethod
     def from_config(

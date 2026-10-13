@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# Functional capability plugins
 from tricys.plugins.report_plugin import (
     AnalysisReportPlugin,
     BaselinePlotPlugin,

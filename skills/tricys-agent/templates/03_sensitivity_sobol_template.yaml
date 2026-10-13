@@ -1,0 +1,36 @@
+# TRICYS V2 Template: 多维参数全局敏感度 Sobol 方差分解 (SC-3)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 500.0
+  stepSize: 1.0
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}"
+
+task:
+  type: "sensitivity"
+  method: "sobol"
+  samples: 8                          # 推荐 8~32, 生成 N*(2D+2) 样本
+  seed: 42
+  parallel: true
+  max_workers: 4
+  parameters:
+    ${PARAM_1}: [1.05, 1.30]          # 依据自省参数与 Abdou 经验范围定义上下界
+    ${PARAM_2}: [800.0, 1400.0]
+  metrics:
+    final_storage:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 高维参数全局灵敏度与方差分解专题报告"
+    formats: ["markdown", "docx", "pdf"]

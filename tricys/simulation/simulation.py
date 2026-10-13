@@ -250,7 +250,7 @@ def _run_single_pipeline(
     context = PipelineContext.from_config(config, base_dir=base_dir)
 
     # 2. Build Pipeline (inferred or explicit)
-    pipeline = PipelineBuilder.build(config, export_csv=export_csv)
+    pipeline = PipelineBuilder.build(config, export_csv=export_csv, base_dir=base_dir)
 
     # 3. Execute Pipeline
     pipeline.run(context)

@@ -1,0 +1,42 @@
+# TRICYS V2 Template: 多工况参数扫描与起动亏空自持评估 (SC-1)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"      # 如: "example_model.mo"
+  modelName: "${MODEL_NAME}"          # 如: "example_model.Cycle"
+
+scenario:
+  time_base: "hour"                   # 推荐 "hour" 或 "second"
+  stopTime: 2000.0                    # 仿真终止时长
+  stepSize: 0.5                       # 采样步长
+  method: "dassl"                     # 求解器: dassl / ida / cvode
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*"
+
+task:
+  type: "sweep"
+  parallel: true
+  max_workers: 4
+  parameters:
+    - name: "Baseline_TBR_1.10"
+      ${TBR_PARAM}: 1.10
+    - name: "Conservative_TBR_1.05"
+      ${TBR_PARAM}: 1.05
+    - name: "HighBreeding_TBR_1.20"
+      ${TBR_PARAM}: 1.20
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+    startup_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "startup_inventory"
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多工况参数扫描与氚自持评估工程报告"
+    formats: ["markdown", "docx", "pdf"]

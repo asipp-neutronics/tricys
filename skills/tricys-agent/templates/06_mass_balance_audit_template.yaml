@@ -1,0 +1,54 @@
+# TRICYS V2 Template: 全流程闭环物料守恒与安全泄漏审计 (SC-4)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*"
+
+task:
+  type: "simulate"
+  parallel: true
+  parameters:
+    ${TBR_PARAM}: 1.10
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+
+  auditor:
+    enabled: true
+    warn_threshold_g: 0.5              # 警告阈值 (g)
+    kill_threshold_g: 50.0             # 阻断阈值 (g)
+    patterns:
+      inventory:
+        - "*.I?1?"                     # 或依据自省匹配所有存量变量
+      cumulative_sources:
+        - "*blanket.cumulative_breed?1?"
+      leak:
+        - "*.leak_rate?1?"             # 泄漏项
+      decay:
+        - "*.decay_rate?1?"            # 衰变项
+      cumulative_burn:
+        - "*plasma.cumulative_burn?1?" # 聚变燃耗项
+
+plugins:
+  postprocess:
+    - name: "safety"                   # 自动执行 offline_auditor
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 全厂动态物料平衡与闭环质量守恒审计工况报告"
+    formats: ["markdown", "docx", "pdf"]

@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import shutil
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import pandas as pd
 
@@ -229,16 +229,38 @@ class SimulationStoragePlugin(PostprocessPlugin):
 
     name = "storage"
 
-    def __init__(self, export_csv: Optional[bool] = None, **params: Any) -> None:
+    def __init__(
+        self,
+        export_csv: Optional[bool] = None,
+        metrics_definition: Optional[Dict[str, Any]] = None,
+        results_dir: Optional[str] = None,
+        **params: Any,
+    ) -> None:
         super().__init__(**params)
         self.export_csv = export_csv
+        self.metrics_definition = metrics_definition
+        self.results_dir = results_dir
 
     def run(self, context: PipelineContext) -> None:
+        if self.results_dir:
+            if not os.path.isabs(self.results_dir) and context.base_dir:
+                context.results_dir = os.path.abspath(
+                    os.path.join(context.base_dir, self.results_dir)
+                )
+            else:
+                context.results_dir = os.path.abspath(self.results_dir)
+
         # 1. Register metrics definition metadata if available
         metrics_def = (
-            self.params.get("metrics_definition")
+            self.metrics_definition
+            or self.params.get("metrics_definition")
             or getattr(context, "metrics_definition", None)
             or context.config.get("metrics_definition")
+            or (
+                context.config.get("task", {}).get("metrics")
+                if isinstance(context.config.get("task"), dict)
+                else None
+            )
             or context.config.get("sensitivity_analysis", {}).get(
                 "metrics_definition", {}
             )

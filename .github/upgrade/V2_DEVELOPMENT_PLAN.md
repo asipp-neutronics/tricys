@@ -1,8 +1,8 @@
 # TRICYS v2.0 架构升级多阶段实施路线与开发计划
 
-> **文档版本**: v1.4.0  
+> **文档版本**: v1.6.0  
 > **更新时间**: 2026-10-11  
-> **文档定位**: 依据 [`V2_RFC.md`](./V2_RFC.md) 架构规范与最新指导要求，制定系统性实施路线。**Stage 0（Schema 2.0 基础）、Stage 1（任务统一调度、并发解耦、三大通用工程报告模板、术语表解耦、纯英文现代 Visualizer 看板及多格式导出）与 Stage 2（模型与程序时间量纲治理、Issue #99 彻底根除、v2_examples 全量 6 个基准算例端到端通过、报告与图表时间尺度完全自洽）已全面高标准交付**。
+> **文档定位**: 依据 [`V2_RFC.md`](./V2_RFC.md) 架构规范与最新指导要求，制定系统性实施路线。**Stage 0（Schema 2.0 基础）、Stage 1（任务统一调度、并发解耦、三大通用工程报告模板、术语表解耦、纯英文现代 Visualizer 看板及多格式导出）、Stage 2（模型与程序时间量纲治理、Issue #99 彻底根除、v2_examples 全量 6 个基准算例端到端通过、报告与图表时间尺度完全自洽）与 Stage 3（基于 Abdou 2021 宏观理论边界的闭环 Agent Skill 协议、深度模型自省、模型健康审查与自动修补 Patch、多级自愈诊断屏障、物理决策洞察插件及全新的双受众 8 大专栏文档大洗牌）已全面高标准交付（293 项自动化测试 100% 绿灯，mkdocs build --strict 零警告通过）**。当前规划战略聚焦推进 **Stage 4（云原生 Docker 基准运行环境与一键复现底座）**。
 
 ---
 
@@ -10,14 +10,14 @@
 
 1. [项目背景与现状审计 (Current State Audit)](#1-项目背景与现状审计)
    - [1.1 RFC 核心架构支柱与目标](#11-rfc-核心架构支柱与目标)
-   - [1.2 暂存区与当前完成工作盘点 (Stage 0, Stage 1 & Stage 2 全面交付)](#12-暂存区与当前完成工作盘点)
+   - [1.2 暂存区与当前完成工作盘点 (Stage 0 ~ 3 全面交付)](#12-暂存区与当前完成工作盘点)
    - [1.3 差距分析与实施战略聚焦](#13-差距分析与实施战略聚焦)
 2. [多阶段演化全景与里程碑 (Evolution Roadmap)](#2-多阶段演化全景与里程碑)
 3. [各阶段详细设计、需求与验收标准](#3-各阶段详细设计需求与验收标准)
    - [Stage 0: 暂存区基线测试补齐与 Schema 2.0 基础硬化 (已完成 ✅)](#stage-0-暂存区基线测试补齐与-schema-20-基础硬化-已完成-)
    - [Stage 1: Schema 2.0 任务统一调度、并发解耦与 Visualizer 真实报告系统 (已完成 ✅)](#stage-1-schema-20-任务统一调度并发解耦与-visualizer-内置报告导出系统-已完成-)
    - [Stage 2: 模型与程序同步的时间量纲治理与 Issue #99 彻底根除 (已完成 ✅)](#stage-2-模型与程序同步的时间量纲治理与-issue-99-彻底根除-已完成-)
-   - [Stage 3: Agent Skill 扩展协议与自愈诊断屏障](#stage-3-agent-skill-扩展协议与自愈诊断屏障)
+   - [Stage 3: 闭环 Agent Skill 协议、模型自省与物理自愈诊断屏障 (已完成 ✅)](#stage-3-闭环-agent-skill-协议模型自省与物理自愈诊断屏障-已完成-)
    - [Stage 4: 云原生 Docker 基准运行环境与一键复现底座](#stage-4-云原生-docker-基准运行环境与一键复现底座)
    - [Stage 5: 全量兼容性回归、基准算例验收与 v2.0 正式交付](#stage-5-全量兼容性回归基准算例验收与-v20-正式交付)
 4. [依赖矩阵与关键路径 (Dependency Matrix)](#4-依赖矩阵与关键路径)
@@ -77,9 +77,9 @@ gantt
     section Stage 2
     模型与程序同步时间量纲治理 (#99) :done, s2, 2026-10-10, 2d
     section Stage 3
-    Agent Skill 协议与诊断自愈      :active, s3, 2026-10-11, 3d
+    Agent Skill 协议与诊断自愈      :done, s3, 2026-10-11, 1d
     section Stage 4
-    Docker 容器基准运行环境        :s4, after s3, 3d
+    Docker 容器基准运行环境        :active, s4, after s3, 3d
     section Stage 5
     存量回归、文档更新与正式发布    :s5, after s4, 2d
 ```
@@ -325,32 +325,300 @@ gantt
 
 ---
 
-### Stage 3: Agent Skill 扩展协议与自愈诊断屏障
+### Stage 3: 闭环 Agent Skill 协议、模型自省与物理自愈诊断屏障 (已完成 ✅)
 
-#### 1. 阶段目标
-为 AI Coding Agent（如 Google Antigravity、Claude Code、Cursor）提供标准化的协议接口，实现插件零侵入自描述热插拔，以及仿真异常的结构化自修复反馈。
+- **状态**: 100% 核心能力交付通过（全量 289+ 项自动化测试 100% 绿灯，AST 模型自省、四维健康审查与统一 Diff 补丁、强类型插件元数据、静态安全沙箱、多级自愈诊断屏障、物理语义总线、DAG 拓扑排序、显式解耦流水线及 Agent-Skill 标准协议全部通过验收；根据研发决策，Stage 3 排除 docs 文档大清洗并恢复原文档，手册大清洗统筹延期至最后阶段 Stage 5）。
+- **包含**:
+  - `skills/tricys-agent/SKILL.md` & `references/physics_rules.md` & `templates/*.yaml`: 聚变堆通用模型闭环 Agent Skill 规约与工业级原型库
+  - `tricys/core/introspect.py`: AST 模型深度自省器与无幻觉实测参数字典提取
+  - `tricys/core/model_auditor.py`: 四维度模型静态健康审查与 Unified Diff 自动修复引擎
+  - `tricys/workflow/base.py` & `registry.py`: `PluginMetadata` 强类型元数据契约与 AST 静态安全沙箱
+  - `tricys/core/diagnostics.py`: 四级异常分类器与 `DiagnosticsBarrier` 自愈诊断屏障
+  - `tricys/core/semantic.py`: 聚变物理语义总线与跨模型多态列名映射
+  - `tricys/workflow/builder.py`: 显式解耦 Pipeline 编译器与 Kahn DAG 拓扑自动排序
+  - CLI 子命令: `model inspect`, `model review`, `plugin list`, `plugin info`, `plugin scaffold`, `plugin test`, `compile`, `--diagnose` 机器可读协议全链路打通
+  - 测试套件: `test/core/test_introspect.py`, `test/core/test_model_auditor.py`, `test/core/test_diagnostics.py`, `test/workflow/test_agent_skill.py`, `test/workflow/test_agent_native_v3.py`, `test/workflow/test_explicit_pipeline_decoupled.py` (全量绿灯)
 
-#### 2. 需求清单 (Requirements)
-- **REQ-3.1**: **插件元数据自描述契约 (Plugin Metadata Contract)**：
-  在 `BasePlugin` 中确立 `get_metadata() -> PluginMetadata` 契约，包含 `name`, `version`, `category` (preprocess/engine/postprocess), `input_requirements`, `output_artifacts`, `parameter_schema`。
-- **REQ-3.2**: **Agent 专用 CLI 查询命令**：
-  实现 `tricys plugin list --json` 与 `tricys plugin info <name> --json`，供 Agent 单次查询当前已注册插件的全量能力与参数规范。
-- **REQ-3.3**: **外置 Agent 脚本动态加载安全屏障**：
-  增强 `PluginRegistry.load_class_from_source`，当 Agent 在工作区指定自定义 `script: "./custom_plugin.py"` 时，执行动态加载、基类契约签名检查与安全沙箱告警。
-- **REQ-3.4**: **结构化异常屏障与自修复反馈协议 (Self-Correction Protocol)**：
-  捕获 Modelica 编译语法错误、C 运行期内存溢出、数值发散、质量不守恒等故障，输出标准化 JSON 错误摘要（含 `error_type`, `root_cause`, `context_snapshot`, `suggested_fix`），直接作为 Tool Result 反馈给 Agent。
+#### 1. 阶段目标与核心使命 (Mission & Objectives)
+聚变堆氚燃料循环（Tritium Fuel Cycle）是连接燃烧等离子体与产氚包层的核心“血液循环系统”，涉及反应堆堆芯（Tokamak）、排气净化（TEP）、同位素分离（ISS）、储存与分配（SDS）、包层产氚提取（TES）及水重水催化与空气净化（WDS/VDS）等十余个复杂子系统，具有**极强非线性、高刚性微分代数方程（DAE）特征、大滞后动态与极度苛刻的安全与物料守恒要求**。
 
-#### 3. 关键任务与影响文件 (WBS & Scope)
-- 改造 [tricys/workflow/base.py](file:///d:/Administrator/Documents/Github/tricys/tricys/workflow/base.py) 增加元数据规范
-- 在 [tricys/workflow/registry.py](file:///d:/Administrator/Documents/Github/tricys/tricys/workflow/registry.py) 增强自描述字典提取
-- 在 [tricys/main.py](file:///d:/Administrator/Documents/Github/tricys/tricys/main.py) 增加 `plugin list` 子命令
-- 新建异常屏障与诊断模块 `tricys/core/diagnostics.py`
-- 编写 Agent Skill 集成测试 `test/workflow/test_agent_skill.py`
+然而，不同科研机构、不同工程阶段（概念设计/工程详细设计）所构建的 Modelica 物理模型在保真度、组件划分、变量命名及接口形式上差异极大。普通 AI Agent 在辅助此类科研仿真时面临三大致命痛点：
+1. **脱离模型胡编乱造（幻觉风险）**：Agent 脱离具体的 `.mo` 源码，根据泛化的学术文献假设凭空捏造模型中根本不存在的变量名或参数（如将 `sds.I[1]` 臆造为 `sds.inventory`，或胡乱假设不存在的旁路），导致配置解析或编译直接崩溃；
+2. **缺乏通用模型自省能力**：无法自动识别不同 Modelica 模型的参数定义、存量节点与流股拓扑，导致工具无法通用适配多样化模型；
+3. **缺乏模型级审查与自修复能力**：当用户的 Modelica 模型本身存在时间量纲不一致（如 Issue #99 缺少 `time_scale`）、物料守恒漏项（如误删 `leak_rate` 或 `decay_rate` 导致无法审计）、或初值奇异时，传统流程与普通 Agent 束手无策，只能抛出晦涩的编译器报错。
 
-#### 4. 验收标准 (Acceptance Criteria)
-- [ ] 终端执行 `python -m tricys.main plugin list --json`，能够返回合法 JSON，完整展示系统中已注册的全部插件名与输入输出契约。
-- [ ] 提供一个存在 Modelica 语法错误的模型，框架能够拦截并返回包含定位与修改建议的结构化 JSON 诊断信息。
-- [ ] 动态加载测试用例：在外部目录新建一个继承自 `PostprocessPlugin` 的脚本并配置到 yaml 中，Pipeline 能够正确加载、实例化并执行该脚本。
+**Stage 3 的核心使命**：
+打造 **TRICYS 通用模型中心化闭环 Agent 引擎 (Model-Centric Agentic-Fusion Engine)**。确立**“以 Modelica 模型分析为绝对核心、严格防幻觉、通用落地不同模型、具备模型审查与自修复能力”**的最高准则，打通：
+$$\text{模型静态审查与修复建议} \longrightarrow \text{深度模型自省} \longrightarrow \text{Schema 2.0 配置精确合成} \longrightarrow \text{驱动仿真} \longrightarrow \text{异常闭环自愈} \longrightarrow \text{物理洞察交付}$$
+全流程零幻觉、通用适配多种 Modelica 模型、高可靠、强物理闭环。
+
+---
+
+#### 2. 氚燃料循环应用场景映射与知识边界界定
+
+##### 2.1 理论边界界定：Abdou et al. (2021) 宏观物理参考系 vs. v2_examples 落地基准
+- **Abdou et al. (2021) 的定位：拓展认知边界与宏观物理参考手册 (Reference Almanac)**：
+  文献 *M. Abdou et al., Nucl. Fusion 61 (2021) 013001* 详尽讨论了未来 DEMO 堆乃至全厂精细系统（如直接内循环 DIR、低温分子筛床 CMSB、同位素再平衡 IRPR 等），其部分前沿精细场景在当前常规工程模型（如 `example.mo`）中并未全部建模。
+  **在此明确其定位**：Abdou 2021 的理论准则（三阶自持置信度：$TBR_{req} < 1.05$ / $1.05\sim 1.15$ / $>1.15$、复合燃耗 $\eta_{ffb} > 0.7\%$、可用率红线 $AF > 10\%$、八大物理参数经验范围）仅作为 **Agent 的宏观物理常识底座与结果评估参考标准**，**严禁 Agent 强行要求用户模型必须满足文献中的所有精细构型，更严禁脱离模型凭空捏造文献变量！**
+- **实际工业落地基准：以当前 `v2_examples` 工业基准算例为唯一事实金标准 (Golden Standard)**：
+  Agent Skill 的具体工作流、模板和测试，**100% 严格基于已在 Stage 1 & Stage 2 验收通过的 `v2_examples` 工业基准集**（稳态扫参、脉冲二分、Sobol 敏度、变占空比脉冲宽度、FOC 调度、全流程质量守恒审计），确保端到端真实可执行、可复现。
+
+##### 2.2 四大模型驱动应用场景在 Agent 闭环下的映射
+
+所有场景**必须且只能紧密配合具体的 Modelica 模型**展开分析，Agent 必须先自省模型结构，再驱动对应的仿真场景：
+
+| 场景编号 | 聚变工程应用场景 | 模型核心依赖与物理关注点 | Agent 紧扣模型的闭环执行逻辑 |
+| :--- | :--- | :--- | :--- |
+| **SC-1** | **氚自持起动亏空与临界 TBR 评估** (Startup Inventory & Required TBR) | 模型必须具备存储组件存量节点（如 `sds.I[1]`）与增殖调节参数（如 `TBR`）。评估谷底存量 $I_{min}$、达自持转折点 $t_{turning}$ 与临界增殖比 $TBR_{req}$。 | Agent 先自省确认模型存在 `sds.I` 与 `TBR` 参数，严禁臆造；智能生成 `task.type = "simulate"` 或二分逼近配置，提取物理指标并参考 Abdou 判据给出自持评级。 |
+| **SC-2** | **长脉冲/周期性脉冲 FOC 动态响应** (Pulsed Scenario & FOC Duty Cycle) | 模型必须具备脉冲加料接口或接受时序阶跃信号。评估脉冲平顶与停机间隔对各子系统存量震荡与滞留累积。 | Agent 自省识别模型的控制输入接口，结合 FOC 工况合成时序配置，驱动仿真并分析变占空比对各组件滞留稳态时间的影响。 |
+| **SC-3** | **多维参数全局敏感度与不确定度分解** (Sobol GSA Sensitivity Analysis) | 依赖模型内部实际声明的物理参数（如滞留时间、燃耗份额、分离效率等）。 | Agent 自省提取模型实际声明的参数列表与上下界（结合 Abdou 经验范围），自动生成 Sobol 采样矩阵，调度并行计算，输出一阶与总效应敏感度柱状图。 |
+| **SC-4** | **全厂闭环物料守恒与环境安全泄漏审计** (Closed-Loop Mass Conservation & Safety Audit) | 模型必须具备完备的源汇项与损失流股（如增殖、燃耗、`decay_rate` 衰变、`leak_rate` 泄漏）。核算累积物料平衡残差 $\Delta M \le 0.5\text{ g}$。 | Agent 审查模型流股守恒性；若模型缺失衰变或泄漏流股，主动提示模型缺陷；仿真后启动 Auditor 核算全厂闭环物料平衡。 |
+
+---
+
+#### 3. 需求清单 (Requirements)
+
+- **REQ-3.1**: **通用模型驱动 Agent Skill 协议 (`skills/tricys-agent/`)**：
+  - 遵循现代 AI Coding Agent 标准（支持 Antigravity / Claude Code / Cursor），构建 `skills/tricys-agent/SKILL.md`；
+  - **核心纪律：严格以模型分析为核心，严禁脱离模型胡编乱造**。Agent 必须遵循“无自省不配置、见变量思物理”的执行规范；
+  - 沉淀聚变堆氚燃料循环主任工程师心智，Abdou 2021 作为宏观物理经验手册，`v2_examples` 作为工业级开箱即用 YAML 原型；
+  - 固化 Agent 全生命周期七步法工作流：`Review -> Introspect -> Synthesize -> Validate -> Execute -> Self-Heal -> Deliver`。
+
+- **REQ-3.2**: **Modelica 模型深度自省器 (`Model Introspector` & CLI `model inspect`)**：
+  - 构建 `tricys/core/introspect.py`，提供命令行 `python -m tricys.main model inspect <package.mo> <model_name> --json`；
+  - **面向任意通用 Modelica 模型**深度自省提取：
+    1. **参数字典 (Parameters)**：真实声明的参数名、当前默认值、上下界 (`min`, `max`)、物理量纲 (`unit`)、代码注释；
+    2. **连续状态与存量变量 (Continuous States & Inventories)**：真实存在的组件存量节点（如 `sds.I[1]`, `tes.I`, `tep.inventory` 等）；
+    3. **质量流股与源汇项 (Flow Rates & Source/Sink)**：增殖流、燃耗流、排气流、衰变流及泄漏项；
+    4. **实验配置标注 (Experiment Annotation)**：模型内嵌的起止时间、推荐步长与求解器；
+  - 严格以实测 AST/XML 输出标准化 JSON，杜绝任何参数与变量幻觉。
+
+- **REQ-3.3**: **Modelica 模型健康审查与自修复引擎 (`Model Review & Remediation`)**：
+  - 在 `tricys/core/introspect.py` 或专用模块实现 `ModelAuditor`，提供 CLI `python -m tricys.main model review <package.mo> <model_name> --json`；
+  - 针对用户提供的 Modelica 模型执行四大维度健康度审查：
+    1. **时间量纲一致性审查**：是否适配 SI 秒基准？是否声明了统一时基参数（`time_scale`）？是否存在非预期的 3600 倍时基失配隐患；
+    2. **质量守恒完备性审查**：流股进出是否守恒？是否缺少全厂闭环物料审计所需的 `decay_rate` 或 `leak_rate`；
+    3. **代数稳健性与初值审查**：是否存在未设初值的关键状态量？是否有除零或刚性阶跃风险；
+    4. **TRICYS 框架兼容性审查**：变量命名与接口是否符合框架可观可控性规范；
+  - **自动生成模型改进建议与修复补丁**：输出标准化审查报告（含缺陷等级 Info/Warning/Critical），并在需要时生成可直接应用的 Modelica 代码修补 Diff / Patch，赋能 Agent 协助用户修复模型本身。
+
+- **REQ-3.4**: **强类型插件元数据自描述契约 (`PluginMetadata` & CLI `plugin list/info`)**：
+  - 在 `tricys/workflow/base.py` 中确立 `PluginMetadata` 强类型 dataclass 契约；
+  - `PreprocessPlugin`、`PostprocessPlugin` 与 `BaseSimulationEngine` 实现 `get_metadata() -> PluginMetadata`；
+  - 提供 CLI 查询命令：`tricys plugin list --json` 与 `tricys plugin info <name> --json`。
+
+- **REQ-3.5**: **外置 Agent 脚本动态加载安全屏障 (Dynamic Script Sandboxing & Type Guard)**：
+  - 增强 `PluginRegistry.load_class_from_source`，实施 AST 静态语法扫描（防御恶意系统调用）与基类签名合规检查。
+
+- **REQ-3.6**: **结构化异常屏障与多级自愈诊断引擎 (`DiagnosticsBarrier` & `diagnostics.json`)**：
+  - 新建 `tricys/core/diagnostics.py`，全局拦截四级故障（Level 1: 配置错误, Level 2: Modelica 编译语法错, Level 3: DASSL 步长下溢/数值发散, Level 4: 质量平衡违规）；
+  - 输出结构化 `diagnostics.json`（含 `error_code`, `root_cause`, `context_snapshot`, `suggested_fix`），直接作为 Tool Result 提供给 Agent 指导其自愈修改配置或修复模型。
+
+- **REQ-3.7**: **聚变物理宏观常识库与理论参考边界 (`Physics Rules Almanac`)**：
+  - 在 `skills/tricys-agent/references/physics_rules.md` 中固化 Abdou 2021 等理论边界（自持置信度三阶矩阵、燃耗份额、储备时间范围），供 Agent 理解物理量级并指导模型分析，避免盲目要求模型满足前沿文献结构。
+
+- **REQ-3.8**: **文档体系全面大洗牌与双受众 TRICYS V2 权威操作手册构建 (Comprehensive Docs Overhaul & Dual-Audience V2 Manual)**：
+  - **核心定位与使命**：在 Stage 3 收官阶段对当前 `docs/` 目录和 `mkdocs.yml` 站点导航进行**全面彻底的大洗牌重构（Complete Overhaul & Reorganization）**。彻底清除 V1 历史遗留概念（旧有的 `basic_configuration`、`tricys_basic`、`tricys_analysis` 割裂二元架构与老旧 JSON 配置描述），消除对开发者与 AI Agent 的严重误导，建立权威统一、层级清晰、兼顾**人类开发者实战研读**与 **AI Agent 结构化排查理解**的《TRICYS V2 权威操作与排查手册》。
+  - **全新重构的 8 大专栏架构与目录映射**：
+    1. `01_getting_started/` (**快速起步**):
+       - `installation.md`: 环境安装、OpenModelica 1.24.5 与 Python 依赖自检；
+       - `quickstart.md`: 5 分钟上手：运行第一个 V2 工业基准算例（`01_sweep_startup_self_sufficiency.yaml`）；
+       - `migration_v1_to_v2.md`: V1 到 V2 权威迁移指南（旧 JSON 映射到 YAML、任务类型转换、Issue #99 时基变更对照）。
+    2. `02_architecture/` (**核心原理与架构设计**):
+       - `schema_v2_design.md`: Schema 2.0 五大支柱规范（`model`, `scenario`, `task`, `plugins`, `visualizer`）解耦设计思想；
+       - `pluggable_pipeline.md`: 可插拔流水线设计（Preprocess $\rightarrow$ SimulationEngine $\rightarrow$ Postprocess 单向流动与控制反转）；
+       - `time_scale_governance.md`: 时间量纲彻底治理专题（SI 秒第一公民原则、`time_scale` 3600 参数化、彻底根除 Issue #99 720 万小时时基失配）；
+       - `concurrency_and_safety.md`: 单层受控并发与二分法寻优防死锁架构。
+    3. `03_user_guide/` (**仿真与分析操作手册**):
+       - `simulate_workflow.md`: 基础物理瞬态仿真配置与执行；
+       - `sweep_and_optimization.md`: 多态参数扫描、网格搜索与临界 TBR 二分寻优闭环；
+       - `sensitivity_and_uq.md`: Sobol 全局敏感度分析（GSA）与 Latin 不确定度量化（UQ）；
+       - `pulsed_and_foc.md`: 周期脉冲与 FOC 复杂时序指令驱动；
+       - `mass_conservation_audit.md`: 全厂闭环物料守恒审计与环境泄漏安全审查。
+    4. `04_modelica_guide/` (**面向聚变工程师的 Modelica 建模与审查规范**):
+       - `modeling_standards.md`: 聚变堆氚回路 Modelica 建模规范（变量命名规约、SI 单位制约定、`time_scale` 参数化标准）；
+       - `conservation_streams.md`: 质量守恒流股闭环建模准则（产氚、燃耗、衰变 `decay_rate` 与泄漏 `leak_rate` 完备性）；
+       - `model_review.md`: 模型静态健康审查实战指南（使用 `tricys model review` 自动检测缺陷并生成修补 Patch）；
+       - `model_introspect.md`: 模型深度自省（使用 `tricys model inspect` 提取无幻觉变量树与参数字典）。
+    5. `05_developer_guide/` (**插件扩展与开发者手册**):
+       - `plugin_architecture.md`: 强类型插件元数据契约（`PluginMetadata` 规范与生命周期）；
+       - `custom_plugins.md`: 手把手编写自定义 Preprocess 与 Postprocess 插件；
+       - `script_sandboxing.md`: 外置 Agent 动态脚本加载与 AST 语法安全沙箱防护；
+       - `visualizer_and_export.md`: Visualizer 看板定制、外部术语表映射与三格式报告（Markdown/Word/PDF）导出二次开发。
+    6. `06_benchmarks/` (**工业基准算例精讲**):
+       - `benchmarks_overview.md`: `v2_examples/` 工业基准算例矩阵总览与设计理念；
+       - `01_startup_self_sufficiency.md`: 算例 01：启动存量扫描与自持可行性评估；
+       - `02_pulsed_transient_bisection.md`: 算例 02：脉冲瞬态响应与二分法临界 TBR 寻优；
+       - `03_sobol_sensitivity.md`: 算例 03：多维参数 Sobol 全局敏感度分解；
+       - `04_pulse_width_sweep.md`: 算例 04：变占空比脉冲宽度对临界 TBR 的影响；
+       - `05_foc_pulsed_scenario.md`: 算例 05：长周期 FOC 调度工况仿真与动态响应；
+       - `06_mass_balance_audit.md`: 算例 06：全流程闭环质量平衡审计与残差核算。
+    7. `07_agent_troubleshooting/` (**AI Agent 专属排查与理解权威手册**):
+       - `cli_dictionary.md`: **机器可读 CLI 协议字典**：`model inspect`, `model review`, `plugin list`, `plugin info`, `run --diagnose` 的输入参数、标准输出 JSON Schema 与错误码；
+       - `schema_quick_reference.md`: **Schema 2.0 字段防幻觉速查表**：所有合法键名、类型约束、默认值与物理含义对照；明确“严禁脱离模型臆造变量”规则；
+       - `troubleshooting_matrix.md`: **四级故障全景与自愈决策树**：
+         - *Level 1 (Config Invalid)*: 错误码 `ERR_CONFIG_INVALID`，触发根因、字段提示与合法配置修复建议；
+         - *Level 2 (Modelica Compile)*: 错误码 `ERR_MODELICA_COMPILE`，语法解析错、时基参数缺失与自动生成 Diff Patch 模板；
+         - *Level 3 (Solver Divergence)*: 错误码 `ERR_SOLVER_STEP_UNDERFLOW` / `ERR_NEGATIVE_INVENTORY`，刚性发散诊断、容差放宽与替代求解器建议；
+         - *Level 4 (Mass Balance Violation)*: 错误码 `ERR_MASS_BALANCE_VIOLATION`，质量残差越限定位与流股漏项核查决策；
+       - `pitfalls_and_remediation.md`: **典型高危避坑与自愈模板**：Issue #99 720 万小时时基失配防范、二分寻优边界逃逸处置、零除防御、负存量发散处理；
+       - `physics_constants_reference.md`: **聚变物理宏观常数与经验范围速查**：对齐 Abdou et al. (2021) 的 TBR 三档置信度、燃耗份额、滞留时间范围（供 Agent 做结果合理性校验）。
+    8. `08_reference/` (**完整参考索引**):
+       - `cli_reference.md`: TRICYS 命令行完整语法与参数列表；
+       - `configuration_full_spec.md`: Schema 2.0 完整 JSON Schema 规范定义；
+       - `api/`: 核心模块自动 API 参考（基于 mkdocstrings）；
+       - `glossary.md`: 聚变堆燃料循环中英文专业术语表。
+  - **双重受众深度适配实施机制**：
+    - **人类开发者友好**：提供丰富的 Markdown 流程图（Mermaid）、配置示例对比高亮、原理公式推导、三格式报告图表嵌入；
+    - **AI Agent 友好**：所有排查与操作页面均包含清晰的代码块、机器可读的 JSON 结构定义、精准的 Anchor 锚点、规范的错误码与修复对策决策表，便于 Agent 通过检索或直接读取快速定位问题并执行自动化自愈闭环。
+  - **站点构建与质量门禁**：
+    - 重新编写 `mkdocs.yml`，配置 Material for MkDocs 现代响应式主题与中英双语导航；
+    - 严格运行 `mkdocs build --strict`，实现**零死链、零警告、零缺失页面**的高质量交付。
+
+- **REQ-3.9**: **双轨配置架构与纯显式 Pipeline 1:1 无损下沉 (Dual-Track Configuration & Pure Pipeline Lowering)**：
+  - 彻底解耦两大配置模式：
+    1. **模式 1 (Schema 2.0 DSL 领域声明)**：五大顶级字段（`model`, `scenario`, `task`, `visualizer`, `plugins`），其中 `plugins` 作为增量扩展钩子；
+    2. **模式 2 (Explicit Pipeline IR 显式编排)**：纯 `pipeline:` 块结构（含 `preprocessing`, `simulation`, `postprocessing`），根节点无任何业务冗余，所有插件通过各自 `params` 显式传参；
+  - 实现底层微内核插件池完全统一，核心插件全面遵循 `Explicit-First with Context-Fallback` 范式；
+  - 实现 `compile_v2_to_explicit_pipeline` 与 CLI `python -m tricys.main compile -c config.yaml [-o pipeline.yaml]`，提供无损单向编译降级（Lowering）能力。
+
+- **REQ-3.10**: **聚变物理语义总线与跨模型泛化词典 (Physics Semantic Bus & Universal Fusion Ontology)**：
+  - 基于 `example_glossary.csv` 在 `tricys/core/semantic.py` 提炼 **26 项跨模型泛化核心聚变概念**（`sds_inventory`, `blanket_tbr`, `coolant_inventory`, `plasma_burn_fraction` 等）；
+  - 实现 `PhysicsSemanticResolver`：提供基于正则与启发式算法的多态 Modelica 列名自动映射（如 `sds.I[1]` 与 `Cycle_3LC.sds.inventory` 均通过 `"sds_inventory"` 访问），彻底消除列名硬编码；
+  - 支持在 YAML/代码中通过 `semantic_mapping` 动态扩展私有物理概念与覆盖规则。
+
+- **REQ-3.11**: **声明式 I/O 契约与 DAG 自动拓扑排序 (Declarative I/O Contracts & Auto-DAG Ordering)**：
+  - 在 `tricys/workflow/builder.py` 实现基于 Kahn 算法的稳定拓扑排序器 `sort_plugins_by_dependency`；
+  - 插件声明 `requires` 与 `produces` 依赖标识，框架自动重排拓扑顺序，即使 Agent 逆序书写（如在 `storage` 前声明依赖 HDF5 的审计插件）也能自动纠偏并安全执行。
+
+- **REQ-3.12**: **毫秒级纯内存沙箱自检与脚手架工具 (In-Memory Mock Sandbox & Scaffolding CLI)**：
+  - 在 `tricys/workflow/testing.py` 构建 `create_mock_context`，在纯内存中毫秒级合成包含真实物理时序的仿真上下文；
+  - 提供 CLI 快速脚手架命令：`python -m tricys.main plugin scaffold <name> [--category postprocess] -o <file.py>`；
+  - 提供 CLI 快速沙箱单测命令：`python -m tricys.main plugin test <file.py|name> [--json]`，无需启动 OMC 即可在毫秒级验证插件的生命周期与数据流，大幅提升二次开发与自愈迭代效率。
+
+- **REQ-3.13**: **强类型数据契约与分层开放扩展 (Strongly-Typed Contract & Open Payloads)**：
+  - 在 `tricys/workflow/context.py` 中引入 `@dataclass SimulationJobResult`（包含 `job_id`, `parameters`, `dataframe`, `metrics`）；
+  - 遵循开闭原则保留分层开放扩展：任务级保留 `job.extra`，全局级保留 `context.metadata` 与 `context.artifacts`，兼顾类型安全防幻觉与 Agent 自由探索空间。
+
+---
+
+#### 4. 通用模型驱动的 Agent 交互与自修复闭环时序图 (Mermaid Sequence Flow)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 用户 (Fusion Engineer)
+    participant Agent as AI Coding Agent (Skill驱动)
+    participant ModelAuditor as Model Auditor & Introspector
+    participant CLI as TRICYS CLI (Schema 2.0)
+    participant Pipeline as Workflow Pipeline & OMC
+    participant Barrier as DiagnosticsBarrier (自愈屏障)
+    participant Reporter as Visualizer & Insight Plugin
+
+    User->>Agent: "帮我评估新模型 MyPlant.mo 的起动亏空并审计质量守恒"
+    
+    rect rgb(240, 248, 255)
+    note right of Agent: 阶段一: 模型审查与防幻觉自省 (严禁脱离模型臆造)
+    Agent->>ModelAuditor: tricys model review MyPlant.mo MyPlant --json
+    alt 模型存在缺陷 (如缺少 decay_rate / 时间基准失配)
+        ModelAuditor-->>Agent: 返回审查警告 (Warning: 缺失 decay_rate, 无法开展闭环质量审计)
+        Agent->>Agent: 生成针对 Modelica 源码的改进建议与修复 Patch
+        Agent->>User: 提示模型缺陷并协助修复 MyPlant.mo (补齐 decay_rate 与 time_scale)
+    end
+    Agent->>ModelAuditor: tricys model inspect MyPlant.mo MyPlant --json
+    ModelAuditor-->>Agent: 返回模型实测变量树、参数字典、存量节点 (零幻觉 JSON)
+    end
+
+    rect rgb(255, 250, 240)
+    note right of Agent: 阶段二: 基于实测模型合成配置与校验
+    Agent->>Agent: 依据真实变量树匹配工况模板，合成 Schema 2.0 配置 (run_case.yaml)
+    Agent->>CLI: tricys validate -c run_case.yaml
+    CLI-->>Agent: Schema 校验通过 (Valid ✅)
+    end
+
+    rect rgb(245, 255, 245)
+    note right of Agent: 阶段三: 仿真执行与异常自愈闭环
+    Agent->>CLI: tricys run -c run_case.yaml --diagnose
+    CLI->>Pipeline: 启动流水线 (Preprocess -> Engine -> Postprocess)
+    alt 发生数值求解发散或编译失败
+        Pipeline-->>Barrier: 抛出底层 DASSL 步长下溢异常
+        Barrier-->>CLI: 导出 diagnostics.json ({error_code, root_cause, suggested_fix})
+        CLI-->>Agent: 结构化失败诊断结果
+        Agent->>Agent: [自愈闭环] 采纳建议修改 yaml (solver: "ida", tolerance: 1e-5)
+        Agent->>CLI: 重新执行: tricys run -c run_case.yaml --diagnose
+    end
+    Pipeline->>Reporter: 仿真成功，执行后处理 (Auditor + Visualizer)
+    Reporter-->>CLI: 生成工程决策报告 (.md, .docx, .pdf) 与图表
+    CLI-->>Agent: 运行成功 (Exit Code 0, artifacts path)
+    end
+
+    Agent-->>User: 交付基于该真实模型的决策分析结论 (转折点、倍增时间、质量残差报告)
+```
+
+---
+
+#### 5. 关键任务与影响文件 (WBS & Scope)
+
+| 模块类别 | 文件路径 | 改造性质 | 详细任务职责 |
+| :--- | :--- | :--- | :--- |
+| **Agent Skill 规约** | `skills/tricys-agent/SKILL.md` | 新增 | Agent 技能入口：模型中心化纪律、防幻觉准则、通用模型适配规范、交互命令契约。 |
+| **Agent 模板库** | `skills/tricys-agent/templates/*.yaml` | 新增 | 对应 `v2_examples` 工业基准算例的原型库（稳态扫参、脉冲二分、Sobol 敏度、质量审计）。 |
+| **Agent 物理规则** | `skills/tricys-agent/references/physics_rules.md` | 新增 | 沉淀 Abdou 2021 宏观理论体系：控制方程、参数空间、三档置信度判据（供参考比对）。 |
+| **模型自省与审查工具** | `tricys/core/introspect.py`<br>`tricys/core/model_auditor.py` | 新增 | 1. 深度自省提取参数、存量、流股变量树；<br>2. 静态审查时间量纲、守恒漏项与初值自洽性并生成修复 Patch。 |
+| **异常自愈屏障** | `tricys/core/diagnostics.py` | 新增 | 四级异常分类器、错误堆栈清洗、根因语义提取与自修复建议 JSON 生成。 |
+| **插件元数据契约** | `tricys/workflow/base.py` | 改造 | 引入 `PluginMetadata` 强类型 dataclass，基类声明元数据方法。 |
+| **插件注册与安全** | `tricys/workflow/registry.py` | 改造 | 实现自省字典生成、动态脚本 AST 安全扫描与基类合规校验。 |
+| **CLI 现代接口** | `tricys/main.py` | 改造 | 新增 `model inspect`、`model review`、`plugin list`、`plugin info`、`plugin scaffold`、`plugin test` 与 `compile` 子命令及 `--diagnose` 参数。 |
+| **物理语义总线** | `tricys/core/semantic.py` | 新增 | 建立 26 项核心聚变跨模型泛化词典 `DEFAULT_PHYSICS_ONTOLOGY` 与 `PhysicsSemanticResolver` 解析器。 |
+| **显式编排与DAG排序** | `tricys/workflow/builder.py` | 改造 | 实现模式 1 到模式 2 的 `compile_v2_to_explicit_pipeline` 无损编译器，以及基于 Kahn 算法的 DAG 自动拓扑重排。 |
+| **强类型契约与上下文** | `tricys/workflow/context.py` | 改造 | 引入强类型 `SimulationJobResult`，保留任务级 `extra` 与全局级 `metadata` 开放拓展槽，挂载物理语义总线 API。 |
+| **测试沙箱与脚手架** | `tricys/workflow/testing.py`<br>`tricys/workflow/cli_helper.py` | 新增 | 实现毫秒级纯内存 Mock 上下文沙箱 `create_mock_context`，以及插件脚手架与测试辅助工具。 |
+| **插件开发权威指南** | `skills/tricys-agent/references/plugin_development_guide.md` | 新增 | 详细阐述微内核架构、双轨映射矩阵、显式参数规范、内存沙箱测试与 AST 安全防线。 |
+| **自动化测试** | `test/workflow/test_agent_skill.py`<br>`test/core/test_introspect.py`<br>`test/core/test_model_auditor.py`<br>`test/core/test_diagnostics.py`<br>`test/workflow/test_agent_native_v3.py`<br>`test/workflow/test_explicit_pipeline_decoupled.py` | 新增 | 自省准确率、模型审查与修复 Patch、自愈诊断屏障、外部插件沙箱安全、物理语义总线、DAG 拓扑排序与无损编译测试。 |
+| **文档体系大洗牌 (已延期至Stage 5)** | `mkdocs.yml`<br>`docs/zh/`<br>`docs/en/` | 暂缓 | 根据研发决策，Stage 3 排除 docs 文档大清洗并完全恢复原文档，文档操作手册大洗牌延期至最后阶段 Stage 5 统一执行。 |
+
+---
+
+#### 6. 验收标准 (Acceptance Criteria)
+
+- [x] **AC 3.1 (Modelica 通用模型深度自省可用性与零幻觉校验)**：
+  - 运行 `python -m tricys.main model inspect test/data/models/TestPlant.mo TestPlant --json`，能够在标准输出返回合法 JSON；
+  - 返回结果包含 `parameters`、`inventories`、`flow_rates` 和 `default_experiment` 四大块，包含实测变量默认值、类型与物理量纲，断言不包含任何未经声明的虚构变量。
+- [x] **AC 3.2 (Modelica 模型健康审查与自动修复建议闭环)**：
+  - 针对故意缺失 `leak_rate` 或缺少 `time_scale` 的 Modelica 模型，执行 `python -m tricys.main model review <mo> <model> --json`；
+  - 框架能精准识别出 `MISSING_CONSERVATION_STREAM` 或 `TIME_SCALE_MISMATCH` 警告，并自动生成可直接应用的 Modelica 代码修补 Diff / Patch；
+  - 应用修复补丁后，模型能通过审查并成功开展全流程仿真与闭环质量守恒审计。
+- [x] **AC 3.3 (强类型插件元数据全量自描述)**：
+  - 运行 `python -m tricys.main plugin list --json`，输出当前已注册的所有预处理、求解器和后处理插件清单，包含 `name`, `category`, `description`；
+  - 运行 `python -m tricys.main plugin info mass_conservation_auditor --json`，输出该插件的完整输入要求与参数 Schema。
+- [x] **AC 3.4 (外置 Agent脚本动态加载与安全防御)**：
+  - 编写继承自 `PostprocessPlugin` 的合法外部脚本 `custom_post.py`，配置至 YAML 中能被 Pipeline 成功加载并执行；
+  - 编写包含 `os.system` 违规操作或未继承规范基类的外部脚本，框架在加载阶段成功拦截并抛出受控的 `SecurityValidationError`。
+- [x] **AC 3.5 (多级故障语义化结构诊断闭环)**：
+  - **Level 1 (Config 错误)**：故意在配置中传入非法键名，框架拦截并输出包含 `ERR_CONFIG_INVALID` 与合法备选项的 `diagnostics.json`；
+  - **Level 2 (Modelica 语法错误)**：传入故意破坏语法的 `.mo` 文件，框架拦截并输出指明行号与符号的 `ERR_MODELICA_COMPILE` 诊断；
+  - **Level 3 (数值发散错误)**：模拟初值奇异或不收敛工况，框架拦截并输出 `ERR_SOLVER_STEP_UNDERFLOW`，且包含求解器替换或容差放宽建议；
+  - **Level 4 (质量平衡违规)**：全厂质量残差超标时，Auditor 自动触发并输出指向违规子系统的结构化诊断。
+- [x] **AC 3.6 (聚变物理常识参考手册与理论边界验证)**：
+  - 在 `skills/tricys-agent/references/physics_rules.md` 中固化三阶自持置信度、复合燃耗与物理常数边界，为 Agent 评估模型结果提供宏观依据，杜绝脱离模型的虚构与过度拟合。
+- [x] **AC 3.7 (项目内置 Agent Skill 端到端闭环验证)**：
+  - 在全新会话中挂载 `skills/tricys-agent/SKILL.md`，Agent 仅接收用户一句话自然语言指令（如：“分析给定模型在 TBR=1.15 下的启动亏空并生成报告”），能够自主完成模型审查、模型自省、配置生成、仿真驱动、报告验证全链路，一次性交付三格式报告与可视化图表。
+- [ ] ~~**AC 3.8 (双受众 V2 权威操作手册与文档大洗牌交付验收)**~~（**调整：已排除并延期至 Stage 5**）：
+  - 根据架构治理指令，Stage 3 排除 docs 文档大清洗并完全恢复原文档，将《TRICYS V2 权威操作与排查手册》全量大清洗工作统筹移交至最后阶段 Stage 5 统一执行。
+- [x] **AC 3.9 (双轨配置架构与 1:1 无损单向编译降级验收)**：
+  - 运行 `python -m tricys.main compile -c <config.yaml> -o <pipeline.yaml>`，成功将五大顶级字段（`model`, `scenario`, `task`, `visualizer`, `plugins`）1:1 转换为显式 Pipeline 结构；
+  - 转换后产出的显式配置能被 `PipelineBuilder.build()` 直接解析驱动仿真，产出与模式 1 完全一致的仿真数值结果与指标。
+- [x] **AC 3.10 (聚变物理语义总线与多态列名解耦校验)**：
+  - 针对带有层级前缀（如 `Cycle_3LC.sds.inventory`）或下标表示（`sds.I[1]`）的多态时序 DataFrame，调用 `PhysicsSemanticResolver.resolve_variable(df, "sds_inventory")` 能 100% 准确命中目标时序 Series；
+  - 在 YAML 中配置 `semantic_mapping` 自定义别名，解析器能准确应用覆盖规则并发现私有变量。
+- [x] **AC 3.11 (插件 I/O 契约与 DAG 依赖自动拓扑排序校验)**：
+  - 在配置文件中故意将依赖 HDF5 的后处理审计插件声明在 `storage` 之前，Pipeline 构建期通过 Kahn 算法自动纠偏，确保 `storage` 优先执行并记录拓扑调整日志。
+- [x] **AC 3.12 (毫秒级内存沙箱与 CLI 脚手架自检闭环)**：
+  - 运行 `python -m tricys.main plugin scaffold my_demo -o test_p.py` 生成标准模板；
+  - 运行 `python -m tricys.main plugin test test_p.py --json`，在纯内存 Mock 沙箱中毫秒级（< 2s）通过 `validate` 和 `run` 并输出 `SUCCESS` 与指标。
+- [x] **AC 3.13 (强类型结果契约与分层开放拓展验证)**：
+  - `SimulationJobResult` 包含强类型 `job_id`, `parameters`, `dataframe`, `metrics`，同时可在 `extra` 中存储中间张量；全局 `PipelineContext.metadata` 支持自由扩展。
+
 
 ---
 
@@ -382,29 +650,32 @@ gantt
 
 ---
 
-### Stage 5: 全量兼容性回归、基准算例验收与 v2.0 正式交付
+### Stage 5: 全量兼容性回归、操作手册文档大清洗、基准算例验收与 v2.0 正式交付
 
 #### 1. 阶段目标
-保障 v1.0 存量模型、存量配置和历史测试 100% 向后兼容无损运行；完善多语言文档与发布物，完成 v2.0 正式交付。
+保障 v1.0 存量模型、存量配置和历史测试 100% 向后兼容无损运行；**统筹执行 docs 操作手册全量大清洗**，建立兼顾人类开发者实战与 Agent 排查理解的《TRICYS V2 权威操作与排查手册》，完善多语言文档与发布物，完成 v2.0 正式交付。
 
 #### 2. 需求清单 (Requirements)
 - **REQ-5.1**: **v1.0 存量用例无损兼容回归**：
   运行全部历史测试套件（`test/` 目录下所有原有测试），确保未引入任何 breaking change。
-- **REQ-5.2**: **文档体系全面同步**：
-  更新中英文文档（`docs/zh/` 与 `docs/en/`），纳入 Schema 2.0 配置规范手册、可插拔插件开发指南、Agent Skill 交互协议及 Issue #99 升级说明。
+- **REQ-5.2**: **《TRICYS V2 权威操作手册与文档大清洗》（原 Stage 3 延期统筹项）**：
+  - 全面清理历史失效 V1 页面与死链，激活 8 大专栏双受众架构；
+  - 100% 覆盖 Schema 2.0 规范、7 大工业基准算例（01~07）深度解析、Modelica 建模规范、插件与流水线开发教程、Agent CLI 交互协议与四级错误自愈排查矩阵；
+  - 达成 `mkdocs build --strict` 零报错、零警告、零死链编译通过。
 - **REQ-5.3**: **正式 Release 打包与变更日志**：
   更新 `pyproject.toml` 版本至 `2.0.0`，编写 `CHANGELOG.md` 与发布 Release Notes。
 
 #### 3. 关键任务与影响文件 (WBS & Scope)
 - 跑通全量测试套件并修复边缘兼容问题
-- 更新 [docs/zh/](file:///d:/Administrator/Documents/Github/tricys/docs/zh/) 与 [docs/en/](file:///d:/Administrator/Documents/Github/tricys/docs/en/)
+- 重构 [docs/zh/](file:///d:/Administrator/Documents/Github/tricys/docs/zh/) 与 [docs/en/](file:///d:/Administrator/Documents/Github/tricys/docs/en/) 及 [mkdocs.yml](file:///d:/Administrator/Documents/Github/tricys/mkdocs.yml)
 - 更新 `pyproject.toml`
 - 编写 Release Notes
 
 #### 4. 验收标准 (Acceptance Criteria)
 - [ ] `pytest test/` 全量单元与集成测试绿灯通过率 100%。
 - [ ] 现存所有 v1.0 JSON 配置文件无需做任何人工修改，即可被 `tricys` CLI 正常解析并准确计算。
-- [ ] 研发团队依据文档能够在 5 分钟内完成一个外置动态插件的编写与装配。
+- [ ] 运行 `mkdocs build --strict` 零报错零警告通过，中英文双语站点上线。
+- [ ] 研发团队与全新 Agent 依据文档均能在 5 分钟内完成模型自省、配置合成与外置插件装配。
 
 ---
 
@@ -414,14 +685,14 @@ gantt
 graph TD
     S0["Stage 0: 暂存区基线测试补齐 (已完成 ✅)"] --> S1["Stage 1: 任务统一调度、真实报告系统与纯英文看板 (已完成 ✅)<br>(通用三大模板, 真实数据/术语表解耦, 导出 MD/DOCX/PDF)"]
     S1 --> S2["Stage 2: 模型与程序同步时间量纲治理 (#99) (已完成 ✅)<br>(SI秒对齐, 消除硬编码, 6个工业基准算例全通过)"]
-    S2 --> S3["Stage 3: Agent Skill 扩展协议<br>(元数据契约, CLI list, 诊断屏障)"]
+    S2 --> S3["Stage 3: 闭环 Agent 协议、模型自省与物理自愈诊断屏障<br>(Abdou 2021准则, 模型自省, 异常自愈, 物理洞察)"]
     S2 --> S4["Stage 4: Docker 基准运行环境<br>(容器化底座, 一键幂等复现)"]
     S3 --> S5["Stage 5: 全量回归与正式发布<br>(兼容性验收, Release)"]
     S4 --> S5
 ```
 
-- **关键路径 (Critical Path)**: `Stage 0` (完成 ✅) $\rightarrow$ `Stage 1` (完成 ✅) $\rightarrow$ `Stage 2` (完成 ✅) $\rightarrow$ `Stage 3` (Agent 协议与诊断自愈，当前主攻) $\rightarrow$ `Stage 5` (发布)
-- **并行支持路径**: `Stage 3` (Agent 协议) 与 `Stage 4` (Docker 环境) 可在 `Stage 2` 量纲治理交付后并行推进。
+- **关键路径 (Critical Path)**: `Stage 0` (完成 ✅) $\rightarrow$ `Stage 1` (完成 ✅) $\rightarrow$ `Stage 2` (完成 ✅) $\rightarrow$ `Stage 3` (Agent 闭环驱动与物理自愈屏障，当前主攻) $\rightarrow$ `Stage 5` (发布)
+- **并行支持路径**: `Stage 3` (Agent 闭环与自愈协议) 与 `Stage 4` (Docker 环境) 可在 `Stage 2` 量纲治理交付后并行推进。
 
 ---
 
@@ -434,9 +705,10 @@ graph TD
 | **报告导出格式依赖缺失** | 导出 DOCX 或 PDF 时缺少外部依赖或字体报错 | `python-docx` 作为标准依赖；PDF 导出提供轻量 HTML2PDF 回退方案，并内置常用学术字体。 | 多格式导出端到端测试 (已通过 ✅) |
 | **报告数据失真与伪造风险** | 报告模板胡编乱造、写死假数据或虚假基准 | 建立严格的真实性防伪自检，无基准时回退样本均值，无谷底时跳过图表，100% 动态读取。 | 真实性专项测试覆盖 (已通过 ✅) |
 | **量纲改造破坏历史计算** | 历史小时制模型计算结果突变 | 依靠 `.foc` 的 `TIME_CONVERSION` 机制与 `unit` 兼容适配器；老配置缺少单位时提供显式 Deprecation 警告。 | 双模式对比单测 (已通过 ✅) |
-| **外部插件安全隐患** | Agent 动态脚本执行恶意或非法代码 | `PluginRegistry` 强制校验基类继承关系，限制动态加载文件权限。 | 接口合规性白盒校验 (Stage 3 推进) |
+| **外部插件安全隐患** | Agent 动态脚本执行恶意或非法代码 | `PluginRegistry` AST 静态语法扫描 + 强制校验基类继承关系与签名。 | 接口合规与沙箱单测 (Stage 3 推进) |
+| **求解器发散导致死循环** | Agent 无法理解底层 DASSL 步长崩溃堆栈 | `DiagnosticsBarrier` 拦截错误并输出包含根因与修复建议的 `diagnostics.json`。 | 自愈闭环断言测试 (Stage 3 推进) |
 | **Docker 镜像过大** | 构建慢、拉取困难 | 采用多阶段构建，剥离 GCC 编译临时产物，仅保留 Python 运行时环境与编译缓存。 | 最终镜像体积 $< 2.5\text{GB}$ |
 
 ---
 
-> **结语**：本规划中 **Stage 0、Stage 1 与 Stage 2 已圆满达成最高质量工程闭环**：不仅实现了 Schema 2.0 任务多态调度无死锁、配置支柱解耦（`task.auditor` / `visualizer.report`）与全链路配置生效，更彻底根除了 Issue #99 历史时间量纲隐患，物理分析 720 万小时 BUG 彻底绝迹，报告与图表时间格式严格自洽，全量 6 大 `v2_examples` 工业基准算例端到端一次性验证通过，全套 269 项自动化测试 100% 绿灯。系统技术底座极为稳固，全面转入 **Stage 3（Agent Skill 扩展协议与自愈诊断屏障）** 实施攻坚。
+> **结语**：本规划中 **Stage 0、Stage 1 与 Stage 2 已圆满达成最高质量工程闭环**：不仅实现了 Schema 2.0 任务多态调度无死锁、配置支柱解耦（`task.auditor` / `visualizer.report`）与全链路配置生效，更彻底根除了 Issue #99 历史时间量纲隐患，物理分析 720 万小时 BUG 彻底绝迹，报告与图表时间格式严格自洽，全量 6 大 `v2_examples` 工业基准算例端到端一次性验证通过，全套 269 项自动化测试 100% 绿灯。系统技术底座极为稳固，全面转入 **Stage 3（基于 Abdou 2021 物理边界的闭环 Agent Skill 协议、模型自省与物理自愈诊断屏障）** 实施攻坚。

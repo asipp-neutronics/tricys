@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -493,7 +494,9 @@ class VisualizerConfig(BaseDTO):
 class PluginSpec(BaseDTO):
     """Lifecycle plugin specification."""
 
-    name: str = Field(description="Unique plugin identifier name")
+    name: Optional[str] = Field(
+        default=None, description="Unique plugin identifier name"
+    )
     plugin: Optional[str] = Field(
         default=None,
         description="Built-in plugin name (e.g. mass_conservation, auto_compress)",
@@ -509,6 +512,23 @@ class PluginSpec(BaseDTO):
     params: Dict[str, Any] = Field(
         default_factory=dict, description="Plugin parameters"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_default_name(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if not data.get("name"):
+                data["name"] = (
+                    data.get("plugin")
+                    or data.get("class")
+                    or data.get("class_name")
+                    or (
+                        Path(data["script"]).stem
+                        if data.get("script")
+                        else "custom_plugin"
+                    )
+                )
+        return data
 
 
 class EngineSpec(BaseDTO):

@@ -3,9 +3,8 @@ from __future__ import annotations
 import logging
 import os
 import shutil
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
-from tricys.core.jobs import generate_simulation_jobs
 from tricys.core.sampling import SamplingEngine
 from tricys.workflow.base import PreprocessPlugin
 from tricys.workflow.context import PipelineContext
@@ -25,11 +24,45 @@ class SimulationSetupPlugin(PreprocessPlugin):
     Combines:
     1. Modelica workspace and package isolation to prevent polluting source repositories.
     2. Parameter sweep matrix expansion into discrete simulation execution jobs.
+    Supports explicit parameters injection for pure pipeline mode with context fallback.
     """
 
     name = "setup"
 
+    def __init__(
+        self,
+        package_path: Optional[str] = None,
+        model_name: Optional[str] = None,
+        parameters: Optional[Any] = None,
+        task_type: Optional[str] = None,
+        **params: Any,
+    ) -> None:
+        super().__init__(**params)
+        self.package_path = package_path
+        self.model_name = model_name
+        self.parameters = parameters
+        self.task_type = task_type
+
     def run(self, context: PipelineContext) -> None:
+        # Sync explicit parameters to context if provided
+        if self.package_path:
+            p = self.package_path
+            if not os.path.isabs(p) and context.base_dir:
+                p = os.path.abspath(os.path.join(context.base_dir, p))
+            context.package_path = p
+        elif not context.package_path and "model" in context.config:
+            raw_pkg = context.config.get("model", {}).get("fileName", "")
+            if raw_pkg:
+                p = raw_pkg
+                if not os.path.isabs(p) and context.base_dir:
+                    p = os.path.abspath(os.path.join(context.base_dir, p))
+                context.package_path = p
+
+        if self.model_name:
+            context.model_name = self.model_name
+        elif not context.model_name and "model" in context.config:
+            context.model_name = context.config.get("model", {}).get("modelName", "")
+
         self._isolate_workspace(context)
         self._expand_simulation_jobs(context)
 
@@ -82,7 +115,47 @@ class SimulationSetupPlugin(PreprocessPlugin):
     def _expand_simulation_jobs(self, context: PipelineContext) -> None:
         if context.jobs:
             logger.debug("Simulation jobs already generated in context, skipping")
-        # Schema 2.0 Task Handling
+            return
+
+        # Explicit parameter injection (Pure Pipeline Mode priority)
+        if self.parameters is not None:
+            task_type = (self.task_type or "simulate").lower()
+            if isinstance(self.parameters, dict):
+                # Check if dictionary contains sweep lists, e.g. {"Cycle.sds.V": [1.2, 1.5]}
+                has_list_values = any(
+                    isinstance(v, (list, tuple)) for v in self.parameters.values()
+                )
+                if has_list_values:
+                    from tricys.core.jobs import generate_simulation_jobs
+
+                    jobs = generate_simulation_jobs(self.parameters)
+                    context.jobs = jobs
+                    context.set_metadata("sampling_method", "grid_sweep")
+                    context.set_metadata("total_jobs", len(jobs))
+                    logger.info(
+                        f"Generated {len(jobs)} grid sweep job(s) from explicit parameters"
+                    )
+                    return
+                else:
+                    jobs = [dict(self.parameters)]
+                    context.jobs = jobs
+                    context.set_metadata("sampling_method", task_type)
+                    context.set_metadata("total_jobs", 1)
+                    logger.info(
+                        f"Generated 1 single-point simulation job from explicit parameters for '{task_type}'"
+                    )
+                    return
+            elif isinstance(self.parameters, list):
+                jobs = [dict(c) for c in self.parameters]
+                context.jobs = jobs
+                context.set_metadata("sampling_method", "discrete_sweep")
+                context.set_metadata("total_jobs", len(jobs))
+                logger.info(
+                    f"Generated {len(jobs)} discrete sweep job(s) from explicit parameters"
+                )
+                return
+
+        # Schema 2.0 Task Handling (Domain Context Fallback)
         task_cfg = context.config.get("task", {})
         if isinstance(task_cfg, dict):
             task_type = task_cfg.get("type", "").lower()

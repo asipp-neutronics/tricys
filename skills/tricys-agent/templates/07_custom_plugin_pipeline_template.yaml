@@ -1,0 +1,66 @@
+# TRICYS V2 Template: 自主扩展插件挂载与全流程编排模板 (SC-5 / Plugin Extension)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 3000.0
+  stepSize: 1.0
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.inventory|.*\\.I.*"
+
+task:
+  type: "simulate"
+  parallel: false
+  parameters:
+    ${TBR_PARAM}: 1.10
+  metrics:
+    min_storage:
+      source: "${STORAGE_NODE}"
+      evaluate: "min"
+    startup_deficit:
+      source: "${STORAGE_NODE}"
+      evaluate: "startup_inventory"
+
+# 显式流水线编排：集成原生引擎与 Agent 自主开发的扩展插件
+pipeline:
+  name: "CustomPluginWorkflow"
+  
+  # 1. 前处理插件流 (按序执行)
+  preprocessing:
+    - name: "setup"                     # 原生任务展开与工作区隔离
+    # Agent 自主开发的动态前处理插件 (可选)
+    # - script: "${CUSTOM_PREPROCESS_SCRIPT}"
+    #   class: "${CUSTOM_PREPROCESS_CLASS}"
+    #   params:
+    #     scaling_factor: 1.05
+
+  # 2. 仿真计算核心
+  simulation:
+    name: "standard"                    # standard (数值单/多进程) 或 offline_cosim (离线协同)
+    params:
+      workers: 2
+
+  # 3. 后处理插件流 (按序执行)
+  postprocessing:
+    - name: "storage"                   # 必须优先执行: HDF5 持久化与核心指标注册
+    
+    # 动态挂载 Agent 自主开发的定制后处理插件 (如专用安全核算、特征提取、第三方导出)
+    - script: "${CUSTOM_POSTPROCESS_SCRIPT}"
+      class: "${CUSTOM_POSTPROCESS_CLASS}"
+      params:
+        alert_threshold_g: 500.0
+        custom_output_filename: "custom_analysis.json"
+        
+    - name: "report"                    # 原生学术多格式报告与图表导出
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "${REPORT_TITLE}"
+    formats: ["markdown", "docx", "pdf"]

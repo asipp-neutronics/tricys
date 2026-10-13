@@ -1,0 +1,59 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS 工业基准算例 07: 自定义插件挂载与物理语义总线扩展流水线
+# 
+# 演示重点:
+# 1. 在 Schema 2.0 DSL 中使用 plugins 字段声明外部 Python 插件脚本
+# 2. 向插件显式传递业务参数 (Explicit-First 传参范式)
+# 3. 插件内部通过 Physics Semantic Bus (物理语义总线) 自动适配 Modelica 多态列名
+# 4. 自动依赖拓扑排序 (Kahn DAG Auto-Ordering) 确保插件与 storage 协同无序倒置
+# ==============================================================================
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "hour"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|tep_fep.I[1]"
+
+task:
+  type: "sweep"
+  parallel: true
+  max_workers: 2
+  parameters:
+    - name: "Conservative_TBR_1.08"
+      blanket.TBR: 1.08
+      wds.threshold: 800.0
+    - name: "High_Breeding_TBR_1.18"
+      blanket.TBR: 1.18
+      wds.threshold: 1100.0
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+# 🌟 增量插件挂载: 声明外部插件脚本路径与显式传参
+plugins:
+  postprocess:
+    - name: "tritium_reserve_auditor"
+      script: "plugins/tritium_reserve_auditor.py"
+      class: "TritiumReserveAuditorPlugin"
+      params:
+        baseline_loading_g: 6100.0
+        safety_valley_redline_g: 1000.0
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆自定义插件扩展与在役储罐安全裕度评估报告"
+    formats: ["markdown", "docx", "pdf"]

@@ -1,0 +1,52 @@
+# TRICYS V2 Template: 变占空比脉冲宽度对临界 TBR 影响扫参 (SC-1 & SC-2)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*"
+
+task:
+  type: "sweep"
+  parallel: true
+  max_workers: 3
+  parameters:
+    - name: "Duty_100_Continuous"
+      ${PULSE_WIDTH_PARAM}: 100.0
+    - name: "Duty_80_Pulsed"
+      ${PULSE_WIDTH_PARAM}: 80.0
+    - name: "Duty_60_Pulsed"
+      ${PULSE_WIDTH_PARAM}: 60.0
+  metrics:
+    startup_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "startup_inventory"
+      unit: "g"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+      unit: "g"
+    Required_TBR:
+      evaluate: "bisection_search"
+      parameter: "${TBR_PARAM}"
+      search_bounds: [1.0, 1.5]
+      tolerance: 0.001
+      max_iterations: 15
+      target_metric:
+        source: "${STORAGE_NODE}"
+        evaluate: "doubling_time"
+        threshold: 63072000.0  # 2 年倍增时间约束阈值
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 脉冲占空比变工况自持启动亏空与临界产氚比分析报告"
+    formats: ["markdown", "docx", "pdf"]

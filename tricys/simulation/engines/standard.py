@@ -4,7 +4,7 @@ import logging
 import multiprocessing
 import os
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from tricys.core.modelica import (
     ModelicaSystem,
@@ -187,17 +187,84 @@ class StandardSimulationEngine(BaseSimulationEngine):
 
     name = "standard"
 
+    def __init__(
+        self,
+        stop_time: Optional[float] = None,
+        step_size: Optional[float] = None,
+        start_time: float = 0.0,
+        solver: Optional[str] = None,
+        tolerance: Optional[float] = None,
+        output_format: Optional[str] = None,
+        variable_filter: Optional[str] = None,
+        parallel: Optional[bool] = None,
+        max_workers: Optional[int] = None,
+        **params: Any,
+    ) -> None:
+        super().__init__(**params)
+        self.stop_time = stop_time
+        self.step_size = step_size
+        self.start_time = start_time
+        self.solver = solver
+        self.tolerance = tolerance
+        self.output_format = output_format
+        self.variable_filter = variable_filter
+        self.parallel = parallel
+        self.max_workers = max_workers
+
     def execute(self, context: PipelineContext) -> None:
-        sim_cfg = context.config.get("simulation", {})
+        sim_cfg = dict(context.config.get("simulation", {}))
+        scenario_cfg = context.config.get("scenario", {})
         task_cfg = context.config.get("task", {})
         jobs = context.jobs or [{}]
 
-        use_concurrent = sim_cfg.get("concurrent", False) or (
-            isinstance(task_cfg, dict) and task_cfg.get("parallel", False)
-        )
+        # Explicit-First with Context-Fallback parameter resolution
+        if self.stop_time is not None:
+            sim_cfg["stop_time"] = float(self.stop_time)
+        elif "stop_time" not in sim_cfg and "stopTime" in scenario_cfg:
+            sim_cfg["stop_time"] = float(scenario_cfg["stopTime"])
+
+        if self.step_size is not None:
+            sim_cfg["step_size"] = float(self.step_size)
+        elif "step_size" not in sim_cfg and "stepSize" in scenario_cfg:
+            sim_cfg["step_size"] = float(scenario_cfg["stepSize"])
+
+        if self.solver is not None:
+            sim_cfg["method"] = self.solver
+        elif "method" not in sim_cfg and "method" in scenario_cfg:
+            sim_cfg["method"] = scenario_cfg["method"]
+
+        if self.tolerance is not None:
+            sim_cfg["tolerance"] = float(self.tolerance)
+        elif "tolerance" not in sim_cfg and "tolerance" in scenario_cfg:
+            sim_cfg["tolerance"] = float(scenario_cfg["tolerance"])
+
+        if self.output_format is not None:
+            sim_cfg["outputFormat"] = self.output_format
+        elif "outputFormat" not in sim_cfg and "outputFormat" in scenario_cfg:
+            sim_cfg["outputFormat"] = scenario_cfg["outputFormat"]
+
+        if self.variable_filter is not None:
+            sim_cfg["variableFilter"] = self.variable_filter
+        elif "variableFilter" not in sim_cfg and "variableFilter" in scenario_cfg:
+            sim_cfg["variableFilter"] = scenario_cfg["variableFilter"]
+
+        # Keep context time bounds synchronized
+        if "stop_time" in sim_cfg:
+            context.stop_time = float(sim_cfg["stop_time"])
+        if "step_size" in sim_cfg:
+            context.step_size = float(sim_cfg["step_size"])
+
+        if self.parallel is not None:
+            use_concurrent = bool(self.parallel)
+        else:
+            use_concurrent = sim_cfg.get("concurrent", False) or (
+                isinstance(task_cfg, dict) and task_cfg.get("parallel", False)
+            )
         maximize_workers = sim_cfg.get("maximize_workers", False)
-        configured_workers = sim_cfg.get("max_workers") or (
-            task_cfg.get("max_workers") if isinstance(task_cfg, dict) else None
+        configured_workers = (
+            self.max_workers
+            or sim_cfg.get("max_workers")
+            or (task_cfg.get("max_workers") if isinstance(task_cfg, dict) else None)
         )
         max_workers = get_safe_max_workers(
             configured_workers,
@@ -346,6 +413,7 @@ class StandardSimulationEngine(BaseSimulationEngine):
                 omc.sendExpression("quit()")
 
         context.raw_results = raw_results
+        context.sync_typed_results()
         logger.info(
             f"StandardSimulationEngine: Completed {len(raw_results)}/{len(jobs)} jobs successfully"
         )

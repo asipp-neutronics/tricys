@@ -159,12 +159,39 @@ class ModelCompilerPlugin(PreprocessPlugin):
 
     name = "compiler"
 
+    def __init__(
+        self,
+        package_path: Optional[str] = None,
+        model_name: Optional[str] = None,
+        cflags: Optional[str] = None,
+        target: Optional[str] = None,
+        **params: Any,
+    ) -> None:
+        super().__init__(**params)
+        self.package_path = package_path
+        self.model_name = model_name
+        self.cflags = cflags
+        self.target = target
+
     def run(self, context: PipelineContext) -> None:
+        target_pkg = self.package_path or context.package_path
+        target_model = self.model_name or context.model_name
+
+        # Build extra compiler config overrides if provided explicitly
+        compiler_cfg = dict(context.config)
+        if self.cflags or self.target:
+            if "model" not in compiler_cfg:
+                compiler_cfg["model"] = {}
+            if self.cflags:
+                compiler_cfg["model"]["cflags"] = self.cflags
+            if self.target:
+                compiler_cfg["model"]["target"] = self.target
+
         exe, xml, om_bin = build_model_artifacts(
-            package_path=context.package_path,
-            model_name=context.model_name,
+            package_path=target_pkg,
+            model_name=target_model,
             temp_dir=context.temp_dir,
-            config=context.config,
+            config=compiler_cfg,
         )
         context.compiled_artifacts = {
             "exe": exe,

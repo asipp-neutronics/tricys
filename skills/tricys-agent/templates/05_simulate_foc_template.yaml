@@ -1,0 +1,41 @@
+# TRICYS V2 Template: 聚变运行周期 (FOC) 动态脉冲混合调度仿真 (SC-2)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 1200.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*|${PULSE_COMPONENT}\\.y"
+
+  pulse:
+    foc_file: "${FOC_FILE_PATH}"      # 如: "example_scenario_mix.foc"
+    foc_component: "${PULSE_COMPONENT}" # 如: "pulseSource"
+    strategy: "table"                 # "table" 或 "array"
+
+task:
+  type: "simulate"
+  parameters:
+    ${TBR_PARAM}: 1.15
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+    startup_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "startup_inventory"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变运行周期 (FOC) 动态脉冲混合工况仿真审查报告"
+    formats: ["markdown", "docx", "pdf"]

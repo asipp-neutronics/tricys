@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from tricys.analysis.baseline_analysis import baseline_analysis
-from tricys.workflow.base import PostprocessPlugin
+from tricys.workflow.base import PluginMetadata, PostprocessPlugin
 from tricys.workflow.context import PipelineContext
 from tricys.workflow.registry import register_postprocess_plugin
 
@@ -29,6 +29,32 @@ class AnalysisReportPlugin(PostprocessPlugin):
     """
 
     name = "report"
+
+    @classmethod
+    def get_metadata(cls) -> PluginMetadata:
+        from tricys.workflow.base import PluginMetadata
+
+        return PluginMetadata(
+            name=cls.name,
+            category="postprocess",
+            description="System condition analysis, academic multi-format reports (MD/DOCX/PDF), and charting.",
+            version="2.0.0",
+            author="TRICYS Visualizer & Core Team",
+            parameters_schema={
+                "report_config": {
+                    "type": "object",
+                    "description": "ReportConfig dictionary or model.",
+                },
+                "run_baseline_plot": {"type": "boolean", "default": False},
+            },
+            input_requirements=["simulation_results", "trajectory"],
+            output_artifacts=[
+                "report.md",
+                "report.docx",
+                "report.pdf",
+                "figures/*.png",
+            ],
+        )
 
     def __init__(self, run_baseline_plot: bool = False, **params: Any) -> None:
         super().__init__(**params)

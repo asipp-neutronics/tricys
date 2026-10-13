@@ -1,0 +1,44 @@
+# TRICYS V2 Template: 单堆脉冲瞬态仿真与二分逼近临界 TBR 寻优 (SC-1 & SC-2)
+version: "2.0"
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*"
+
+task:
+  type: "simulate"
+  parallel: true
+  parameters:
+    ${TBR_PARAM}: 1.12
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+    Required_TBR:
+      evaluate: "bisection_search"
+      parameter: "${TBR_PARAM}"
+      search_bounds: [1.0, 1.4]
+      tolerance: 0.001
+      max_iterations: 15
+      target_metric:
+        source: "${STORAGE_NODE}"
+        evaluate: "doubling_time"
+        threshold: 63072000.0  # 2 年倍增时间约束 (秒)
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 临界 TBR 寻优与脉冲瞬态响应工程报告"
+    formats: ["markdown", "docx", "pdf"]

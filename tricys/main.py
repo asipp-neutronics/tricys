@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path
 
 from tricys.analysis.runner import retry_analysis
+from tricys.core.diagnostics import DiagnosticsBarrier
 from tricys.simulation.simulation import main as cosim_main
 from tricys.simulation.simulation import main as simulation_main
 from tricys.utils.file_utils import archive_run, unarchive_run
@@ -87,6 +88,11 @@ def main() -> None:
         action="store_true",
         help="Export results to CSV format after simulation.",
     )
+    parser.add_argument(
+        "--diagnose",
+        action="store_true",
+        help="Enable self-healing structured failure interception and emit diagnostics.json.",
+    )
 
     # Subparsers for explicit commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -105,6 +111,14 @@ def main() -> None:
         "run",
         help="Run a simulation or task from a configuration file.",
         add_help=False,
+    )
+
+    validate_parser = subparsers.add_parser(
+        "validate",
+        help="Validate a configuration file syntax and schema.",
+    )
+    validate_parser.add_argument(
+        "-c", "--config", type=str, default=None, help="Path to configuration file."
     )
 
     subparsers.add_parser(
@@ -139,6 +153,109 @@ def main() -> None:
         "model_name",
         type=str,
         help="Fully qualified model name (e.g. package.Model).",
+    )
+
+    model_parser = subparsers.add_parser(
+        "model", help="Modelica model inspection, review, and remediation tools."
+    )
+    model_sub = model_parser.add_subparsers(
+        dest="model_action", help="Model operations"
+    )
+
+    inspect_sub = model_sub.add_parser(
+        "inspect", help="Deeply inspect model parameters, inventories, and flow rates."
+    )
+    inspect_sub.add_argument("package_path", type=str, help="Path to package.mo file.")
+    inspect_sub.add_argument("model_name", type=str, help="Qualified model name.")
+    inspect_sub.add_argument(
+        "--json", action="store_true", help="Output results in JSON format."
+    )
+    inspect_sub.add_argument(
+        "-o", "--output", type=str, default=None, help="Save JSON output to file."
+    )
+
+    review_sub = model_sub.add_parser(
+        "review",
+        help="Audit model for time scale, conservation streams, and initial values.",
+    )
+    review_sub.add_argument("package_path", type=str, help="Path to package.mo file.")
+    review_sub.add_argument("model_name", type=str, help="Qualified model name.")
+    review_sub.add_argument(
+        "--json", action="store_true", help="Output audit report in JSON format."
+    )
+    review_sub.add_argument(
+        "--patch-output", type=str, default=None, help="Save generated patch to file."
+    )
+    review_sub.add_argument(
+        "--apply-patch", action="store_true", help="Directly apply remediation patch."
+    )
+
+    plugin_parser = subparsers.add_parser(
+        "plugin", help="Inspect and query workflow plugins and simulation engines."
+    )
+    plugin_sub = plugin_parser.add_subparsers(
+        dest="plugin_action", help="Plugin operations"
+    )
+
+    plugin_list_sub = plugin_sub.add_parser(
+        "list", help="List all registered workflow plugins."
+    )
+    plugin_list_sub.add_argument(
+        "--json", action="store_true", help="Output plugin list formatted as JSON."
+    )
+
+    plugin_info_sub = plugin_sub.add_parser(
+        "info", help="Show detailed metadata for a specific plugin."
+    )
+    plugin_info_sub.add_argument("name", type=str, help="Name of the plugin or engine.")
+    plugin_info_sub.add_argument(
+        "--json", action="store_true", help="Output plugin details formatted as JSON."
+    )
+
+    plugin_scaffold_sub = plugin_sub.add_parser(
+        "scaffold",
+        help="Generate production-ready plugin template code for Agent secondary development.",
+    )
+    plugin_scaffold_sub.add_argument("name", type=str, help="Name of the plugin.")
+    plugin_scaffold_sub.add_argument(
+        "--category",
+        type=str,
+        choices=["postprocess", "preprocess"],
+        default="postprocess",
+        help="Plugin lifecycle category.",
+    )
+    plugin_scaffold_sub.add_argument(
+        "-o", "--output", type=str, default=None, help="Save template to file."
+    )
+
+    plugin_test_sub = plugin_sub.add_parser(
+        "test",
+        help="Test a plugin in an in-memory mock sandbox in milliseconds without OMC.",
+    )
+    plugin_test_sub.add_argument(
+        "target", type=str, help="Path to plugin python file or registered plugin name."
+    )
+    plugin_test_sub.add_argument(
+        "--class-name", type=str, default=None, help="Specific plugin class name."
+    )
+    plugin_test_sub.add_argument(
+        "--json", action="store_true", help="Output test report in JSON format."
+    )
+
+    compile_parser = subparsers.add_parser(
+        "compile",
+        help="Compile Schema 2.0 configuration into an explicit DAG pipeline format.",
+    )
+    compile_parser.add_argument(
+        "-c", "--config", type=str, required=True, help="Path to config file."
+    )
+    compile_parser.add_argument(
+        "-o", "--output", type=str, default=None, help="Save compiled pipeline to file."
+    )
+    compile_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output compiled pipeline as JSON instead of YAML.",
     )
 
     # --- Argument Parsing Logic ---
@@ -326,6 +443,11 @@ def main() -> None:
                 action="store_true",
                 help="Maximize worker processes.",
             )
+            run_parser.add_argument(
+                "--diagnose",
+                action="store_true",
+                help="Enable self-healing structured failure interception.",
+            )
             run_args, _ = run_parser.parse_known_args(remaining_argv)
             if run_args.config:
                 main_args.config = run_args.config
@@ -335,6 +457,8 @@ def main() -> None:
                 main_args.enhanced = True
             if run_args.turbo:
                 main_args.turbo = True
+            if getattr(run_args, "diagnose", False):
+                main_args.diagnose = True
             # Proceed to config determination and execution
         elif main_args.command == "archive":
             archive_run(main_args.timestamp)
@@ -345,6 +469,199 @@ def main() -> None:
         elif main_args.command == "parse":
             parse_model_cli(main_args.package_path, main_args.model_name)
             return
+        elif main_args.command == "model":
+            action = getattr(main_args, "model_action", None)
+            if action == "inspect":
+                from tricys.core.introspect import introspect_model
+
+                res = introspect_model(main_args.package_path, main_args.model_name)
+                json_str = res.to_json(indent=2)
+                if getattr(main_args, "output", None):
+                    Path(main_args.output).write_text(json_str, encoding="utf-8")
+                    print(f"INFO: Model introspection saved to {main_args.output}")
+                else:
+                    print(json_str)
+                return
+
+            elif action == "review":
+                from tricys.core.model_auditor import ModelAuditor
+
+                auditor = ModelAuditor(main_args.package_path, main_args.model_name)
+                report = auditor.audit()
+                patch_str = auditor.generate_remediation_patch(report.findings)
+
+                if getattr(main_args, "apply_patch", False) and patch_str:
+                    auditor.apply_remediation(patch_str)
+                    print(
+                        f"INFO: Successfully applied remediation patch to {main_args.package_path}",
+                        file=sys.stderr,
+                    )
+
+                if getattr(main_args, "patch_output", None) and patch_str:
+                    Path(main_args.patch_output).write_text(patch_str, encoding="utf-8")
+                    print(
+                        f"INFO: Remediation patch saved to {main_args.patch_output}",
+                        file=sys.stderr,
+                    )
+
+                if getattr(main_args, "json", False):
+                    print(report.to_json(indent=2))
+                else:
+                    print(
+                        f"Model Review Report: {report.model_name} -> [{report.status}]"
+                    )
+                    print(f"Summary: {report.summary}")
+                    if report.findings:
+                        print("\nFindings:")
+                        for f in report.findings:
+                            sev = (
+                                f.severity.value
+                                if hasattr(f.severity, "value")
+                                else str(f.severity)
+                            )
+                            print(f"  - [{sev}] {f.code} in {f.component}: {f.message}")
+                            print(f"    Suggestion: {f.suggestion}")
+                    else:
+                        print(
+                            "No issues found. Model complies with TRICYS v2.0 standards."
+                        )
+                return
+            else:
+                model_parser.print_help(sys.stderr)
+                sys.exit(1)
+        elif main_args.command == "plugin":
+            import tricys.workflow  # noqa: F401
+            from tricys.workflow.registry import PluginRegistry
+
+            action = getattr(main_args, "plugin_action", None)
+            if action == "list":
+                data = PluginRegistry.introspect()
+                if getattr(main_args, "json", False):
+                    print(json.dumps(data, indent=2, ensure_ascii=False))
+                else:
+                    print("TRICYS Registered Plugins & Simulation Engines:")
+                    for cat, items in data.items():
+                        print(f"\n[{cat.upper()}] ({len(items)} components):")
+                        for item in items:
+                            aliases_str = (
+                                f" (aliases: {', '.join(item.get('aliases', []))})"
+                                if len(item.get("aliases", [])) > 1
+                                else ""
+                            )
+                            print(
+                                f"  * {item['name']}{aliases_str}: {item.get('description', '')}"
+                            )
+                return
+
+            elif action == "info":
+                name = getattr(main_args, "name", "")
+                info = PluginRegistry.get_plugin_info(name)
+                if not info:
+                    print(
+                        f"Error: Plugin '{name}' not found in registry.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+                if getattr(main_args, "json", False):
+                    print(json.dumps(info, indent=2, ensure_ascii=False))
+                else:
+                    print(f"Plugin Info: {info.get('name')}")
+                    print(f"Category: {info.get('category', 'unknown')}")
+                    print(f"Description: {info.get('description', '')}")
+                    print(f"Author: {info.get('author', 'TRICYS Core Team')}")
+                    print(f"Version: {info.get('version', '2.0.0')}")
+                    if info.get("input_requirements"):
+                        print(
+                            f"Input Requirements: {', '.join(info['input_requirements'])}"
+                        )
+                    if info.get("output_artifacts"):
+                        print(
+                            f"Output Artifacts: {', '.join(info['output_artifacts'])}"
+                        )
+                    if info.get("parameters_schema"):
+                        print(
+                            f"Parameters Schema: {json.dumps(info['parameters_schema'], indent=2, ensure_ascii=False)}"
+                        )
+                return
+
+            elif action == "scaffold":
+                from tricys.workflow.cli_helper import generate_plugin_scaffold
+
+                name = getattr(main_args, "name", "my_custom_plugin")
+                category = getattr(main_args, "category", "postprocess")
+                out_path = getattr(main_args, "output", None)
+                code = generate_plugin_scaffold(name, category, out_path)
+                if not out_path:
+                    print(code)
+                else:
+                    print(f"INFO: Successfully generated plugin scaffold at {out_path}")
+                return
+
+            elif action == "test":
+                from tricys.workflow.cli_helper import test_plugin_in_mock_sandbox
+
+                target = getattr(main_args, "target", "")
+                cls_name = getattr(main_args, "class_name", None)
+                try:
+                    res = test_plugin_in_mock_sandbox(target, cls_name)
+                    if getattr(main_args, "json", False):
+                        print(json.dumps(res, indent=2, ensure_ascii=False))
+                    else:
+                        print(
+                            f"Plugin Mock Test: {res.get('plugin')} -> [{res.get('status')}]"
+                        )
+                        print(
+                            f"Metrics Emitted: {json.dumps(res.get('metrics_emitted', {}), indent=2)}"
+                        )
+                        print(
+                            f"Artifacts Emitted: {json.dumps(res.get('artifacts_emitted', {}), indent=2)}"
+                        )
+                except Exception as e:
+                    print(f"Error testing plugin: {e}", file=sys.stderr)
+                    sys.exit(1)
+                return
+            else:
+                plugin_parser.print_help(sys.stderr)
+                sys.exit(1)
+        elif main_args.command == "compile":
+            from tricys.workflow.cli_helper import compile_v2_cli
+
+            cfg_file = getattr(main_args, "config", None)
+            out_file = getattr(main_args, "output", None)
+            as_json = getattr(main_args, "json", False)
+            try:
+                res_str = compile_v2_cli(cfg_file, out_file, as_json)
+                if not out_file:
+                    print(res_str)
+            except Exception as e:
+                print(f"Error compiling config: {e}", file=sys.stderr)
+                sys.exit(1)
+            return
+        elif main_args.command == "validate":
+            config_file = getattr(main_args, "config", None)
+            if not config_file:
+                for candidate in ["config.yaml", "config.yml", "config.json"]:
+                    if os.path.exists(candidate):
+                        config_file = candidate
+                        break
+                else:
+                    print(
+                        "Error: No configuration file specified. Use -c <config>.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+
+            from tricys.utils.config_utils import basic_prepare_config
+
+            try:
+                basic_prepare_config(config_file)
+                print(f"Config is valid ✅ ({config_file})")
+                return
+            except Exception as e:
+                print(
+                    f"Config validation error in '{config_file}': {e}", file=sys.stderr
+                )
+                sys.exit(1)
 
     # 2. Determine config path (explicit -c or default)
     config_path = main_args.config
@@ -402,11 +719,20 @@ def main() -> None:
             print(f"INFO: Turbo mode enabled! Using {task_cfg['max_workers']} workers.")
 
         print(f"INFO: Dispatching TRICYS 2.0 task '{task_type}' to simulation engine.")
-        ctx = simulation_main(
-            config_data,
-            base_dir=base_dir,
-            export_csv=main_args.csv,
+
+        diagnose_path = (
+            "diagnostics.json" if getattr(main_args, "diagnose", False) else None
         )
+        with DiagnosticsBarrier(
+            output_path=diagnose_path,
+            context_snapshot={"config_path": config_path, "task_type": task_type},
+            exit_on_error=True if getattr(main_args, "diagnose", False) else False,
+        ):
+            ctx = simulation_main(
+                config_data,
+                base_dir=base_dir,
+                export_csv=main_args.csv,
+            )
 
         # Handle visualizer auto-launch if configured
         vis_cfg = config_data.get("visualizer", {})
