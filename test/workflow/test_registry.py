@@ -50,8 +50,13 @@ def test_builtin_plugins_registered():
 
     # Simulation Engines
     assert PluginRegistry.get_engine_class("standard") is not None
+    assert PluginRegistry.get_engine_class("offline_table") is not None
     assert PluginRegistry.get_engine_class("offline_cosim") is not None
+    assert PluginRegistry.get_engine_class("online_step") is not None
     assert PluginRegistry.get_engine_class("online_oms") is not None
+    assert PluginRegistry.get_engine_class("online_cosim") is not None
+    assert PluginRegistry.get_engine_class("param_inject") is not None
+    assert PluginRegistry.get_engine_class("parameter_injection") is not None
 
 
 def test_decorator_registration():

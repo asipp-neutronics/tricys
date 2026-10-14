@@ -108,7 +108,12 @@ def run_fast_subprocess_job(
     if "method" in sim_config and sim_config["method"]:
         cmd.append(f"-s={sim_config['method']}")
 
-    if override_pairs:
+    override_file = sim_config.get("override_file") or (
+        job_params.get("override_file") if isinstance(job_params, dict) else None
+    )
+    if override_file and os.path.exists(override_file):
+        cmd.append(f"-overrideFile={override_file}")
+    elif override_pairs:
         override_str = ",".join(override_pairs)
         cmd.extend(["-override", override_str])
     if variable_filter:
@@ -384,6 +389,11 @@ class StandardSimulationEngine(BaseSimulationEngine):
                 }
                 if float(sim_cfg.get("start_time", 0.0)) > 0:
                     sim_options["startTime"] = float(sim_cfg["start_time"])
+                override_file = sim_cfg.get("override_file")
+                if override_file and os.path.exists(override_file):
+                    sim_options["simflags"] = (
+                        f"{sim_options.get('simflags', '')} -overrideFile {override_file}".strip()
+                    )
                 mod.setSimulationOptions(sim_options)
 
                 for i, job_params in enumerate(jobs, 1):
@@ -417,3 +427,6 @@ class StandardSimulationEngine(BaseSimulationEngine):
         logger.info(
             f"StandardSimulationEngine: Completed {len(raw_results)}/{len(jobs)} jobs successfully"
         )
+
+
+# Backward compatibility import

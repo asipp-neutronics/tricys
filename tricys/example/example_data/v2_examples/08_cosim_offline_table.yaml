@@ -1,0 +1,48 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS 工业基准算例 08: Schema 2.0 协同仿真 —— 离线查表/子系统替代模式 (Offline Subsystem Replacement)
+# 迁移自: basic/4_co_simulation_module/co_simulation_module.json
+# 核心机理: Run-Process-Rerun (两阶段初探-拦截-重构)
+# 适用场景: 目标子系统 (如 I_ISS / Divertor) 具备外部求解器 (Aspen Plus / Python) 或预存表格替代
+# ==============================================================================
+
+model:
+  fileName: "../example_model/package.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  startTime: 0.0
+  stopTime: 100.0
+  stepSize: 0.5
+  variableFilter: "time|sds.I[1]"
+
+task:
+  type: "cosim"
+  mode: "offline_table"
+  subsystems:
+    - target: "example_model.I_ISS"
+      instance: "i_iss"
+      solver: "aspen_plus"
+      handler_module: "tricys.handlers.i_iss_handler"
+      handler_function: "run_aspen_simulation"
+      params:
+        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+        base: 20
+        retime: 60
+        time_step: 3
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真报告 (离线静态替换模式)"
+    formats: ["markdown", "docx", "pdf"]

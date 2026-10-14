@@ -1,0 +1,190 @@
+{
+  "source": {
+    "authors": "X. Wang et al.",
+    "title": "Hydrogen isotope inventory evaluation of hydrogen isotopes separation system of CFETR using Aspen Plus simulator",
+    "journal": "Fusion Engineering and Design",
+    "volume": 184,
+    "year": 2022,
+    "doi": "10.1016/j.fusengdes.2022.113078",
+    "tables_used": ["Table 2 (feeds)", "Table 5 (column design)", "Table 11 (heat load/temperature)", "Table 12 (product compositions)", "Table 13 (tritium inventory)"],
+    "model": "ISS-O (outer fuel cycle)",
+    "software": "Aspen Plus",
+    "thermodynamic_model": "Custom PLXANT parameters for HD/HT/DT/T2"
+  },
+  "feeds": {
+    "WDS": {
+      "description": "Waste Detritiation System exhaust, fed to CD1 at stage 20",
+      "total_flow_mol_h": 280.0,
+      "composition_mole_fraction": {
+        "H2": 0.9975152,
+        "HD": 0.00246,
+        "HT": 0.0000248,
+        "D2": 0.0,
+        "DT": 0.0,
+        "T2": 0.0
+      },
+      "target_column": "CD1",
+      "feed_stage": 20,
+      "notes": "Table 2: WDS feed 280 mol/h. H2=99.75152%, HD=0.246%, HT=0.00248%."
+    },
+    "TES": {
+      "description": "Tokamak Exhaust System effluent, fed to CD2 at stage 20",
+      "total_flow_mol_h": 160.0,
+      "composition_mole_fraction": {
+        "H2": 0.9925,
+        "HD": 0.0,
+        "HT": 0.0075,
+        "D2": 0.0,
+        "DT": 0.0,
+        "T2": 0.0
+      },
+      "target_column": "CD2",
+      "feed_stage": 20,
+      "notes": "Table 2: TES feed 160 mol/h. H2=99.25%, HT=0.75%."
+    }
+  },
+  "columns": {
+    "CD1": {
+      "total_stages": 60,
+      "reflux_ratio": 6,
+      "distillate_to_feed_ratio": 0.9948,
+      "feed_positions": {
+        "WDS": 20,
+        "CD2_top": 15
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.08,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD1 receives WDS at stage 20 and CD2 distillate (top) recycle at stage 15."
+    },
+    "CD2": {
+      "total_stages": 70,
+      "reflux_ratio": 8,
+      "distillate_to_feed_ratio": 0.98625,
+      "feed_positions": {
+        "TES": 20,
+        "CD1_bottom": 35,
+        "CD3_top": 45
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.08,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD2 receives TES at stage 20, CD1 bottom at stage 35, and CD3 top at stage 45."
+    },
+    "CD3": {
+      "total_stages": 60,
+      "reflux_ratio": 18,
+      "distillate_to_feed_ratio": 0.73225,
+      "feed_positions": {
+        "equilibrator_output": 30
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.02,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD3 receives equilibrator output at stage 30."
+    }
+  },
+  "equilibrators": {
+    "equilibrator": {
+      "temperature_K": 298.0,
+      "notes": "Catalytic reactor E operating at room temperature (298K) for 2HT <=> H2 + T2"
+    }
+  },
+  "topology": {
+    "description": "ISS-O three-column cascade with inter-column recycle streams and one equilibrator",
+    "connections": [
+      {"from": "WDS_feed", "to": "CD1", "stage": 20},
+      {"from": "CD1_bottom", "to": "CD2", "stage": 35},
+      {"from": "TES_feed", "to": "CD2", "stage": 20},
+      {"from": "CD2_bottom", "to": "equilibrator", "stage": null},
+      {"from": "equilibrator", "to": "CD3", "stage": 30},
+      {"from": "CD3_top", "to": "CD2", "stage": 45},
+      {"from": "CD2_top", "to": "CD1", "stage": 15}
+    ],
+    "products": {
+      "CD1_top": "H2-rich exhaust (to environment)",
+      "CD3_bottom": "T2 product (high purity)"
+    },
+    "simplification_notes": "Wang 2022 ISS-O configuration: CD2 top is recycled to CD1 to recover carrier H2/HD; CD2 bottom is fed to the equilibrator (2HT -> H2 + T2) and then to CD3 for high-purity T2 concentration."
+  },
+  "expected_results": {
+    "temperatures_K": {
+      "CD1": {"top": 20.0641, "bottom": 22.2032},
+      "CD2": {"top": 20.0813, "bottom": 23.4077},
+      "CD3": {"top": 21.5636, "bottom": 24.6236},
+      "notes": "Table 11."
+    },
+    "heat_loads_W": {
+      "CD1": {"condenser": -801.141, "reboiler": 723.899},
+      "CD2": {"condenser": -379.879, "reboiler": 335.680},
+      "CD3": {"condenser": -9.922, "reboiler": 3.773},
+      "notes": "Table 11. Note CD3 has very small heat loads due to small flow."
+    },
+    "product_compositions": {
+      "CD1": {
+        "top": {
+          "H2": {"flow_mol_h": 438.708, "mole_fraction": 0.99843},
+          "HD": {"flow_mol_h": 0.689, "mole_fraction": 0.00157},
+          "HT": {"flow_mol_h": 3.81e-8, "mole_fraction": 0.0}
+        },
+        "bottom": {
+          "HD": {"flow_mol_h": 2.290, "mole_fraction": 0.99696},
+          "HT": {"flow_mol_h": 6.97e-3, "mole_fraction": 0.00304}
+        },
+        "notes": "Table 12. CD1 top is nearly pure H2; bottom is HD-rich."
+      },
+      "CD2": {
+        "top": {
+          "H2": {"flow_mol_h": 159.403, "mole_fraction": 0.98584},
+          "HD": {"flow_mol_h": 2.290, "mole_fraction": 0.01416},
+          "HT": {"flow_mol_h": 3.06e-5, "mole_fraction": 0.0}
+        },
+        "bottom": {
+          "HD": {"flow_mol_h": 0.080, "mole_fraction": 0.03538},
+          "HT": {"flow_mol_h": 2.174, "mole_fraction": 0.96439},
+          "T2": {"flow_mol_h": 5.10e-4, "mole_fraction": 0.00023}
+        },
+        "notes": "Table 12. CD2 top is H2-rich; bottom is HT-rich (feeds equilibrator then CD3)."
+      },
+      "CD3": {
+        "top": {
+          "H2": {"flow_mol_h": 0.603, "mole_fraction": 0.36552},
+          "HD": {"flow_mol_h": 0.080, "mole_fraction": 0.04833},
+          "HT": {"flow_mol_h": 0.967, "mole_fraction": 0.58585},
+          "T2": {"flow_mol_h": 5.10e-4, "mole_fraction": 0.00031}
+        },
+        "bottom": {
+          "HT": {"flow_mol_h": 2.22e-4, "mole_fraction": 0.00368},
+          "T2": {"flow_mol_h": 0.603, "mole_fraction": 0.99963}
+        },
+        "notes": "Table 12. CD3 bottom is high-purity T2 product (99.963%). Note: these results include equilibrator conversion; without equilibrator, CD3 results will differ significantly."
+      }
+    },
+    "tritium_inventory_mol": {
+      "CD1": {"total": 0.0014},
+      "CD2": {"total": 1.2944},
+      "CD3": {"total": 1.1889},
+      "system_total": 2.48,
+      "notes": "Table 13. Partial breakdown data available for CD1 only: gas_cond=0, gas_packed=3.13e-4, gas_reb=0, liq_cond=0, liq_packed=7.83e-4, liq_reb=2.88e-4. CD2/CD3 have total only."
+    }
+  },
+  "tolerances": {
+    "composition_rel": 0.15,
+    "composition_rel_notes": "15% relative deviation on major component mole fractions",
+    "composition_rel_simplified": 0.25,
+    "composition_rel_simplified_notes": "25% relative deviation for CD3 results where equilibrator simplification affects feed composition",
+    "temperature_abs_K": 2.0,
+    "temperature_abs_notes": "2 K absolute deviation (wider than ISS-I CD2 due to multi-column coupling and topology simplification)",
+    "heat_load_rel": 0.30,
+    "heat_load_rel_notes": "30% relative deviation on heat loads (wider tolerance for coupled system)"
+  }
+}

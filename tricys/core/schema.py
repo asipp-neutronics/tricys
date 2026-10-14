@@ -385,14 +385,65 @@ class SubsystemSpec(BaseDTO):
     instance: Optional[str] = Field(
         default=None, description="Instance name in parent model"
     )
-    solver: str = Field(
-        description="Subsystem solver adapter: aspen_plus, h2iso, fmu, python_script"
+    solver: Optional[str] = Field(
+        default="python_script",
+        description="Subsystem solver adapter: aspen_plus, h2iso, fmu, python_script",
     )
     model_file: Optional[str] = Field(
         default=None, description="External subsystem model file"
     )
+    handler_module: Optional[str] = Field(
+        default=None, description="Python module path for subsystem handler"
+    )
+    handler_function: Optional[str] = Field(
+        default=None, description="Python function/class name in handler module"
+    )
+    handler_script_path: Optional[str] = Field(
+        default=None, description="External script path for subsystem handler"
+    )
+    local_mass_control: Optional[Dict[str, Any]] = Field(
+        default=None, description="Online local mass conservation controls"
+    )
+    shadow_fmu_fallback: Optional[Dict[str, Any]] = Field(
+        default=None, description="Online shadow FMU fallback settings"
+    )
+    substitute_model: Optional[str] = Field(
+        default=None,
+        description="Replacement Modelica model name, e.g. Generic_ISS_Adapters.ISS_I_Adapter",
+    )
+    substitute_file: Optional[str] = Field(
+        default=None, description="Replacement Modelica .mo file path"
+    )
+    aux_files: List[str] = Field(
+        default_factory=list,
+        description="Auxiliary/dependent Modelica files required by substitute model",
+    )
+    override_file: Optional[str] = Field(
+        default=None, description="Subsystem-specific parameter override file path"
+    )
     params: Dict[str, Any] = Field(
         default_factory=dict, description="Subsystem runtime parameters"
+    )
+
+
+class ParameterInjectionConfig(BaseDTO):
+    """Specification for parameter injection data source and generation method."""
+
+    type: str = Field(
+        default="file",
+        description="Injection method: 'file' (static override file) or 'handler' (dynamic solver script)",
+    )
+    override_file: Optional[str] = Field(
+        default=None,
+        description="Path to parameter override file (.txt) used by -overrideFile",
+    )
+    handler_script: Optional[str] = Field(
+        default=None,
+        description="Path to external solver script (e.g. h2iso distillation solver)",
+    )
+    params: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Runtime parameters passed to the external handler script",
     )
 
 
@@ -401,14 +452,34 @@ class CosimTaskConfig(BaseDTO):
 
     type: Literal["cosim"] = "cosim"
     mode: str = Field(
-        default="subsystem_replacement",
-        description="Coupling mode: subsystem_replacement or fmi_online",
+        default="offline_table",
+        description="Coupling mode: offline_table (subsystem_replacement), online_step (fmi_online), or parameter_injection",
     )
-    exchange_step: float = Field(
-        default=1.0, description="Macro exchange time step in SI seconds"
+    exchange_step: Optional[float] = Field(
+        default=None, description="Optional macro exchange time step in SI seconds"
     )
     subsystems: List[SubsystemSpec] = Field(
         default_factory=list, description="Subsystems participating in co-simulation"
+    )
+    injection_type: Optional[str] = Field(
+        default="file",
+        description="Parameter injection method: 'file' (direct override_file) or 'handler' (solver script)",
+    )
+    injection: Optional[ParameterInjectionConfig] = Field(
+        default=None,
+        description="Unified configuration for parameter injection data source and solver handler",
+    )
+    override_file: Optional[str] = Field(
+        default=None,
+        description="Path to parameter override file for parameter_injection mode",
+    )
+    handler_script: Optional[str] = Field(
+        default=None,
+        description="Task-level external solver script for parameter injection (e.g. h2iso solver)",
+    )
+    handler_params: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Parameters passed to the task-level solver handler script",
     )
     parameters: Dict[str, Any] = Field(
         default_factory=dict, description="Co-simulation parameter overrides"

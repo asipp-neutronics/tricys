@@ -25,7 +25,7 @@ from tricys.analysis.report import (
 )
 from tricys.core.jobs import generate_simulation_jobs
 from tricys.plugins.sensitivity_plugin import execute_sensitivity_analysis
-from tricys.simulation.engines.offline_cosim import run_co_simulation_job
+from tricys.simulation.engines.offline_table import run_co_simulation_job
 from tricys.simulation.engines.standard import run_fast_subprocess_job
 from tricys.simulation.simulation import (
     _build_model_only,

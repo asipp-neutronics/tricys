@@ -279,3 +279,298 @@ def test_v2_example_06_mass_conservation_audit_config():
     pipeline = PipelineBuilder.build(runtime_cfg)
     assert any(p.name in ["safety", "auditor"] for p in pipeline.postprocessors)
     assert any(p.name == "report" for p in pipeline.postprocessors)
+
+
+def test_v2_example_08_cosim_offline_table_config():
+    """Verify that 08_cosim_offline_table.yaml parses cleanly and configures offline table cosim (migrated from basic 4)."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "08_cosim_offline_table.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "cosim"
+    assert runtime_cfg["task"]["mode"] == "offline_table"
+    assert len(runtime_cfg["task"]["subsystems"]) == 1
+
+    subsystem = runtime_cfg["task"]["subsystems"][0]
+    assert subsystem["target"] == "example_model.I_ISS"
+    assert subsystem["instance"] == "i_iss"
+    assert subsystem["solver"] == "aspen_plus"
+    assert subsystem["handler_module"] == "tricys.handlers.i_iss_handler"
+    assert subsystem["handler_function"] == "run_aspen_simulation"
+
+    # Verify co_simulation runtime synthesis
+    assert "co_simulation" in runtime_cfg
+    assert runtime_cfg["co_simulation"]["engine"] in ("offline_table", "offline_cosim")
+    assert runtime_cfg["co_simulation"]["mode"] == "offline_table"
+    assert len(runtime_cfg["co_simulation"]["handlers"]) == 1
+    handler = runtime_cfg["co_simulation"]["handlers"][0]
+    assert handler["handler_module"] == "tricys.handlers.i_iss_handler"
+    assert handler["handler_function"] == "run_aspen_simulation"
+    assert handler["params"]["base"] == 20
+
+    # Verify pipeline auto-inference
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name in ("offline_table", "offline_cosim")
+    pre_names = [p.name for p in pipeline.preprocessors]
+    assert "setup" in pre_names
+    assert "interceptor" in pre_names
+
+    # Verify 1:1 compilation to explicit pipeline
+    compiled = PipelineBuilder.compile_v2_to_explicit_pipeline(runtime_cfg)
+    assert compiled["pipeline"]["simulation"]["name"] in (
+        "offline_table",
+        "offline_cosim",
+    )
+    assert any(
+        p["name"] == "interceptor" for p in compiled["pipeline"]["preprocessing"]
+    )
+
+
+def test_v2_example_09_cosim_online_step_config():
+    """Verify that 09_cosim_online_step.yaml parses cleanly and configures online step cosim (migrated from basic 9)."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "09_cosim_online_step.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "cosim"
+    assert runtime_cfg["task"]["mode"] == "online_step"
+    assert len(runtime_cfg["task"]["subsystems"]) == 1
+
+    subsystem = runtime_cfg["task"]["subsystems"][0]
+    assert subsystem["target"] == "CFEDR.I_ISS"
+    assert subsystem["instance"] == "i_iss"
+    assert "i_iss_processor_base" in subsystem["handler_module"]
+    assert subsystem["handler_function"] == "I_ISSProcessorBase"
+    assert subsystem["local_mass_control"]["enabled"] is True
+
+    # Verify co_simulation runtime synthesis
+    assert "co_simulation" in runtime_cfg
+    assert runtime_cfg["co_simulation"]["engine"] in ("online_step", "online_oms")
+    assert runtime_cfg["co_simulation"]["mode"] == "online_step"
+    handler = runtime_cfg["co_simulation"]["handlers"][0]
+    assert handler["mode"] == "online"
+    assert handler["local_mass_control"]["enabled"] is True
+    assert handler["shadow_fmu_fallback"]["enabled"] is True
+
+    # Verify auditor synthesized from plugins
+    assert "auditor" in runtime_cfg
+    assert runtime_cfg["auditor"]["enabled"] is True
+
+    # Verify pipeline auto-inference
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name in ("online_step", "online_oms")
+
+    # Verify 1:1 compilation to explicit pipeline
+    compiled = PipelineBuilder.compile_v2_to_explicit_pipeline(runtime_cfg)
+    assert compiled["pipeline"]["simulation"]["name"] in ("online_step", "online_oms")
+
+
+def test_v2_example_10_cosim_parameter_injection_config():
+    """Verify that 10_cosim_parameter_injection.yaml parses cleanly and configures parameter injection."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "10_cosim_parameter_injection.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "cosim"
+    assert runtime_cfg["task"]["mode"] == "parameter_injection"
+    assert len(runtime_cfg["task"]["subsystems"]) == 2
+    sub0 = runtime_cfg["task"]["subsystems"][0]
+    assert sub0["substitute_model"] == "Generic_ISS_Adapters.ISS_I_Adapter"
+    assert "aux_files" in sub0
+    assert "override_file" in runtime_cfg["co_simulation"]
+    assert "override_file" in runtime_cfg["simulation"]
+
+    # Verify pipeline auto-inference
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "param_inject"
+
+    # Verify 1:1 compilation to explicit pipeline
+    compiled = PipelineBuilder.compile_v2_to_explicit_pipeline(runtime_cfg)
+    assert compiled["pipeline"]["simulation"]["name"] == "param_inject"
+    assert "override_file" in compiled["pipeline"]["simulation"]["params"]
+
+
+def test_v2_example_10_standalone_directory_config():
+    """Verify that 10_cosim_parameter_injection/10_cosim_parameter_injection.yaml in standalone directory parses cleanly."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "10_cosim_parameter_injection"
+        / "10_cosim_parameter_injection.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "cosim"
+    assert runtime_cfg["task"]["mode"] == "parameter_injection"
+    assert runtime_cfg["task"]["injection_type"] == "handler"
+    assert len(runtime_cfg["task"]["subsystems"]) == 2
+
+    # Verify pipeline auto-inference
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "param_inject"
+
+    compiled = PipelineBuilder.compile_v2_to_explicit_pipeline(runtime_cfg)
+    assert compiled["pipeline"]["simulation"]["name"] == "param_inject"
+
+
+def test_v2_example_01_sweep_startup_self_sufficiency_config():
+    """Verify that 01_sweep_startup_self_sufficiency.yaml parses cleanly as valid V2 config."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "01_sweep_startup_self_sufficiency.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "sweep"
+    assert len(runtime_cfg["task"]["parameters"]) == 3
+    assert runtime_cfg["task"]["parameters"][0]["blanket.TBR"] == 1.10
+    assert "startup_inventory" in runtime_cfg["task"]["metrics"]
+
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "standard"
+
+
+def test_v2_example_02_simulate_pulsed_transient_config():
+    """Verify that 02_simulate_pulsed_transient.yaml parses cleanly as valid V2 config."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "02_simulate_pulsed_transient.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "simulate"
+    assert "Required_TBR" in runtime_cfg["task"]["metrics"]
+    assert (
+        runtime_cfg["task"]["metrics"]["Required_TBR"]["evaluate"] == "bisection_search"
+    )
+
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "standard"
+
+
+def test_v2_example_03_sensitivity_sobol_gsa_config():
+    """Verify that 03_sensitivity_sobol_gsa.yaml parses cleanly as valid V2 config."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "03_sensitivity_sobol_gsa.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "sensitivity"
+    assert runtime_cfg["task"]["method"] == "sobol"
+    assert runtime_cfg["task"]["samples"] == 8
+
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "standard"
+
+
+def test_v2_example_07_custom_plugin_pipeline_config():
+    """Verify that 07_custom_plugin_pipeline.yaml parses cleanly and mounts dynamic plugin."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "07_custom_plugin_pipeline.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "sweep"
+    assert "plugins" in runtime_cfg
+    assert len(runtime_cfg["plugins"]["postprocess"]) == 1
+
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "standard"
+    post_names = [p.name for p in pipeline.postprocessors]
+    assert "tritium_reserve_auditor" in post_names
+
+
+V2_EXAMPLES_DIR = (
+    Path(__file__).parent.parent / "tricys" / "example" / "example_data" / "v2_examples"
+)
+ALL_V2_YAMLS = sorted([p for p in V2_EXAMPLES_DIR.glob("**/*.yaml") if p.is_file()])
+
+
+@pytest.mark.parametrize("yaml_file", ALL_V2_YAMLS, ids=lambda p: p.name)
+def test_all_v2_examples_load_and_compile(yaml_file):
+    """Dynamically discover and rigorously test all YAML configuration files in v2_examples."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_file))
+    assert "model" in runtime_cfg
+    assert "task" in runtime_cfg
+
+    # Ensure pipeline builder can auto-infer or build workflow pipeline
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine is not None
+    assert pipeline.engine.name in (
+        "standard",
+        "offline_table",
+        "offline_cosim",
+        "online_step",
+        "online_oms",
+        "param_inject",
+    )
+
+    # Ensure explicit pipeline compilation succeeds without error
+    compiled = PipelineBuilder.compile_v2_to_explicit_pipeline(runtime_cfg)
+    assert "pipeline" in compiled
+    assert "simulation" in compiled["pipeline"]

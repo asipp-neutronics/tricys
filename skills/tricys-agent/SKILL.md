@@ -9,7 +9,7 @@ description: "通用模型中心化闭环聚变堆氚燃料循环仿真、插件
 
 本技能将 AI Coding Agent 塑造为**聚变堆氚燃料循环系统主任工程师与平台扩展架构师**。聚变堆燃料回路具有极强非线性、高刚性微分代数方程（DAE）特征、大滞后动态与极度苛刻的安全与物料守恒要求。
 
-为确保仿真 100% 真实可靠、可复现、零幻觉，Agent 必须**严格无条件遵守以下六大最高纪律**：
+为确保仿真 100% 真实可靠、可复现、零幻觉，Agent 必须**严格无条件遵守以下七大最高纪律**：
 
 1. 🎯 **以 Modelica 模型分析为绝对核心，严禁凭空捏造变量 (Model-Centric & Anti-Hallucination)**：
    - 严禁脱离具体的 `.mo` 源码，根据泛化学术文献臆造模型中不存在的变量名、参数或子系统拓扑（例如：严禁将实测的 `sds.I[1]` 臆造为 `sds.inventory`，严禁假设不存在的直接内循环分支）；
@@ -30,6 +30,14 @@ description: "通用模型中心化闭环聚变堆氚燃料循环仿真、插件
    - 当用户提出 TRICYS 未内置的功能需求（如特定核素计算、专用格式导出、级联安全报警、动态前处理参数映射）时，**Agent 应主动以系统架构师与插件开发者身份，自主编写、挂载并调试修复 TRICYS 插件**；
    - **AST 安全沙箱审查红线**：严禁在外部插件中引入 `subprocess`、`threading`、`socket`、`requests`，严禁调用 `eval()`、`exec()`、`os.system()` 等危险操作，必须通过纯科学计算（`numpy`、`pandas`、`math`、`h5py`）与 `PipelineContext` 标准契约完成（详见 [plugin_development_guide.md](references/plugin_development_guide.md)）；
    - **自愈闭环**：若插件加载失败或抛出异常，Agent 必须自主诊断并修复插件代码，直至流水线端到端贯通。
+7. 🔄 **协同仿真范式边界与模型替换红线 (Co-Simulation Boundaries & Replacement Discipline)**：
+   - **严格区分三种协同仿真机制，严禁混淆配置字段**：
+     - **离线查表 (`offline_table`)**：两阶段初探-拦截-重构机制，由底层 `interceptor.py` 自动在后台生成包含 `CombiTimeTable` 的包装模型，**严禁且无需在 YAML 中指定 `substitute_model`**，用户仅配置模块处理函数 `handler_function` 与输入参数；
+     - **在线步进 (`online_step`)**：依托 OMSimulator 调度系统资产（`.ssp` 文件），在宏步长网格上由 `AbstractTrackProcessor` 逐时间步锁步双向同步变量，**不修改 Modelica 源码，严禁在 YAML 中指定 `substitute_model`**；
+     - **参数注入 (`parameter_injection`)**：**全框架中唯一需要且必须显式声明 `substitute_model` 与 `substitute_file` 的模式**！
+   - **参数注入的强拓扑校验契约**：在 `parameter_injection` 模式下，必须通过 [submodel_replacer.py](file:///d:/Administrator/Documents/Github/tricys/tricys/core/submodel_replacer.py) 对 0-D 动态代理模型执行**进出端口因果性、端口命名与连接拓扑的绝对零悬空强校验**，严禁直接盲目修改文本导致编译崩溃；
+   - **原子/分子流跨维度升降维桥接**：对于全厂宏观 5 维（或 3 维）同位素原子流（H, D, T 等）与精细化工 6 维同位素分子流（H2, HD, HT, D2, DT, T2），严禁直接混接。升降维桥接既可**在 Handler 程序内部进行化学平衡换算与维度映射**，也可**通过 Modelica 专用适配器组件（如 `Generic_ISS_Adapters.ISS_I_Adapter` 等）在模型拓扑层完成端口升降维桥接**；
+   - **零悬空与默认绑定**：替换模型必须保证输入输出端口在语义、名称和因果方向上 100% 对应；替换器必须自动识别并绑定未连接输入端口默认零输入方程，杜绝变量欠定错误（详见 [cosimulation_framework_guide.md](references/cosimulation_framework_guide.md)）。
 
 ---
 
@@ -175,7 +183,162 @@ python -m tricys.main plugin test plugins/<file.py> --json
 
 ---
 
-## 🗂️ 4. 五大核心应用场景与模型映射表
+## 🔄 4. TRICYS 多物理场联合仿真框架与接入规约 (Co-Simulation Framework)
+
+针对聚变堆中高非线性、多时空尺度微观物理单元（如深冷氢同位素分离精馏塔、催化反应器、复杂吸附/渗透床），TRICYS 建立了统一的**子系统替换与资产重连（Submodel Replacement & Reconnection）**抽象框架，提供三种数学物理机制各异的协同仿真模式：
+
+---
+
+### 4.1 三大联合仿真模式对比与选型指南 (Comparison & Selection Matrix)
+
+| 维度指标 | 模式 1: 离线查表 (`offline_table`) | 模式 2: 在线步进 (`online_step`) | 模式 3: 参数注入 (`parameter_injection`) |
+| :--- | :--- | :--- | :--- |
+| **`task.mode`** | `offline_table` *(兼容别名: offline_cosim)* | `online_step` *(兼容别名: online_oms, online_cosim)* | `parameter_injection` *(兼容别名: param_inject)* |
+| **底层引擎实现** | [offline_table.py](file:///d:/Administrator/Documents/Github/tricys/tricys/simulation/engines/offline_table.py)<br>`@register_simulation_engine("offline_table")` | [online_step.py](file:///d:/Administrator/Documents/Github/tricys/tricys/simulation/engines/online_step.py)<br>`@register_simulation_engine("online_step")` | [param_inject.py](file:///d:/Administrator/Documents/Github/tricys/tricys/simulation/engines/param_inject.py)<br>`@register_simulation_engine("param_inject")` |
+| **物理本质与机制** | **静态代数查表降阶 (Run-Process-Rerun)**：两阶段初探-拦截-重构。初探仿真提取边界流股，外部求解器计算生成 CSV，底层自动生成包装模型插值回注。 | **动态时间解耦锁步积分 (Lockstep)**：依托 OMSimulator 驱动 `.ssp` 系统包，全厂模型与外接 FMU/求解器在通信宏步长（`stepSize`）网格上逐时间步双向交换流股与状态。 | **宏微观时标分离 (Time-Scale Separation)**：微观快速稳态由外接高精求解器单次求解，全厂模型子组件替换为 0-D 动态代理，携带 `-overrideFile` 原生参数覆盖。 |
+| **子组件替换机制** | **内部拦截器自动生成**：由 `interceptor.py` 动态生成包装模型（内置 `CombiTimeTable`）。<br>⚠️ **严禁且无需在配置中指定 `substitute_model`！** | **SSP/FMU 端口资产重连**：基于 OMSimulator 在 `.ssp` 模型接口上实时进行变量交互（Set/Get）。<br>⚠️ **无需在配置中指定 `substitute_model`！** | **显式子模型替换与拓扑校验**：**全框架中唯一需要用户显式声明 `substitute_model` 与 `substitute_file` 的模式！**<br>由 `submodel_replacer.py` 强校验端口与因果拓扑。 |
+| **外接求解器调用时机** | 两阶段中间（初探仿真结束后单次调用）。 | 仿真推进运行时（主循环每个通信步长边界调用）。 | 仿真前置任务阶段（全系统仿真开始前单次严密求解）。 |
+| **数据/参数交互载体** | 输入/输出 CSV 文件与自动注入的查表列。 | 内存强类型 `UnifiedStateVector` 与 `TrackResult`。 | 文本参数覆盖文件（`override_cycle.txt`）通过 OMC 原生 `-overrideFile` 标志注入。 |
+| **5000h 长周期仿真耗时**| < 10 秒（极速静态插值） | 数小时 ~ 数天（受跨进程/跨工具高频通信制约） | **20 ~ 40 秒（兼具严密机理物性与极速宏观动态）** |
+| **典型物理应用对象** | 稳态分离比固定的吸附床、换热器网格、静态映射器。<br>*(基准算例 08)* | 存在剧烈高频控制反馈的回路、等离子体破裂瞬态。<br>*(基准算例 09)* | **CFETR ISS 氢同位素分离多塔流程 (Wang 2022)**、大型催化平衡器。<br>*(基准算例 10)* |
+
+---
+
+### 4.2 典型配置规约与防错红线 (Schema 2.0 Task Specification & Guardrails)
+
+#### 模式 1: 离线查表模式 (`offline_table`)
+- **适用场景**：使用预存 CSV 数据或 Aspen Plus / Python 离线批量计算响应面替代稳态子组件。
+- 🚫 **红线警示**：**绝对不要**在配置中填写 `substitute_model: "Modelica.Blocks.Tables.CombiTable1Ds"` 或其他替换字段！包装模型及其内部的 `Modelica.Blocks.Sources.CombiTimeTable` 由 TRICYS 底层自动构建。
+```yaml
+task:
+  type: "cosim"
+  mode: "offline_table"
+  subsystems:
+    - target: "example_model.I_ISS"                     # 待拦截的原子系统组件路径
+      instance: "i_iss"                                 # 系统中的实例名
+      solver: "aspen_plus"                              # 外部求解器类型
+      handler_module: "tricys.handlers.i_iss_handler"   # Handler 函数所在 Python 模块
+      handler_function: "run_aspen_simulation"         # Handler 模块函数名
+      params:
+        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+```
+
+#### 模式 2: 在线步进模式 (`online_step`)
+- **适用场景**：全厂模型（主系统）与外部 FMU / 子系统在每一个宏观通信步长（`stepSize`）执行动态双向交换。
+- 💡 **规范要求**：主模型通常使用打包好的 `.ssp` 文件（如 `example_model.ssp`）；支持可选的 `local_mass_control`（局部质量守恒控制）和全局 `auditor` 插件。
+```yaml
+model:
+  fileName: "../example_model_ssp/ssp/example_model.ssp"
+  modelName: "example_model.Cycle"
+scenario:
+  stopTime: 100.0
+  stepSize: 0.5                                         # 宏观数据交换通信步长
+task:
+  type: "cosim"
+  mode: "online_step"
+  subsystems:
+    - target: "CFEDR.I_ISS"
+      instance: "i_iss"
+      solver: "aspen_plus"
+      handler_module: "tricys.handlers.online_iss"
+      handler_function: "OnlineISSProcessor"            # 必须指定继承自 AbstractTrackProcessor 的类名
+      params:
+        base_inventory_mol: 20.0
+      local_mass_control:                               # 可选局部质量修正
+        enabled: true
+        deadband_g: 0.1
+        relaxation_time_h: 1.0
+```
+
+#### 模式 3: 参数注入模式 (`parameter_injection`)
+- **适用场景**：深冷精馏等微观高非线性子系统由外部专业求解器（如 `h2iso`）严密求解，全厂系统保留 0-D 动态代理，实现千小时级极速动态仿真。
+- 💡 **规范要求**：
+  1. **任务同级统一原则**：`injection_type: "handler" | "file"`，`override_file` 与 `handler_script`、`handler_params` 位于 task 全局同级，严禁分散在各个 subsystem 中重复声明；
+  2. **显式替换与拓扑强校验**：**必须**在 `subsystems` 中指定 `substitute_model` 和 `substitute_file`（如 0-D 适配器模型），TRICYS 会自动校验端口名、因果方向、向量维度，确保绝对无悬空无不匹配。
+```yaml
+task:
+  type: "cosim"
+  mode: "parameter_injection"
+  injection_type: "handler"                                # 统一注入方式: "handler" 或 "file"
+  override_file: "./override_cycle.txt"                    # 覆盖参数目标文件
+  handler_script: "./run_h2iso_wang2022.py"               # 任务级外部求解器 Handler 脚本
+  handler_params:
+    solve_mode: "live"                                    # 真实物理求解模式: "live"
+    method: "wegstein"                                    # 撕裂流加速迭代方法
+    max_iter: 10
+    tol: 0.01
+  subsystems:
+    - target: "example_model.I_ISS"                       # 待替换的目标子组件
+      instance: "i_iss"                                   # 实例名
+      solver: "h2iso"
+      substitute_model: "Generic_ISS_Adapters.ISS_I_Adapter" # 替换的 0-D 动态适配器模型
+      substitute_file: "./Generic_ISS_Adapters.mo"        # 适配器 Modelica 文件
+      aux_files:
+        - "./Generic_ISS.mo"                              # 依赖的底层物理库
+```
+
+---
+
+### 4.3 三大联合仿真范式的 Handler 编写契约与代码规范
+
+针对三种模式不同的时空尺度解耦机制，**Handler 编写的软件形态、签名接口与数据流载体完全不同**：
+
+#### 范式一：离线查表函数范式 (`offline_table`)
+- **载体形态**：标准 Python 模块函数（Module Function）；
+- **配置字段**：`subsystems[].handler_module` 与 `subsystems[].handler_function`；
+- **接口签名**：`def handler_func(temp_input_csv: str, temp_output_csv: str, **params) -> dict`；
+- **数据流与职责**：从 `temp_input_csv` 读取初探仿真全时序输入流股，驱动外部计算并生成 `temp_output_csv` 查表数据，返回常数占位字典，由 TRICYS 转换为 `CombiTimeTable` 代理执行第二阶段闭环重算。
+```python
+def run_aspen_simulation(temp_input_csv: str, temp_output_csv: str, **params) -> dict:
+    df_in = pd.read_csv(temp_input_csv)
+    # 外部计算或插值...
+    df_out = pd.DataFrame({"time": df_in["time"], "to_SDS": ..., "to_WDS": ...})
+    df_out.to_csv(temp_output_csv, index=False)
+    return {"status": "success"}
+```
+
+#### 范式二：在线步进状态机类范式 (`online_step`)
+- **载体形态**：有状态处理器类（Stateful Processor Class）；
+- **配置字段**：`subsystems[].handler_module` 与 `subsystems[].handler_function`（指定类名）；
+- **接口签名**：继承 `tricys.online_cosim.processor_base.AbstractTrackProcessor`，实现：
+  - `initialize(self, context: TrackProcessorContext) -> None`
+  - `process(self, request_vector: UnifiedStateVector) -> TrackResult`
+- **数据流与职责**：在宏步长（`stepSize`）边界上锁步推进，从 `request_vector.boundary_inputs` 获取当前步输入流股列表，计算单步物理响应，返回强类型 `TrackResult(outputs={"to_SDS": [...], ...})`。
+```python
+from tricys.online_cosim.processor_base import AbstractTrackProcessor
+from tricys.online_cosim.schema import TrackProcessorContext, TrackResult, UnifiedStateVector
+
+class OnlineISSProcessor(AbstractTrackProcessor):
+    def initialize(self, context: TrackProcessorContext) -> None:
+        self.base_inv = context.params.get("base_inventory_mol", 20.0)
+
+    def process(self, request_vector: UnifiedStateVector) -> TrackResult:
+        # request_vector.time, request_vector.boundary_inputs
+        return TrackResult(outputs={"to_SDS": [0.01, 0.05, 0.94], "to_WDS": [0.98, 0.02, 0.0]})
+```
+
+#### 范式三：参数注入独立脚本范式 (`parameter_injection`)
+- **载体形态**：任务级独立可执行脚本（Standalone CLI Executable）；
+- **配置字段**：`task.injection_type: "handler"`, `task.handler_script`, `task.handler_params`, `task.override_file`；
+- **接口契约**：标准 Python 独立脚本入口 `def main() -> int`，从环境变量 `TRICYS_WORKSPACE` 与 `TRICYS_HANDLER_PARAMS` 获取运行时上下文；
+- **数据流与职责**：前置真实调用专业物理求解器（如 `h2iso` 严密精馏流程求解器），输出包含 Modelica 实例变量路径的 `override_cycle.txt` 写入工作区，返回退出码 `0`。TRICYS 强校验端口后无缝替换为 0-D 动态代理，OMC 携带 `-overrideFile` 参数秒级跑完长周期（5000h+）全厂演化。
+```python
+def main() -> int:
+    workspace = os.environ.get("TRICYS_WORKSPACE", ".")
+    params = json.loads(os.environ.get("TRICYS_HANDLER_PARAMS", "{}"))
+    # 调用专业外部求解器计算 (如 h2iso flowsheet/mesh) ...
+    override_path = os.path.join(workspace, "override_cycle.txt")
+    with open(override_path, "w", encoding="utf-8") as f:
+        f.write("i_iss.split_ratio_SDS=0.85\ni_iss.split_ratio_WDS=0.15\n")
+    return 0
+```
+
+> 📖 **完整联合仿真工程指南与三范式 Handler 生产级代码**：详见专论 [cosimulation_framework_guide.md](references/cosimulation_framework_guide.md)。  
+> 📋 **联合仿真 YAML 原型模板**：详见 [08_cosim_subsystem_template.yaml](templates/08_cosim_subsystem_template.yaml)、[09_cosim_online_step_template.yaml](templates/09_cosim_online_step_template.yaml) 及 [10_cosim_parameter_injection_template.yaml](templates/10_cosim_parameter_injection_template.yaml)。
+
+---
+
+## 🗂️ 5. 八大核心应用场景与模型映射表
 
 | 场景编号 | 聚变工程应用场景 | 对应模板路径 | 核心依赖的自省变量 | 典型任务类型 |
 | :--- | :--- | :--- | :--- | :---: |
@@ -184,10 +347,13 @@ python -m tricys.main plugin test plugins/<file.py> --json
 | **SC-3** | **多维参数 Sobol 全局敏感度分解** | `templates/03_sensitivity_sobol_template.yaml` | 多个物理参数列表<br>目标指标存量节点 | `sensitivity` (sobol) |
 | **SC-4** | **全厂闭环质量平衡与泄漏安全审计** | `templates/06_mass_balance_audit_template.yaml` | 全部存量 `patterns.inventory`<br>产氚/燃耗/衰变/泄漏流股 | `simulate` (auditor) |
 | **SC-5** | **自主扩展插件流水线与定制化分析** | `templates/07_custom_plugin_pipeline_template.yaml` | 任意自定义指标节点<br>外部插件脚本路径 | `pipeline` (自定义扩展) |
+| **SC-6** | **多物理场离线查表协同仿真** | `templates/08_cosim_subsystem_template.yaml` | 目标子组件与静态数据表路径 | `cosim` (offline_table) |
+| **SC-7** | **跨工具在线步进动态协同仿真** | `templates/09_cosim_online_step_template.yaml` | 目标子组件与在线处理器模块 | `cosim` (online_step) |
+| **SC-8** | **基于外部求解器严密计算的参数注入** | `templates/10_cosim_parameter_injection_template.yaml` | 目标子组件、外部求解脚本与覆盖文件 | `cosim` (parameter_injection) |
 
 ---
 
-## 🛠️ 5. 机器可读 CLI 交互协议速查
+## 🛠️ 6. 机器可读 CLI 交互协议速查
 
 | 指令功能 | 完整命令行命令 | 核心输出结构 / 标志 |
 | :--- | :--- | :--- |
@@ -200,3 +366,4 @@ python -m tricys.main plugin test plugins/<file.py> --json
 | **查询已注册插件**| `python -m tricys.main plugin list --json` | 标准 JSON：`preprocess`, `engine`, `postprocess` 清单 |
 | **查询单插件详情**| `python -m tricys.main plugin info <name> --json` | 标准 JSON：参数 Schema、输入输出契约 |
 | **带诊断屏障运行**| `python -m tricys.main run -c <config.yaml> --diagnose` | 发生错误时写入 `results/diagnostics.json` |
+

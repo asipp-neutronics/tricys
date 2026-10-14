@@ -9,16 +9,19 @@ from tricys.workflow.registry import register_simulation_engine
 logger = logging.getLogger(__name__)
 
 
+@register_simulation_engine("online_step")
 @register_simulation_engine("online_oms")
-class OnlineOmsCoSimEngine(BaseSimulationEngine):
-    """Core simulation engine for online OMSimulator / FMI / SSP co-simulation bus."""
+@register_simulation_engine("online_cosim")
+@register_simulation_engine("fmi_online")
+class OnlineStepEngine(BaseSimulationEngine):
+    """Core simulation engine for online OMSimulator / FMI / SSP step-by-step co-simulation."""
 
-    name = "online_oms"
+    name = "online_step"
 
     def execute(self, context: PipelineContext) -> None:
         from tricys.online_cosim.runtime import run_online_cosimulation
 
-        logger.info("OnlineOmsCoSimEngine: Starting OMSimulator online co-simulation")
+        logger.info("OnlineStepEngine: Starting OMSimulator online co-simulation")
         res_dict = run_online_cosimulation(context.config, export_csv=False)
 
         result_file = res_dict.get("result_file")
@@ -37,6 +40,9 @@ class OnlineOmsCoSimEngine(BaseSimulationEngine):
             }
         ]
         context.set_metadata("online_cosim_result", res_dict)
-        logger.info(
-            f"OnlineOmsCoSimEngine: Finished successfully. Output: {result_file}"
-        )
+        logger.info(f"OnlineStepEngine: Finished successfully. Output: {result_file}")
+
+
+# Backward compatibility aliases
+OnlineOmsCoSimEngine = OnlineStepEngine
+OnlineStepCoSimEngine = OnlineStepEngine

@@ -1,0 +1,68 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS 工业基准算例 10: Schema 2.0 协同仿真 —— 参数注入模式 (Parameter Injection)
+# 
+# 模式特征:
+# - 基于 Wang (2022) CFETR 聚变堆同位素分离系统 (ISS-I & ISS-O) 真实配置
+# - 任务级统一注入: injection_type: "handler"
+# - 真实物理求解: 外部 handler (run_h2iso_wang2022.py) 真实驱动 h2iso 严密 MESH 方程序列模块求解器
+# - 强拓扑兼容性校验: 在子组件替换前由 submodel_replacer 严格校验上下游端口因果性、维度与 Connection 拓扑
+# - 极速长周期仿真: OpenModelica 原生 -overrideFile 注入稳态解，免去多塔严密偏微分方程长时间积分
+# ==============================================================================
+
+model:
+  fileName: "./example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "hour"
+  stopTime: 5000.0
+  stepSize: 1.0
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|i_iss.to_SDS[1]|o_iss.to_SDS[1]"
+
+task:
+  type: "cosim"
+  mode: "parameter_injection"
+  injection_type: "handler"                                # 统一注入方式: "file" 或 "handler"
+  override_file: "./override_cycle.txt"                    # 注入覆盖参数目标文件
+  handler_script: "./run_h2iso_wang2022.py"               # 任务级外部求解脚本 (真实驱动 h2iso 求解器)
+  handler_params:
+    wang2022_config_issi: "./wang2022_issi.json"          # Wang 2022 ISS-I (4塔+2平衡器) 流程配置文件
+    wang2022_config_isso: "./wang2022_isso.json"          # Wang 2022 ISS-O (3塔+1平衡器) 流程配置文件
+    solve_mode: "live"                                    # 严密真实求解: "live"
+    method: "wegstein"                                    # 撕裂流加速迭代方法
+    max_iter: 10                                          # 最大迭代步数
+    tol: 0.01                                             # 收敛容差
+    continuation_substeps: 2                              # 延拓步数
+  subsystems:
+    - target: "example_model.I_ISS"
+      instance: "i_iss"
+      solver: "h2iso"
+      substitute_model: "Generic_ISS_Adapters.ISS_I_Adapter"
+      substitute_file: "./Generic_ISS_Adapters.mo"
+      aux_files:
+        - "./Generic_ISS.mo"
+    - target: "example_model.O_ISS"
+      instance: "o_iss"
+      solver: "h2iso"
+      substitute_model: "Generic_ISS_Adapters.ISS_O_Adapter"
+      substitute_file: "./Generic_ISS_Adapters.mo"
+      aux_files:
+        - "./Generic_ISS.mo"
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真报告 (基于 Wang 2022 真实求解的参数注入)"
+    formats: ["markdown", "docx", "pdf"]

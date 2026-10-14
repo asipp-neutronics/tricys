@@ -28,7 +28,7 @@ from tricys.preprocessing.compiler import (
     build_model_artifacts,
     resolve_built_model_paths,
 )
-from tricys.simulation.engines.offline_cosim import (
+from tricys.simulation.engines.offline_table import (
     mp_cosim_job_worker,
     run_co_simulation_job,
 )

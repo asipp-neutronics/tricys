@@ -161,6 +161,53 @@ def test_schema_v2_task_dispatching_sensitivity():
     assert ctx.get_metadata("sampling_method") == "latin"
 
 
+def test_schema_v2_task_dispatching_cosim():
+    cosim_cfg = {
+        "version": "2.0",
+        "model": {"modelName": "DemoModel", "fileName": "package.mo"},
+        "scenario": {"stopTime": 1000.0, "stepSize": 1.0},
+        "task": {
+            "type": "cosim",
+            "mode": "subsystem_replacement",
+            "exchange_step": 0.5,
+            "subsystems": [
+                {
+                    "target": "DemoModel.Subsystem",
+                    "instance": "sub_inst",
+                    "solver": "h2iso",
+                    "model_file": "flowsheet.json",
+                    "params": {"reflux": 10.0},
+                }
+            ],
+            "metrics": {
+                "final_i": {"source": "inventory", "evaluate": "final_value"},
+            },
+        },
+    }
+    prep, _ = basic_prepare_config(cosim_cfg)
+    assert "co_simulation" in prep
+    assert prep["co_simulation"]["engine"] in ("offline_table", "offline_cosim")
+    assert prep["co_simulation"]["mode"] == "subsystem_replacement"
+    assert len(prep["co_simulation"]["handlers"]) == 1
+
+    pipeline = PipelineBuilder.build(prep)
+    assert pipeline.engine.name in ("offline_table", "offline_cosim")
+    pre_names = [p.name for p in pipeline.preprocessors]
+    assert "setup" in pre_names
+    assert "interceptor" in pre_names
+
+    # Test explicit pipeline compilation
+    compiled = PipelineBuilder.compile_v2_to_explicit_pipeline(prep)
+    assert compiled["pipeline"]["simulation"]["name"] in (
+        "offline_table",
+        "offline_cosim",
+    )
+    assert compiled["pipeline"]["simulation"]["params"]["exchange_step"] == 0.5
+    assert any(
+        p["name"] == "interceptor" for p in compiled["pipeline"]["preprocessing"]
+    )
+
+
 def test_deadlock_free_concurrency_bounds():
     # Outer level safe worker bound
     workers = get_safe_max_workers(user_requested_limit=32, task_count=4)

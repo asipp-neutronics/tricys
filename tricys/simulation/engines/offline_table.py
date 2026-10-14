@@ -311,11 +311,12 @@ def mp_cosim_job_worker(
         return job_id, job_params, "", str(exc)
 
 
+@register_simulation_engine("offline_table")
 @register_simulation_engine("offline_cosim")
-class OfflineCoSimEngine(BaseSimulationEngine):
-    """Core simulation engine for offline interceptor / replacement co-simulation."""
+class OfflineTableEngine(BaseSimulationEngine):
+    """Core simulation engine for offline table / interceptor co-simulation."""
 
-    name = "offline_cosim"
+    name = "offline_table"
 
     def execute(self, context: PipelineContext) -> None:
         jobs = context.jobs or [{}]
@@ -328,7 +329,7 @@ class OfflineCoSimEngine(BaseSimulationEngine):
         )
 
         logger.info(
-            f"OfflineCoSimEngine: Running {len(jobs)} co-simulation jobs (concurrent={use_concurrent})"
+            f"OfflineTableEngine: Running {len(jobs)} co-simulation jobs (concurrent={use_concurrent})"
         )
 
         raw_results = []
@@ -357,5 +358,9 @@ class OfflineCoSimEngine(BaseSimulationEngine):
 
         context.raw_results = raw_results
         logger.info(
-            f"OfflineCoSimEngine: Completed {len(raw_results)}/{len(jobs)} jobs successfully"
+            f"OfflineTableEngine: Completed {len(raw_results)}/{len(jobs)} jobs successfully"
         )
+
+
+# Backward compatibility alias
+OfflineCoSimEngine = OfflineTableEngine

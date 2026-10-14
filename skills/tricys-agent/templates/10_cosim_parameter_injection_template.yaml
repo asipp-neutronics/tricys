@@ -1,0 +1,62 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS Agent-Native 原型模板: 10 协同仿真 —— 参数注入模式 (Parameter Injection)
+# 适用场景: 深冷精馏多塔流程 (如 h2iso Wang 2022 ISS-I/ISS-O) 或大型反应器。
+#          由外部 Handler 执行真实稳态物理求解生成 override.txt，
+#          结合 0-D 动态代理与 OpenModelica 原生 -overrideFile 实现秒级长周期仿真
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_PATH}"                             # 例如: example_model.mo
+  modelName: "${MODEL_NAME}"                             # 例如: example_model.Cycle
+
+scenario:
+  time_base: "hour"
+  stopTime: ${STOP_TIME}                                # 支持超长周期 (5000h+) 演化
+  stepSize: ${STEP_SIZE}
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|${OBSERVED_STREAM_PATTERNS}"
+
+task:
+  type: "cosim"
+  mode: "parameter_injection"
+  injection_type: "handler"                             # 统一注入方式: "handler" 或 "file"
+  override_file: "${OVERRIDE_TXT_PATH}"                 # 覆盖参数目标文件 (如 override_cycle.txt)
+  handler_script: "${HANDLER_SCRIPT_PATH}"             # 任务级外部求解器 Handler 脚本
+  handler_params:
+    solve_mode: "live"                                  # 真实物理求解: "live"
+    method: "wegstein"                                  # 撕裂流加速迭代方法
+    max_iter: 15
+    tol: 0.01
+    continuation_substeps: 2
+  subsystems:
+    - target: "${TARGET_SUBMODEL_1}"                    # 例如: example_model.I_ISS
+      instance: "${INSTANCE_NAME_1}"                   # 例如: i_iss
+      solver: "${EXTERNAL_SOLVER_NAME}"                # 例如: h2iso
+      substitute_model: "${ADAPTER_MODEL_1}"            # 例如: Generic_ISS_Adapters.ISS_I_Adapter
+      substitute_file: "${ADAPTER_FILE_1}"              # 例如: Generic_ISS_Adapters.mo
+      aux_files:
+        - "${CORE_PHYSICS_FILE}"                        # 例如: Generic_ISS.mo
+    - target: "${TARGET_SUBMODEL_2}"                    # 例如: example_model.O_ISS
+      instance: "${INSTANCE_NAME_2}"                   # 例如: o_iss
+      solver: "${EXTERNAL_SOLVER_NAME}"                # 例如: h2iso
+      substitute_model: "${ADAPTER_MODEL_2}"            # 例如: Generic_ISS_Adapters.ISS_O_Adapter
+      substitute_file: "${ADAPTER_FILE_2}"
+      aux_files:
+        - "${CORE_PHYSICS_FILE}"
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真评估报告 (参数注入模式)"
+    formats: ["markdown", "docx", "pdf"]

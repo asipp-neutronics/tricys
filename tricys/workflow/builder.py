@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Dict, List, Optional
 
 from tricys.workflow.base import PipelineError
@@ -21,6 +22,11 @@ class PipelineBuilder:
         base_dir: Optional[str] = None,
     ) -> WorkflowPipeline:
         """Main builder entrypoint."""
+        if base_dir is None and isinstance(config.get("paths"), dict):
+            pkg_path = config["paths"].get("package_path")
+            if pkg_path:
+                base_dir = os.path.dirname(pkg_path)
+
         # Check if user explicitly defined a pipeline in config
         if "pipeline" in config and isinstance(config["pipeline"], dict):
             return cls._build_from_explicit_pipeline_config(
@@ -173,10 +179,21 @@ class PipelineBuilder:
         preprocessors = []
         postprocessors = []
 
-        is_co_sim = "co_simulation" in config and isinstance(
-            config.get("co_simulation"), dict
-        )
-        co_sim_engine_type = config.get("co_simulation", {}).get("engine")
+        task_cfg = config.get("task", {})
+        is_task_cosim = isinstance(task_cfg, dict) and task_cfg.get("type") == "cosim"
+        is_co_sim = (
+            "co_simulation" in config and isinstance(config.get("co_simulation"), dict)
+        ) or is_task_cosim
+        if is_task_cosim and "co_simulation" not in config:
+            raw_mode = task_cfg.get("mode", "offline_table")
+            if raw_mode in ("online_step", "fmi_online"):
+                co_sim_engine_type = "online_step"
+            elif raw_mode in ("parameter_injection", "param_inject"):
+                co_sim_engine_type = "param_inject"
+            else:
+                co_sim_engine_type = "offline_table"
+        else:
+            co_sim_engine_type = config.get("co_simulation", {}).get("engine")
 
         # ----------------------------------------------------
         # 1. Inferred Preprocessing (Functional capability plugins)
@@ -194,10 +211,22 @@ class PipelineBuilder:
                 preprocessors.append(foc_cls(foc_config=foc_cfg))
 
         # 1.3 Co-simulation interceptor interface configuration (if offline co-sim)
-        if is_co_sim and co_sim_engine_type != "online_oms":
+        if is_co_sim and co_sim_engine_type in ("offline_table", "offline_cosim"):
             interceptor_cls = PluginRegistry.get_preprocess_class("interceptor")
             if interceptor_cls:
                 handlers = config.get("co_simulation", {}).get("handlers", [])
+                if not handlers and is_task_cosim:
+                    handlers = [
+                        {
+                            "submodel_name": sub.get("target"),
+                            "instance_name": sub.get("instance"),
+                            "solver": sub.get("solver"),
+                            "model_file": sub.get("model_file"),
+                            "params": sub.get("params", {}),
+                            "mode": "replacement",
+                        }
+                        for sub in task_cfg.get("subsystems", [])
+                    ]
                 preprocessors.append(interceptor_cls(handlers=handlers))
 
         # 1.4 Modelica static compilation for concurrent runs
@@ -215,10 +244,23 @@ class PipelineBuilder:
         # 2. Inferred Simulation Engine
         # ----------------------------------------------------
         if is_co_sim:
-            if co_sim_engine_type == "online_oms":
-                engine_cls = PluginRegistry.get_engine_class("online_oms")
+            if co_sim_engine_type in (
+                "online_step",
+                "online_oms",
+                "online_cosim",
+                "fmi_online",
+            ):
+                engine_cls = PluginRegistry.get_engine_class(
+                    "online_step"
+                ) or PluginRegistry.get_engine_class("online_oms")
+            elif co_sim_engine_type in ("param_inject", "parameter_injection"):
+                engine_cls = PluginRegistry.get_engine_class(
+                    "param_inject"
+                ) or PluginRegistry.get_engine_class("parameter_injection")
             else:
-                engine_cls = PluginRegistry.get_engine_class("offline_cosim")
+                engine_cls = PluginRegistry.get_engine_class(
+                    "offline_table"
+                ) or PluginRegistry.get_engine_class("offline_cosim")
         else:
             engine_cls = PluginRegistry.get_engine_class("standard")
 
@@ -358,10 +400,20 @@ class PipelineBuilder:
         plugins_cfg = config.get("plugins", {})
         workspace_cfg = config.get("workspace", {})
 
-        is_co_sim = "co_simulation" in config and isinstance(
-            config.get("co_simulation"), dict
-        )
-        co_sim_engine_type = config.get("co_simulation", {}).get("engine")
+        is_task_cosim = isinstance(task_cfg, dict) and task_cfg.get("type") == "cosim"
+        is_co_sim = (
+            "co_simulation" in config and isinstance(config.get("co_simulation"), dict)
+        ) or is_task_cosim
+        if is_task_cosim and "co_simulation" not in config:
+            raw_mode = task_cfg.get("mode", "offline_table")
+            if raw_mode in ("online_step", "fmi_online"):
+                co_sim_engine_type = "online_step"
+            elif raw_mode in ("parameter_injection", "param_inject"):
+                co_sim_engine_type = "param_inject"
+            else:
+                co_sim_engine_type = "offline_table"
+        else:
+            co_sim_engine_type = config.get("co_simulation", {}).get("engine")
         is_parallel = bool(
             task_cfg.get("parallel", False)
             or config.get("simulation", {}).get("concurrent", False)
@@ -387,8 +439,20 @@ class PipelineBuilder:
             preprocessing.append({"name": "foc", "params": {"foc_config": foc_cfg}})
 
         # 3. Interceptor for offline co-simulation
-        if is_co_sim and co_sim_engine_type != "online_oms":
+        if is_co_sim and co_sim_engine_type in ("offline_table", "offline_cosim"):
             handlers = config.get("co_simulation", {}).get("handlers", [])
+            if not handlers and is_task_cosim:
+                handlers = [
+                    {
+                        "submodel_name": sub.get("target"),
+                        "instance_name": sub.get("instance"),
+                        "solver": sub.get("solver"),
+                        "model_file": sub.get("model_file"),
+                        "params": sub.get("params", {}),
+                        "mode": "replacement",
+                    }
+                    for sub in task_cfg.get("subsystems", [])
+                ]
             preprocessing.append(
                 {"name": "interceptor", "params": {"handlers": handlers}}
             )
@@ -413,10 +477,30 @@ class PipelineBuilder:
 
         # 6. Simulation engine with explicit parameters
         if is_co_sim:
-            engine_name = (
-                "online_oms" if co_sim_engine_type == "online_oms" else "offline_cosim"
-            )
-            engine_spec: Dict[str, Any] = {"name": engine_name, "params": {}}
+            if co_sim_engine_type in (
+                "online_step",
+                "online_oms",
+                "online_cosim",
+                "fmi_online",
+            ):
+                engine_name = "online_step"
+                engine_params: Dict[str, Any] = {}
+                if is_task_cosim and "exchange_step" in task_cfg:
+                    engine_params["exchange_step"] = float(task_cfg["exchange_step"])
+            elif co_sim_engine_type in ("param_inject", "parameter_injection"):
+                engine_name = "param_inject"
+                engine_params = {}
+                override_file = task_cfg.get("override_file") or config.get(
+                    "co_simulation", {}
+                ).get("override_file")
+                if override_file:
+                    engine_params["override_file"] = override_file
+            else:
+                engine_name = "offline_table"
+                engine_params = {}
+                if is_task_cosim and "exchange_step" in task_cfg:
+                    engine_params["exchange_step"] = float(task_cfg["exchange_step"])
+            engine_spec: Dict[str, Any] = {"name": engine_name, "params": engine_params}
         else:
             sim_params: Dict[str, Any] = {}
             if "stopTime" in scenario_cfg:

@@ -1,0 +1,70 @@
+// Auto-generated override parameters by h2iso
+// Target: Generic_ISS Modelica Models
+
+// --- CD1 Parameters ---
+CD1.T_top=23.3884
+CD1.T_bottom=24.1295
+CD1.tau=0.048802
+CD1.m_top_ref[1]=6.29922182e-03
+CD1.m_top_ref[2]=7.13648178e-01
+CD1.m_top_ref[3]=8.44256408e-01
+CD1.m_top_ref[4]=4.65411395e+01
+CD1.m_top_ref[5]=6.37109497e-04
+CD1.m_top_ref[6]=0.00000000e+00
+CD1.m_bottom_ref[1]=0.00000000e+00
+CD1.m_bottom_ref[2]=0.00000000e+00
+CD1.m_bottom_ref[3]=1.41756814e-05
+CD1.m_bottom_ref[4]=4.35180743e+01
+CD1.m_bottom_ref[5]=1.53946628e+02
+CD1.m_bottom_ref[6]=6.91887902e+01
+
+// --- CD2 Parameters ---
+CD2.T_top=23.4388
+CD2.T_bottom=24.1175
+CD2.tau=0.044740
+CD2.m_top_ref[1]=0.00000000e+00
+CD2.m_top_ref[2]=0.00000000e+00
+CD2.m_top_ref[3]=0.00000000e+00
+CD2.m_top_ref[4]=3.16881522e+02
+CD2.m_top_ref[5]=1.87069621e-02
+CD2.m_top_ref[6]=0.00000000e+00
+CD2.m_bottom_ref[1]=0.00000000e+00
+CD2.m_bottom_ref[2]=0.00000000e+00
+CD2.m_bottom_ref[3]=0.00000000e+00
+CD2.m_bottom_ref[4]=3.38669306e-01
+CD2.m_bottom_ref[5]=8.06545552e+00
+CD2.m_bottom_ref[6]=0.00000000e+00
+
+// --- CD3 Parameters ---
+CD3.T_top=23.9607
+CD3.T_bottom=24.7847
+CD3.tau=0.402236
+CD3.m_top_ref[1]=0.00000000e+00
+CD3.m_top_ref[2]=0.00000000e+00
+CD3.m_top_ref[3]=1.41077783e-05
+CD3.m_top_ref[4]=4.38567427e+01
+CD3.m_top_ref[5]=1.59323335e+02
+CD3.m_top_ref[6]=9.96324600e-04
+CD3.m_bottom_ref[1]=0.00000000e+00
+CD3.m_bottom_ref[2]=0.00000000e+00
+CD3.m_bottom_ref[3]=0.00000000e+00
+CD3.m_bottom_ref[4]=0.00000000e+00
+CD3.m_bottom_ref[5]=2.68874852e+00
+CD3.m_bottom_ref[6]=6.91877938e+01
+
+// --- CD4 Parameters ---
+CD4.T_top=21.8813
+CD4.T_bottom=23.4424
+CD4.tau=0.000706
+CD4.m_top_ref[1]=8.97257477e-03
+CD4.m_top_ref[2]=1.17632468e+00
+CD4.m_top_ref[3]=0.00000000e+00
+CD4.m_top_ref[4]=0.00000000e+00
+CD4.m_top_ref[5]=0.00000000e+00
+CD4.m_top_ref[6]=0.00000000e+00
+CD4.m_bottom_ref[1]=0.00000000e+00
+CD4.m_bottom_ref[2]=1.51361967e-01
+CD4.m_bottom_ref[3]=1.59579459e-02
+CD4.m_bottom_ref[4]=4.57210891e+01
+CD4.m_bottom_ref[5]=1.02662677e+00
+CD4.m_bottom_ref[6]=5.64612272e-03

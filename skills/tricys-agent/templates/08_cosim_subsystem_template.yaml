@@ -1,0 +1,49 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS Agent-Native 原型模板: 08 协同仿真 —— 离线查表模式 (Offline Table / Offline Co-Sim)
+# 底层引擎: offline_cosim (两阶段初探-拦截-重构)
+# 核心机理: 
+#   1. 初探仿真生成输入时序 temp_input_csv；
+#   2. 调用 handler_module 中的 handler_function 执行外部离线求解，写出 temp_output_csv；
+#   3. TRICYS 内部由 interceptor.py 自动生成 CombiTimeTable 拦截包装模型重构闭环，
+#      严禁在配置文件中手工指定 substitute_model: "Modelica.Blocks.Tables.CombiTable1Ds"！
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_PATH}"                             # 例如: "../example_model/package.mo"
+  modelName: "${MODEL_NAME}"                             # 例如: "example_model.Cycle"
+
+scenario:
+  startTime: 0.0
+  stopTime: ${STOP_TIME}
+  stepSize: ${STEP_SIZE}
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}"
+
+task:
+  type: "cosim"
+  mode: "offline_table"                                 # 底层对应 offline_table 引擎 (兼容 offline_cosim)
+  subsystems:
+    - target: "${TARGET_SUBMODEL}"                      # 待拦截替换的子系统 (例如: "example_model.I_ISS")
+      instance: "${INSTANCE_NAME}"                     # 在主系统中的实例名 (例如: "i_iss")
+      solver: "${EXTERNAL_SOLVER}"                      # 外部求解器类型 (例如: "aspen_plus", "dwsim", "python")
+      handler_module: "${HANDLER_MODULE_PATH}"         # 处理器所在 Python 模块 (例如: "tricys.handlers.i_iss_handler")
+      handler_function: "${HANDLER_FUNCTION_NAME}"     # 处理器函数名 (例如: "run_aspen_simulation")
+      params:
+        ${HANDLER_CUSTOM_PARAMS}                        # 传给 handler_function 的自定义参数 (如 bkp_path, base, retime 等)
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真评估报告 (离线查表/offline_cosim 模式)"
+    formats: ["markdown", "docx", "pdf"]

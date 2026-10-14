@@ -659,9 +659,9 @@ def render_sweep(
                 if "baseline" in cname.lower() or "基准" in cname.lower():
                     baseline_row = r1.iloc[0]
 
+    glossary_map = load_glossary_mapping(config=config)
     space_summary = []
     if jobs_df is not None and not jobs_df.empty and param_cols:
-        glossary_map = load_glossary_mapping(config=config)
         for p in param_cols:
             s = pd.to_numeric(jobs_df[p], errors="coerce").dropna()
             row_data = {

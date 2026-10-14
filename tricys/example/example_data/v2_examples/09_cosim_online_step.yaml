@@ -1,0 +1,70 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS 工业基准算例 09: Schema 2.0 协同仿真 —— 在线步进模式 (Online Step-by-Step Co-Simulation)
+# 迁移自: basic/9_online_cosim/online_cosim.json
+# 核心机理: Lockstep Dynamic Exchange (FMI/SSP 在线步进双向同步 + 局部质量控制 + 全局审计)
+# 适用场景: 全厂系统 (CFEDR/Cycle) 与高保真子系统在每个时间步双向交换流量与组分
+# ==============================================================================
+
+model:
+  fileName: "../example_model_ssp/ssp/example_model.ssp"
+  modelName: "example_model.Cycle"
+
+scenario:
+  startTime: 0.0
+  stopTime: 100.0
+  stepSize: 0.5
+  variableFilter: "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*"
+
+task:
+  type: "cosim"
+  mode: "online_step"
+  subsystems:
+    - target: "CFEDR.I_ISS"
+      instance: "i_iss"
+      solver: "aspen_plus"
+      handler_module: "tricys.example.example_data.basic.9_online_cosim.i_iss_processor_base"
+      handler_function: "I_ISSProcessorBase"
+      params:
+        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+        base_inventory_mol: 20.0
+        retime_h: 1.0
+      local_mass_control:
+        enabled: true
+        deadband_g: 0.1
+        relaxation_time_h: 1.0
+      shadow_fmu_fallback:
+        enabled: true
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+plugins:
+  auditor:
+    enabled: true
+    warn_threshold_g: 0.0
+    kill_threshold_g: 0.0
+    patterns:
+      inventory:
+        - "*.I?1?"
+      cumulative_sources:
+        - "*blanket.cumulative_breed?1?"
+      leak:
+        - "*.leak_rate?1?"
+      decay:
+        - "*.decay_rate?1?"
+      cumulative_burn:
+        - "*plasma.cumulative_burn?1?"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 在线步进协同仿真与全局质量守恒审计报告"
+    formats: ["markdown", "docx", "pdf"]
