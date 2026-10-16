@@ -1,0 +1,86 @@
+{
+  "description": "TRICYS V2.0 现代化工业级基准算例套件 (Schema 2.0)",
+  "version": "2.0",
+  "examples": [
+    {
+      "id": "1",
+      "name": "01 - 聚变堆多工况参数扫描与氚自持评估",
+      "task_type": "sweep",
+      "config": "01_sweep_startup_self_sufficiency.yaml",
+      "path": ".",
+      "description": "多工况并行参数扫描（TBR: 1.08~1.22, WDS: 800~1200），评估启动氚库存与自持指标，自动生成工程报告。"
+    },
+    {
+      "id": "2",
+      "name": "02 - 单堆瞬态脉冲响应与二分法 TBR 搜索",
+      "task_type": "simulate",
+      "config": "02_simulate_pulsed_transient.yaml",
+      "path": ".",
+      "description": "单堆长周期脉冲工况瞬态仿真，内置二分搜索求解满足 2 年倍增时间的最小 Required_TBR。"
+    },
+    {
+      "id": "3",
+      "name": "03 - 高维参数全局灵敏度分析 (Sobol GSA)",
+      "task_type": "sensitivity",
+      "config": "03_sensitivity_sobol_gsa.yaml",
+      "path": ".",
+      "description": "基于 Sobol 采样的全局灵敏度分析与一阶/总阶方差分解，辨识主导全厂库存的关键不确定性参数。"
+    },
+    {
+      "id": "4",
+      "name": "04 - 脉冲宽度参数扫描与 Required TBR 耦合评估",
+      "task_type": "sweep",
+      "config": "04_sweep_pulse_width_required_tbr.yaml",
+      "path": ".",
+      "description": "脉冲宽度（100h/80h/60h）外层参数扫描，内层嵌套二分法求解各工况下满足倍增时间的 Required TBR。"
+    },
+    {
+      "id": "5",
+      "name": "05 - FOC 聚变混合工况脉冲调度瞬态仿真",
+      "task_type": "simulate",
+      "config": "05_simulate_foc_pulsed_scenario.yaml",
+      "path": ".",
+      "description": "使用 FOC（Fusion Operation Config）混合调度策略（PULSE/DWELL/REPEAT）注入动态脉冲源项并仿真。"
+    },
+    {
+      "id": "6",
+      "name": "06 - 全系统物理语义质量守恒闭环离线审计",
+      "task_type": "simulate",
+      "config": "06_simulate_mass_conservation_audit.yaml",
+      "path": ".",
+      "description": "在标准长周期仿真后，自动挂载 TritiumReserveAuditor 审计器，对全厂各系统开展闭环质量守恒审计。"
+    },
+    {
+      "id": "7",
+      "name": "07 - 自定义 Python 插件挂载与物理语义总线扩展",
+      "task_type": "sweep",
+      "config": "07_custom_plugin_pipeline.yaml",
+      "path": ".",
+      "description": "在 Schema 2.0 中声明外部 Python 插件（PeakInventoryPlugin等），通过物理语义总线扩展后处理流程。"
+    },
+    {
+      "id": "8",
+      "name": "08 - 协同仿真: 离线查表/两阶段子系统替代模式",
+      "task_type": "cosim",
+      "config": "08_cosim_offline_table.yaml",
+      "path": ".",
+      "description": "两阶段 Run-Process-Rerun 模式，对 I_ISS 等复杂分离单元进行外部查表或预存高保真结果拦截与重构。"
+    },
+    {
+      "id": "9",
+      "name": "09 - 协同仿真: 在线步进双向同步模式 (SSP/FMI)",
+      "task_type": "cosim",
+      "config": "09_cosim_online_step.yaml",
+      "path": ".",
+      "description": "基于 SSP/FMI 协议单步推进（Lockstep Dynamic Exchange），全厂宏观模型与子系统高保真处理器双向数据同步。"
+    },
+    {
+      "id": "10",
+      "name": "10 - 协同仿真: 稳态参数注入模式 (Wang 2022)",
+      "task_type": "cosim",
+      "config": "10_cosim_parameter_injection.yaml",
+      "path": ".",
+      "description": "基于 CFETR ISS-I/ISS-O 真实配置，通过外部热力学求解与 Modelica -overrideFile 参数注入实现快速长周期仿真。"
+    }
+  ]
+}

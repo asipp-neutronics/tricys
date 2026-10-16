@@ -10,6 +10,7 @@ import argparse
 import json
 import subprocess
 from pathlib import Path
+from typing import Optional
 
 from tricys.analysis.runner import retry_analysis
 from tricys.core.diagnostics import DiagnosticsBarrier
@@ -19,7 +20,7 @@ from tricys.utils.file_utils import archive_run, unarchive_run
 from tricys.utils.model_parser_cli import parse_model_cli
 
 
-def run_example_runner() -> None:
+def run_example_runner(extra_args: Optional[list] = None) -> None:
     """Finds and executes the tricys_all_runner.py script.
 
     This function locates the main example runner script within the project
@@ -30,9 +31,7 @@ def run_example_runner() -> None:
         python_executable = sys.executable
         main_py_path = Path(__file__).resolve()
         # project_root = main_py_path.parent.parent
-        runner_script = (
-            main_py_path.parent / "example" / "example_runner" / "tricys_all_runner.py"
-        )
+        runner_script = main_py_path.parent / "example" / "example_runner" / "runner.py"
 
         if not runner_script.exists():
             print(
@@ -42,9 +41,10 @@ def run_example_runner() -> None:
             sys.exit(1)
 
         print("INFO: Launching the interactive example runner...")
-        # The runner is interactive, so it will take over the console.
-        # We don't need to manage argv for it.
-        subprocess.run([python_executable, str(runner_script)])
+        cmd = [python_executable, str(runner_script)]
+        if extra_args:
+            cmd.extend(extra_args)
+        subprocess.run(cmd)
 
     except Exception as e:
         print(
@@ -283,21 +283,9 @@ def main() -> None:
             basic_args, _ = basic_parser.parse_known_args(remaining_argv)
 
             if basic_args.subcommand == "example":
-                # This is the 'basic example' case.
-                import importlib.util
-
-                script_path = (
-                    Path(__file__).parent
-                    / "example"
-                    / "example_runner"
-                    / "tricys_runner.py"
-                )
-                spec = importlib.util.spec_from_file_location(
-                    "tricys_runner", script_path
-                )
-                tricys_runner = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(tricys_runner)
-                tricys_runner.main()
+                print("\n💡 提示: TRICYS 架构已全面升级至 V2.0 (Schema 2.0)。")
+                print("   系统已自动切换至 V2.0 现代算例体系。\n")
+                run_example_runner(remaining_argv[1:] if remaining_argv else None)
                 sys.exit(0)
 
             # This is the standard 'basic' simulation case.
@@ -378,20 +366,11 @@ def main() -> None:
                 sys.exit(0)
 
             if analysis_args.subcommand == "example":
-                import importlib.util
-
-                script_path = (
-                    Path(__file__).parent
-                    / "example"
-                    / "example_runner"
-                    / "tricys_ana_runner.py"
+                print("\n💡 提示: TRICYS 架构已全面升级至 V2.0 (Schema 2.0)。")
+                print(
+                    "   敏感性分析等任务已统一作为 V2.0 任务原语执行，系统自动进入 V2.0 算例体系。\n"
                 )
-                spec = importlib.util.spec_from_file_location(
-                    "tricys_ana_runner", script_path
-                )
-                tricys_ana_runner = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(tricys_ana_runner)
-                tricys_ana_runner.main()
+                run_example_runner(remaining_argv[1:] if remaining_argv else None)
                 sys.exit(0)
 
             config_path = analysis_args.config
@@ -411,7 +390,8 @@ def main() -> None:
             export_csv = main_args.csv
             simulation_main(config_path, export_csv=export_csv)
         elif main_args.command == "example":
-            run_example_runner()
+            run_example_runner(remaining_argv)
+            return
         elif main_args.command in ("visualize", "hdf5"):
             from tricys.visualizer.main import start as visualizer_main
 

@@ -24,7 +24,7 @@ task:
     - target: "CFEDR.I_ISS"
       instance: "i_iss"
       solver: "aspen_plus"
-      handler_module: "tricys.example.example_data.basic.9_online_cosim.i_iss_processor_base"
+      handler_module: "tricys.example.example_data.v1_examples_legacy.basic.9_online_cosim.i_iss_processor_base"
       handler_function: "I_ISSProcessorBase"
       params:
         bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
