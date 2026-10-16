@@ -132,24 +132,28 @@ Makefile.bat app-stop
 
 These commands wrap the existing scripts under `script/dev/windows/` or `script/dev/linux/`, align with the rest of the repository lifecycle commands, and now include improvements such as pre-deployment state detection and stop-before-clean behavior.
 
-### 3. Docker Alternative
+### 3. Docker Deployment Options
 
-If you do not require co-simulation with external Windows software and want a simpler environment, you can use the currently maintained Docker images instead:
+TRICYS provides a **single unified official Docker image**: `ghcr.io/asipp-neutronics/tricys:latest`.
+Built on DOLFINx 0.9.0 with Ubuntu 24.04, it fully integrates OpenModelica 1.27 + solidified MSL libraries, FESTIM 2.0 component-level FEM, CasADi cryogenic distillation MESH solver, FMPy co-simulation runner, FastAPI backend, Vue 3 web console, GoView digital twin, and Dash/Plotly interactive HDF5 visualizer.
 
-1. `ghcr.io/asipp-neutronics/tricys:latest`
-    This is the full platform image, covering backend, visual, goview, and hdf5 entrypoints, and corresponds to `docker-compose.yml`.
-2. `ghcr.io/asipp-neutronics/tricys-hdf5:latest`
-    This is the HDF5-only image, corresponding to `docker-compose.hdf5.yml`, and is suitable for HDF5 visualization or lightweight development scenarios.
+The repository provides official Compose and Docker deployment options:
 
-If you want to start them directly with Compose:
+1. **Single-Container Fullstack Runtime (`docker-compose.yml`)**:
+   Employs a unified single-container all-in-one architecture. Mounts local `tricys`, `tricys_backend`, and `h2iso` repositories for live updates, launching Web Console & Gateway (8080), Backend (8000), GoView (3020), and HDF5 (8050) in one container:
+   ```bash
+   docker compose up -d --build
+   ```
 
-```bash
-# Full platform
-docker compose up -d --build
+2. **Run Tests or Custom Workflows in Container**:
+   Execute the test suite or custom simulation pipelines directly within the verified container environment:
+   ```bash
+   # Run full test suite
+   docker compose run --rm tricys pytest
 
-# HDF5-only service
-docker compose -f docker-compose.hdf5.yml up -d --build
-```
+   # Run a custom workflow configuration
+   docker compose run --rm tricys run -c path/to/your_config.yaml
+   ```
 
 If you use VSCode Dev Containers:
 

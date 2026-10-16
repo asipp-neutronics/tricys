@@ -16,8 +16,9 @@ tricys_backend/backend.log
 tricys_backend/tricys.db
 tricys_backend/workspaces/
 tricys_visual/node_modules/
-tricys_visual/dist/
+# tricys_visual/dist/
 tricys_visual/.env.local
 tricys_goview/node_modules/
-tricys_goview/dist/
+# tricys_goview/dist/
 tricys_goview/.env.local
+docker/omlibrary/

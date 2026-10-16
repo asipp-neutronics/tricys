@@ -77,7 +77,12 @@ class BisectionOptimizer:
         low_orig, high_orig = float(bounds[0]), float(bounds[1])
         tolerance = float(optimization_config.get("tolerance", 0.001))
         max_iterations = int(optimization_config.get("max_iterations", 15))
+        time_base = (
+            str(config.get("simulation", {}).get("time_base", "second")).strip().lower()
+        )
+        time_factor = 3600.0 if time_base == "hour" else 1.0
         stop_time = float(config.get("simulation", {}).get("stop_time", 1000.0))
+        stop_time_in_time_base = stop_time / time_factor
 
         # 2. Target metric extraction: Support both V2 target_metric dict and legacy flat fields
         target_metric = optimization_config.get("target_metric")
@@ -105,17 +110,23 @@ class BisectionOptimizer:
                 or "self" in t_eval
                 or "拐点" in t_eval
                 or "自持" in t_eval
+                or "valley" in t_eval
+                or "谷" in t_eval
             ):
                 metric_name = "Self_Sufficiency_Time"
             elif "min" in t_eval or "startup" in t_eval or "亏空" in t_eval:
                 metric_name = "Startup_Inventory"
             else:
-                metric_name = optimization_config.get("metric_name", "Doubling_Time")
+                metric_name = optimization_config.get(
+                    "metric_name", "Self_Sufficiency_Time"
+                )
 
             metric_max_value = (
                 float(t_thresh)
                 if t_thresh is not None
-                else float(optimization_config.get("metric_max_value", stop_time))
+                else float(
+                    optimization_config.get("metric_max_value", stop_time_in_time_base)
+                )
             )
         else:
             source_column = optimization_config.get("source_column") or "sds.I[1]"
@@ -123,7 +134,7 @@ class BisectionOptimizer:
                 "metric_name", "Self_Sufficiency_Time"
             )
             metric_max_value = float(
-                optimization_config.get("metric_max_value", stop_time)
+                optimization_config.get("metric_max_value", stop_time_in_time_base)
             )
 
         metric_max_values = (
@@ -184,13 +195,14 @@ class BisectionOptimizer:
                                     target_col = auto_col
 
                             if target_col and target_col in results_df.columns:
+                                time_series = results_df["time"] / time_factor
                                 if metric_name == "Self_Sufficiency_Time":
                                     metric_value = time_of_turning_point(
-                                        results_df[target_col], results_df["time"]
+                                        results_df[target_col], time_series
                                     )
                                 elif metric_name == "Doubling_Time":
                                     metric_value = calculate_doubling_time(
-                                        results_df[target_col], results_df["time"]
+                                        results_df[target_col], time_series
                                     )
                                 elif metric_name == "Startup_Inventory":
                                     metric_value = calculate_startup_inventory(

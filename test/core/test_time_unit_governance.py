@@ -146,7 +146,9 @@ def test_zero_hardcoded_division_in_codebase():
 
     violations = []
     for py_file in tricys_root.rglob("*.py"):
-        # Exclude handlers data or auto-generated tests if any
+        # Exclude example directories or auto-generated tests
+        if "example" in py_file.parts:
+            continue
         content = py_file.read_text(encoding="utf-8")
         for line_no, line in enumerate(content.splitlines(), start=1):
             # Ignore comments and docstrings

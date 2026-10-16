@@ -65,6 +65,7 @@ docs = [
     "mkdocstrings-python"
 ]
 
+[tool.setuptools]
 packages = [
     "tricys_backend",
     "tricys",

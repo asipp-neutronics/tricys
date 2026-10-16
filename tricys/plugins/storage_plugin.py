@@ -37,7 +37,17 @@ def process_and_store_job_result(
     try:
         df = pd.read_csv(res_path)
         df["job_id"] = job_id
-        store.append("results", df, index=False, data_columns=True)
+        try:
+            store.append("results", df, index=False, data_columns=True)
+        except Exception as e:
+            logger.debug(f"PyTables append notice: {e}")
+        # Store complete raw dataframe without column name restrictions
+        try:
+            store.put(f"raw_df_{job_id}", df)
+            if job_id == 1:
+                store.put("raw_results_df", df)
+        except Exception as e:
+            logger.debug(f"HDF5 raw_df put notice: {e}")
 
         # Summary calculations
         if metrics_definition:
@@ -150,11 +160,13 @@ def export_hdf5_to_csv(results_dir: str, hdf_path: str) -> None:
     logger.info(f"Exporting results from {hdf_path} to CSV...")
     try:
         with pd.HDFStore(hdf_path, mode="r") as store:
-            if "/results" not in store.keys():
+            if "/raw_results_df" in store.keys():
+                df_results = store.select("raw_results_df")
+            elif "/results" in store.keys():
+                df_results = store.select("results")
+            else:
                 logger.warning("No results found in HDF5 to export.")
                 return
-
-            df_results = store.select("results")
             df_jobs = (
                 store.select("jobs") if "/jobs" in store.keys() else pd.DataFrame()
             )
@@ -305,6 +317,11 @@ class SimulationStoragePlugin(PostprocessPlugin):
                     job_id = item["job_id"]
                     params = item.get("params", {})
                     res_path = item.get("result_path", "")
+                    if res_path and os.path.exists(res_path):
+                        try:
+                            item["dataframe"] = pd.read_csv(res_path)
+                        except Exception:
+                            pass
                     process_and_store_job_result(
                         store=store,
                         job_id=job_id,

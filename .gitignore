@@ -60,11 +60,28 @@ tricys_goview/*
 # Local runtime artifacts created inside submodules
 tricys_backend/hdf5_contexts/paper/
 
-paper/
-
 # Simulation runtime timestamp outputs
 [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*/
 **/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*/
 
+# OpenModelica build artifacts
+*.o
+*.c
+*.h
+*.libs
+*.makefile
+*_res.mat
+*_res.csv
+*_info.json
+*_init.xml
+*_JacA.bin
+*_functions.c
+*_functions.h
+*_records.c
+*_literals.h
+*_includes.h
+*_model.h
+*_external_functions.json
+example_model.*
 # Test artifacts
 test/visualizer/test_artifacts/

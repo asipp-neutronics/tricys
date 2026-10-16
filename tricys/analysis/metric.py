@@ -30,6 +30,9 @@ TIME_UNIT_FACTORS = {
 TIME_OPERATOR_METHODS = {
     "time_of_turning_point",
     "turning_point",
+    "time_of_valley",
+    "valley_time",
+    "nadir_time",
     "calculate_doubling_time",
     "doubling_time",
     "settling_time",
@@ -309,8 +312,16 @@ def extract_metrics(
             method_name = metric_info["method"]
             metric_name = metric_info["metric_name"]
 
-            if method_name == "final_value":
+            if method_name in ("final_value", "last_value"):
                 calculation_func = get_final_value
+            elif method_name in (
+                "min_value",
+                "valley_inventory",
+                "minimum",
+                "nadir_inventory",
+                "nadir",
+            ):
+                calculation_func = get_min_value
             elif method_name in (
                 "calculate_startup_inventory",
                 "startup_inventory",
@@ -319,9 +330,15 @@ def extract_metrics(
                 "startup_inventory_deficit",
             ):
                 calculation_func = calculate_startup_inventory
-            elif method_name == "time_of_turning_point":
+            elif method_name in (
+                "time_of_turning_point",
+                "turning_point",
+                "time_of_valley",
+                "valley_time",
+                "nadir_time",
+            ):
                 calculation_func = time_of_turning_point
-            elif method_name == "calculate_doubling_time":
+            elif method_name in ("calculate_doubling_time", "doubling_time"):
                 calculation_func = calculate_doubling_time
             elif method_name == "net_tritium_balance":
                 calculation_func = net_tritium_balance
@@ -460,7 +477,14 @@ def calculate_single_job_metrics(
             calculation_func = get_final_value
         elif method_name in ("peak_value", "peak", "max"):
             calculation_func = get_peak_value
-        elif method_name == "min":
+        elif method_name in (
+            "min",
+            "min_value",
+            "valley_inventory",
+            "minimum",
+            "nadir_inventory",
+            "nadir",
+        ):
             calculation_func = get_min_value
         elif method_name in ("mean", "average"):
             calculation_func = get_mean_value
@@ -476,7 +500,13 @@ def calculate_single_job_metrics(
             "startup_inventory_deficit",
         ):
             calculation_func = calculate_startup_inventory
-        elif method_name in ("time_of_turning_point", "turning_point"):
+        elif method_name in (
+            "time_of_turning_point",
+            "turning_point",
+            "time_of_valley",
+            "valley_time",
+            "nadir_time",
+        ):
             calculation_func = time_of_turning_point
         elif method_name in ("calculate_doubling_time", "doubling_time"):
             calculation_func = calculate_doubling_time

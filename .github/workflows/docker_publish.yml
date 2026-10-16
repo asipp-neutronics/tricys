@@ -1,4 +1,4 @@
-name: Build & Publish TRICYS Images
+name: Build & Publish TRICYS Image
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
     paths:
       - '.dockerignore'
       - 'docker-compose.yml'
-      - 'docker/*'
+      - 'docker/**'
       - 'pyproject.toml'
       - 'README.md'
       - 'README_zh.md'
@@ -26,34 +26,12 @@ on:
 
 env:
   TRICYS_IMAGE: ghcr.io/${{ github.repository_owner }}/tricys
-  TRICYS_HDF5_IMAGE: ghcr.io/${{ github.repository_owner }}/tricys-hdf5
   TRICYS_GOVIEW_BRANCH: main
 
 jobs:
   build-and-push:
-    name: Publish ${{ matrix.name }}
+    name: Publish Unified TRICYS Image
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: tricys-runtime
-            image: ghcr.io/${{ github.repository_owner }}/tricys
-            dockerfile: docker/dockerfiles/Dockerfile
-            target: tricys_runtime
-            cache_scope: tricys-runtime
-            build_args: |
-              VITE_API_URL=/api/v1
-              VITE_API_V2_URL=/api/v2/goview
-              VITE_GOVIEW_URL=/goview/
-              VITE_PRO_PATH=
-          - name: tricys-hdf5
-            image: ghcr.io/${{ github.repository_owner }}/tricys-hdf5
-            dockerfile: docker/dockerfiles/Dockerfile.hdf5
-            target: ""
-            cache_scope: tricys-hdf5
-            build_args: ""
 
     permissions:
       contents: read
@@ -91,34 +69,24 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.image }}
+          images: ${{ env.TRICYS_IMAGE }}
           tags: |
             type=ref,event=branch
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push ${{ matrix.name }} image
-        if: matrix.target != ''
+      - name: Build and push unified TRICYS image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ${{ matrix.dockerfile }}
-          target: ${{ matrix.target }}
+          file: docker/dockerfiles/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: ${{ matrix.build_args }}
-          cache-from: type=gha,scope=${{ matrix.cache_scope }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.cache_scope }}
-
-      - name: Build and push ${{ matrix.name }} image
-        if: matrix.target == ''
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.cache_scope }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.cache_scope }}
+          build-args: |
+            VITE_API_URL=/api/v1
+            VITE_API_V2_URL=/api/v2/goview
+            VITE_GOVIEW_URL=/goview/
+            VITE_PRO_PATH=
+          cache-from: type=gha,scope=tricys-unified
+          cache-to: type=gha,mode=max,scope=tricys-unified

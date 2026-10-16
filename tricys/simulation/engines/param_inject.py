@@ -220,6 +220,14 @@ class ParamInjectSimulationEngine(BaseSimulationEngine):
         try:
             omc.sendExpression(f'cd("{Path(workspace_dir).as_posix()}")')
 
+            # Ensure Modelica standard library and user-specified libraries are loaded
+            omc.sendExpression("loadModel(Modelica)")
+            custom_libs = context.config.get("model", {}).get(
+                "loadModel"
+            ) or sim_cfg.get("loadModel", [])
+            for lib in custom_libs:
+                omc.sendExpression(f"loadModel({lib})")
+
             # Load auxiliary/substitute libraries first
             for aux_mo in loaded_aux_files:
                 load_res = omc.sendExpression(f'loadFile("{Path(aux_mo).as_posix()}")')

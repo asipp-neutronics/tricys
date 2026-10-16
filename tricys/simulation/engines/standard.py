@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 from typing import Any, Optional, Tuple
 
+import pandas as pd
+
 from tricys.core.modelica import (
     ModelicaSystem,
     build_modelica_parameter_map,
@@ -331,11 +333,18 @@ class StandardSimulationEngine(BaseSimulationEngine):
                     if error:
                         logger.error(f"Job {job_id} failed: {error}")
                     else:
+                        df_res = None
+                        if result_path and os.path.exists(result_path):
+                            try:
+                                df_res = pd.read_csv(result_path)
+                            except Exception:
+                                pass
                         raw_results.append(
                             {
                                 "job_id": job_id,
                                 "params": job_p,
                                 "result_path": result_path,
+                                "dataframe": df_res,
                             }
                         )
 
@@ -343,8 +352,6 @@ class StandardSimulationEngine(BaseSimulationEngine):
             from tricys.analysis.metric import get_optimization_tasks
 
             if get_optimization_tasks(context.config):
-                import pandas as pd
-
                 opt_entries = [r["params"] for r in raw_results if r.get("params")]
                 if opt_entries:
                     results_dir = os.path.abspath(context.results_dir)
@@ -377,7 +384,6 @@ class StandardSimulationEngine(BaseSimulationEngine):
                 mod = ModelicaSystem(
                     fileName=Path(context.package_path).as_posix(),
                     modelName=context.model_name,
-                    variableFilter=sim_cfg.get("variableFilter", ".*"),
                 )
 
                 sim_options = {
@@ -409,12 +415,25 @@ class StandardSimulationEngine(BaseSimulationEngine):
                         mod.setParameters(param_settings)
 
                     try:
-                        mod.simulate(resultfile=Path(result_filename).as_posix())
+                        simargs = {}
+                        if sim_cfg.get("variableFilter"):
+                            simargs["variableFilter"] = sim_cfg["variableFilter"]
+                        mod.simulate(
+                            resultfile=Path(result_filename).as_posix(),
+                            simargs=simargs if simargs else None,
+                        )
+                        df_res = None
+                        if os.path.exists(result_filename):
+                            try:
+                                df_res = pd.read_csv(result_filename)
+                            except Exception:
+                                pass
                         raw_results.append(
                             {
                                 "job_id": i,
                                 "params": job_params,
                                 "result_path": result_filename,
+                                "dataframe": df_res,
                             }
                         )
                     except Exception as exc:

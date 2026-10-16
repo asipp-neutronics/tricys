@@ -1,104 +1,54 @@
-x-hdf5-visualizer-env: &hdf5_visualizer_env
-  HDF5_VISUALIZER_SECRET: ${TRICYS_HDF5_VISUALIZER_SECRET:-change-me-before-production}
-  HDF5_VISUALIZER_BASE_URL: ${TRICYS_HDF5_VISUALIZER_BASE_URL:-/hdf5/}
-  HDF5_VISUALIZER_TOKEN_TTL_SECONDS: ${TRICYS_HDF5_VISUALIZER_TOKEN_TTL_SECONDS:-900}
-  HDF5_CONTEXTS_DIR: ${TRICYS_HDF5_CONTEXTS_DIR:-/data/hdf5_contexts}
-  HDF5_VISUALIZER_HEALTHCHECK_URL: ${TRICYS_HDF5_VISUALIZER_HEALTHCHECK_URL:-http://tricys-hdf5:8050/hdf5/health}
-
-x-tricys-runtime: &tricys_runtime
-  build:
-    context: .
-    dockerfile: ./docker/dockerfiles/Dockerfile
-    target: tricys_runtime
-    args:
-      VITE_API_URL: ${TRICYS_VISUAL_API_URL:-/api/v1}
-      VITE_API_V2_URL: ${TRICYS_VISUAL_API_V2_URL:-/api/v2/goview}
-      VITE_GOVIEW_URL: ${TRICYS_VISUAL_GOVIEW_URL:-/goview/}
-      VITE_PRO_PATH: ${TRICYS_GOVIEW_API_URL:-}
-  image: ${TRICYS_IMAGE:-ghcr.io/asipp-neutronics/tricys:latest}
+# ==============================================================================
+# TRICYS V2.0: Single-Container Unified Fullstack Docker Compose
+# Runs the entire multi-physics simulation, FastAPI backend, Vue3 web console,
+# GoView digital twin, and Dash/Plotly HDF5 visualizer in ONE container.
+#
+# Mounts:
+#   - tricys (simulation engine & workflows): . -> /workspace/tricys
+#   - tricys_backend (FastAPI services): ./tricys_backend -> /workspace/tricys_backend
+#   - h2iso (cryogenic isotope distillation): ../h2iso -> /workspace/h2iso
+#   - tricys_data (persistent database & files): -> /data
+#
+# Usage:
+#   docker compose up -d --build
+# ==============================================================================
 
 services:
-  tricys-backend:
-    <<: *tricys_runtime
+  tricys:
+    image: ${TRICYS_IMAGE:-ghcr.io/asipp-neutronics/tricys:latest}
+    build:
+      context: .
+      dockerfile: ./docker/dockerfiles/Dockerfile
+    container_name: tricys_allinone
     init: true
+    restart: unless-stopped
+    ports:
+      - "${TRICYS_PORT:-8080}:80"            # Web Console & Gateway (/ , /api/ , /goview/ , /hdf5/)
+      - "${TRICYS_BACKEND_PORT:-8000}:8000"  # FastAPI Backend & Swagger Docs (/docs)
+      - "${TRICYS_GOVIEW_PORT:-3020}:3020"   # GoView Digital Twin Screen
+      - "${TRICYS_HDF5_PORT:-8050}:8050"     # Dash/Plotly HDF5 Visualizer
     environment:
       DATABASE_URL: ${TRICYS_DATABASE_URL:-sqlite:////data/tricys.db}
       WORKSPACES_DIR: ${TRICYS_WORKSPACES_DIR:-/data/workspaces}
       ASSETS_DIR: ${TRICYS_ASSETS_DIR:-/data/assets}
+      HDF5_CONTEXTS_DIR: ${TRICYS_HDF5_CONTEXTS_DIR:-/data/hdf5_contexts}
+      HDF5_VISUALIZER_HEALTHCHECK_URL: http://127.0.0.1:8050/hdf5/health
+      HDF5_VISUALIZER_BASE_URL: ${TRICYS_HDF5_VISUALIZER_BASE_URL:-/hdf5/}
+      HDF5_VISUALIZER_SECRET: ${TRICYS_HDF5_VISUALIZER_SECRET:-change-me-before-production}
       SECRET_KEY: ${TRICYS_SECRET_KEY:-change-me-before-production}
       CORS_ORIGINS: ${TRICYS_CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:3020,http://127.0.0.1:3020,http://localhost:5173,http://127.0.0.1:5173,null,*}
-      <<: *hdf5_visualizer_env
-    ports:
-      - "${TRICYS_BACKEND_PORT:-8000}:8000"
     volumes:
-      - tricys_backend_state:/data
-    command: ["backend"]
+      - .:/workspace/tricys
+      - ${TRICYS_BACKEND_PATH:-./tricys_backend}:/workspace/tricys_backend
+      - ${H2ISO_PATH:-../h2iso}:/workspace/h2iso:ro
+      - tricys_data:/data
+    command: ["all-in-one"]
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/health && curl -fsS http://127.0.0.1:8000/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 25s
-    restart: unless-stopped
-
-  tricys-visual:
-    <<: *tricys_runtime
-    depends_on:
-      tricys-backend:
-        condition: service_healthy
-      tricys-goview:
-        condition: service_healthy
-      tricys-hdf5:
-        condition: service_healthy
-    init: true
-    ports:
-      - "${TRICYS_VISUAL_PORT:-8080}:80"
-    command: ["visual"]
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/health | grep -q ok"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
-
-  tricys-goview:
-    <<: *tricys_runtime
-    depends_on:
-      tricys-backend:
-        condition: service_healthy
-    init: true
-    ports:
-      - "${TRICYS_GOVIEW_PORT:-3020}:80"
-    command: ["goview"]
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/health | grep -q ok"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
-
-  tricys-hdf5:
-    <<: *tricys_runtime
-    depends_on:
-      tricys-backend:
-        condition: service_healthy
-    init: true
-    environment:
-      <<: *hdf5_visualizer_env
-    command: ["hdf5"]
-    volumes:
-      - tricys_backend_state:/data
-    ports:
-      - "${TRICYS_HDF5_PORT:-8050}:8050"
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8050${TRICYS_HDF5_VISUALIZER_BASE_URL:-/hdf5/}health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    restart: unless-stopped
 
 volumes:
-  tricys_backend_state:
+  tricys_data:

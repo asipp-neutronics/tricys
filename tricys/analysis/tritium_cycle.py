@@ -512,7 +512,7 @@ def derive_fusion_engineering_parameters(
     }
 
 
-def detect_sds_column(df: pd.DataFrame) -> Optional[str]:
+def detect_sds_column(df: pd.DataFrame, strict: bool = True) -> Optional[str]:
     """Detects primary storage inventory column in DataFrame."""
     if df is None or df.empty:
         return None
@@ -526,9 +526,16 @@ def detect_sds_column(df: pd.DataFrame) -> Optional[str]:
             return c
     for c in cols:
         low = c.lower()
-        if "storage" in low or "inventory" in low:
+        if "storage" in low:
             return c
-    return cols[0] if cols else None
+    for c in cols:
+        if "sds" in c.lower():
+            return c
+    if not strict:
+        for c in cols:
+            if "inventory" in c.lower():
+                return c
+    return None
 
 
 def extract_startup_inventory_metrics(

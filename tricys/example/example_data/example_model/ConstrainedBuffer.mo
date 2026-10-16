@@ -2,6 +2,8 @@ within example_model;
 model ConstrainedBuffer
   "通用约束型缓冲组件：支持容量上限与处理速率上限，超限部分守恒导出"
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
+
   // ===== 输入端口 =====
   Modelica.Blocks.Interfaces.RealInput from_Upstream[5] "上游主入流" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}),
