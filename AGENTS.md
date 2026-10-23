@@ -43,6 +43,12 @@ make deploy         # Interactive deployment wizard
 
 - Python code follows PEP 8; use `make format` for auto-formatting.
 - Test files live in `test/` mirroring the package structure.
+- Tests tagged with `@pytest.mark.build_test` (function decorator or module-level
+  `pytestmark = pytest.mark.build_test`) are what the "HDF5 Image Build Test" job
+  runs (`pytest -m build_test test` in `.github/workflows/build_test.yml`); keep
+  them free of OMC / h2iso / DWSIM dependencies so they stay runnable in that image.
+- The OMC-backed hour-vs-second cross-check has its own job in
+  `.github/workflows/time_base_crosscheck.yml`.
 - Simulation inputs use Modelica `.mo` files; DWSIM uses `.dwxmz`.
 - Reports are auto-generated as Markdown.
 - HDF5 is used for large simulation data storage.

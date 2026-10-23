@@ -27,6 +27,11 @@ from tricys.core.foc import (
     parse_foc_file_with_unit,
 )
 
+# The HDF5 "build_test" CI job runs `pytest -m build_test test` inside the
+# tricys-hdf5 image (.github/workflows/build_test.yml). These regression tests
+# are pure-Python (no OpenModelica call), so the whole module is safe to select.
+pytestmark = pytest.mark.build_test
+
 
 # --------------------------------------------------------------------------- #
 # Effective time-unit resolution

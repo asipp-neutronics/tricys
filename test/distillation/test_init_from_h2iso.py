@@ -22,6 +22,12 @@ from init_from_h2iso import (  # noqa: E402
     h2iso_to_tricys_composition,
 )
 
+# The HDF5 "build_test" CI job runs `pytest -m build_test test` inside the
+# tricys-hdf5 image (.github/workflows/build_test.yml). These regression tests
+# are pure-Python (no h2iso / OpenModelica import), so the whole module is safe
+# to select. See the module docstring for the intended CI scope.
+pytestmark = pytest.mark.build_test
+
 
 class TestH2isoToTricysComposition:
     """Tests for h2iso_to_tricys_composition conversion."""

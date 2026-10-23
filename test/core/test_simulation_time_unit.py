@@ -19,6 +19,11 @@ from tricys.simulation.simulation import (
     _sim_time_to_seconds,
 )
 
+# The HDF5 "build_test" CI job runs `pytest -m build_test test` inside the
+# tricys-hdf5 image (.github/workflows/build_test.yml). These regression tests
+# are pure-Python (no OpenModelica call), so the whole module is safe to select.
+pytestmark = pytest.mark.build_test
+
 
 def test_hours_to_seconds_factor():
     assert HOURS_TO_SECONDS == 3600.0
