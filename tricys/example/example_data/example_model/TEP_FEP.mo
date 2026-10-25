@@ -27,6 +27,9 @@ model TEP_FEP
   //DIR比例，逻辑不对，因为DT不一定一样多，需要改
   parameter Real to_SDS_Fraction[5] = {0.5, 0.5, 0, 0, 0} "输出到SDS的比例";
 
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
 equation
   // 计算每个维度流体的动态变化
   for i in 1:5 loop
@@ -35,7 +38,9 @@ equation
     // 输出流分配到SDS和TEP_IP
     to_SDS[i] = outflow[i] * to_SDS_Fraction[i];
     to_TEP_IP[i] = outflow[i] * (1 - to_SDS_Fraction[i]);
-  end for;
+      decay_rate[i] = decay_loss[i]*I[i];
+      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+    end for;
 
 annotation(
     Diagram,

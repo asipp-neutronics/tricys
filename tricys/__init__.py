@@ -1,5 +1,7 @@
-"""Tricys - TRitium Integrated CYcle Simulation.
+import os
+import sys
 
-This package contains the core modules for the Tricys simulation tool, including
-the command-line entry point and utility modules.
-"""
+# Force UTF-8 mode on Windows to prevent GBK decoding errors in OMPython/OMC subprocesses
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONUTF8", "1")
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")

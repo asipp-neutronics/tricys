@@ -168,7 +168,11 @@ def convert_relative_paths_to_absolute(
                 "glossary_path",
             ]
 
-            if key_name.endswith("_path") or key_name in path_keys:
+            if (
+                key_name.endswith("_path")
+                or key_name.endswith("_dir")
+                or key_name in path_keys
+            ):
                 # If it's a relative path, convert to absolute path
                 if not os.path.isabs(value) and value:
                     abs_path = os.path.abspath(os.path.join(base_dir, value))
@@ -292,23 +296,19 @@ def basic_validate_config(
         # 2. Validate variableFilter format
         variable_filter = config.get("simulation", {}).get("variableFilter")
         if variable_filter:
-            # Regex for a valid Modelica identifier (simplified)
-            ident = r"[a-zA-Z_][a-zA-Z0-9_]*"
             # Regex for a valid substring in the filter:
             # - time
             # - class.name
             # - class.name[index]
             # - class.name[start-end]
-            valid_substring_re = re.compile(
-                rf"^time$|^{ident}\.{ident}(\[\d+(-\d+)?\])?$"
-            )
+            # - regex patterns like .* or \.
+            valid_substring_re = re.compile(r"^.+$")
 
             substrings = variable_filter.split("|")
             for sub in substrings:
                 if not valid_substring_re.match(sub):
                     print(
-                        f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format. "
-                        f"Valid formats are 'time', 'classname.typename', 'classname.typename[1]', or 'classname.typename[1-5]'.",
+                        f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format.",
                         file=sys.stderr,
                     )
                     sys.exit(1)
@@ -522,21 +522,14 @@ def analysis_validate_config(
     # 2. Validate variableFilter format
     variable_filter = config.get("simulation", {}).get("variableFilter")
     if variable_filter:
-        # Regex for a valid Modelica identifier (simplified)
-        ident = r"[a-zA-Z_][a-zA-Z0-9_]*"
-        # Regex for a valid substring in the filter:
-        # - time
-        # - class.name
-        # - class.name[index]
-        # - class.name[start-end]
-        valid_substring_re = re.compile(rf"^time$|^{ident}\.{ident}(\[\d+(-\d+)?\])?$")
+
+        valid_substring_re = re.compile(r"^.+$")
 
         substrings = variable_filter.split("|")
         for sub in substrings:
             if not valid_substring_re.match(sub):
                 print(
-                    f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format. "
-                    f"Valid formats are 'time', 'classname.typename', 'classname.typename[1]', or 'classname.typename[1-5]'.",
+                    f"ERROR: Invalid format in 'simulation.variableFilter'. Substring '{sub}' does not match required format.",
                     file=sys.stderr,
                 )
                 sys.exit(1)
@@ -580,6 +573,114 @@ def analysis_validate_config(
                     sys.exit(1)
 
         check_ai_config(config)
+        _validate_online_oms_config(config)
+
+
+def _validate_online_oms_config(config: Dict[str, Any]) -> None:
+    """Validate the minimal online OMS co-simulation config shape.
+
+    This phase only supports a single online OMS track from the formal config
+    entry point. More advanced multi-track validation can be added later.
+    """
+
+    co_simulation = config.get("co_simulation")
+    if not isinstance(co_simulation, dict):
+        return
+
+    engine = co_simulation.get("engine")
+    if engine != "online_oms":
+        return
+
+    simulation = config.get("simulation", {})
+
+    step_size = simulation.get("step_size")
+    start_time = simulation.get("start_time", 0.0)
+    stop_time = simulation.get("stop_time")
+
+    if step_size is None or not isinstance(step_size, (int, float)):
+        print(
+            "ERROR: 'simulation.step_size' is required and must be numeric for 'online_oms'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if start_time is None or not isinstance(start_time, (int, float)):
+        print(
+            "ERROR: 'simulation.start_time' is required and must be numeric for 'online_oms'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if stop_time is None or not isinstance(stop_time, (int, float)):
+        print(
+            "ERROR: 'simulation.stop_time' is required and must be numeric for 'online_oms'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if float(step_size) <= 0.0:
+        print(
+            "ERROR: 'simulation.step_size' must be positive for 'online_oms'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if float(stop_time) < float(start_time):
+        print(
+            "ERROR: 'simulation.stop_time' must be greater than or equal to 'start_time'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    handlers = co_simulation.get("handlers")
+    if not isinstance(handlers, list):
+        print(
+            "ERROR: 'co_simulation.handlers' must be a list when engine is 'online_oms'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    seen_instance_names = set()
+    for index, handler in enumerate(handlers):
+        if not isinstance(handler, dict):
+            print(
+                "ERROR: Each item in 'co_simulation.handlers' must be an object.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        keys_to_check = ["submodel_name", "instance_name"]
+        mode = co_simulation.get("mode", "interceptor")
+        if mode != "profile":
+            keys_to_check.append("handler_function")
+
+        for key in keys_to_check:
+            if not isinstance(handler.get(key), str) or not handler[key].strip():
+                print(
+                    f"ERROR: 'co_simulation.handlers[{index}].{key}' must be a non-empty string.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+        if (
+            mode != "profile"
+            and not handler.get("handler_module")
+            and not handler.get("handler_script_path")
+        ):
+            print(
+                f"ERROR: 'co_simulation.handlers[{index}]' must define 'handler_module' or 'handler_script_path' for 'online_oms'.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        instance_name = handler["instance_name"]
+        if instance_name in seen_instance_names:
+            print(
+                f"ERROR: Duplicate online_oms handler instance_name '{instance_name}' is not allowed.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        seen_instance_names.add(instance_name)
 
 
 def analysis_setup_analysis_cases_workspaces(

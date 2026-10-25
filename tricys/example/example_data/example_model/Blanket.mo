@@ -58,13 +58,17 @@ model Blanket
   parameter Real softness = 0.02
     "sigmoid 平滑因子：0=硬约束（带事件），0.01-0.1=软约束";
 
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
+    Real cumulative_breed[5](start = {0, 0, 0, 0, 0}) "累计增殖";
 equation
   // --- 聚合计算 ---
   I_total = sum(I);
   for i in 1:5 loop
     inflow_total[i] = (if i == 1 then pulseInput * TBR else 0) + from_TES[i];
     outflow_nominal[i] = I[i] / T;
-  end for;
+    end for;
   outflow_total_nominal = sum(outflow_nominal);
 
   // --- 速率约束 ---
@@ -93,7 +97,10 @@ equation
     to_CL[i] = to_CL_Fraction * outflow[i];
     overflow_out[i] = (1.0 - admit_scale) * inflow_total[i];
     rate_clip_out[i] = (1.0 - rate_scale) * outflow_nominal[i];
-  end for;
+      decay_rate[i] = decay_loss[i]*I[i];
+      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      der(cumulative_breed[i]) = if i == 1 then pulseInput*TBR else 0;
+    end for;
 
 annotation(
     Icon(graphics = {

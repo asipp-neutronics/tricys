@@ -1,0 +1,1728 @@
+{
+    "WDS": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"24\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "threshold": {
+                "type": "Real",
+                "dimension": null,
+                "description": "铺底量",
+                "value": "\"1000\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "I_total": {
+                "type": "Real",
+                "dimension": null,
+                "description": "I的5个分量之和",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_I_ISS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自I_ISS的输入",
+                "value": null
+            },
+            "from_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自CL的输入",
+                "value": null
+            },
+            "to_O_ISS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到O_ISS系统",
+                "value": null
+            }
+        }
+    },
+    "TES": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"12\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "threshold": {
+                "type": "Real",
+                "dimension": null,
+                "description": "铺底量",
+                "value": "\"200\""
+            },
+            "to_O_ISS_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "",
+                "value": "\"0.95\""
+            },
+            "to_BZ_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "",
+                "value": "\"1 - to_O_ISS_Fraction\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "I_total": {
+                "type": "Real",
+                "dimension": null,
+                "description": "I的5个分量之和",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_BZ": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自BZ的输入",
+                "value": null
+            },
+            "to_O_ISS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到O_ISS系统",
+                "value": null
+            },
+            "to_BZ": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到BZ系统",
+                "value": null
+            }
+        }
+    },
+    "TEP_IP": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.5\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_TEP_FEP": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自TEP_FEP的输入",
+                "value": null
+            },
+            "to_TEP_FCU": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到TEP_FCU系统",
+                "value": null
+            }
+        }
+    },
+    "TEP_FEP": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.1\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "to_SDS_Fraction": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到SDS的比例",
+                "value": "\"{0.5, 0.5, 0, 0, 0}\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_pump": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自Pump_System的输入",
+                "value": null
+            },
+            "to_SDS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到SDS系统",
+                "value": null
+            },
+            "to_TEP_IP": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到TEP_IP系统",
+                "value": null
+            }
+        }
+    },
+    "TEP_FCU": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.1\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_TEP_IP": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自TEP_IP的输入",
+                "value": null
+            },
+            "to_I_ISS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到I_ISS系统",
+                "value": null
+            }
+        }
+    },
+    "SDS": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.5\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0, 0, 0, 0, 0}\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "SDS 内的氚存储量",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_I_ISS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自I_ISS 的输入",
+                "value": null
+            },
+            "from_O_ISS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自O_ISS 的输出",
+                "value": null
+            },
+            "from_TEP_FEP": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自TEP/FEP 的输入",
+                "value": null
+            },
+            "to_FS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Fueling_System",
+                "value": null
+            }
+        }
+    },
+    "Pump_System": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.17\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "threshold": {
+                "type": "Real",
+                "dimension": null,
+                "description": "铺底量",
+                "value": "\"640\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "I_total": {
+                "type": "Real",
+                "dimension": null,
+                "description": "I的5个分量之和",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_Plasma": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Plasma",
+                "value": null
+            },
+            "to_TEP_FEP": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到TEP_FEP系统",
+                "value": null
+            }
+        }
+    },
+    "Plasma": {
+        "parameters": {
+            "fb": {
+                "type": "Real",
+                "dimension": null,
+                "description": "燃烧分数 (氚和氘的燃烧比例，仅在脉冲开启时有效，无单位)",
+                "value": "\"0.06\""
+            },
+            "nf": {
+                "type": "Real",
+                "dimension": null,
+                "description": "燃料效率 (氚和氘进入等离子体的比例，无单位)",
+                "value": "\"0.5\""
+            },
+            "to_Div_fraction": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "流向偏滤器的比例，无单位",
+                "value": "\"{1e-4, 1e-4, 1e-4, 1e-1, 1e-2}\""
+            },
+            "to_FW_fraction": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "流向第一壁的比例，无单位",
+                "value": "\"{1e-4, 1e-4, 1e-4, 1e-1, 1e-2}\""
+            },
+            "He_yield": {
+                "type": "Real",
+                "dimension": null,
+                "description": "氦产额 (每单位质量氚+氘生成的氦质量，无单位)",
+                "value": "\"4.002602/3.01693\""
+            }
+        },
+        "variables": {
+            "He_generated": {
+                "type": "Real",
+                "dimension": null,
+                "description": "聚变反应生成的氦，单位: g/h",
+                "value": null
+            },
+            "H_injection": {
+                "type": "Real",
+                "dimension": null,
+                "description": "氕的背景注入速率，单位: g/h",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            },
+            "cumulative_burn": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "累计燃烧",
+                "value": null
+            }
+        },
+        "connectors": {
+            "pulseInput": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": null,
+                "description": "等离子体脉冲控制信号，单位: g/h",
+                "value": null
+            },
+            "from_Fueling_System": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自Fueling_System的输入",
+                "value": null
+            },
+            "to_FW": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到FW",
+                "value": null
+            },
+            "to_Div": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到Div",
+                "value": null
+            },
+            "to_Pump": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到Pump_System",
+                "value": null
+            }
+        }
+    },
+    "O_ISS": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"12\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "threshold": {
+                "type": "Real",
+                "dimension": null,
+                "description": "铺底量",
+                "value": "\"20\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "I_total": {
+                "type": "Real",
+                "dimension": null,
+                "description": "I的5个分量之和",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_CPS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自CPS的输入",
+                "value": null
+            },
+            "from_WDS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自WDS的输入",
+                "value": null
+            },
+            "from_TES": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自TES的输入",
+                "value": null
+            },
+            "to_SDS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到SDS系统",
+                "value": null
+            }
+        }
+    },
+    "I_ISS": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"2.4\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0, 0, 0, 0, 0}\""
+            },
+            "threshold": {
+                "type": "Real",
+                "dimension": null,
+                "description": "铺底量",
+                "value": "\"300\""
+            },
+            "to_WDS_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "输出到WDS的比例",
+                "value": "\"1e-8\""
+            },
+            "to_SDS_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "输出到SDS的比例",
+                "value": "\"1 - to_WDS_Fraction\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "I_total": {
+                "type": "Real",
+                "dimension": null,
+                "description": "I的5个分量之和",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_TEP_FCU": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自TEP_FCU的输入",
+                "value": null
+            },
+            "to_SDS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到SDS系统",
+                "value": null
+            },
+            "to_WDS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到WDS系统",
+                "value": null
+            }
+        }
+    },
+    "Fueling_System": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.5\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "Refill_T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "First-order refill time constant",
+                "value": "\"0.05\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "target_inventory": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "",
+                "value": null
+            },
+            "inflow_demand": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "to_Plasma": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到等离子体的燃料",
+                "value": null
+            },
+            "from_SDS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自SDS的输入（燃料输入）",
+                "value": null
+            }
+        }
+    },
+    "FW": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.28\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0, 0, 0, 0, 0}\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_plasma": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "",
+                "value": null
+            },
+            "from_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "",
+                "value": null
+            },
+            "from_CPS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "",
+                "value": null
+            },
+            "to_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "",
+                "value": null
+            }
+        }
+    },
+    "DIV": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"0.28\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0, 0, 0, 0, 0}\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_plasma": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自Plasma的输入",
+                "value": null
+            },
+            "from_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自Coolant_Loop的输入",
+                "value": null
+            },
+            "from_CPS": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自CPS的输入",
+                "value": null
+            },
+            "to_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到Coolant_Loop",
+                "value": null
+            }
+        }
+    },
+    "Coolant_Pipe": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"24\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "to_WDS_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "",
+                "value": "\"1e-4\""
+            },
+            "to_CPS_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "",
+                "value": "\"1e-2\""
+            },
+            "to_FW_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "",
+                "value": "\"0.6\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_FW": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自FW的输入",
+                "value": null
+            },
+            "from_DIV": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自DIV的输入",
+                "value": null
+            },
+            "from_BZ": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自BZ的输入",
+                "value": null
+            },
+            "to_CPS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到CPS系统",
+                "value": null
+            },
+            "to_FW": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到FW系统",
+                "value": null
+            },
+            "to_DIV": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到DIV系统",
+                "value": null
+            },
+            "to_WDS": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到WDS系统",
+                "value": null
+            }
+        }
+    },
+    "CPS": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"48\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0.0001, 0.0001, 0, 0, 0}\""
+            },
+            "threshold": {
+                "type": "Real",
+                "dimension": null,
+                "description": "铺底量",
+                "value": "\"200\""
+            },
+            "to_ISS_O_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "0.95Abdou 输出到ISS_O的比例",
+                "value": "\"0.99\""
+            },
+            "to_FW_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "输出到FW的比例",
+                "value": "\"0.06\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "I_total": {
+                "type": "Real",
+                "dimension": null,
+                "description": "I的5个分量之和",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            }
+        },
+        "connectors": {
+            "from_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自Coolant_Loop的输入",
+                "value": null
+            },
+            "to_ISS_O": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到ISS_O系统",
+                "value": null
+            },
+            "to_FW": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到FW系统",
+                "value": null
+            },
+            "to_DIV": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到DIV系统",
+                "value": null
+            }
+        }
+    },
+    "Blanket": {
+        "parameters": {
+            "T": {
+                "type": "Real",
+                "dimension": null,
+                "description": "平均滞留时间 (mean residence time)",
+                "value": "\"24\""
+            },
+            "decay_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "Tritium decay loss for 5 materials (放射性衰变损失)",
+                "value": "\"{6.4e-6, 0, 0, 0, 0}\""
+            },
+            "nonradio_loss": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "非放射性损失",
+                "value": "\"{0, 0, 0, 0, 0}\""
+            },
+            "TBR": {
+                "type": "Real",
+                "dimension": null,
+                "description": "Tritium Breeding Ratio (TBR), range: 1.05-1.15",
+                "value": "\"1.1\""
+            },
+            "to_CL_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "输出到CL的比例",
+                "value": "\"0.01\""
+            },
+            "to_TES_Fraction": {
+                "type": "Real",
+                "dimension": null,
+                "description": "输出到TES的比例",
+                "value": "\"1 - to_CL_Fraction\""
+            }
+        },
+        "variables": {
+            "I": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "系统中5种物质的储存量",
+                "value": null
+            },
+            "outflow": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "总输出流",
+                "value": null
+            },
+            "decay_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "衰变速率",
+                "value": null
+            },
+            "leak_rate": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "泄漏速率",
+                "value": null
+            },
+            "cumulative_breed": {
+                "type": "Real",
+                "dimension": [
+                    "5"
+                ],
+                "description": "累计增殖",
+                "value": null
+            }
+        },
+        "connectors": {
+            "pulseInput": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": null,
+                "description": "等离子体脉冲控制信号",
+                "value": null
+            },
+            "from_TES": {
+                "type": "Modelica.Blocks.Interfaces.RealInput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "来自TES的输入",
+                "value": null
+            },
+            "to_CL": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到Coolant_Loop系统",
+                "value": null
+            },
+            "to_TES": {
+                "type": "Modelica.Blocks.Interfaces.RealOutput",
+                "dimension": [
+                    "5"
+                ],
+                "description": "输出到TES系统",
+                "value": null
+            }
+        }
+    },
+    "Cycle": {
+        "parameters": {},
+        "variables": {
+            "pulseSource": {
+                "type": "Modelica.Blocks.Sources.Pulse",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "plasma": {
+                "type": "example_model.Plasma",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "FS": {
+                "type": "example_model.Fueling_System",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "sds": {
+                "type": "example_model.SDS",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "pump_System": {
+                "type": "example_model.Pump_System",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "tep_fep": {
+                "type": "example_model.TEP_FEP",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "tep_ip": {
+                "type": "example_model.TEP_IP",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "tep_fcu": {
+                "type": "example_model.TEP_FCU",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "i_iss": {
+                "type": "example_model.I_ISS",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "wds": {
+                "type": "example_model.WDS",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "o_iss": {
+                "type": "example_model.O_ISS",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "fw": {
+                "type": "example_model.FW",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "div": {
+                "type": "example_model.DIV",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "cps": {
+                "type": "example_model.CPS",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "tes": {
+                "type": "example_model.TES",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "blanket": {
+                "type": "example_model.Blanket",
+                "dimension": null,
+                "description": "",
+                "value": null
+            },
+            "coolant_pipe": {
+                "type": "example_model.Coolant_Pipe",
+                "dimension": null,
+                "description": "",
+                "value": null
+            }
+        },
+        "connectors": {}
+    }
+}

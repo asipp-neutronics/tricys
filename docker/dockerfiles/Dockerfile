@@ -22,7 +22,7 @@ COPY tricys_visual/ ./
 
 RUN npm run build
 
-FROM ${NODE_BASE_IMAGE} AS tricys_goview_build
+FROM tricys_visual_build AS tricys_goview_build
 
 ARG VITE_PRO_PATH=
 

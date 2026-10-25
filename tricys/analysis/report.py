@@ -808,9 +808,12 @@ def generate_prompt_templates(
                             )
                     return df_formatted.to_markdown(index=False)
 
+                ind_var_list = [ind_var] if isinstance(ind_var, str) else list(ind_var)
+                existing_ind_vars = [c for c in ind_var_list if c in sub_df.columns]
+
                 if standard_cols:
                     all_markdown_lines.append("##### 性能指标\n")
-                    std_df_slice = sub_df[[ind_var] + sorted(standard_cols)]
+                    std_df_slice = sub_df[existing_ind_vars + sorted(standard_cols)]
                     all_markdown_lines.append(
                         _format_slice_to_md(std_df_slice, current_unit_map)
                     )
@@ -824,7 +827,7 @@ def generate_prompt_templates(
                         all_markdown_lines.append(
                             f"##### “{_format_label(base_name)}” 相关数据\n"
                         )
-                        req_df_slice = sub_df[[ind_var] + sorted(existing_cols)]
+                        req_df_slice = sub_df[existing_ind_vars + sorted(existing_cols)]
 
                         try:
                             # --- PIVOT LOGIC to transform data from wide to long format ---

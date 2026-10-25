@@ -151,37 +151,31 @@ def load_glossary(glossary_path: str) -> None:
 
 
 def _format_label(label: str) -> str:
-    """Formats a label for display using glossary or simple formatting.
-
-    Args:
-        label: The raw label string to format.
-
-    Returns:
-        The formatted label string.
-
-    Note:
-        First checks glossary for professional term (language-specific). If not found,
-        replaces underscores with spaces and removes dots (except in numbers). Returns
-        non-string inputs unchanged.
-    """
     global _english_glossary_map, _chinese_glossary_map, _use_chinese_labels
 
     if not isinstance(label, str):
         return label
 
+    base_var = label
+    param_suffix = ""
+    if "&" in label:
+        parts = label.split("&", 1)
+        base_var = parts[0]
+        param_suffix = f" ({parts[1]})"
+
     glossary_map = (
         _chinese_glossary_map if _use_chinese_labels else _english_glossary_map
     )
 
-    if glossary_map and label in glossary_map:
-        term = glossary_map[label]
+    if glossary_map and base_var in glossary_map:
+        term = glossary_map[base_var]
         if pd.notna(term) and str(term).strip():
-            return str(term)
+            return f"{term}{param_suffix}"
 
     # Fallback to simple formatting
-    formatted_label = label.replace("_", " ")
+    formatted_label = base_var.replace("_", " ")
     formatted_label = re.sub(r"(?<!\d)\.|\.(?!\d)", " ", formatted_label)
-    return formatted_label
+    return f"{formatted_label}{param_suffix}"
 
 
 def _calculate_startup_inventory(
@@ -757,14 +751,22 @@ def generate_academic_report(output_dir: str, ai_model: str, **kwargs) -> None:
             original_report_content = f.read()
 
         # 2. Read the glossary
-        glossary_path = kwargs.get("glossary_path", "sheets.csv")
-        if not os.path.exists(glossary_path):
-            logger.error(
-                f"Cannot generate academic summary: Glossary file '{glossary_path}' not found."
+        glossary_path = kwargs.get("glossary_path")
+        if not glossary_path or not os.path.exists(glossary_path):
+            default_glossary = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "example",
+                "example_data",
+                "example_glossary",
+                "example_glossary.csv",
             )
-            return
-        with open(glossary_path, "r", encoding="utf-8") as f:
-            glossary_content = f.read()
+            if os.path.exists(default_glossary):
+                glossary_path = default_glossary
+
+        glossary_content = ""
+        if glossary_path and os.path.exists(glossary_path):
+            with open(glossary_path, "r", encoding="utf-8") as f:
+                glossary_content = f.read()
 
         # 3. Check for API credentials
         env = get_llm_env({"llm_env": kwargs.get("llm_env")})
@@ -875,8 +877,17 @@ def generate_academic_report(output_dir: str, ai_model: str, **kwargs) -> None:
         )
 
 
-def _build_series_label(variable_name: str, job_params: dict) -> str:
-    filtered_params = {k: v for k, v in sorted(job_params.items()) if pd.notna(v)}
+def _build_series_label(
+    variable_name: str, job_params: dict, varying_keys: set = None
+) -> str:
+    if varying_keys is None:
+        filtered_params = {k: v for k, v in sorted(job_params.items()) if pd.notna(v)}
+    else:
+        filtered_params = {
+            k: v
+            for k, v in sorted(job_params.items())
+            if pd.notna(v) and k in varying_keys
+        }
     param_string = "&".join([f"{k}={v}" for k, v in filtered_params.items()])
     return f"{variable_name}&{param_string}" if param_string else variable_name
 
@@ -890,6 +901,17 @@ def _build_sample_dataframe(
     return sample_df
 
 
+def _get_job_id_and_params(job_row, index):
+    if "job_id" in job_row and pd.notna(job_row["job_id"]):
+        job_id = int(job_row["job_id"])
+    elif "id" in job_row and pd.notna(job_row["id"]):
+        job_id = int(job_row["id"])
+    else:
+        job_id = int(index) + 1
+    job_params = job_row.drop(labels=["job_id", "id"], errors="ignore").to_dict()
+    return job_id, job_params
+
+
 def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
     detailed_var = kwargs.get("detailed_var", "sds.I[1]")
     num_points = 20
@@ -897,6 +919,8 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
     window_size = (num_points - 1) * interval + 1
 
     jobs_df = load_jobs_df(results_file_path)
+    param_cols = [col for col in jobs_df.columns if col not in ["job_id", "id"]]
+    varying_keys = {col for col in param_cols if jobs_df[col].nunique() > 1}
     metrics_data = []
     final_values = {}
     start_sample_columns = {}
@@ -919,9 +943,20 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
             col for col in sample_df.columns if col not in ["time", "job_id"]
         ]
 
-        for _, job_row in jobs_df.iterrows():
-            job_id = int(job_row["job_id"])
-            job_params = job_row.drop(labels=["job_id"]).to_dict()
+        if detailed_var not in result_columns and not any(
+            col.startswith(detailed_var) for col in result_columns
+        ):
+            for fallback in ["sds.inventory", "sds.I[1]", "SDS.inventory"]:
+                if any(col.startswith(fallback) for col in result_columns):
+                    detailed_var = fallback
+                    break
+            else:
+                sds_cols = [c for c in result_columns if "sds" in c.lower()]
+                if sds_cols:
+                    detailed_var = sds_cols[0]
+
+        for index, job_row in jobs_df.iterrows():
+            job_id, job_params = _get_job_id_and_params(job_row, index)
             job_df = store.select(RESULTS_KEY, where=f"job_id == {job_id}")
 
             if job_df.empty:
@@ -943,7 +978,9 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
                 if variable_name not in job_df.columns:
                     continue
 
-                label = _build_series_label(variable_name, job_params)
+                label = _build_series_label(
+                    variable_name, job_params, varying_keys=varying_keys
+                )
                 series = job_df[variable_name].reset_index(drop=True)
 
                 if series.empty:
@@ -984,9 +1021,8 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
                         turning_label = label
 
         if turning_index is not None:
-            for _, job_row in jobs_df.iterrows():
-                job_id = int(job_row["job_id"])
-                job_params = job_row.drop(labels=["job_id"]).to_dict()
+            for index, job_row in jobs_df.iterrows():
+                job_id, job_params = _get_job_id_and_params(job_row, index)
                 job_df = store.select(RESULTS_KEY, where=f"job_id == {job_id}")
 
                 if job_df.empty:
@@ -1006,7 +1042,9 @@ def _collect_baseline_stream_data(results_file_path: str, **kwargs) -> dict:
                     if variable_name not in job_df.columns:
                         continue
 
-                    label = _build_series_label(variable_name, job_params)
+                    label = _build_series_label(
+                        variable_name, job_params, varying_keys=varying_keys
+                    )
                     series = job_df[variable_name].reset_index(drop=True)
                     turning_sample_columns[label] = series.iloc[
                         turning_indices
@@ -1051,11 +1089,12 @@ def _plot_time_series_with_zoom_from_hdf5(
     color_map = kwargs.get("color_map", {})
     turning_label = kwargs.get("turning_label")
 
+    param_cols = [col for col in jobs_df.columns if col not in ["job_id", "id"]]
+    varying_keys = {col for col in param_cols if jobs_df[col].nunique() > 1}
     min_x_global = float("inf")
     with pd.HDFStore(results_file_path, mode="r") as store:
-        for _, job_row in jobs_df.iterrows():
-            job_id = int(job_row["job_id"])
-            job_params = job_row.drop(labels=["job_id"]).to_dict()
+        for index, job_row in jobs_df.iterrows():
+            job_id, job_params = _get_job_id_and_params(job_row, index)
             job_df = store.select(RESULTS_KEY, where=f"job_id == {job_id}")
 
             if job_df.empty:
@@ -1068,7 +1107,9 @@ def _plot_time_series_with_zoom_from_hdf5(
                 if variable_name not in job_df.columns:
                     continue
 
-                label = _build_series_label(variable_name, job_params)
+                label = _build_series_label(
+                    variable_name, job_params, varying_keys=varying_keys
+                )
                 if label.startswith(detailed_var) and label == turning_label:
                     series = job_df[variable_name]
                     if not series.empty:
@@ -1095,9 +1136,8 @@ def _plot_time_series_with_zoom_from_hdf5(
         total_series = 0
 
         with pd.HDFStore(results_file_path, mode="r") as store:
-            for _, job_row in jobs_df.iterrows():
-                job_id = int(job_row["job_id"])
-                job_params = job_row.drop(labels=["job_id"]).to_dict()
+            for index, job_row in jobs_df.iterrows():
+                job_id, job_params = _get_job_id_and_params(job_row, index)
                 job_df = store.select(RESULTS_KEY, where=f"job_id == {job_id}")
 
                 if job_df.empty:
@@ -1110,7 +1150,9 @@ def _plot_time_series_with_zoom_from_hdf5(
                     if variable_name not in job_df.columns:
                         continue
 
-                    label = _build_series_label(variable_name, job_params)
+                    label = _build_series_label(
+                        variable_name, job_params, varying_keys=varying_keys
+                    )
                     series = job_df[variable_name]
                     color = color_map.get(label, "blue")
                     formatted_label = _format_label(label)

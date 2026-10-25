@@ -33,6 +33,9 @@ model O_ISS
   
   // 辅助变量：计算I的总和
   Real I_total "I的5个分量之和";
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
 equation
   // 计算I的总和
   I_total = sum(I);
@@ -43,13 +46,16 @@ equation
     if I_total > threshold then
       der(I[i]) = from_CPS[i] + from_TES[i] + from_WDS[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i];
       outflow[i] = (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
     else
       der(I[i]) = from_CPS[i] + from_TES[i] + from_WDS[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
       outflow[i] = 0;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T;
     end if;
     // 输出流分配到SDS
     to_SDS[i] = outflow[i];
-  end for;
+      decay_rate[i] = decay_loss[i]*I[i];
+    end for;
 
 annotation(
     Icon(graphics = {

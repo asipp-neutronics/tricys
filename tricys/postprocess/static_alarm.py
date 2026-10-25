@@ -42,6 +42,13 @@ def check_thresholds(
                 return
 
             jobs_df = store.select(jobs_key)
+            if "job_id" not in jobs_df.columns:
+                if jobs_df.index.name == "job_id":
+                    jobs_df = jobs_df.reset_index()
+                elif "index" in jobs_df.columns:
+                    jobs_df = jobs_df.rename(columns={"index": "job_id"})
+                else:
+                    jobs_df["job_id"] = jobs_df.index + 1
             jobs_map = jobs_df.set_index("job_id").to_dict(orient="index")
             available_vars = store.get_storer(RESULTS_KEY).table.colnames
 

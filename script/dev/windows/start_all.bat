@@ -37,7 +37,7 @@ if exist "%VENV_ACTIVATE%" (
 )
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$proc = Start-Process -FilePath 'cmd.exe' -ArgumentList '/k', 'cd /d \"\"%ROOT_DIR%\tricys_visual\"\" && npm.cmd run dev' -PassThru; Set-Content -Path '%PID_DIR%\tricys_visual.pid' -Value $proc.Id"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$proc = Start-Process -FilePath 'cmd.exe' -ArgumentList '/k', 'cd /d \"\"%ROOT_DIR%\tricys_goview\"\" && npm.cmd run dev' -PassThru; Set-Content -Path '%PID_DIR%\tricys_goview.pid' -Value $proc.Id"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$proc = Start-Process -FilePath 'cmd.exe' -ArgumentList '/k', 'cd /d \"\"%ROOT_DIR%\tricys_goview\"\" && pnpm.cmd run dev' -PassThru; Set-Content -Path '%PID_DIR%\tricys_goview.pid' -Value $proc.Id"
 
 endlocal
 goto :eof

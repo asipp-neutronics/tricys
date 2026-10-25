@@ -20,6 +20,9 @@ model TEP_FCU
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
   parameter Real nonradio_loss[5] (each unit="1") = {0.0001, 0.0001, 0, 0, 0} "非放射性损失";
 
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
 equation
   // 计算每个维度流体的动态变化
   for i in 1:5 loop
@@ -27,7 +30,9 @@ equation
     // 输出流分配到I_ISS
     outflow[i] = I[i]/T;
     to_I_ISS[i] = I[i] / T;
-  end for;
+      decay_rate[i] = decay_loss[i]*I[i];
+      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+    end for;
 
 annotation(
     Diagram,

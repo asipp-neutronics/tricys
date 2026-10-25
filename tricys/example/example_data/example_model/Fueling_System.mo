@@ -18,13 +18,18 @@ model Fueling_System
   parameter Real decay_loss[5] (each unit="1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
   //parameter Real nonradio_loss[5] (each unit="1") = {0, 0, 0, 0, 0} "非放射性损失";
 
+
+    Real decay_rate[5] "衰变速率";
+    Real leak_rate[5] "泄漏速率";
 equation
   // 计算每种物质的动态变化和输出
   for i in 1:5 loop
     der(I[i]) = from_SDS[i] - 1 * I[i] / T  - decay_loss[i] * I[i];
     outflow[i] = I[i]/T;
     to_Plasma[i] = outflow[i];
-  end for;
+      decay_rate[i] = decay_loss[i]*I[i];
+      leak_rate[i] = 0;
+    end for;
 
   annotation(
     Diagram,
