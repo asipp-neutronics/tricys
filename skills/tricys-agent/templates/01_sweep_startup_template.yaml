@@ -18,7 +18,7 @@ model:
   modelName: "${MODEL_NAME}"          # 如: "example_model.Cycle"
 
 scenario:
-  time_base: "hour"                   # 推荐 "hour" 或 "second"
+  time_base: "second"                   # 推荐 "hour" 或 "second"
   stopTime: 2000.0                    # 仿真终止时长
   stepSize: 0.5                       # 采样步长
   method: "dassl"                     # 求解器: dassl / ida / cvode

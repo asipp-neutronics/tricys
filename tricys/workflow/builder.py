@@ -509,6 +509,11 @@ class PipelineBuilder:
                 sim_params["step_size"] = float(scenario_cfg["stepSize"])
             if "startTime" in scenario_cfg:
                 sim_params["start_time"] = float(scenario_cfg["startTime"])
+            tb = scenario_cfg.get("time_base") or config.get("simulation", {}).get(
+                "time_base"
+            )
+            if tb:
+                sim_params["time_base"] = str(tb).strip().lower()
             if "method" in scenario_cfg:
                 sim_params["solver"] = scenario_cfg["method"]
             if "tolerance" in scenario_cfg:

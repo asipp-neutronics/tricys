@@ -83,7 +83,7 @@ class BisectionOptimizer:
         time_base = (
             str(config.get("simulation", {}).get("time_base", "second")).strip().lower()
         )
-        time_factor = 3600.0 if time_base == "hour" else 1.0
+        time_factor = 3600.0 if time_base == "second" else 1.0
         stop_time = float(config.get("simulation", {}).get("stop_time", 1000.0))
         stop_time_in_time_base = stop_time / time_factor
 
@@ -527,7 +527,7 @@ class NestedBisectionOptimizer:
             tb = str(sc.get("time_base", "second")).strip().lower()
             stop_t = float(sc.get("stopTime", 1000.0))
             step_s = float(sc.get("stepSize", 1.0))
-            if tb == "hour":
+            if tb == "second":
                 stop_t *= 3600.0
                 step_s *= 3600.0
             sim_config = {
@@ -542,12 +542,12 @@ class NestedBisectionOptimizer:
         time_base = (
             str(
                 sim_config.get("time_base")
-                or config.get("scenario", {}).get("time_base", "hour")
+                or config.get("scenario", {}).get("time_base", "second")
             )
             .strip()
             .lower()
         )
-        time_factor = 3600.0 if time_base == "hour" else 1.0
+        time_factor = 3600.0 if time_base == "second" else 1.0
 
         raw_inner_thresh = (
             inner_target.get("threshold")

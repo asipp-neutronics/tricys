@@ -314,12 +314,12 @@ def render_simulate(
                     else "净消耗状态 (终值低于初值)"
                 )
                 time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
-                if time_base == "hour":
+                if time_base == "second":
                     t_turn_str = f"{t_turn / 3600.0:.2f} h ({t_turn:.0f} s)"
                     t_turn_unit = "h"
                 else:
-                    t_turn_str = f"{t_turn:.2f}"
-                    t_turn_unit = "s"
+                    t_turn_str = f"{t_turn:.2f} h"
+                    t_turn_unit = "h"
 
                 storage_facts = [
                     {
@@ -373,26 +373,30 @@ def render_simulate(
                 ]
 
     time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
-    time_base_desc = "hour (小时基准)" if time_base == "hour" else "second (秒基准)"
+    time_base_desc = (
+        "second (底层Modelica模型为秒基准，自动转换为秒对接OMC求解)"
+        if time_base == "second"
+        else "hour (底层Modelica模型为小时基准，以1:1小时步长求解)"
+    )
     try:
         st_val = float(stop_time)
         stop_time_display = (
             f"{st_val:g} h ({st_val * 3600.0:.0f} s)"
-            if time_base == "hour"
-            else f"{st_val:g} s"
+            if time_base == "second"
+            else f"{st_val:g} h"
         )
     except Exception:
-        stop_time_display = f"{stop_time} {'h' if time_base == 'hour' else 's'}"
+        stop_time_display = f"{stop_time} h"
 
     try:
         ss_val = float(step_size)
         step_size_display = (
             f"{ss_val:g} h ({ss_val * 3600.0:.1f} s)"
-            if time_base == "hour"
-            else f"{ss_val:g} s"
+            if time_base == "second"
+            else f"{ss_val:g} h"
         )
     except Exception:
-        step_size_display = f"{step_size} {'h' if time_base == 'hour' else 's'}"
+        step_size_display = f"{step_size} h"
 
     md = [
         f"# {title}",

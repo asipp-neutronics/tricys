@@ -196,6 +196,7 @@ class StandardSimulationEngine(BaseSimulationEngine):
         stop_time: Optional[float] = None,
         step_size: Optional[float] = None,
         start_time: float = 0.0,
+        time_base: Optional[str] = None,
         solver: Optional[str] = None,
         tolerance: Optional[float] = None,
         output_format: Optional[str] = None,
@@ -208,6 +209,7 @@ class StandardSimulationEngine(BaseSimulationEngine):
         self.stop_time = stop_time
         self.step_size = step_size
         self.start_time = start_time
+        self.time_base = time_base
         self.solver = solver
         self.tolerance = tolerance
         self.output_format = output_format
@@ -221,16 +223,37 @@ class StandardSimulationEngine(BaseSimulationEngine):
         task_cfg = context.config.get("task", {})
         jobs = context.jobs or [{}]
 
+        time_base = (
+            str(
+                self.time_base
+                or sim_cfg.get("time_base")
+                or scenario_cfg.get("time_base")
+                or getattr(context, "time_base", "second")
+                or "second"
+            )
+            .strip()
+            .lower()
+        )
+        sim_cfg["time_base"] = time_base
+        factor = 3600.0 if time_base == "second" else 1.0
+
         # Explicit-First with Context-Fallback parameter resolution
         if self.stop_time is not None:
-            sim_cfg["stop_time"] = float(self.stop_time)
+            sim_cfg["stop_time"] = float(self.stop_time) * factor
+            sim_cfg["_time_unit"] = "second"
         elif "stop_time" not in sim_cfg and "stopTime" in scenario_cfg:
-            sim_cfg["stop_time"] = float(scenario_cfg["stopTime"])
+            sim_cfg["stop_time"] = float(scenario_cfg["stopTime"]) * factor
+            sim_cfg["_time_unit"] = "second"
 
         if self.step_size is not None:
-            sim_cfg["step_size"] = float(self.step_size)
+            sim_cfg["step_size"] = float(self.step_size) * factor
         elif "step_size" not in sim_cfg and "stepSize" in scenario_cfg:
-            sim_cfg["step_size"] = float(scenario_cfg["stepSize"])
+            sim_cfg["step_size"] = float(scenario_cfg["stepSize"]) * factor
+
+        if self.start_time is not None and float(self.start_time) > 0:
+            sim_cfg["start_time"] = float(self.start_time) * factor
+        elif "start_time" not in sim_cfg and "startTime" in scenario_cfg:
+            sim_cfg["start_time"] = float(scenario_cfg["startTime"]) * factor
 
         if self.solver is not None:
             sim_cfg["method"] = self.solver

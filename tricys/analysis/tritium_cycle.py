@@ -704,7 +704,7 @@ def extract_startup_inventory_metrics(
         if time_base_cfg == "second":
             is_seconds_native = True
         elif time_base_cfg == "hour":
-            is_seconds_native = float(t[-1]) > 7200.0 or float(t[-1]) >= 86400.0
+            is_seconds_native = False
         else:
             is_seconds_native = float(t[-1]) >= 86400.0
 

@@ -96,10 +96,11 @@ class FOCInjectorPlugin(PreprocessPlugin):
         context.set_metadata("foc_component", resolved_component)
         context.set_metadata("foc_injected", True)
 
+        unit_suffix = "s" if model_time_base == "second" else "h"
         if context.stop_time < foc_result.get("schedule_duration", 0.0):
             logger.warning(
-                f"Configured stop_time ({context.stop_time}s) is shorter than FOC schedule "
-                f"duration ({foc_result.get('schedule_duration')}s)"
+                f"Configured stop_time ({context.stop_time}{unit_suffix}) is shorter than FOC schedule "
+                f"duration ({foc_result.get('schedule_duration')}{unit_suffix})"
             )
 
         self._check_foc_parameter_conflicts(context, resolved_component)

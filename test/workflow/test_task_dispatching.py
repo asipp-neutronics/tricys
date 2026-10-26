@@ -18,6 +18,7 @@ def test_schema_v2_field_effectiveness_mapping():
             "target": "openmodelica",
         },
         "scenario": {
+            "time_base": "hour",
             "stopTime": 3600.0,
             "startTime": 100.0,
             "numberOfIntervals": 1800,

@@ -42,31 +42,31 @@ def _make_v2_config(scenario_dict: dict) -> TricysV2Config:
     )
 
 
-def test_schema2_second_first_citizen_passthrough():
-    """AC 2.1: Schema 2.0 default time_base is 'second', stopTime is passed through without x3600."""
-    scenario = ScenarioConfig(stopTime=86400.0, stepSize=100.0)
-    assert scenario.time_base == "second"
-    assert scenario.stopTime == 86400.0
-    assert scenario.stepSize == 100.0
-
-    v2_cfg = _make_v2_config({"stopTime": 86400.0, "stepSize": 100.0})
-    assert v2_cfg.simulation.time_base == "second"
-    assert v2_cfg.simulation.stop_time == 86400.0
-
-    # Ensure prepared config keeps 86400.0 seconds without 3600x inflation
-    prepared, _ = basic_prepare_config(v2_cfg.model_dump())
-    sim_sec = _sim_time_to_seconds(prepared["simulation"])
-    assert sim_sec["stop_time"] == 86400.0
-    assert sim_sec["_time_unit"] == "second"
-
-
-def test_schema2_hour_compatibility_conversion_and_idempotency():
-    """AC 2.2: time_base: 'hour' converts hours to seconds (x3600) with strict idempotency."""
+def test_schema2_hour_model_passes_through_unchanged():
+    """time_base: 'hour' declares Modelica model is authored in hours, so hour config passes through without x3600."""
     scenario = ScenarioConfig(stopTime=24.0, stepSize=0.5, time_base="hour")
     assert scenario.time_base == "hour"
+    assert scenario.stopTime == 24.0
+    assert scenario.stepSize == 0.5
 
     v2_cfg = _make_v2_config({"stopTime": 24.0, "stepSize": 0.5, "time_base": "hour"})
     assert v2_cfg.simulation.time_base == "hour"
+    assert v2_cfg.simulation.stop_time == 24.0
+
+    prepared, _ = basic_prepare_config(v2_cfg.model_dump())
+    sim_sec = _sim_time_to_seconds(prepared["simulation"])
+    assert sim_sec["stop_time"] == 24.0
+    assert sim_sec["step_size"] == 0.5
+    assert sim_sec["_time_unit"] == "second"
+
+
+def test_schema2_second_model_scales_hours_to_seconds():
+    """time_base: 'second' declares Modelica model is in seconds, so hour config is scaled x3600 with idempotency."""
+    scenario = ScenarioConfig(stopTime=24.0, stepSize=0.5, time_base="second")
+    assert scenario.time_base == "second"
+
+    v2_cfg = _make_v2_config({"stopTime": 24.0, "stepSize": 0.5, "time_base": "second"})
+    assert v2_cfg.simulation.time_base == "second"
     prepared, _ = basic_prepare_config(v2_cfg.model_dump())
 
     # First call: scales by 3600

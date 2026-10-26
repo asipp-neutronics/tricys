@@ -41,10 +41,10 @@ def resolve_plot_time_scale(
 ) -> Tuple[str, float]:
     """Resolves truthful time unit and scale factor based on config and data span.
 
-    If config explicitly declares scenario.time_base == 'hour', hours ('h', 3600.0) is
-    strictly prioritized to align with user engineering scenario specification.
-    If scenario.time_base == 'second', seconds ('s', 1.0) is used unless time span is huge.
-    Otherwise adapts based on magnitude.
+    - When scenario.time_base == 'hour', the Modelica model is in hours, so raw time
+      data is already in hours (divisor 1.0).
+    - When scenario.time_base == 'second', the Modelica model is in seconds, so raw time
+      data is in seconds and scaled by 3600.0 to hours (or days if huge).
     """
     tb = None
     if config:
@@ -57,14 +57,11 @@ def resolve_plot_time_scale(
             tb = tb.strip().lower()
 
     if tb == "hour":
-        return "h", SECONDS_PER_HOUR
+        return "h", 1.0
     elif tb == "second":
         if t_max > SECONDS_PER_DAY * 7:
             return "d", SECONDS_PER_DAY
-        elif t_max > SECONDS_PER_HOUR * 2:
-            return "h", SECONDS_PER_HOUR
-        else:
-            return "s", 1.0
+        return "h", SECONDS_PER_HOUR
 
     # Fallback adaptive
     if t_max > SECONDS_PER_DAY * 2:

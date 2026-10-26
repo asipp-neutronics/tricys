@@ -57,11 +57,13 @@ SUPPORTED_TIME_BASES = ("second", "hour")
 
 
 def _sim_time_to_seconds(sim_config: dict) -> dict:
-    """Normalise simulation time fields to SI seconds.
+    """Normalise simulation time fields to Modelica model's base time unit.
 
-    In TRICYS 2.0 (Schema 2.0), time fields (stop_time, step_size) are native SI seconds
-    by default (time_base='second').
-    When time_base='hour' is configured, the hour-authored values are multiplied by 3600.0.
+    TRICYS configuration time fields (stop_time, step_size, start_time) are natively in hours.
+    - When time_base='second': The Modelica model expects SI seconds, so the hour-authored
+      values are multiplied by 3600.0 to adapt to OMC solving.
+    - When time_base='hour': The Modelica model is authored in hours (e.g. Jinchuan's model),
+      so the hour-authored values pass through without scaling (factor=1.0).
 
     Idempotent: a private `_time_unit` marker records that conversion has already
     been applied ('second'), preventing multiple multiplications by 3600.0.
@@ -78,8 +80,8 @@ def _sim_time_to_seconds(sim_config: dict) -> dict:
             f"expected one of {SUPPORTED_TIME_BASES}."
         )
 
-    factor = HOURS_TO_SECONDS if time_base == "hour" else 1.0
-    for key in ("stop_time", "step_size"):
+    factor = HOURS_TO_SECONDS if time_base == "second" else 1.0
+    for key in ("stop_time", "step_size", "start_time"):
         if key in sim_config and sim_config[key] is not None:
             sim_config[key] = float(sim_config[key]) * factor
 

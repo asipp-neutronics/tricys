@@ -20,7 +20,7 @@ model:
   modelName: "${MODEL_NAME}"                             # 例如: example_model.Cycle
 
 scenario:
-  time_base: "hour"
+  time_base: "second"
   stopTime: ${STOP_TIME}                                # 支持超长周期 (5000h+) 演化
   stepSize: ${STEP_SIZE}
   method: "dassl"

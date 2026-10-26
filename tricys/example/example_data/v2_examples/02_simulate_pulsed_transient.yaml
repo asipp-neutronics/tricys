@@ -18,7 +18,7 @@ model:
   modelName: "example_model.Cycle"
 
 scenario:
-  time_base: "hour"
+  time_base: "second"
   stopTime: 2000.0
   stepSize: 0.5
   method: "dassl"

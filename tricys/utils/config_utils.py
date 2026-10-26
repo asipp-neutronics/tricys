@@ -178,6 +178,10 @@ def convert_relative_paths_to_absolute(
                 # If it's a relative path, convert to absolute path
                 if not os.path.isabs(value) and value:
                     abs_path = os.path.abspath(os.path.join(base_dir, value))
+                    if not os.path.exists(abs_path):
+                        alt_cand = os.path.abspath(os.path.join(base_dir, "..", value))
+                        if os.path.exists(alt_cand):
+                            abs_path = alt_cand
                     logger.debug(
                         "Converted path",
                         extra={
@@ -435,7 +439,7 @@ def basic_prepare_config(
 
         time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
         config["simulation"]["time_base"] = time_base
-        if time_base == "hour":
+        if time_base == "second":
             config["simulation"]["stop_time"] = stop_time * 3600.0
             config["simulation"]["step_size"] = step_size * 3600.0
             config["simulation"]["start_time"] = (
@@ -642,7 +646,7 @@ def basic_prepare_config(
     ).replace("]", "]\\]")
 
     sim_cfg = config.get("simulation", {})
-    if "time_base" in sim_cfg and sim_cfg["time_base"] == "hour":
+    if "time_base" in sim_cfg and sim_cfg.get("_time_unit") != "second":
         from tricys.simulation.simulation import _sim_time_to_seconds
 
         _sim_time_to_seconds(sim_cfg)

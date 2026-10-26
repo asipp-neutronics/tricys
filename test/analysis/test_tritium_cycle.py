@@ -294,7 +294,7 @@ def test_extract_startup_inventory_metrics_hour_scaling():
     df = pd.DataFrame({"time": times, "sds.I[1]": sds_inv, "job_id": 1})
     jobs_df = pd.DataFrame([{"job_id": 1, "name": "Case 2000h", "t_DD_end": 0.0}])
 
-    cfg = {"scenario": {"time_base": "hour", "stopTime": 2000.0}}
+    cfg = {"scenario": {"time_base": "second", "stopTime": 2000.0}}
     metrics = extract_startup_inventory_metrics(df, jobs_df, config=cfg)
 
     assert len(metrics) == 1
@@ -309,16 +309,16 @@ def test_plot_time_scale_resolution():
     """Verify resolve_plot_time_scale respects scenario.time_base."""
     from tricys.visualizer.report.figures import resolve_plot_time_scale
 
-    # Hour config with 7.2e6 seconds
+    # When model is hour-based, raw data is in hours, so divisor is 1.0
     unit_h, factor_h = resolve_plot_time_scale(
-        7200000.0, config={"scenario": {"time_base": "hour"}}
+        2000.0, config={"scenario": {"time_base": "hour"}}
     )
     assert unit_h == "h"
-    assert factor_h == 3600.0
+    assert factor_h == 1.0
 
-    # Second config
+    # When model is second-based, raw data is in seconds, so scaled to hours via 3600.0
     unit_s, factor_s = resolve_plot_time_scale(
-        1800.0, config={"scenario": {"time_base": "second"}}
+        360000.0, config={"scenario": {"time_base": "second"}}
     )
-    assert unit_s == "s"
-    assert factor_s == 1.0
+    assert unit_s == "h"
+    assert factor_s == 3600.0

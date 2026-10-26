@@ -94,14 +94,14 @@ class DualBasisOptimizer:
         time_base = (
             str(
                 sim_config.get("time_base")
-                or config.get("scenario", {}).get("time_base", "hour")
+                or config.get("scenario", {}).get("time_base", "second")
             )
             .strip()
             .lower()
         )
-        time_factor = 3600.0 if time_base == "hour" else 1.0
+        time_factor = 3600.0 if time_base == "second" else 1.0
 
-        default_decay = 6.422e-6 if time_base == "hour" else 1.7838e-9
+        default_decay = 1.7838e-9 if time_base == "second" else 6.422e-6
         lambda_decay = float(job_params.get("lambda_decay", default_decay))
 
         # Inner doubling times will be determined below, outer threshold resolved from df1

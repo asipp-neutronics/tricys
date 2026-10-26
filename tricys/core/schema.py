@@ -106,18 +106,12 @@ class PulseConfig(BaseDTO):
 class ScenarioConfig(BaseDTO):
     """Level 1 Pillar: Simulation condition and numerical solver settings."""
 
-    stopTime: float = Field(
-        description="Simulation stop time in SI seconds (float > 0)"
-    )
-    startTime: float = Field(
-        default=0.0, description="Simulation start time in SI seconds"
-    )
-    stepSize: float = Field(
-        default=1.0, description="Communication step size in SI seconds"
-    )
+    stopTime: float = Field(description="Simulation stop time in hours (float > 0)")
+    startTime: float = Field(default=0.0, description="Simulation start time in hours")
+    stepSize: float = Field(default=1.0, description="Communication step size in hours")
     time_base: Literal["second", "hour"] = Field(
         default="second",
-        description="Base time unit for simulation conditions: 'second' (default native SI) or 'hour' (auto-scaled).",
+        description="Modelica model base time unit: 'second' (model uses seconds, auto-scales TRICYS hour config x3600 for OMC) or 'hour' (model authored in hours, 1:1 pass-through).",
     )
     numberOfIntervals: Optional[int] = Field(
         default=None,

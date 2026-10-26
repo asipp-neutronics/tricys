@@ -18,7 +18,7 @@ model:
   modelName: "${MODEL_NAME}"
 
 scenario:
-  time_base: "hour"
+  time_base: "second"
   stopTime: 1200.0
   stepSize: 0.5
   method: "dassl"

@@ -17,13 +17,13 @@ TRICYS V1.0 与 V2.0 存在重大架构演进，主要差异体现在以下几�
   - 依赖于隐式或局部的 `time_scale` 与 `time_base` 转换逻辑。
   - 不同子模块（如 Basic 仿真、FOC 调度、后处理指标提取）对秒（Second）与小时（Hour）的换算定义较为分散，需要手动在 JSON 中协调单位一致性。
 - **V2.0 现代化机制**：
-  - 在 Schema 2.0 DSL 的 `scenario` 字段中提供了统一声明式物理时间总线：
+  - 在 Schema 2.0 DSL 的 `scenario` 字段中提供了统一声明式物理时间总线：TRICYS 配置默认一律采用小时（hour，如 `stopTime: 2000.0` 即 2000 小时），并通过 `time_base` 显式告知底层 Modelica 模型的基本时间单位（`second` 或 `hour`），由 TRICYS 自动完成 OMC 求解入参转换与后处理对齐：
     ```yaml
     scenario:
-      time_base: "hour"    # 显式声明主仿真时间基准 (second / hour / day)
-      startTime: 0.0
-      stopTime: 2000.0     # 严格与 time_base 语义对齐
-      stepSize: 0.5
+      time_base: "second"  # 告知底层 Modelica 模型基本单位是秒（若为金川等以小时为基准的模型则填 "hour"）
+      startTime: 0.0       # TRICYS 默认单位：小时 (hours)
+      stopTime: 2000.0     # TRICYS 默认单位：小时 (hours)
+      stepSize: 0.5        # TRICYS 默认单位：小时 (hours)
     ```
   - 底层由 `TimeBaseCrosschecker` 与物理语义流水线自动保障跨求解器（Modelica / FMI / Aspen Plus / Python Handler）时间步长的严格守恒与无量纲换算。
 
