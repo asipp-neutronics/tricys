@@ -1,9 +1,17 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS Agent-Native 原型模板: 09 协同仿真 —— 在线步进模式 (Online Step)
-# 适用场景: 全厂系统与高保真子系统 (FMU / SSP / Aspen 动态处理器) 在宏步长边界
-#          双向同步交换流股与状态，捕获强瞬态反馈
+# TRICYS V2.0 演示模板 09: 协同仿真 —— 在线步进双向同步模式 (Online Step) (SC-7)
+# 
+# 模板定位:
+# - 基于 SSP/FMI 工业标准协议，全厂宏观系统模型与高保真子系统处理器的在线单步双向数据交互原型
+# 
+# 核心特征 / 占位符契约:
+# - 协同模式: task.type = "cosim", mode = "online_step"
+# - 核心机理: Lockstep Dynamic Exchange (双向锁步动态同步)，每步推进前交换进出口流量与组分
+# - 自省替换: ${MODEL_SSP_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${EXCHANGE_STEP_SIZE}, ${TARGET_SUBMODEL}, ${INSTANCE_NAME}, ${ONLINE_SOLVER}, ${HANDLER_MODULE_PATH}, ${HANDLER_CLASS_NAME}
+# - 鲁棒控制: 内置局部质量控制 (local_mass_control) 与影子 FMU 降级回退 (shadow_fmu_fallback)
+# - 交付报告: 聚变堆多物理场协同仿真评估报告 (在线步进模式) (Markdown / DOCX / PDF)
 # ==============================================================================
 
 model:

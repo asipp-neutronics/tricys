@@ -1,5 +1,18 @@
-# TRICYS V2 Template: 变占空比脉冲宽度对临界 TBR 影响扫参 (SC-1 & SC-2)
 version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 04: 脉冲占空比扫描与 Required TBR 耦合评估 (SC-1 & SC-2)
+# 
+# 模板定位:
+# - 针对不同电厂运行占空比/脉冲宽度工况，评估其对满足自持翻倍时间临界产氚比的抬升规律原型
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "sweep"，外层扫描脉冲宽度，指标内嵌单层二分搜索
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${PULSE_WIDTH_PARAM}, ${TBR_PARAM}
+# - 物理参数: 扫描脉冲宽度 (${PULSE_WIDTH_PARAM}: 100h / 80h / 60h，对应连续运行与变占空比脉冲工况)
+# - 关键指标: 启动库存亏空、最终库存，以及满足自持倍增时间 (doubling_time) 的 Required TBR
+# - 交付报告: 脉冲占空比变工况自持启动亏空与临界产氚比分析报告 (Markdown / DOCX / PDF)
+# ==============================================================================
 
 model:
   fileName: "${MODEL_FILE_PATH}"
@@ -15,7 +28,7 @@ scenario:
 task:
   type: "sweep"
   parallel: true
-  max_workers: 3
+  max_workers: 8
   parameters:
     - name: "Duty_100_Continuous"
       ${PULSE_WIDTH_PARAM}: 100.0
@@ -41,7 +54,7 @@ task:
       target_metric:
         source: "${STORAGE_NODE}"
         evaluate: "doubling_time"
-        threshold: 63072000.0  # 2 年倍增时间约束阈值
+        threshold: 1500.0  # 自持倍增时间约束阈值 (小时)
 
 visualizer:
   enabled: true

@@ -19,7 +19,8 @@ model SDS
     Placement(transformation(origin = {120, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
 
   // 状态变量：SDS 内部的氚存储量
-  Real I[5](start = {3000, 3000, 0, 0, 0}) "SDS 内的氚存储量";
+  parameter Real I_S_0 = 3000 "Initial tritium storage inventory (g)";
+  Real I[5](start = {I_S_0, 3000, 0, 0, 0}) "SDS 内的氚存储量";
 
   // 参数定义
   // parameter Real T = 0.5 "平均滞留时间 (mean residence time)";

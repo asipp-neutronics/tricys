@@ -1,5 +1,18 @@
-# TRICYS V2 Template: 全流程闭环物料守恒与安全泄漏审计 (SC-4)
 version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 06: 全系统物理语义质量守恒闭环离线审计 (SC-4)
+# 
+# 模板定位:
+# - 在长周期动态仿真后，自动挂载物理守恒审计器，对全厂产氚、滞留、泄漏、衰变、燃烧进行闭环质量校验原型
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "simulate"，内嵌 task.auditor 审计系统
+# - 审计机制: 自动抓取通配符变量 (*.I, *.cumulative_breed, *.leak_rate, *.decay_rate, *.cumulative_burn)
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TBR_PARAM}, ${BURNUP_PARAM}
+# - 守恒判据: 严格基于全厂质量连续性方程进行代数和校验，设警告阈值 (warn: 0.5g) 与熔断阈值 (kill: 50.0g)
+# - 交付报告: 全厂动态物料平衡与闭环质量守恒审计工况报告 (Markdown / DOCX / PDF)
+# ==============================================================================
 
 model:
   fileName: "${MODEL_FILE_PATH}"
@@ -17,6 +30,7 @@ task:
   parallel: true
   parameters:
     ${TBR_PARAM}: 1.10
+    ${BURNUP_PARAM}: 0.05
   metrics:
     peak_inventory:
       source: "${STORAGE_NODE}"
@@ -40,10 +54,6 @@ task:
         - "*.decay_rate?1?"            # 衰变项
       cumulative_burn:
         - "*plasma.cumulative_burn?1?" # 聚变燃耗项
-
-plugins:
-  postprocess:
-    - name: "safety"                   # 自动执行 offline_auditor
 
 visualizer:
   enabled: true

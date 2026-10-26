@@ -1,13 +1,17 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS Agent-Native 原型模板: 08 协同仿真 —— 离线查表模式 (Offline Table / Offline Co-Sim)
-# 底层引擎: offline_cosim (两阶段初探-拦截-重构)
-# 核心机理: 
-#   1. 初探仿真生成输入时序 temp_input_csv；
-#   2. 调用 handler_module 中的 handler_function 执行外部离线求解，写出 temp_output_csv；
-#   3. TRICYS 内部由 interceptor.py 自动生成 CombiTimeTable 拦截包装模型重构闭环，
-#      严禁在配置文件中手工指定 substitute_model: "Modelica.Blocks.Tables.CombiTable1Ds"！
+# TRICYS V2.0 演示模板 08: 协同仿真 —— 离线查表/两阶段子系统替代模式 (Offline Table) (SC-6)
+# 
+# 模板定位:
+# - 针对同位素分离系统 (I_ISS) 等高维非线性复杂子系统，运用两阶段 Run-Process-Rerun 进行离线替代求解原型
+# 
+# 核心特征 / 占位符契约:
+# - 协同模式: task.type = "cosim", mode = "offline_table"
+# - 核心机理: 阶段一初探获取接口边界流 -> 阶段二调用外部求解器 (Aspen Plus / Python) -> 阶段三重构总系统
+# - 自省替换: ${MODEL_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TARGET_SUBMODEL}, ${INSTANCE_NAME}, ${EXTERNAL_SOLVER}, ${HANDLER_MODULE_PATH}, ${HANDLER_FUNCTION_NAME}
+# - 严禁配置: 严禁在配置文件中手工指定 substitute_model: "Modelica.Blocks.Tables.CombiTable1Ds"！
+# - 交付报告: 聚变堆多物理场协同仿真评估报告 (离线查表模式) (Markdown / DOCX / PDF)
 # ==============================================================================
 
 model:
@@ -45,5 +49,5 @@ visualizer:
   launch_on_finish: false
   report:
     enabled: true
-    title: "TRICYS 聚变堆多物理场协同仿真评估报告 (离线查表/offline_cosim 模式)"
+    title: "TRICYS 聚变堆多物理场协同仿真评估报告 (离线查表模式)"
     formats: ["markdown", "docx", "pdf"]

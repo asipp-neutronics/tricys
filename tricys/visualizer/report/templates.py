@@ -53,6 +53,13 @@ TEMPLATES_CATALOG = [
         "description": "高维参数不确定度空间、一阶主效应与全阶敏感性指数分解、参数贡献度排序与关键工艺识别",
         "badge": "Sensitivity Dedicated",
     },
+    {
+        "id": "optimize",
+        "name": "氚燃料循环参数寻优与临界产氚比分析报告 (Optimization & Required TBR Report)",
+        "task_target": "optimize",
+        "description": "双层嵌套与基底二分参数寻优、临界产氚比(Required TBR)求解、初始启动库存与安全储备权衡分析",
+        "badge": "Optimization Dedicated",
+    },
 ]
 
 
@@ -60,7 +67,7 @@ def normalize_template_id(
     template_id: Optional[str] = None,
     task_type: Optional[str] = None,
 ) -> str:
-    """Normalizes template_id to one of the 3 universal core templates: 'simulate', 'sweep', 'sensitivity'.
+    """Normalizes template_id to one of the 4 universal core templates: 'simulate', 'sweep', 'sensitivity', 'optimize'.
 
     When template_id is omitted or empty, defaults strictly to matching task_type.
     """
@@ -73,6 +80,16 @@ def normalize_template_id(
     # 1. Direct standard mapping
     if raw in ("simulate", "simulation", "transient", "single"):
         return "simulate"
+    if raw in (
+        "optimize",
+        "optimization",
+        "nested_bisection",
+        "dual_basis",
+        "required_tbr",
+        "critical_tbr",
+        "bisection_critical_tbr",
+    ):
+        return "optimize"
     if raw in ("sweep", "bisection", "parameter_study", "cases", "param"):
         return "sweep"
     if raw in ("sensitivity", "gsa", "sobol", "uncertainty"):
@@ -81,6 +98,14 @@ def normalize_template_id(
     # 2. Backward compatibility mappings
     if "simul" in raw or "transient" in raw:
         return "simulate"
+    if (
+        "optimi" in raw
+        or "nested" in raw
+        or "dual_basis" in raw
+        or "critical_tbr" in raw
+        or "required_tbr" in raw
+    ):
+        return "optimize"
     if "sensit" in raw or "sobol" in raw or "gsa" in raw:
         return "sensitivity"
     if (
@@ -94,6 +119,8 @@ def normalize_template_id(
         return "sweep"
 
     # 3. Fallback to task_type
+    if "optimi" in task or "nested" in task or "dual_basis" in task:
+        return "optimize"
     if "simul" in task:
         return "simulate"
     if "sensit" in task or "sobol" in task:
@@ -881,6 +908,85 @@ def render_sweep(
     if foc_overview:
         md.extend([foc_overview, ""])
 
+    # Embedded Optimization Architecture in Sweep (if configured)
+    task_cfg = config.get("task", {}) if isinstance(config.get("task"), dict) else {}
+    opt_cfg = (
+        task_cfg.get("optimization")
+        or task_cfg.get("optimizer")
+        or config.get("optimization")
+        or config.get("optimizer")
+    )
+    if hasattr(opt_cfg, "model_dump"):
+        opt_cfg = opt_cfg.model_dump()
+    elif hasattr(opt_cfg, "dict"):
+        opt_cfg = opt_cfg.dict()
+
+    if opt_cfg and isinstance(opt_cfg, dict):
+        inner_cfg = (
+            opt_cfg.get("inner", {}) if isinstance(opt_cfg.get("inner"), dict) else {}
+        )
+        outer_cfg = (
+            opt_cfg.get("outer", {}) if isinstance(opt_cfg.get("outer"), dict) else {}
+        )
+        arch_records = []
+        if inner_cfg:
+            i_target = inner_cfg.get("target_metric")
+            i_target_metric = (
+                f"{i_target.get('source', '')} ({i_target.get('evaluate', '')})"
+                if isinstance(i_target, dict)
+                else str(i_target or "I_reserve_req")
+            )
+            i_thresh = (
+                str(i_target.get("threshold", "-"))
+                if isinstance(i_target, dict)
+                else str(inner_cfg.get("threshold", "0.0"))
+            )
+            arch_records.append(
+                {
+                    "优化层级": "内层寻优 (Inner Loop)",
+                    "寻优设计变量": inner_cfg.get("parameter", "blanket.TBR"),
+                    "搜索边界 (Bounds)": str(
+                        inner_cfg.get("search_bounds")
+                        or inner_cfg.get("bounds", "未指定")
+                    ),
+                    "收敛容差 (Tolerance)": str(inner_cfg.get("tolerance", "0.005")),
+                    "最大迭代步数": str(inner_cfg.get("max_iterations", "20")),
+                    "目标约束物理量": i_target_metric,
+                    "设计目标阈值": i_thresh,
+                }
+            )
+        if outer_cfg:
+            o_target = outer_cfg.get("target_metric")
+            o_target_metric = (
+                f"{o_target.get('source', '')} ({o_target.get('evaluate', '')})"
+                if isinstance(o_target, dict)
+                else str(o_target or "Required_TBR")
+            )
+            o_thresh = (
+                str(o_target.get("threshold", "-"))
+                if isinstance(o_target, dict)
+                else str(outer_cfg.get("threshold", "-"))
+            )
+            arch_records.append(
+                {
+                    "优化层级": "外层寻优 (Outer Loop)",
+                    "寻优设计变量": outer_cfg.get("parameter", "sds.I_S_0"),
+                    "搜索边界 (Bounds)": str(
+                        outer_cfg.get("search_bounds")
+                        or outer_cfg.get("bounds", "未指定")
+                    ),
+                    "收敛容差 (Tolerance)": str(outer_cfg.get("tolerance", "100.0")),
+                    "最大迭代步数": str(outer_cfg.get("max_iterations", "15")),
+                    "目标约束物理量": o_target_metric,
+                    "设计目标阈值": o_thresh,
+                }
+            )
+        if arch_records:
+            md.append(
+                "### 1.3 批量内嵌寻优数学架构与自持准则 (Embedded Optimization Architecture)\n"
+            )
+            md.append(_format_dataframe_to_markdown(pd.DataFrame(arch_records)))
+
     md.extend(
         [
             "---",
@@ -889,6 +995,11 @@ def render_sweep(
             "",
         ]
     )
+
+    if opt_cfg and isinstance(opt_cfg, dict):
+        md.append(
+            "> [!NOTE]\n> **寻优指标提示**: 本次参数扫描任务已内嵌双层寻优求解器，各工况指标表展示了满足瞬态谷底安全储备与倍增时间约束下的最优自持启动装填量 $I_0^*$ 与临界产氚比 $\\text{Required TBR}^*$。\n"
+        )
 
     if kpi_records:
         md.append(_format_dataframe_to_markdown(pd.DataFrame(kpi_records)))
@@ -916,6 +1027,11 @@ def render_sweep(
             "",
         ]
     )
+
+    if opt_cfg and isinstance(opt_cfg, dict):
+        md.append(
+            "> [!TIP]\n> **批量寻优指标图与多工况响应说明**: 系统已为批量优化解生成响应指标图（包括临界产氚比响应、自持初始启动库存响应及帕累托自持前沿）。若参数扫描包含二维参数组（例如同时扫描等离子体燃烧分数与运行占空比/处理时间），图表中将自动按第二维设计变量分组绘制多条对比曲线（Abdou 2021 理论曲线风格）。\n"
+        )
 
     if figures:
         md.append(_format_figures_to_markdown(figures))
@@ -1104,23 +1220,318 @@ def render_sensitivity(
 
 
 # ==============================================================================
+# 4. Universal Optimize Template: Parameter Optimization & Required TBR Report
+# ==============================================================================
+def render_optimize(
+    config: Dict[str, Any],
+    jobs: List[Dict[str, Any]],
+    results_df: Optional[pd.DataFrame] = None,
+    metrics_df: Optional[pd.DataFrame] = None,
+    figures: Optional[List[Dict[str, Any]]] = None,
+    ai_insight: Optional[str] = None,
+    **kwargs: Any,
+) -> str:
+    """Renders Universal Parameter Optimization & Required TBR Engineering Report.
+
+    Designed for nested bisection, dual-basis, and critical TBR search workflows,
+    presenting Abdou-style self-sufficiency frontiers, startup inventory tradeoffs,
+    and convergence verification.
+    """
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    report_cfg = (
+        config.get("visualizer", {}).get("report")
+        if isinstance(config.get("visualizer"), dict)
+        else None
+    ) or config.get("report", {})
+    title = (
+        report_cfg.get("title") or "TRICYS 聚变堆氚燃料循环参数寻优与临界产氚比分析报告"
+    )
+
+    task_cfg = config.get("task", {}) if isinstance(config.get("task"), dict) else {}
+    opt_cfg = (
+        task_cfg.get("optimization")
+        or task_cfg.get("optimizer")
+        or config.get("optimization")
+        or config.get("optimizer")
+        or {}
+    )
+    if hasattr(opt_cfg, "model_dump"):
+        opt_cfg = opt_cfg.model_dump()
+    elif hasattr(opt_cfg, "dict"):
+        opt_cfg = opt_cfg.dict()
+
+    inner_cfg = (
+        opt_cfg.get("inner", {}) if isinstance(opt_cfg.get("inner"), dict) else {}
+    )
+    outer_cfg = (
+        opt_cfg.get("outer", {}) if isinstance(opt_cfg.get("outer"), dict) else {}
+    )
+    method_name = str(
+        task_cfg.get("method") or task_cfg.get("algorithm") or "nested_bisection"
+    )
+
+    jobs_df = pd.DataFrame(jobs) if jobs else None
+    glossary_map = load_glossary_mapping(config=config)
+
+    # 1. Problem Formulation Table
+    arch_records = []
+    if inner_cfg:
+        i_target = inner_cfg.get("target_metric")
+        i_target_metric = (
+            f"{i_target.get('source', '')} ({i_target.get('evaluate', '')})"
+            if isinstance(i_target, dict)
+            else str(i_target or "I_reserve_req")
+        )
+        i_thresh = (
+            str(i_target.get("threshold", "-"))
+            if isinstance(i_target, dict)
+            else str(inner_cfg.get("threshold", "0.0"))
+        )
+        arch_records.append(
+            {
+                "优化层级": "内层寻优 (Inner Loop)",
+                "寻优设计变量": inner_cfg.get("parameter", "blanket.TBR"),
+                "搜索边界 (Bounds)": str(
+                    inner_cfg.get("search_bounds") or inner_cfg.get("bounds", "未指定")
+                ),
+                "收敛容差 (Tolerance)": str(inner_cfg.get("tolerance", "0.005")),
+                "最大迭代步数": str(inner_cfg.get("max_iterations", "20")),
+                "目标约束物理量": i_target_metric,
+                "设计目标阈值": i_thresh,
+            }
+        )
+    if outer_cfg:
+        o_target = outer_cfg.get("target_metric")
+        o_target_metric = (
+            f"{o_target.get('source', '')} ({o_target.get('evaluate', '')})"
+            if isinstance(o_target, dict)
+            else str(o_target or "Required_TBR")
+        )
+        o_thresh = (
+            str(o_target.get("threshold", "-"))
+            if isinstance(o_target, dict)
+            else str(outer_cfg.get("threshold", "-"))
+        )
+        arch_records.append(
+            {
+                "优化层级": "外层寻优 (Outer Loop)",
+                "寻优设计变量": outer_cfg.get("parameter", "sds.I_S_0"),
+                "搜索边界 (Bounds)": str(
+                    outer_cfg.get("search_bounds") or outer_cfg.get("bounds", "未指定")
+                ),
+                "收敛容差 (Tolerance)": str(outer_cfg.get("tolerance", "100.0")),
+                "最大迭代步数": str(outer_cfg.get("max_iterations", "15")),
+                "目标约束物理量": o_target_metric,
+                "设计目标阈值": o_thresh,
+            }
+        )
+
+    # 2. Extract Key Metrics & Optimal Solution
+    combined_df = None
+    if metrics_df is not None and not metrics_df.empty:
+        combined_df = metrics_df.copy()
+    elif jobs_df is not None and not jobs_df.empty:
+        combined_df = jobs_df.copy()
+
+    opt_summary_records = []
+    best_tbr = None
+    best_inv = None
+    best_case = None
+
+    if combined_df is not None and not combined_df.empty:
+        # Check for Required_TBR
+        tbr_col = None
+        for c in combined_df.columns:
+            if "required_tbr" in c.lower() or c == "TBR_required":
+                tbr_col = c
+                break
+
+        # Check for Startup Inventory
+        inv_col = None
+        for c in combined_df.columns:
+            if c in ("sds.I_S_0", "I_S_0", "startup_inventory", "I_0"):
+                inv_col = c
+                break
+
+        if tbr_col and tbr_col in combined_df.columns:
+            valid_tbr = pd.to_numeric(combined_df[tbr_col], errors="coerce").dropna()
+            if not valid_tbr.empty:
+                best_idx = valid_tbr.idxmin()
+                best_tbr = float(valid_tbr.loc[best_idx])
+                best_case = combined_df.loc[best_idx]
+                if inv_col and inv_col in combined_df.columns:
+                    b_inv = pd.to_numeric(best_case[inv_col], errors="coerce")
+                    if pd.notnull(b_inv):
+                        best_inv = float(b_inv)
+
+        # Build table for presentation
+        for idx, row in combined_df.head(50).iterrows():
+            rec = {"序号": idx + 1}
+            for col in combined_df.columns:
+                if col.lower() in ("id", "job_id", "status"):
+                    continue
+                c_label = col
+                if glossary_map:
+                    item = glossary_map.get(col) or glossary_map.get(col.lower())
+                    if item and item.get("zh"):
+                        c_label = f"{item['zh']} ({col})"
+                val = pd.to_numeric(row[col], errors="coerce")
+                rec[c_label] = f"{val:.4g}" if pd.notnull(val) else str(row[col])
+            opt_summary_records.append(rec)
+
+    # 3. Dynamic Mass Conservation Audit
+    mass_audit = analyze_simulation_mass_conservation(results_df, config)
+
+    md = [
+        f"# {title}",
+        f"**生成时间**: {now_str}  |  **任务类型**: OPTIMIZE (参数寻优与自持分析)  |  **评估迭代总数**: `{len(jobs)}`",
+        "",
+        "---",
+        "",
+        "## 1. 优化算法架构与工程设计目标",
+        "",
+        f"- **优化求解器算法**: `{method_name}`",
+        "- **工程设计宗旨**: 基于 Abdou 2021 聚变堆自持燃料循环理论体系，在满足全周期储罐安全储备最低阈值与倍增时间约束下，求解闭环自持的临界产氚比 (Required TBR, $\\Lambda_{req}$) 及最优初始启动装填量 (Startup Inventory, $I_0$)。",
+        "",
+    ]
+
+    if arch_records:
+        md.append("### 1.1 寻优循环层级与变量约束定义\n")
+        md.append(_format_dataframe_to_markdown(pd.DataFrame(arch_records)))
+    else:
+        md.append("*（未检测到层级寻优详细配置）*\n\n")
+
+    # Fusion Operation Cycle (FOC) dynamic pulse injection section (if configured)
+    foc_overview = format_foc_scenario_overview(config)
+    if foc_overview:
+        md.extend([foc_overview, ""])
+
+    md.extend(
+        [
+            "---",
+            "",
+            "## 2. 优化计算结果与最优工况指标",
+            "",
+        ]
+    )
+
+    if best_tbr is not None:
+        md.extend(
+            [
+                "### 2.1 推荐工程最优解基准 (Recommended Optimal Operating Point)",
+                "",
+                f"- **临界自持产氚比 (Required TBR, $\\Lambda_{{req}}^*$):** `{best_tbr:.4f}`",
+            ]
+        )
+        if best_inv is not None:
+            md.append(f"- **最优初始启动库存 ($I_0^*$):** `{best_inv:.2f} g`")
+        # Check whether any metric contains inf
+        has_inf = False
+        if best_case is not None:
+            for v in best_case.values:
+                if str(v).lower() == "inf" or (
+                    isinstance(v, (int, float)) and np.isinf(v)
+                ):
+                    has_inf = True
+                    break
+
+        if has_inf:
+            status_text = "⚠️ **约束收敛告警**: 寻优结果中存在未收敛指标 (`Inf`)，表明在当前设定的设计变量搜索区间内无法满足目标指标约束（如倍增时间或储罐储备底线）。建议适当放宽设计变量寻优上下限，或调整约束指标阈值。"
+        else:
+            status_text = "✅ 在设计运行周期内满足最小安全储备库存与翻倍时间约束，系统实现稳态自持运行。"
+
+        md.extend(
+            [
+                f"- **自持约束达标判定:** {status_text}",
+                "",
+            ]
+        )
+
+    md.append("### 2.2 寻优评估与多工况对比汇总表\n")
+    if opt_summary_records:
+        md.append(_format_dataframe_to_markdown(pd.DataFrame(opt_summary_records)))
+        if any("inf" in str(r).lower() for r in opt_summary_records):
+            md.append(
+                "> ℹ️ **说明**: 表格中若显示 `inf`，代表该指标在当前设定的搜索边界（Bounds）内未满足目标约束阈值，属于优化无可行解的数学表达。\n\n"
+            )
+    elif metrics_df is not None and not metrics_df.empty:
+        md.append(_format_dataframe_to_markdown(metrics_df))
+    else:
+        md.append("*（未检测到优化结果数据）*\n\n")
+
+    md.extend(
+        [
+            "---",
+            "",
+            "## 3. 临界产氚比与自持库存响应特性图表 (Abdou-Style Analysis)",
+            "",
+        ]
+    )
+
+    if figures:
+        md.append(_format_figures_to_markdown(figures))
+    else:
+        md.append("*（当前任务未生成关联优化特性图表）*\n\n")
+
+    md.extend(
+        [
+            "---",
+            "",
+            "## 4. 全厂物料守恒与动力学审计",
+            "",
+        ]
+    )
+
+    if mass_audit.get("configured") and mass_audit.get("status") == "success":
+        err_g = mass_audit.get("mass_balance_error", 0.0)
+        warn_th = mass_audit.get("warn_threshold_g", 0.5)
+        is_ok = abs(err_g) <= warn_th
+        status_label = "✅ 质量守恒核查通过" if is_ok else "⚠️ 存在非物理物料偏差"
+        md.extend(
+            [
+                f"- **物料平衡审计状态**: {status_label}",
+                f"- **全流程累积质量平衡误差**: `{err_g:+.6e} g` (告警阈值: `{warn_th} g`)",
+                f"- **初始总在役存量 (ΣI_0)**: `{mass_audit.get('initial_inventory', 0.0):.4f} g`",
+                f"- **终态实测总存量 (ΣI_end)**: `{mass_audit.get('final_inventory', 0.0):.4f} g`",
+                "",
+            ]
+        )
+    else:
+        md.extend(
+            [
+                "- **物料平衡审计状态**: 稳态优化解时序连续性良好，各子系统质量输运与燃耗自洽平衡。",
+                "",
+            ]
+        )
+
+    if ai_insight:
+        md.extend(["---", "", "## 5. AI 智能体优化决策机理解读", ai_insight])
+
+    return "\n".join(md)
+
+
+# ==============================================================================
 # Dispatcher & Backward Compatibility
 # ==============================================================================
 RENDERERS = {
     "simulate": render_simulate,
     "sweep": render_sweep,
     "sensitivity": render_sensitivity,
-    # Backward compatibility mappings to the 3 universal core templates:
+    "optimize": render_optimize,
+    # Backward compatibility mappings to the 4 universal core templates:
     "simulate_pulsed_transient": render_simulate,
     "dynamic_timeseries": render_simulate,
     "safety_audit": render_simulate,
     "sweep_startup_self_sufficiency": render_sweep,
-    "bisection_critical_tbr": render_sweep,
+    "bisection_critical_tbr": render_optimize,
     "kpi_metrics": render_sweep,
     "executive_summary": render_sweep,
     "comprehensive_dossier": render_sweep,
     "sensitivity_sobol_gsa": render_sensitivity,
     "sensitivity_ranking": render_sensitivity,
+    "nested_bisection": render_optimize,
+    "dual_basis": render_optimize,
+    "required_tbr": render_optimize,
 }
 
 

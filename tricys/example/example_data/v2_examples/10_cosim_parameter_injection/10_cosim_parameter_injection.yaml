@@ -1,14 +1,16 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS 工业基准算例 10: Schema 2.0 协同仿真 —— 参数注入模式 (Parameter Injection)
+# TRICYS V2.0 演示算例 10: 协同仿真 —— 稳态参数注入模式 (Steady-State Parameter Injection)
 # 
-# 模式特征:
-# - 基于 Wang (2022) CFETR 聚变堆同位素分离系统 (ISS-I & ISS-O) 真实配置
-# - 任务级统一注入: injection_type: "handler"
-# - 真实物理求解: 外部 handler (run_h2iso_wang2022.py) 真实驱动 h2iso 严密 MESH 方程序列模块求解器
-# - 强拓扑兼容性校验: 在子组件替换前由 submodel_replacer 严格校验上下游端口因果性、维度与 Connection 拓扑
-# - 极速长周期仿真: OpenModelica 原生 -overrideFile 注入稳态解，免去多塔严密偏微分方程长时间积分
+# 算例定位:
+# - 基于 Wang (2022) CFETR 聚变堆同位素分离系统 (ISS-I & ISS-O) 真实多塔配置，实现极速长周期协同仿真
+# 
+# 核心特征 / 演示重点:
+# - 协同模式: task.type = "cosim", mode = "parameter_injection"，统一注入方式 injection_type = "handler"
+# - 求解驱动: 外部脚本 (run_h2iso_wang2022.py) 动态调用 h2iso 严密热力学与 MESH 稳态解算器
+# - 参数注入: 通过 OpenModelica 原生 -overrideFile 机制在底层一次性注入复杂塔系分配系数与稳态滞留解
+# - 效率飞跃: 免除多精馏塔严密偏微分方程的长周期积分耗时，大幅缩短全厂长周期运行推演时间
 # ==============================================================================
 
 model:

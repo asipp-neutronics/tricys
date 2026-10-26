@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -70,6 +70,66 @@ def apply_metric_unit_scaling(val: Any, method_name: str, raw_def: Any) -> Any:
     return val
 
 
+def apply_series_smoothing(
+    series: pd.Series,
+    time_series: Optional[pd.Series] = None,
+    smooth_window: Optional[Union[float, int, str]] = None,
+    method: str = "mean",
+    center: bool = True,
+) -> pd.Series:
+    """Applies temporal rolling window smoothing to a time-series.
+
+    Used to eliminate high-frequency oscillations or pulsing cycles (e.g., reactor
+    burn/dwell or availability on/off cycles) before calculating metrics such as
+    doubling time, nadir/minimum, final value, turning points, or settling time.
+
+    Args:
+        series: Data series to smooth.
+        time_series: Time series corresponding to data points.
+        smooth_window: Physical time window width (in the same units as time_series).
+            If None, non-positive, or unparseable, returns the original series untouched.
+        method: Smoothing method: "mean" (rolling average) or "median" (median filter).
+        center: Whether the rolling window is centered (default True).
+
+    Returns:
+        Smoothed pd.Series with the same index and length as series.
+    """
+    if smooth_window is None:
+        return series
+    try:
+        w_val = float(smooth_window)
+    except (ValueError, TypeError):
+        return series
+
+    if w_val <= 0 or len(series) < 3:
+        return series
+
+    if (
+        time_series is not None
+        and len(time_series) == len(series)
+        and len(time_series) > 1
+    ):
+        dt = float(np.median(np.diff(time_series.values)))
+        if dt <= 0:
+            dt = float(time_series.iloc[-1] - time_series.iloc[0]) / max(
+                1, len(time_series) - 1
+            )
+        if dt > 0:
+            window_size = max(1, int(round(w_val / dt)))
+        else:
+            window_size = max(1, int(round(w_val)))
+    else:
+        window_size = max(1, int(round(w_val)))
+
+    if window_size <= 1:
+        return series
+
+    roller = series.rolling(window=window_size, center=center, min_periods=1)
+    if method == "median":
+        return roller.median()
+    return roller.mean()
+
+
 def get_final_value(
     series: pd.Series, time_series: Optional[pd.Series] = None
 ) -> float:
@@ -89,32 +149,68 @@ def get_final_value(
     return series.iloc[-1]
 
 
-def calculate_startup_inventory(
+def calculate_dynamic_deficit(
     series: pd.Series, time_series: Optional[pd.Series] = None
 ) -> float:
-    """Calculates the startup inventory.
+    """Calculates the dynamic inventory deficit / drawdown depth (Delta_I_V).
 
-    The startup inventory is calculated as the difference between the initial
-    inventory and the minimum inventory (the turning point).
+    In the literature (Abdou et al. 2021 Eq. 3.8), this is Delta_I_V = I(0) - min(I(t)),
+    representing the transient inventory holdup deficit accumulated before recycled
+    tritium returns from downstream processing systems.
 
     Args:
         series: The inventory time series data.
         time_series: The corresponding time data (unused).
 
     Returns:
-        The calculated startup inventory.
-
-    Note:
-        The time_series parameter is provided for interface consistency but is not
-        used in the calculation. The startup inventory represents the amount of
-        inventory consumed before reaching the minimum point.
+        The calculated dynamic inventory deficit.
     """
     initial_inventory = series.iloc[0]
     minimum_inventory = series.min()
-    return initial_inventory - minimum_inventory
+    return float(initial_inventory - minimum_inventory)
 
 
-def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
+def calculate_startup_inventory(
+    series: pd.Series, time_series: Optional[pd.Series] = None
+) -> float:
+    """Calculates the startup inventory deficit.
+
+    Maintained for backward compatibility. In TRICYS legacy usage, this returns
+    I(0) - min(I(t)), which corresponds physically to Delta_I_V (dynamic deficit).
+    For the literature start-up inventory I_S^0 that includes reserve inventory I_r,
+    use calculate_required_startup_inventory or model variable required_startup_inventory.
+    """
+    return calculate_dynamic_deficit(series, time_series)
+
+
+def calculate_required_startup_inventory(
+    series: pd.Series,
+    time_series: Optional[pd.Series] = None,
+    reserve_inventory: float = 0.0,
+) -> float:
+    """Calculates the total required start-up inventory I_S^0.
+
+    Per Abdou et al. (2021) Eq. (3.8):
+        I_S^0 = Delta_I_V + I_r
+    where Delta_I_V is the dynamic transit deficit and I_r is the safety reserve inventory.
+
+    Args:
+        series: The inventory time series data.
+        time_series: The corresponding time data (unused).
+        reserve_inventory: Safety buffer I_r (default: 0.0).
+
+    Returns:
+        The total required start-up inventory.
+    """
+    delta_v = calculate_dynamic_deficit(series, time_series)
+    return float(delta_v + reserve_inventory)
+
+
+def time_of_turning_point(
+    series: pd.Series,
+    time_series: pd.Series,
+    smooth_window: Optional[Union[float, int, str]] = None,
+) -> float:
     """Finds the time of the turning point (minimum value) in a series.
 
     This function identifies the time corresponding to the minimum value in the
@@ -126,28 +222,40 @@ def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
     Args:
         series: The time series data to analyze.
         time_series: The corresponding time data.
+        smooth_window: Optional physical time window for smoothing. If provided (> 0),
+            uses apply_series_smoothing; otherwise falls back to 0.1% rolling window.
 
     Returns:
         The time of the turning point, or NaN if the trend is monotonic.
 
     Raises:
         ValueError: If time_series is None.
-
-    Note:
-        Uses a rolling window (0.1% of data length) for smoothing to identify the
-        general trend. If the smoothed minimum is within the last 30% of the series,
-        the trend is considered monotonic and NaN is returned. Otherwise, returns
-        the time of the absolute minimum in the original data.
     """
     if time_series is None:
         raise ValueError("time_series must be provided for time_of_turning_point")
 
-    # Define a window size for the rolling average, e.g., 5% of the data length
-    # with a minimum size of 1. This helps in smoothing out local fluctuations.
-    window_size = max(1, int(len(series) * 0.001))
-    smoothed_series = series.rolling(
-        window=window_size, center=True, min_periods=1
-    ).mean()
+    if smooth_window is not None:
+        try:
+            sw_val = float(smooth_window)
+            if sw_val > 0:
+                smoothed_series = apply_series_smoothing(
+                    series, time_series=time_series, smooth_window=sw_val
+                )
+            else:
+                window_size = max(1, int(len(series) * 0.001))
+                smoothed_series = series.rolling(
+                    window=window_size, center=True, min_periods=1
+                ).mean()
+        except (ValueError, TypeError):
+            window_size = max(1, int(len(series) * 0.001))
+            smoothed_series = series.rolling(
+                window=window_size, center=True, min_periods=1
+            ).mean()
+    else:
+        window_size = max(1, int(len(series) * 0.001))
+        smoothed_series = series.rolling(
+            window=window_size, center=True, min_periods=1
+        ).mean()
 
     # Find the index label of the minimum value in the smoothed series.
     smooth_min_index = smoothed_series.idxmin()
@@ -167,7 +275,13 @@ def time_of_turning_point(series: pd.Series, time_series: pd.Series) -> float:
         return time_series.loc[min_index]
 
 
-def calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float:
+def calculate_doubling_time(
+    series: pd.Series,
+    time_series: pd.Series,
+    interpolate: bool = False,
+    cycle_period: Optional[Union[float, int, str]] = None,
+    smooth_window: Optional[Union[float, int, str]] = None,
+) -> float:
     """Calculates the time it takes for the inventory to double its initial value.
 
     This function finds the first time point, after the inventory's minimum
@@ -177,6 +291,12 @@ def calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float:
     Args:
         series: The inventory time series data.
         time_series: The corresponding time data.
+        interpolate: If True, uses linear interpolation between adjacent grid points
+            to determine fractional doubling time. Defaults to False.
+        cycle_period: Alias for smooth_window.
+        smooth_window: If provided (> 0), applies a rolling-mean filter over the
+            specified period to eliminate transient crest false-triggering before threshold evaluation.
+            If None or <= 0, no smoothing is performed (default).
 
     Returns:
         The doubling time, or NaN if the inventory never doubles.
@@ -191,23 +311,51 @@ def calculate_doubling_time(series: pd.Series, time_series: pd.Series) -> float:
     """
     if time_series is None:
         raise ValueError("time_series must be provided for calculate_doubling_time")
-    initial_inventory = series.iloc[0]
-    doubled_inventory = 2 * initial_inventory
+    initial_inventory = float(series.iloc[0])
+    doubled_inventory = 2.0 * initial_inventory
+
+    sw = smooth_window if smooth_window is not None else cycle_period
+    eval_series = series
+    if sw is not None:
+        eval_series = apply_series_smoothing(
+            series, time_series=time_series, smooth_window=sw
+        )
 
     # Find the first index where the inventory is >= doubled_inventory
     # We should only consider the part of the series after the turning point
-    min_index = series.idxmin()
-    after_turning_point_series = series.loc[min_index:]
+    min_index = eval_series.idxmin()
+    after_turning_point_series = eval_series.loc[min_index:]
 
     doubling_indices = after_turning_point_series[
         after_turning_point_series >= doubled_inventory
     ].index
 
     if not doubling_indices.empty:
-        doubling_index = doubling_indices[0]
-        return time_series.loc[doubling_index]
+        idx1 = doubling_indices[0]
+        if interpolate:
+            loc1 = after_turning_point_series.index.get_loc(idx1)
+            if loc1 > 0:
+                idx0 = after_turning_point_series.index[loc1 - 1]
+                y0 = float(after_turning_point_series.loc[idx0])
+                y1 = float(after_turning_point_series.loc[idx1])
+                t0 = float(time_series.loc[idx0])
+                t1 = float(time_series.loc[idx1])
+                if y1 > y0 and y0 < doubled_inventory <= y1:
+                    return float(t0 + (doubled_inventory - y0) / (y1 - y0) * (t1 - t0))
+        return float(time_series.loc[idx1])
     else:
-        # If it never doubles, return NaN
+        # Check if inventory has passed turning point and is growing steadily
+        if len(after_turning_point_series) > 10:
+            tail_n = max(5, int(len(after_turning_point_series) * 0.3))
+            tail_y = after_turning_point_series.iloc[-tail_n:].values
+            tail_t = time_series.loc[after_turning_point_series.index[-tail_n:]].values
+            dt = tail_t[-1] - tail_t[0]
+            if dt > 0:
+                slope = (tail_y[-1] - tail_y[0]) / dt
+                if slope > 0:
+                    remaining_growth = doubled_inventory - tail_y[-1]
+                    extrapolated_time = tail_t[-1] + remaining_growth / slope
+                    return float(extrapolated_time)
         return np.nan
 
 
@@ -276,6 +424,7 @@ def extract_metrics(
             {
                 "metric_name": metric_name,
                 "method": definition["method"],
+                "definition": definition,
             }
         )
 
@@ -311,6 +460,7 @@ def extract_metrics(
         for metric_info in source_to_metric[source_var]:
             method_name = metric_info["method"]
             metric_name = metric_info["metric_name"]
+            metric_def = metric_info.get("definition") or {}
 
             if method_name in ("final_value", "last_value"):
                 calculation_func = get_final_value
@@ -323,13 +473,23 @@ def extract_metrics(
             ):
                 calculation_func = get_min_value
             elif method_name in (
+                "calculate_dynamic_deficit",
+                "dynamic_deficit",
+                "startup_deficit",
+                "inventory_drawdown",
                 "calculate_startup_inventory",
                 "startup_inventory",
                 "startup",
                 "startup_inv",
                 "startup_inventory_deficit",
             ):
-                calculation_func = calculate_startup_inventory
+                calculation_func = calculate_dynamic_deficit
+            elif method_name in (
+                "calculate_required_startup_inventory",
+                "required_startup_inventory",
+                "true_startup_inventory",
+            ):
+                calculation_func = calculate_required_startup_inventory
             elif method_name in (
                 "time_of_turning_point",
                 "turning_point",
@@ -348,9 +508,66 @@ def extract_metrics(
                 )
                 continue
 
-            metric_value = calculation_func(results_df[col_name], results_df["time"])
+            series_to_eval = results_df[col_name]
+            time_series = results_df["time"] if "time" in results_df.columns else None
+
+            smooth_w = (
+                metric_def.get("smooth_window") or metric_def.get("cycle_period")
+                if isinstance(metric_def, dict)
+                else getattr(metric_def, "smooth_window", None)
+                or getattr(metric_def, "cycle_period", None)
+            )
+            smooth_method = (
+                metric_def.get("smooth_method", "mean")
+                if isinstance(metric_def, dict)
+                else getattr(metric_def, "smooth_method", "mean") or "mean"
+            )
+            if smooth_w is not None and time_series is not None:
+                series_to_eval = apply_series_smoothing(
+                    series_to_eval,
+                    time_series=time_series,
+                    smooth_window=smooth_w,
+                    method=smooth_method,
+                )
+
+            if calculation_func == calculate_required_startup_inventory:
+                res_val = 0.0
+                if isinstance(metric_def, dict):
+                    res_src = (
+                        metric_def.get("reserve_source")
+                        or metric_def.get("threshold_source")
+                        or metric_def.get("reserve_column")
+                    )
+                    if res_src and res_src in results_df.columns:
+                        res_val = float(results_df[res_src].iloc[-1])
+                    elif "comp11_Storage.I_reserve_req" in results_df.columns:
+                        res_val = float(
+                            results_df["comp11_Storage.I_reserve_req"].iloc[-1]
+                        )
+                    elif "I_reserve_req" in results_df.columns:
+                        res_val = float(results_df["I_reserve_req"].iloc[-1])
+                    else:
+                        res_val = float(metric_def.get("reserve_inventory", 0.0))
+                metric_value = calculation_func(
+                    series_to_eval, time_series, reserve_inventory=res_val
+                )
+            elif calculation_func == calculate_doubling_time:
+                interpolate = False
+                if isinstance(metric_def, dict):
+                    interpolate = bool(metric_def.get("interpolate", False))
+                else:
+                    interpolate = bool(getattr(metric_def, "interpolate", False))
+                metric_value = calculation_func(
+                    series_to_eval, time_series, interpolate=interpolate
+                )
+            elif calculation_func == time_of_turning_point:
+                metric_value = calculation_func(
+                    series_to_eval, time_series, smooth_window=smooth_w
+                )
+            else:
+                metric_value = calculation_func(series_to_eval, time_series)
             metric_value = apply_metric_unit_scaling(
-                metric_value, method_name, definition
+                metric_value, method_name, metric_def
             )
 
             result_row = params.copy()
@@ -493,13 +710,23 @@ def calculate_single_job_metrics(
         elif method_name == "settling_time":
             calculation_func = get_settling_time
         elif method_name in (
+            "calculate_dynamic_deficit",
+            "dynamic_deficit",
+            "startup_deficit",
+            "inventory_drawdown",
             "calculate_startup_inventory",
             "startup_inventory",
             "startup",
             "startup_inv",
             "startup_inventory_deficit",
         ):
-            calculation_func = calculate_startup_inventory
+            calculation_func = calculate_dynamic_deficit
+        elif method_name in (
+            "calculate_required_startup_inventory",
+            "required_startup_inventory",
+            "true_startup_inventory",
+        ):
+            calculation_func = calculate_required_startup_inventory
         elif method_name in (
             "time_of_turning_point",
             "turning_point",
@@ -513,9 +740,70 @@ def calculate_single_job_metrics(
         elif method_name == "net_tritium_balance":
             calculation_func = net_tritium_balance
 
+        # Extract user-defined smoothing and interpolation options
+        smooth_w = (
+            raw_def.get("smooth_window") or raw_def.get("cycle_period")
+            if isinstance(raw_def, dict)
+            else getattr(raw_def, "smooth_window", None)
+            or getattr(raw_def, "cycle_period", None)
+        )
+        smooth_method = (
+            raw_def.get("smooth_method", "mean")
+            if isinstance(raw_def, dict)
+            else getattr(raw_def, "smooth_method", "mean") or "mean"
+        )
+        interpolate = (
+            bool(raw_def.get("interpolate", False))
+            if isinstance(raw_def, dict)
+            else bool(getattr(raw_def, "interpolate", False))
+        )
+
+        eval_series = series
+        if smooth_w is not None and time_series is not None:
+            # Check if smooth_w refers to a parameter column in job_df
+            smooth_val = None
+            if isinstance(smooth_w, str) and smooth_w in job_df.columns:
+                try:
+                    smooth_val = float(job_df[smooth_w].iloc[0])
+                except (ValueError, TypeError):
+                    smooth_val = None
+            else:
+                try:
+                    smooth_val = float(smooth_w)
+                except (ValueError, TypeError):
+                    smooth_val = None
+
+            if smooth_val is not None and smooth_val > 0:
+                eval_series = apply_series_smoothing(
+                    series,
+                    time_series=time_series,
+                    smooth_window=smooth_val,
+                    method=smooth_method,
+                )
+
         if calculation_func:
             try:
-                val = calculation_func(series, time_series)
+                if calculation_func == calculate_required_startup_inventory:
+                    res_val = 0.0
+                    if isinstance(raw_def, dict):
+                        res_src = raw_def.get("reserve_source")
+                        if res_src and res_src in job_df.columns:
+                            res_val = float(job_df[res_src].iloc[-1])
+                        else:
+                            res_val = float(raw_def.get("reserve_inventory", 0.0))
+                    val = calculation_func(
+                        eval_series, time_series, reserve_inventory=res_val
+                    )
+                elif calculation_func == calculate_doubling_time:
+                    val = calculation_func(
+                        eval_series, time_series, interpolate=interpolate
+                    )
+                elif calculation_func == time_of_turning_point:
+                    val = calculation_func(
+                        eval_series, time_series, smooth_window=smooth_w
+                    )
+                else:
+                    val = calculation_func(eval_series, time_series)
                 # Ensure JSON serializable (handle numpy types)
                 if hasattr(val, "item"):
                     val = val.item()

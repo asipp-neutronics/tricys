@@ -1,8 +1,20 @@
-# TRICYS V2 Template: 多工况参数扫描与起动亏空自持评估 (SC-1)
 version: "2.0"
 
+# ==============================================================================
+# TRICYS V2.0 演示模板 01: 多工况参数扫描与氚自持评估 (SC-1)
+# 
+# 模板定位:
+# - 聚变堆氚燃料循环经典多工况参数扫描原型，评估不同燃烧份额与产氚能力下的全厂氚自持边界
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "sweep"，并行参数扫描 (多进程加速)
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TBR_PARAM}, ${BURNUP_PARAM}
+# - 关键指标: 求解峰值库存 (peak_inventory)、最终库存 (final_inventory) 与自持启动装填量 (startup_inventory)
+# - 交付报告: 自动导出多工况横向对比工程分析报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
 model:
-  fileName: "${MODEL_FILE_PATH}"      # 如: "example_model.mo"
+  fileName: "${MODEL_FILE_PATH}"      # 如: "../example_model_single/example_model.mo"
   modelName: "${MODEL_NAME}"          # 如: "example_model.Cycle"
 
 scenario:
@@ -15,14 +27,17 @@ scenario:
 task:
   type: "sweep"
   parallel: true
-  max_workers: 4
+  max_workers: 8
   parameters:
-    - name: "Baseline_TBR_1.10"
+    - name: "Case_1_Direct_DT_Baseline"
       ${TBR_PARAM}: 1.10
-    - name: "Conservative_TBR_1.05"
-      ${TBR_PARAM}: 1.05
-    - name: "HighBreeding_TBR_1.20"
-      ${TBR_PARAM}: 1.20
+      ${BURNUP_PARAM}: 0.05
+    - name: "Case_2_LowBurnup_Conservative"
+      ${TBR_PARAM}: 1.08
+      ${BURNUP_PARAM}: 0.03
+    - name: "Case_3_Advanced_High_Breeding"
+      ${TBR_PARAM}: 1.22
+      ${BURNUP_PARAM}: 0.08
   metrics:
     peak_inventory:
       source: "${STORAGE_NODE}"
@@ -33,6 +48,7 @@ task:
     startup_inventory:
       source: "${STORAGE_NODE}"
       evaluate: "startup_inventory"
+
 visualizer:
   enabled: true
   launch_on_finish: false

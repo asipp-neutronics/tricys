@@ -1,5 +1,5 @@
 {
-  "description": "TRICYS V2.0 现代化工业级基准算例套件 (Schema 2.0)",
+  "description": "TRICYS V2.0 演示算例套件 (Schema 2.0)",
   "version": "2.0",
   "examples": [
     {
@@ -8,7 +8,7 @@
       "task_type": "sweep",
       "config": "01_sweep_startup_self_sufficiency.yaml",
       "path": ".",
-      "description": "多工况并行参数扫描（TBR: 1.08~1.22, WDS: 800~1200），评估启动氚库存与自持指标，自动生成工程报告。"
+      "description": "多工况并行参数扫描（耦合燃烧分数 fb: 3%~8% 与产氚比 TBR: 1.08~1.22），评估启动氚库存与自持指标，自动生成工程报告。"
     },
     {
       "id": "2",
@@ -24,7 +24,7 @@
       "task_type": "sensitivity",
       "config": "03_sensitivity_sobol_gsa.yaml",
       "path": ".",
-      "description": "基于 Sobol 采样的全局灵敏度分析与一阶/总阶方差分解，辨识主导全厂库存的关键不确定性参数。"
+      "description": "基于 Sobol 采样的全局灵敏度分析与一阶/总阶方差分解，辨识产氚比 (TBR) 与燃烧分数 (fb) 对全厂库存的主导影响。"
     },
     {
       "id": "4",
@@ -81,6 +81,22 @@
       "config": "10_cosim_parameter_injection.yaml",
       "path": ".",
       "description": "基于 CFETR ISS-I/ISS-O 真实配置，通过外部热力学求解与 Modelica -overrideFile 参数注入实现快速长周期仿真。"
+    },
+    {
+      "id": "11",
+      "name": "11 - 双层嵌套二分优化 (Nested Bisection 自持启动库存与 TBR 求解)",
+      "task_type": "optimize",
+      "config": "11_optimize_nested_bisection.yaml",
+      "path": ".",
+      "description": "面向工业级 example_model 执行外层启动库存 (I_S_0) 与内层产氚比 (blanket.TBR) 双层嵌套二分优化，严格满足储备库存下限与倍增时间双约束。"
+    },
+    {
+      "id": "12",
+      "name": "12 - 燃烧分数扫描内嵌双层优化 (Sweep Burnup with Nested Bisection)",
+      "task_type": "sweep",
+      "config": "12_sweep_nested_optimization.yaml",
+      "path": ".",
+      "description": "等离子体燃烧分数 (fb: 3%~8%) 外层参数扫描中内嵌双层二分寻优，对各工况自动化求解满足谷底储备与倍增时间的启动库存与 Required TBR 并汇总对比。"
     }
   ]
 }

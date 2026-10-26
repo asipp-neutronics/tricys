@@ -159,24 +159,42 @@ class SimulationSetupPlugin(PreprocessPlugin):
         task_cfg = context.config.get("task", {})
         if isinstance(task_cfg, dict):
             task_type = task_cfg.get("type", "").lower()
-            if task_type == "simulate":
+            if task_type in ("simulate", "optimize"):
                 jobs = [dict(task_cfg.get("parameters", {}))]
                 context.jobs = jobs
-                context.set_metadata("sampling_method", "simulate")
+                context.set_metadata("sampling_method", task_type)
                 context.set_metadata("total_jobs", 1)
                 logger.info(
-                    "Generated 1 single-point simulation job for 'simulate' task"
+                    f"Generated 1 single-point simulation job for '{task_type}' task"
                 )
                 return
-            elif task_type == "sweep" and isinstance(task_cfg.get("parameters"), list):
-                jobs = [dict(c) for c in task_cfg["parameters"]]
-                context.jobs = jobs
-                context.set_metadata("sampling_method", "discrete_sweep")
-                context.set_metadata("total_jobs", len(jobs))
-                logger.info(
-                    f"Generated {len(jobs)} discrete sweep job(s) from task.parameters"
+            elif task_type == "sweep":
+                params = task_cfg.get("parameters")
+                grid_params = task_cfg.get("grid") or (
+                    params
+                    if isinstance(params, dict) and "file" not in params
+                    else None
                 )
-                return
+                if isinstance(params, list):
+                    jobs = [dict(c) for c in params]
+                    context.jobs = jobs
+                    context.set_metadata("sampling_method", "discrete_sweep")
+                    context.set_metadata("total_jobs", len(jobs))
+                    logger.info(
+                        f"Generated {len(jobs)} discrete sweep job(s) from task.parameters"
+                    )
+                    return
+                elif grid_params and isinstance(grid_params, dict):
+                    from tricys.core.jobs import generate_simulation_jobs
+
+                    jobs = generate_simulation_jobs(grid_params, auto_name=True)
+                    context.jobs = jobs
+                    context.set_metadata("sampling_method", "grid_sweep")
+                    context.set_metadata("total_jobs", len(jobs))
+                    logger.info(
+                        f"Generated {len(jobs)} multi-parameter grid sweep job(s) for {len(grid_params)} variable(s)"
+                    )
+                    return
 
         engine = SamplingEngine.from_config(context.config)
         if engine is not None:
@@ -186,7 +204,11 @@ class SimulationSetupPlugin(PreprocessPlugin):
                 context.set_metadata("sampling_problem", engine.problem)
         else:
             sweep_params = context.config.get("simulation_parameters", {})
-            jobs = generate_simulation_jobs(sweep_params) if sweep_params else [{}]
+            jobs = (
+                generate_simulation_jobs(sweep_params, auto_name=True)
+                if sweep_params
+                else [{}]
+            )
             context.set_metadata("sampling_method", "none")
 
         if not jobs:

@@ -1,10 +1,18 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS Agent-Native 原型模板: 10 协同仿真 —— 参数注入模式 (Parameter Injection)
-# 适用场景: 深冷精馏多塔流程 (如 h2iso Wang 2022 ISS-I/ISS-O) 或大型反应器。
-#          由外部 Handler 执行真实稳态物理求解生成 override.txt，
-#          结合 0-D 动态代理与 OpenModelica 原生 -overrideFile 实现秒级长周期仿真
+# TRICYS V2.0 演示模板 10: 协同仿真 —— 稳态参数注入模式 (Parameter Injection) (SC-8)
+# 
+# 模板定位:
+# - 基于严密物理求解器 (如 h2iso ISS-I/ISS-O) 与 0-D 动态代理，实现超长周期秒级协同仿真原型
+# 
+# 核心特征 / 占位符契约:
+# - 协同模式: task.type = "cosim", mode = "parameter_injection"，统一注入方式 injection_type = "handler"
+# - 求解驱动: 外部脚本动态调用严密热力学与 MESH 稳态解算器生成覆盖文件
+# - 参数注入: 通过 OpenModelica 原生 -overrideFile 机制在底层一次性注入复杂分离系数与稳态滞留解
+# - 自省替换: ${MODEL_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${OVERRIDE_TXT_PATH}, ${HANDLER_SCRIPT_PATH}, ${TARGET_SUBMODEL_1}, ${INSTANCE_NAME_1}, ${ADAPTER_MODEL_1}, ${ADAPTER_FILE_1}, ${CORE_PHYSICS_FILE}
+# - 强拓扑校验: submodel_replacer.py 自动严格校验接口因果性与端口拓扑
+# - 交付报告: 聚变堆多物理场协同仿真评估报告 (参数注入模式) (Markdown / DOCX / PDF)
 # ==============================================================================
 
 model:

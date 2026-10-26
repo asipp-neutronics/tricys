@@ -1,5 +1,18 @@
 version: "2.0"
 
+# ==============================================================================
+# TRICYS V2.0 演示算例 01: 多工况参数扫描与氚自持评估 (Sweep Startup Self-Sufficiency)
+# 
+# 算例定位:
+# - 聚变堆氚燃料循环经典多工况参数扫描，评估不同燃烧份额与产氚能力下的全厂氚自持边界
+# 
+# 核心特征 / 演示重点:
+# - 任务模式: task.type = "sweep"，并行参数扫描 (多进程加速)
+# - 物理参数: 耦合扫描燃烧分数 (plasma.fb: 3%~8%) 与产氚比 (blanket.TBR: 1.08~1.22)
+# - 关键指标: 求解峰值库存 (peak_inventory)、最终库存 (final_inventory) 与自持启动装填量 (startup_inventory)
+# - 交付报告: 自动导出多工况横向对比工程分析报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
 model:
   fileName: "../example_model_single/example_model.mo"
   modelName: "example_model.Cycle"
@@ -14,17 +27,17 @@ scenario:
 task:
   type: "sweep"
   parallel: true
-  max_workers: 4
+  max_workers: 8
   parameters:
     - name: "Case_1_Direct_DT_Baseline"
       blanket.TBR: 1.10
-      wds.threshold: 1000.0
-    - name: "Case_2_DD_Staging_Conservative"
+      plasma.fb: 0.05
+    - name: "Case_2_LowBurnup_Conservative"
       blanket.TBR: 1.08
-      wds.threshold: 800.0
+      plasma.fb: 0.03
     - name: "Case_3_Advanced_High_Breeding"
       blanket.TBR: 1.22
-      wds.threshold: 1200.0
+      plasma.fb: 0.08
   metrics:
     peak_inventory:
       source: "sds.I[1]"

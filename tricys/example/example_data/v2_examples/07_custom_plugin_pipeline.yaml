@@ -1,13 +1,18 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS 工业基准算例 07: 自定义插件挂载与物理语义总线扩展流水线
+# TRICYS V2.0 演示算例 07: 自定义插件挂载与物理语义总线扩展流水线 (Custom Plugin Pipeline)
 # 
-# 演示重点:
-# 1. 在 Schema 2.0 DSL 中使用 plugins 字段声明外部 Python 插件脚本
-# 2. 向插件显式传递业务参数 (Explicit-First 传参范式)
-# 3. 插件内部通过 Physics Semantic Bus (物理语义总线) 自动适配 Modelica 多态列名
-# 4. 自动依赖拓扑排序 (Kahn DAG Auto-Ordering) 确保插件与 storage 协同无序倒置
+# 算例定位:
+# - 演示在 Schema 2.0 DSL 中挂载外部用户自定义 Python 后处理插件，并通过物理语义总线扩展业务逻辑
+# 
+# 核心特征 / 演示重点:
+# - 任务模式: task.type = "sweep"，外层参数扫描与增量插件扩展
+# - 插件声明: 在 plugins.postprocess 中声明外部脚本与类名，支持显式传参 (Explicit-First)
+# - 语义解耦: 插件内部通过 Physics Semantic Bus 自动适配 Modelica 多态列名与物料代号
+# - 依赖拓扑: Kahn DAG Auto-Ordering 算法自动分析执行顺序，确保与内置存储器无缝协同
+# - 业务场景: 在役储罐安全谷底红线审计 (baseline: 6100g, safety_valley_redline: 1000g)
+# - 交付报告: 聚变堆自定义插件扩展与在役储罐安全裕度评估报告 (Markdown / DOCX / PDF)
 # ==============================================================================
 
 model:
@@ -24,14 +29,14 @@ scenario:
 task:
   type: "sweep"
   parallel: true
-  max_workers: 2
+  max_workers: 8
   parameters:
-    - name: "Conservative_TBR_1.08"
-      blanket.TBR: 1.08
-      wds.threshold: 800.0
-    - name: "High_Breeding_TBR_1.18"
+    - name: "Conservative_LowBurnup_TBR_1.10"
+      blanket.TBR: 1.10
+      plasma.fb: 0.03
+    - name: "High_Breeding_Nominal_TBR_1.18"
       blanket.TBR: 1.18
-      wds.threshold: 1100.0
+      plasma.fb: 0.06
   metrics:
     peak_inventory:
       source: "sds.I[1]"

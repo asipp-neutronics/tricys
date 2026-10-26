@@ -954,9 +954,19 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
                 pass
 
         # Param options: 仅筛选具有物理意义的数值参数，严格剔除标识符以及输出指标 (Metrics)
+        # 允许初始库存参数 (如 sds.I_S_0) 作为自变量以支持 Abdou 风格帕累托权衡分析 (Required TBR vs Startup Inventory)
+        tradeoff_params = {
+            "sds.I_S_0",
+            "I_S_0",
+            "I_reserve_req",
+            "wds.threshold",
+            "startup_inventory",
+        }
         param_keys = []
         for c in jobs_df.columns:
-            if str(c).strip().lower() in ignored_col_names or c in known_metric_names:
+            if str(c).strip().lower() in ignored_col_names:
+                continue
+            if c in known_metric_names and c not in tradeoff_params:
                 continue
             # 严格确保该参数列包含有效数值
             num_series = pd.to_numeric(jobs_df[c], errors="coerce")

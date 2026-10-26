@@ -49,8 +49,18 @@ def process_and_store_job_result(
         except Exception as e:
             logger.debug(f"HDF5 raw_df put notice: {e}")
 
-        # Summary calculations
-        if metrics_definition:
+        # Summary calculations (including execution-layer optimization metrics)
+        opt_metrics_res = {}
+        if params and isinstance(params, dict):
+            for k, v in params.items():
+                if (
+                    str(k).startswith("Required_")
+                    or "_for_" in str(k)
+                    or k in ("Required_TBR", "sds.I_S_0", "I_S_0")
+                ):
+                    opt_metrics_res[k] = v
+
+        if metrics_definition or opt_metrics_res:
             try:
                 metrics_res = (
                     calculate_single_job_metrics(
@@ -58,16 +68,26 @@ def process_and_store_job_result(
                         metrics_definition,
                         filter_schema=filter_schema,
                     )
-                    or {}
-                )
+                    if metrics_definition
+                    else {}
+                ) or {}
                 if params and isinstance(params, dict):
-                    for m_name in metrics_definition.keys():
-                        if m_name in params and m_name not in metrics_res:
-                            metrics_res[m_name] = params[m_name]
+                    if metrics_definition:
+                        for m_name in metrics_definition.keys():
+                            if m_name in params and m_name not in metrics_res:
+                                metrics_res[m_name] = params[m_name]
+                    for k, v in opt_metrics_res.items():
+                        if k not in metrics_res:
+                            metrics_res[k] = v
+
+                effective_def = dict(metrics_definition or {})
+                for k in opt_metrics_res.keys():
+                    if k not in effective_def:
+                        effective_def[k] = {"unit": ""}
 
                 if metrics_res:
                     summary_df = build_single_job_summary_df(
-                        job_id, metrics_res, metrics_definition
+                        job_id, metrics_res, effective_def
                     )
                     for col in summary_df.columns:
                         if col != "job_id" and pd.api.types.is_numeric_dtype(
@@ -124,6 +144,16 @@ def process_and_store_job_result(
             param_str_cols.update(
                 {k: v for k, v in jobs_min_itemsize.items() if k in param_df.columns}
             )
+
+        if "/jobs" in store.keys():
+            try:
+                existing_cols = store.select("jobs", stop=0).columns
+                for col in existing_cols:
+                    if col not in param_df.columns:
+                        param_df[col] = None
+                param_df = param_df.reindex(columns=existing_cols)
+            except Exception:
+                pass
 
         if "/jobs" not in store.keys() and param_str_cols:
             store.append(

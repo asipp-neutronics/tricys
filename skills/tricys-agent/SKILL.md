@@ -338,7 +338,7 @@ def main() -> int:
 
 ---
 
-## 🗂️ 5. 八大核心应用场景与模型映射表
+## 🗂️ 5. 十大核心应用场景与模型映射表
 
 | 场景编号 | 聚变工程应用场景 | 对应模板路径 | 核心依赖的自省变量 | 典型任务类型 |
 | :--- | :--- | :--- | :--- | :---: |
@@ -350,6 +350,8 @@ def main() -> int:
 | **SC-6** | **多物理场离线查表协同仿真** | `templates/08_cosim_subsystem_template.yaml` | 目标子组件与静态数据表路径 | `cosim` (offline_table) |
 | **SC-7** | **跨工具在线步进动态协同仿真** | `templates/09_cosim_online_step_template.yaml` | 目标子组件与在线处理器模块 | `cosim` (online_step) |
 | **SC-8** | **基于外部求解器严密计算的参数注入** | `templates/10_cosim_parameter_injection_template.yaml` | 目标子组件、外部求解脚本与覆盖文件 | `cosim` (parameter_injection) |
+| **SC-9** | **双层嵌套二分优化 (装填量与 TBR 协同寻优)** | `templates/11_optimize_nested_bisection_template.yaml` | 初始装填量 `${STORAGE_STARTUP_PARAM}`<br>增殖参数 `${TBR_PARAM}` | `optimize` (nested_bisection) |
+| **SC-10** | **参数扫描内嵌双层优化 (工况族寻优响应)** | `templates/12_sweep_nested_optimization_template.yaml` | 扫描物理变量列表<br>双层寻优参数与存量节点 | `sweep` (内嵌 `optimization`) |
 
 ---
 

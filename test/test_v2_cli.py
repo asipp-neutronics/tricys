@@ -543,6 +543,56 @@ def test_v2_example_07_custom_plugin_pipeline_config():
     assert "tritium_reserve_auditor" in post_names
 
 
+def test_v2_example_11_optimize_nested_bisection_config():
+    """Verify that 11_optimize_nested_bisection.yaml parses cleanly as an optimize task with nested_bisection."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "11_optimize_nested_bisection.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "optimize"
+    assert runtime_cfg["task"]["algorithm"] == "nested_bisection"
+    task_opt = runtime_cfg["task"].get("optimization", runtime_cfg["task"])
+    assert "outer" in task_opt
+    assert "inner" in task_opt
+
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "standard"
+
+
+def test_v2_example_12_sweep_nested_optimization_config():
+    """Verify that 12_sweep_nested_optimization.yaml parses cleanly as sweep task with embedded nested bisection."""
+    from tricys.workflow.builder import PipelineBuilder
+
+    yaml_path = (
+        Path(__file__).parent.parent
+        / "tricys"
+        / "example"
+        / "example_data"
+        / "v2_examples"
+        / "12_sweep_nested_optimization.yaml"
+    )
+    assert yaml_path.exists(), f"File {yaml_path} should exist"
+
+    runtime_cfg, orig_cfg = basic_prepare_config(str(yaml_path))
+    assert runtime_cfg["task"]["type"] == "sweep"
+    assert "optimization" in runtime_cfg["task"]
+    assert runtime_cfg["task"]["optimization"]["algorithm"] == "nested_bisection"
+    assert "outer" in runtime_cfg["task"]["optimization"]
+    assert "inner" in runtime_cfg["task"]["optimization"]
+
+    pipeline = PipelineBuilder.build(runtime_cfg)
+    assert pipeline.engine.name == "standard"
+
+
 V2_EXAMPLES_DIR = (
     Path(__file__).parent.parent / "tricys" / "example" / "example_data" / "v2_examples"
 )

@@ -159,18 +159,43 @@ class TargetMetricConfig(BaseDTO):
         default="turning_point",
         description="Operator to evaluate: doubling_time, turning_point, peak_value, min, etc.",
     )
-    threshold: Optional[float] = Field(
+    threshold: Optional[Union[float, List[float]]] = Field(
         default=None, description="Target numerical threshold for turning point / limit"
+    )
+    threshold_source: Optional[str] = Field(
+        default=None,
+        description="Modelica variable column name providing dynamic/model-computed threshold (e.g. comp11_Storage.I_reserve_req or I_reserve_req)",
+    )
+    reserve_source: Optional[str] = Field(
+        default=None,
+        description="Alias for threshold_source specifically for reserve inventory requirement",
     )
     direction: Optional[str] = Field(
         default="min_to_max",
         description="Direction of slope reversal: min_to_max or max_to_min",
     )
     operator: Optional[str] = Field(default=None, description="Alias for evaluate")
-    target_value: Optional[float] = Field(
+    target_value: Optional[Union[float, List[float]]] = Field(
         default=None, description="Alias for threshold"
     )
-    max_value: Optional[float] = Field(default=None, description="Alias for threshold")
+    max_value: Optional[Union[float, List[float]]] = Field(
+        default=None, description="Alias for threshold"
+    )
+    smooth_window: Optional[Union[float, str]] = Field(
+        default=None,
+        description="Temporal smoothing window in time units (e.g. 96.0 h) or parameter name. None means no smoothing.",
+    )
+    cycle_period: Optional[Union[float, str]] = Field(
+        default=None, description="Alias for smooth_window"
+    )
+    smooth_method: Optional[str] = Field(
+        default="mean",
+        description="Smoothing method: mean (rolling average) or median",
+    )
+    interpolate: Optional[bool] = Field(
+        default=False,
+        description="Whether to use sub-step linear interpolation for threshold crossing",
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -182,6 +207,10 @@ class TargetMetricConfig(BaseDTO):
                 data["threshold"] = data["target_value"]
             if "max_value" in data and "threshold" not in data:
                 data["threshold"] = data["max_value"]
+            if "cycle_period" in data and "smooth_window" not in data:
+                data["smooth_window"] = data["cycle_period"]
+            if "smooth_window" in data and "cycle_period" not in data:
+                data["cycle_period"] = data["smooth_window"]
         return data
 
 
@@ -201,8 +230,25 @@ class MetricConfig(BaseDTO):
     conversion_factor: Optional[float] = Field(
         default=None, description="Scaling factor to convert raw seconds to target unit"
     )
-    threshold: Optional[float] = Field(
+    threshold: Optional[Union[float, List[float]]] = Field(
         default=None, description="Upper/lower safety threshold"
+    )
+
+    # Smoothing and interpolation
+    smooth_window: Optional[Union[float, str]] = Field(
+        default=None,
+        description="Temporal smoothing window in time units (e.g. 96.0 h) or parameter name. None means no smoothing.",
+    )
+    cycle_period: Optional[Union[float, str]] = Field(
+        default=None, description="Alias for smooth_window"
+    )
+    smooth_method: Optional[str] = Field(
+        default="mean",
+        description="Smoothing method: mean (rolling average) or median",
+    )
+    interpolate: Optional[bool] = Field(
+        default=False,
+        description="Whether to use sub-step linear interpolation for threshold crossing",
     )
 
     # Bisection search specific fields
@@ -261,6 +307,10 @@ class MetricConfig(BaseDTO):
                 data["search_range"] = data["search_bounds"]
             if "search_range" in data and "search_bounds" not in data:
                 data["search_bounds"] = data["search_range"]
+            if "cycle_period" in data and "smooth_window" not in data:
+                data["smooth_window"] = data["cycle_period"]
+            if "smooth_window" in data and "cycle_period" not in data:
+                data["cycle_period"] = data["smooth_window"]
         return data
 
 
@@ -287,6 +337,166 @@ class SafetyAuditorConfig(BaseDTO):
     )
 
 
+class OuterBisectionConfig(BaseDTO):
+    """Configuration for the outer loop of nested bisection optimization."""
+
+    parameter: str = Field(
+        default="I_S_0", description="Parameter to optimize in outer loop (e.g. I_S_0)"
+    )
+    search_bounds: Optional[List[float]] = Field(
+        default=None, description="Search bounds [low, high] (mandatory for Track 2)"
+    )
+    tolerance: float = Field(
+        default=1.0, description="Outer loop convergence tolerance"
+    )
+    max_iterations: int = Field(default=15, description="Max outer iterations")
+    threshold_source: Optional[str] = Field(
+        default=None,
+        description="Modelica variable column name providing dynamic/model-computed threshold",
+    )
+    reserve_column: Optional[str] = Field(
+        default=None,
+        description="Modelica variable column name for reserve inventory requirement",
+    )
+    target_metric: TargetMetricConfig = Field(
+        description="Target metric condition for outer loop"
+    )
+
+    @field_validator("search_bounds")
+    @classmethod
+    def validate_bounds(cls, v: Optional[List[float]]) -> Optional[List[float]]:
+        if v is None:
+            return v
+        if not v or len(v) != 2 or float(v[0]) >= float(v[1]):
+            raise ValueError(
+                "search_bounds must be a list of two numbers [low, high] with low < high"
+            )
+        return [float(x) for x in v]
+
+
+class InnerBisectionConfig(BaseDTO):
+    """Configuration for the inner loop of nested bisection optimization."""
+
+    parameter: str = Field(
+        default="Lambda",
+        description="Parameter to optimize in inner loop (e.g. Lambda)",
+    )
+    search_bounds: Optional[List[float]] = Field(
+        default=None, description="Search bounds [low, high] (mandatory for Track 2)"
+    )
+    tolerance: float = Field(
+        default=0.001, description="Inner loop convergence tolerance"
+    )
+    max_iterations: int = Field(default=15, description="Max inner iterations")
+    metric_name: str = Field(
+        default="Required_TBR", description="Name of the inner result metric"
+    )
+    target_metric: TargetMetricConfig = Field(
+        description="Target metric condition for inner loop"
+    )
+
+    @field_validator("search_bounds")
+    @classmethod
+    def validate_bounds(cls, v: Optional[List[float]]) -> Optional[List[float]]:
+        if v is None:
+            return v
+        if not v or len(v) != 2 or float(v[0]) >= float(v[1]):
+            raise ValueError(
+                "search_bounds must be a list of two numbers [low, high] with low < high"
+            )
+        return [float(x) for x in v]
+
+
+class Track1BasisConfig(BaseDTO):
+    """Configuration for Track 1: Dual-Basis Closed-Form Direct Optimization."""
+
+    mode: Literal["direct", "bisection"] = Field(
+        default="direct",
+        description="Solving mode: 'direct' (analytical closed-form 0-iteration) or 'bisection' (vector algebraic search)",
+    )
+    cache_basis: bool = Field(
+        default=True,
+        description="Enable cross-task basis reuse when dynamic time constants are identical",
+    )
+    sds_column: Optional[str] = Field(
+        default=None,
+        description="Explicit storage inventory column. If None, auto-detected via detect_sds_column",
+    )
+    reserve_column: Optional[str] = Field(
+        default=None,
+        description="Modelica variable column name for reserve inventory threshold (e.g. comp11_Storage.I_reserve_req)",
+    )
+    interpolation_method: Literal["pchip", "cubic", "linear"] = Field(
+        default="pchip",
+        description="Interpolation method for basis functions at doubling time: 'pchip' (shape-preserving cubic), 'cubic', or 'linear'",
+    )
+    subgrid_nadir_refinement: bool = Field(
+        default=True,
+        description="Enable continuous quadratic vertex refinement for lowest storage nadir",
+    )
+    relative_tolerance: float = Field(
+        default=1e-5,
+        description="Relative convergence tolerance for algebraic bisection mode",
+    )
+
+
+class NestedBisectionConfig(BaseDTO):
+    """Nested/bi-level bisection optimization specification supporting Dual-Track."""
+
+    track: Literal["auto", "track1_basis", "track2_bisection"] = Field(
+        default="auto",
+        description=(
+            "Solving track: 'auto' (auto detect), 'track1_basis' (dual-basis closed-form), 'track2_bisection' (nested bisection)"
+        ),
+    )
+    algorithm: Optional[str] = Field(
+        default="nested_bisection",
+        description="Optimization algorithm identifier",
+    )
+    track1: Optional[Track1BasisConfig] = Field(
+        default_factory=Track1BasisConfig,
+        description="Track 1 dual-basis configuration",
+    )
+    outer: Optional[OuterBisectionConfig] = Field(
+        default=None,
+        description="Outer loop configuration (mandatory for Track 2)",
+    )
+    inner: Optional[InnerBisectionConfig] = Field(
+        default=None,
+        description="Inner loop configuration (mandatory for Track 2)",
+    )
+
+
+class OptimizeTaskConfig(BaseDTO):
+    """Level 2 task configuration for standalone closed-loop optimization."""
+
+    type: Literal["optimize"] = "optimize"
+    track: Literal["auto", "track1_basis", "track2_bisection"] = Field(
+        default="auto",
+        description="Solving track selector",
+    )
+    algorithm: Optional[str] = Field(
+        default="nested_bisection",
+        description="Optimization algorithm identifier",
+    )
+    track1: Optional[Track1BasisConfig] = Field(
+        default_factory=Track1BasisConfig,
+        description="Track 1 dual-basis configuration",
+    )
+    outer: Optional[OuterBisectionConfig] = None
+    inner: Optional[InnerBisectionConfig] = None
+    parallel: bool = Field(default=False, description="Enable parallel execution")
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="Base parameters for simulation point"
+    )
+    metrics: Dict[str, MetricConfig] = Field(
+        default_factory=dict, description="Additional feature extraction metrics"
+    )
+    auditor: Optional[SafetyAuditorConfig] = Field(
+        default=None, description="Task-level mass balance auditor configuration"
+    )
+
+
 class SimulateTaskConfig(BaseDTO):
     """Level 2 task configuration for single-run simulation / single-point bisection."""
 
@@ -295,6 +505,9 @@ class SimulateTaskConfig(BaseDTO):
     parameters: Dict[str, Any] = Field(
         default_factory=dict,
         description="Single-point initial value / parameter override",
+    )
+    optimization: Optional[NestedBisectionConfig] = Field(
+        default=None, description="Optional nested bisection optimization block"
     )
     metrics: Dict[str, MetricConfig] = Field(
         default_factory=dict, description="Feature extraction or bisection metrics"
@@ -314,10 +527,18 @@ class SweepTaskConfig(BaseDTO):
     max_workers: Optional[int] = Field(
         default=None, description="Max parallel worker processes (default: auto)"
     )
-    parameters: Union[List[Dict[str, Any]], Dict[str, List[Any]], Dict[str, Any]] = (
-        Field(
-            description="Sweep space: List of dicts (case list), Dict of lists (grid), or external file ref"
-        )
+    parameters: Optional[
+        Union[List[Dict[str, Any]], Dict[str, List[Any]], Dict[str, Any]]
+    ] = Field(
+        default=None,
+        description="Sweep space: List of dicts (case list), Dict of lists (grid), or external file ref",
+    )
+    grid: Optional[Dict[str, Any]] = Field(
+        default=None, description="Multi-parameter Cartesian grid sweep specification"
+    )
+    optimization: Optional[NestedBisectionConfig] = Field(
+        default=None,
+        description="Optional nested bisection optimization block for each case",
     )
     metrics: Dict[str, MetricConfig] = Field(
         default_factory=dict, description="Summary metrics to compute across all cases"
@@ -326,28 +547,23 @@ class SweepTaskConfig(BaseDTO):
         default=None, description="Task-level mass balance auditor configuration"
     )
 
-    @field_validator("parameters")
+    @model_validator(mode="before")
     @classmethod
-    def validate_sweep_parameters(cls, v: Any) -> Any:
-        if isinstance(v, list):
-            if not v:
+    def validate_sweep_definition(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if not data.get("parameters") and not data.get("grid"):
+                raise ValueError(
+                    "Sweep task requires either 'parameters' or 'grid' to be defined."
+                )
+            if (
+                "parameters" in data
+                and isinstance(data["parameters"], list)
+                and not data["parameters"]
+            ):
                 raise ValueError(
                     "parameters list must contain at least one operating case dictionary"
                 )
-            for idx, item in enumerate(v):
-                if not isinstance(item, dict):
-                    raise ValueError(
-                        f"parameters[{idx}] must be a dictionary representing an operating case, got {type(item).__name__}"
-                    )
-        elif isinstance(v, dict):
-            if "file" not in v:
-                # Grid or scalar map
-                pass
-        else:
-            raise ValueError(
-                f"Sweep parameters must be a list of dicts, a dict of lists, or a dict with 'file', got {type(v).__name__}"
-            )
-        return v
+        return data
 
 
 class SensitivityTaskConfig(BaseDTO):
@@ -492,10 +708,16 @@ class CosimTaskConfig(BaseDTO):
     )
 
 
-# TaskTypeUnion enforces that task.type must be one of the 4 valid computation types.
+# TaskTypeUnion enforces that task.type must be one of the valid computation types.
 # Invalid types like parse, archive, visualize are strictly rejected!
 TaskTypeUnion = Annotated[
-    Union[SimulateTaskConfig, SweepTaskConfig, SensitivityTaskConfig, CosimTaskConfig],
+    Union[
+        SimulateTaskConfig,
+        SweepTaskConfig,
+        SensitivityTaskConfig,
+        CosimTaskConfig,
+        OptimizeTaskConfig,
+    ],
     Field(discriminator="type"),
 ]
 

@@ -1,0 +1,66 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 11: 双层嵌套二分优化 (Nested Bisection Optimization) (SC-9)
+# 
+# 模板定位:
+# - 全厂闭环模型核心自持指标双层寻优原型，严格满足谷底储备与翻倍时间双约束
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "optimize", algorithm = "nested_bisection" (Track 2)
+# - 外层寻优: 优化初始装填量 (${STORAGE_STARTUP_PARAM})，确保储存谷底不低于安全红线 (min_value >= threshold)
+# - 内层寻优: 优化临界产氚比 (${TBR_PARAM})，确保自持翻倍时间达标 (doubling_time <= threshold)
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${STORAGE_STARTUP_PARAM}, ${TBR_PARAM}, ${BURNUP_PARAM}
+# - 极速内核: 自动化传递 variableFilter 约束 OMC 结果矩阵体积，实现单次全流程优化数十秒极速收敛
+# - 交付报告: 寻优收敛评估与全厂物料平衡分析报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "hour"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*"
+
+task:
+  type: "optimize"
+  track: "track2_bisection"
+  algorithm: "nested_bisection"
+  parallel: false
+  parameters:
+    ${BURNUP_PARAM}: 0.05
+  optimization:
+    track: "track2_bisection"
+    outer:
+      parameter: "${STORAGE_STARTUP_PARAM}"     # 初始装填量参数 (如 "sds.I_S_0")
+      search_bounds: [1000.0, 5000.0]
+      tolerance: 20.0
+      max_iterations: 10
+      target_metric:
+        source: "${STORAGE_NODE}"               # 监测存量节点 (如 "sds.I[1]")
+        evaluate: "min_value"
+        threshold: 1000.0                       # 谷底安全红线 (g)
+        comparator: ">="
+    inner:
+      parameter: "${TBR_PARAM}"                 # 待寻优产氚比参数 (如 "blanket.TBR")
+      metric_name: "Required_TBR"
+      search_bounds: [1.05, 1.25]
+      tolerance: 0.005
+      max_iterations: 10
+      target_metric:
+        source: "${STORAGE_NODE}"
+        evaluate: "doubling_time"
+        threshold: 2500.0                       # 倍增时间达标上限 (小时)
+        comparator: "<="
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 双层嵌套二分优化 (自持启动库存与 TBR 协同求解报告)"
+    formats: ["markdown", "docx", "pdf"]

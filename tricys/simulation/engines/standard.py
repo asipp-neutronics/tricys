@@ -167,19 +167,16 @@ def mp_fast_job_worker(
         if not res or not os.path.exists(res):
             return job_id, job_params, "", f"Job {job_id} generated no output"
 
-        # Controlled bisection optimization in execution layer
+        # Controlled bisection / nested optimization in execution layer
         if config and fast_context:
             try:
-                from tricys.analysis.metric import get_optimization_tasks
-                from tricys.analysis.optimizer import BisectionOptimizer
+                from tricys.analysis.optimizer import OptimizationEngine
 
-                if get_optimization_tasks(config):
-                    opt_params, opt_values = (
-                        BisectionOptimizer.run_optimization_tasks_fast(
-                            config, job_params, job_id, fast_context
-                        )
+                if OptimizationEngine.has_optimization(config):
+                    opt_params, opt_values = OptimizationEngine.execute_tasks(
+                        config, job_params, job_id, fast_context
                     )
-                    job_params = {**job_params, **opt_params}
+                    job_params = {**job_params, **opt_params, **opt_values}
             except Exception as opt_exc:
                 logger.warning(f"Job {job_id}: Optimization task failed: {opt_exc}")
 
@@ -264,8 +261,12 @@ class StandardSimulationEngine(BaseSimulationEngine):
         if self.parallel is not None:
             use_concurrent = bool(self.parallel)
         else:
-            use_concurrent = sim_cfg.get("concurrent", False) or (
-                isinstance(task_cfg, dict) and task_cfg.get("parallel", False)
+            from tricys.analysis.optimizer import OptimizationEngine
+
+            use_concurrent = (
+                sim_cfg.get("concurrent", False)
+                or (isinstance(task_cfg, dict) and task_cfg.get("parallel", False))
+                or OptimizationEngine.has_optimization(context.config)
             )
         maximize_workers = sim_cfg.get("maximize_workers", False)
         configured_workers = (
@@ -349,9 +350,9 @@ class StandardSimulationEngine(BaseSimulationEngine):
                         )
 
             # Record optimization results if optimization tasks were active
-            from tricys.analysis.metric import get_optimization_tasks
+            from tricys.analysis.optimizer import OptimizationEngine
 
-            if get_optimization_tasks(context.config):
+            if OptimizationEngine.has_optimization(context.config):
                 opt_entries = [r["params"] for r in raw_results if r.get("params")]
                 if opt_entries:
                     results_dir = os.path.abspath(context.results_dir)

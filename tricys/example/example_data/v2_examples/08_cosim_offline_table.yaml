@@ -1,10 +1,16 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS 工业基准算例 08: Schema 2.0 协同仿真 —— 离线查表/子系统替代模式 (Offline Subsystem Replacement)
-# 迁移自: basic/4_co_simulation_module/co_simulation_module.json
-# 核心机理: Run-Process-Rerun (两阶段初探-拦截-重构)
-# 适用场景: 目标子系统 (如 I_ISS / Divertor) 具备外部求解器 (Aspen Plus / Python) 或预存表格替代
+# TRICYS V2.0 演示算例 08: 协同仿真 —— 离线查表/两阶段子系统替代模式 (Offline Table Co-Simulation)
+# 
+# 算例定位:
+# - 针对同位素分离系统 (I_ISS) 等高维非线性复杂子系统，运用两阶段 Run-Process-Rerun 进行离线替代求解
+# 
+# 核心特征 / 演示重点:
+# - 协同模式: task.type = "cosim", mode = "offline_table"
+# - 核心机理: 阶段一初探获取接口边界流 -> 阶段二调用外部求解器 (Aspen Plus / Python) -> 阶段三重构总系统
+# - 适用场景: 避免在宏观动态仿真中对严密精馏方程进行长时间积分，提高计算吞吐率
+# - 质量闭环: 自动对边界置换数据进行连续性插值与物质平衡校验
 # ==============================================================================
 
 model:

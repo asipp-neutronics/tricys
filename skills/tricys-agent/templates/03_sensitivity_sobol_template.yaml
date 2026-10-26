@@ -1,5 +1,18 @@
-# TRICYS V2 Template: 多维参数全局敏感度 Sobol 方差分解 (SC-3)
 version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 03: 高维参数全局灵敏度分析 (Global Sensitivity Analysis, Sobol GSA) (SC-3)
+# 
+# 模板定位:
+# - 面向全厂氚储量不确定性，运用 Sobol 拟随机采样与方差分解辨识系统核心主导参数原型
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "sensitivity", method = "sobol"，并行采样推进
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TBR_PARAM}, ${BURNUP_PARAM}
+# - 物理参数: 对包层产氚比 (${TBR_PARAM}: [1.05, 1.25]) 与等离子体燃烧分数 (${BURNUP_PARAM}: [0.02, 0.08]) 进行联合扰动
+# - 关键指标: 评估最终储存量 (final_storage) 的一阶灵敏度 (S1) 与总阶灵敏度 (ST)
+# - 交付报告: 自动输出参数灵敏度柱状图与方差分解专题报告 (Markdown / DOCX / PDF)
+# ==============================================================================
 
 model:
   fileName: "${MODEL_FILE_PATH}"
@@ -18,10 +31,10 @@ task:
   samples: 8                          # 推荐 8~32, 生成 N*(2D+2) 样本
   seed: 42
   parallel: true
-  max_workers: 4
+  max_workers: 8
   parameters:
-    ${PARAM_1}: [1.05, 1.30]          # 依据自省参数与 Abdou 经验范围定义上下界
-    ${PARAM_2}: [800.0, 1400.0]
+    ${TBR_PARAM}: [1.05, 1.25]        # 依据自省参数与 Abdou 经验范围定义上下界
+    ${BURNUP_PARAM}: [0.02, 0.08]     # 等离子体燃耗比范围
   metrics:
     final_storage:
       source: "${STORAGE_NODE}"

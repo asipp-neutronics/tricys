@@ -1,10 +1,16 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS 工业基准算例 09: Schema 2.0 协同仿真 —— 在线步进模式 (Online Step-by-Step Co-Simulation)
-# 迁移自: basic/9_online_cosim/online_cosim.json
-# 核心机理: Lockstep Dynamic Exchange (FMI/SSP 在线步进双向同步 + 局部质量控制 + 全局审计)
-# 适用场景: 全厂系统 (CFEDR/Cycle) 与高保真子系统在每个时间步双向交换流量与组分
+# TRICYS V2.0 演示算例 09: 协同仿真 —— 在线步进双向同步模式 (Online Step-by-Step Co-Simulation)
+# 
+# 算例定位:
+# - 基于 SSP/FMI 工业标准协议，实现全厂宏观系统模型与高保真子系统处理器的在线单步双向数据交互
+# 
+# 核心特征 / 演示重点:
+# - 协同模式: task.type = "cosim", mode = "online_step"
+# - 核心机理: Lockstep Dynamic Exchange (双向锁步动态同步)，每步推进前交换进出口流量与组分
+# - 鲁棒控制: 内置局部质量控制 (local_mass_control) 与影子 FMU 降级回退 (shadow_fmu_fallback)
+# - 适用场景: 强非线性瞬态耦合系统 (如深冷分离塔动态工况与包层产氚脉冲波动实时反馈)
 # ==============================================================================
 
 model:

@@ -23,6 +23,7 @@ dist/
 
 # Configured output and data directories
 data/
+v&v/
 log/
 results/
 temp/
