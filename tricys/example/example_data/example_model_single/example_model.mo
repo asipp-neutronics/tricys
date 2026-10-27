@@ -1,5 +1,6 @@
 package example_model
   model WDS
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 输入端口：来自I_ISS的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_I_ISS[5] "来自I_ISS的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}),
@@ -13,7 +14,7 @@ package example_model
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}),
                 iconTransformation(origin = {-114, 0}, extent = {{-10, -10}, {10, 10}}, rotation = -180)));
   // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
   // 参数定义
     parameter Real T = 24 "平均滞留时间 (mean residence time)";
@@ -32,17 +33,17 @@ equation
 for i in 1:5 loop
 // 根据储存量是否超过阈值，分为两种情况
       if I_total > threshold then
-        der(I[i]) = from_I_ISS[i] + from_CL[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i];
+        der(I[i]) = (from_I_ISS[i] + from_CL[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
         outflow[i] = (1 - threshold / I_total) * I[i] / T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
       else
-        der(I[i]) = from_I_ISS[i] + from_CL[i] -  nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
+        der(I[i]) = (from_I_ISS[i] + from_CL[i] -  nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i]) / time_scale;
         outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
       end if;
 // 输出流分配到O_ISS
       to_O_ISS[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
   annotation(
       Icon(graphics = {
@@ -61,6 +62,7 @@ for i in 1:5 loop
   end WDS;
   
   model TES
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自BZ的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_BZ[5] "来自BZ的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 60}, extent = {{-10, -10}, {10, 10}}, rotation = -0)));
@@ -71,7 +73,7 @@ for i in 1:5 loop
     Modelica.Blocks.Interfaces.RealOutput to_BZ[5] "输出到BZ系统" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, -60}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 12 "平均滞留时间 (mean residence time)";
@@ -92,18 +94,18 @@ equation
 for i in 1:5 loop
 // 根据储存量是否超过阈值，分为两种情况
       if I_total > threshold then
-        der(I[i]) = from_BZ[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_BZ[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = (1 - threshold/I_total)*I[i]/T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
       else
-        der(I[i]) = from_BZ[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_BZ[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
       end if;
 // 输出流分配到ISS_O
       to_O_ISS[i] = to_O_ISS_Fraction*outflow[i];
       to_BZ[i] = to_BZ_Fraction*outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 85, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {1, 1}, extent = {{-73, 37}, {73, -37}}, textString = "TES", fontName = "Arial")}),
@@ -111,6 +113,7 @@ for i in 1:5 loop
   end TES;
   
   model TEP_IP
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自TEP_FEP的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_TEP_FEP[5] "来自TEP_FEP的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{-10, 10}, {10, -10}}, rotation = -0)));
@@ -118,7 +121,7 @@ for i in 1:5 loop
     Modelica.Blocks.Interfaces.RealOutput to_TEP_FCU[5] "输出到TEP_FCU系统" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 0}, extent = {{-10, -10}, {10, 10}})));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.5 "平均滞留时间 (mean residence time)";
@@ -130,12 +133,12 @@ for i in 1:5 loop
 equation
 // 计算每个维度流体的动态变化
     for i in 1:5 loop
-      der(I[i]) = from_TEP_FEP[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = (from_TEP_FEP[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
 // 输出流分配到TEP_FCU
       outflow[i] = I[i]/T;
       to_TEP_FCU[i] = I[i]/T;
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
     end for;
     annotation(
       Diagram,
@@ -144,6 +147,7 @@ equation
   end TEP_IP;
   
   model TEP_FEP
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自Pump_System的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_pump[5] "来自Pump_System的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{-10, 10}, {10, -10}}, rotation = -0)));
@@ -154,7 +158,7 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_TEP_IP[5] "输出到TEP_IP系统" annotation(
       Placement(transformation(origin = {110, -20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 0}, extent = {{-10, -10}, {10, 10}}, rotation = -0)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.1 "平均滞留时间 (mean residence time)";
@@ -168,13 +172,13 @@ equation
 equation
 // 计算每个维度流体的动态变化
     for i in 1:5 loop
-      der(I[i]) = from_pump[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = (from_pump[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
       outflow[i] = I[i]/T;
 // 输出流分配到SDS和TEP_IP
       to_SDS[i] = outflow[i]*to_SDS_Fraction[i];
       to_TEP_IP[i] = outflow[i]*(1 - to_SDS_Fraction[i]);
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
     end for;
     annotation(
       Diagram,
@@ -183,6 +187,7 @@ equation
   end TEP_FEP;
   
   model TEP_FCU
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自TEP_IP的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_TEP_IP[5] "来自TEP_IP的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
@@ -190,7 +195,7 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_I_ISS[5] "输出到I_ISS系统" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -180)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.1 "平均滞留时间 (mean residence time)";
@@ -202,12 +207,12 @@ equation
 equation
 // 计算每个维度流体的动态变化
     for i in 1:5 loop
-      der(I[i]) = from_TEP_IP[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = (from_TEP_IP[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
 // 输出流分配到I_ISS
       outflow[i] = I[i]/T;
       to_I_ISS[i] = I[i]/T;
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
     end for;
     annotation(
       Diagram,
@@ -216,6 +221,7 @@ equation
   end TEP_FCU;
   
   model SDS
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自I_ISS的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_I_ISS[5] "来自I_ISS 的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, -60}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
@@ -229,7 +235,8 @@ equation
     Modelica.Blocks.Interfaces.RealInput to_FS[5] "Fueling_System" annotation(
       Placement(transformation(origin = {120, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
     // 状态变量：SDS 内部的氚存储量
-    Real I[5](start = {3000, 3000, 0, 0, 0}, each fixed=true) "SDS 内的氚存储量";
+    parameter Real I_S_0 = 3000 "Initial tritium storage inventory (g)";
+    Real I[5](start = {I_S_0, 3000, 0, 0, 0}) "SDS 内的氚存储量";
     // 参数定义
     // parameter Real T = 0.5 "平均滞留时间 (mean residence time)";
     parameter Real T = 0.5 "平均滞留时间 (mean residence time)";
@@ -241,9 +248,9 @@ equation
 equation
     for i in 1:5 loop
 // 只对 T, D, H 进行计算
-      der(I[i]) = from_I_ISS[i] + from_O_ISS[i] + from_TEP_FEP[i] - (1 + nonradio_loss[i])*to_FS[i] - decay_loss[i]*I[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*to_FS[i];
+      der(I[i]) = (from_I_ISS[i] + from_O_ISS[i] + from_TEP_FEP[i] - (1 + nonradio_loss[i])*to_FS[i] - decay_loss[i]*I[i]) / time_scale;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*to_FS[i] / time_scale;
     end for;
     annotation(
       Diagram,
@@ -252,6 +259,7 @@ equation
   end SDS;
   
   model Pump_System
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自Plasma的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_Plasma[5] "Plasma" annotation(
       Placement(transformation(origin = {-120, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{-10, -10}, {10, 10}}, rotation = -0)));
@@ -259,7 +267,7 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_TEP_FEP[5] "输出到TEP_FEP系统" annotation(
       Placement(transformation(origin = {120, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, -114}, extent = {{10, -10}, {-10, 10}}, rotation = 90)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.17 "平均滞留时间 (mean residence time)";
@@ -278,17 +286,17 @@ equation
 for i in 1:5 loop
 // 根据I的总和是否超过阈值，分为两种情况
       if I_total > threshold then
-        der(I[i]) = from_Plasma[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_Plasma[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = (1 - threshold/I_total)*I[i]/T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
       else
-        der(I[i]) = from_Plasma[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_Plasma[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
       end if;
 // 输出流分配到TEP_FEP
       to_TEP_FEP[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
     annotation(
       Diagram,
@@ -297,6 +305,7 @@ for i in 1:5 loop
   end Pump_System;
   
   model Plasma
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 定义输入端口
     Modelica.Blocks.Interfaces.RealInput pulseInput "等离子体脉冲控制信号，单位: g/h" annotation(
       Placement(transformation(origin = {-122, 90}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{-10, -10}, {10, 10}})));
@@ -324,7 +333,7 @@ for i in 1:5 loop
   
     Real decay_rate[5] "衰变速率";
     Real leak_rate[5] "泄漏速率";
-    Real cumulative_burn[5](start = {0, 0, 0, 0, 0}, each fixed=true) "累计燃烧";
+    Real cumulative_burn[5](start = {0, 0, 0, 0, 0}) "累计燃烧";
 equation
 // 计算氦生成（仅在脉冲开启时生成）
     He_generated = if pulseInput > 0 then He_yield*pulseInput else 0;
@@ -343,7 +352,7 @@ for i in 1:5 loop
       to_Pump[i] = (from_Fueling_System[i] + (if i == 4 then He_generated else 0))*(1 - to_Div_fraction[i] - to_FW_fraction[i] - fb*nf);
       decay_rate[i] = 0;
       leak_rate[i] = 0;
-      der(cumulative_burn[i]) = from_Fueling_System[i] * fb * nf;
+      der(cumulative_burn[i]) = (from_Fueling_System[i] * fb * nf) / time_scale;
     end for;
     annotation(
       Diagram,
@@ -352,6 +361,7 @@ for i in 1:5 loop
   end Plasma;
   
   model O_ISS
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自CPS的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_CPS[5] "来自CPS的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
@@ -365,7 +375,7 @@ for i in 1:5 loop
     Modelica.Blocks.Interfaces.RealOutput to_SDS[5] "输出到SDS系统" annotation(
       Placement(transformation(origin = {110, -20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, -114}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 12 "平均滞留时间 (mean residence time)";
@@ -384,17 +394,17 @@ equation
 for i in 1:5 loop
 // 根据储存量是否超过阈值，分为两种情况
       if I_total > threshold then
-        der(I[i]) = from_CPS[i] + from_TES[i] + from_WDS[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_CPS[i] + from_TES[i] + from_WDS[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = (1 - threshold/I_total)*I[i]/T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
       else
-        der(I[i]) = from_CPS[i] + from_TES[i] + from_WDS[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_CPS[i] + from_TES[i] + from_WDS[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
       end if;
 // 输出流分配到SDS
       to_SDS[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 85, 0}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {5, 7}, extent = {{-75, 33}, {75, -33}}, textString = "O-ISS", fontName = "Arial")}),
@@ -402,6 +412,7 @@ for i in 1:5 loop
   end O_ISS;
   
   model I_ISS
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自TEP_FCU的输入
     Modelica.Blocks.Interfaces.RealInput from_TEP_FCU[5] "来自TEP_FCU的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, -114}, extent = {{10, 10}, {-10, -10}}, rotation = -90)));
@@ -412,7 +423,7 @@ for i in 1:5 loop
     Modelica.Blocks.Interfaces.RealOutput to_WDS[5] "输出到WDS系统" annotation(
       Placement(transformation(origin = {110, -20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 2.4 "平均滞留时间 (mean residence time)";
@@ -433,18 +444,18 @@ equation
 for i in 1:5 loop
 // 根据储存量是否超过阈值，分为两种情况
       if I_total > threshold then
-        der(I[i]) = from_TEP_FCU[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_TEP_FCU[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = (1 - threshold/I_total)*I[i]/T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
       else
-        der(I[i]) = from_TEP_FCU[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_TEP_FCU[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
       end if;
 // 输出流分配到SDS和WDS
       to_WDS[i] = to_WDS_Fraction*outflow[i];
       to_SDS[i] = to_SDS_Fraction*outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 85, 0}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {4, 3}, extent = {{-72, 33}, {72, -33}}, textString = "I-ISS", fontName = "Arial")}),
@@ -452,6 +463,7 @@ for i in 1:5 loop
   end I_ISS;
   
   model Fueling_System
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：输出到plasma（5维）
     Modelica.Blocks.Interfaces.RealInput to_Plasma[5] "输出到等离子体的燃料" annotation(
       Placement(transformation(origin = {116, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
@@ -459,7 +471,7 @@ for i in 1:5 loop
     Modelica.Blocks.Interfaces.RealOutput from_SDS[5] "来自SDS的输入（燃料输入）" annotation(
       Placement(transformation(origin = {-114, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.5 "平均滞留时间 (mean residence time)";
@@ -477,9 +489,9 @@ equation
       target_inventory[i] = to_Plasma[i]*T;
       inflow_demand[i] = to_Plasma[i] + decay_loss[i]*I[i] + (target_inventory[i] - I[i])/Refill_T;
       from_SDS[i] = inflow_demand[i];
-      der(I[i]) = from_SDS[i] - to_Plasma[i] - decay_loss[i]*I[i];
+      der(I[i]) = (from_SDS[i] - to_Plasma[i] - decay_loss[i]*I[i]) / time_scale;
       outflow[i] = to_Plasma[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
       leak_rate[i] = 0;
     end for;
     annotation(
@@ -490,6 +502,7 @@ equation
   end Fueling_System;
   
   model FW
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自plasma（5维）
     Modelica.Blocks.Interfaces.RealInput from_plasma[5] annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
@@ -503,7 +516,7 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_CL[5] annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 60}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.28 "平均滞留时间 (mean residence time)";
@@ -515,11 +528,11 @@ equation
 equation
 // 计算每种物质的动态变化和输出
     for i in 1:5 loop
-      der(I[i]) = from_plasma[i] + from_CL[i] + from_CPS[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = (from_plasma[i] + from_CL[i] + from_CPS[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
       outflow[i] = I[i]/T;
       to_CL[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 170, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {1, 1}, extent = {{-73, 37}, {73, -37}}, textString = "FW", fontName = "Arial")}),
@@ -527,6 +540,7 @@ equation
   end FW;
   
   model DIV
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自Plasma的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_plasma[5] "来自Plasma的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
@@ -540,7 +554,7 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_CL[5] "输出到Coolant_Loop" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, -60}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 0.28 "平均滞留时间 (mean residence time)";
@@ -552,11 +566,11 @@ equation
 equation
 // 计算每种物质的动态变化和输出
     for i in 1:5 loop
-      der(I[i]) = from_plasma[i] + from_CL[i] + from_CPS[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = (from_plasma[i] + from_CL[i] + from_CPS[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
       outflow[i] = I[i]/T;
       to_CL[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 170, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {1, 1}, extent = {{-73, 37}, {73, -37}}, textString = "DIV", fontName = "Arial")}),
@@ -564,6 +578,7 @@ equation
   end DIV;
   
   model Coolant_Pipe
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自FW的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_FW[5] "来自FW的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 80}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
@@ -586,8 +601,8 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_WDS[5] "输出到WDS系统" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, 114}, extent = {{10, -10}, {-10, 10}}, rotation = 270)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
-    Real outflow[5](start = {0, 0, 0, 0, 0}, each fixed=true) "总输出流";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
+    Real outflow[5](start = {0, 0, 0, 0, 0}) "总输出流";
     // 参数定义
     parameter Real T = 24 "平均滞留时间 (mean residence time)";
     parameter Real decay_loss[5](each unit = "1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
@@ -601,14 +616,14 @@ equation
 equation
 // 计算每种物质的动态变化和输出
     for i in 1:5 loop
-      der(I[i]) = from_DIV[i] + from_FW[i] + from_BZ[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = (from_DIV[i] + from_FW[i] + from_BZ[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
       outflow[i] = I[i]/T;
       to_WDS[i] = to_WDS_Fraction*outflow[i];
       to_CPS[i] = to_CPS_Fraction*(1 - to_WDS_Fraction)*outflow[i];
       to_FW[i] = to_FW_Fraction*(1 - to_CPS_Fraction)*(1 - to_WDS_Fraction)*outflow[i];
       to_DIV[i] = (1 - to_FW_Fraction)*(1 - to_CPS_Fraction)*(1 - to_WDS_Fraction)*outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 255, 127}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {1, 1}, extent = {{-73, 37}, {73, -37}}, textString = "Coolant
@@ -617,6 +632,7 @@ equation
   end Coolant_Pipe;
   
   model CPS
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 输入端口：来自Coolant_Loop的输入（5维）
     Modelica.Blocks.Interfaces.RealInput from_CL[5] "来自Coolant_Loop的输入" annotation(
       Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, 114}, extent = {{10, -10}, {-10, 10}}, rotation = 90)));
@@ -630,7 +646,7 @@ equation
     Modelica.Blocks.Interfaces.RealOutput to_DIV[5] "输出到DIV系统" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, -60}, extent = {{-10, -10}, {10, 10}}, rotation = -180)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
     Real outflow[5] "总输出流";
     // 参数定义
     parameter Real T = 48 "平均滞留时间 (mean residence time)";
@@ -651,19 +667,19 @@ equation
 for i in 1:5 loop
 // 根据储存量是否超过铺底量，分为两种情况
       if I_total > threshold then
-        der(I[i]) = from_CL[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_CL[i] - (1 + nonradio_loss[i])*(1 - threshold/I_total)*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = (1 - threshold/I_total)*I[i]/T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
       else
-        der(I[i]) = from_CL[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i];
+        der(I[i]) = (from_CL[i] - nonradio_loss[i]*I[i]/T - decay_loss[i]*I[i]) / time_scale;
         outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
       end if;
 // 输出流分配到ISS_O、FW、DIV
       to_ISS_O[i] = to_ISS_O_Fraction*outflow[i];
       to_FW[i] = to_FW_Fraction*(1 - to_ISS_O_Fraction)*outflow[i];
       to_DIV[i] = (1 - to_FW_Fraction)*(1 - to_ISS_O_Fraction)*outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 85, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {-3, 3}, extent = {{-75, 35}, {75, -35}}, textString = "CPS", fontName = "Arial")}),
@@ -671,6 +687,7 @@ for i in 1:5 loop
   end CPS;
   
   model Blanket
+    outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 定义输入端口
     Modelica.Blocks.Interfaces.RealInput pulseInput "等离子体脉冲控制信号" annotation(
       Placement(transformation(origin = {-122, 90}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, -114}, extent = {{10, 10}, {-10, -10}}, rotation = -90)));
@@ -684,8 +701,8 @@ for i in 1:5 loop
     Modelica.Blocks.Interfaces.RealOutput to_TES[5] "输出到TES系统" annotation(
       Placement(transformation(origin = {110, 20}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, 60}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
     // 状态变量：系统中5种物质的储存量
-    Real I[5](start = {0, 0, 0, 0, 0}, each fixed=true) "系统中5种物质的储存量";
-    Real outflow[5](start = {0, 0, 0, 0, 0}, each fixed=true) "总输出流";
+    Real I[5](start = {0, 0, 0, 0, 0}) "系统中5种物质的储存量";
+    Real outflow[5](start = {0, 0, 0, 0, 0}) "总输出流";
     // 参数定义
     parameter Real T = 24 "平均滞留时间 (mean residence time)";
     parameter Real decay_loss[5](each unit = "1/h") = {6.4e-6, 0, 0, 0, 0} "Tritium decay loss for 5 materials (放射性衰变损失)";
@@ -696,17 +713,17 @@ for i in 1:5 loop
   
     Real decay_rate[5] "衰变速率";
     Real leak_rate[5] "泄漏速率";
-    Real cumulative_breed[5](start = {0, 0, 0, 0, 0}, each fixed=true) "累计增殖";
+    Real cumulative_breed[5](start = {0, 0, 0, 0, 0}) "累计增殖";
 equation
 // 计算每种物质的动态变化和输出
     for i in 1:5 loop
-      der(I[i]) = (if i == 1 then pulseInput*TBR else 0) + from_TES[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i];
+      der(I[i]) = ((if i == 1 then pulseInput*TBR else 0) + from_TES[i] - (1 + nonradio_loss[i])*I[i]/T - decay_loss[i]*I[i]) / time_scale;
       outflow[i] = I[i]/T;
       to_TES[i] = to_TES_Fraction*outflow[i];
       to_CL[i] = to_CL_Fraction*outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
-      der(cumulative_breed[i]) = if i == 1 then pulseInput*TBR else 0;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
+      der(cumulative_breed[i]) = (if i == 1 then pulseInput*TBR else 0) / time_scale;
     end for;
     annotation(
       Icon(graphics = {Line(origin = {-100, -100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, 100}, points = {{0, 0}, {200, 0}}, color = {0, 0, 127}), Line(origin = {-100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Line(origin = {100, -100}, points = {{0, 0}, {0, 200}}, color = {0, 0, 127}), Rectangle(fillColor = {255, 170, 255}, fillPattern = FillPattern.Solid, extent = {{-100, 100}, {100, -100}}), Text(origin = {1, 1}, extent = {{-73, 37}, {73, -37}}, textString = "Blanket", fontName = "Arial")}),
@@ -714,8 +731,9 @@ equation
   end Blanket;
   
   model Cycle
+    inner parameter Real time_scale = 3600 "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
     // 实例化脉冲信号模块
-    Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 10, width = 100) annotation(
+    Modelica.Blocks.Sources.Pulse pulseSource(amplitude = 9.60984, period = 10 * time_scale, width =  90) annotation(
       Placement(transformation(origin = {-120, -20}, extent = {{-60, 20}, {-40, 40}})));
     // 实例化 plasma 模型
     Plasma plasma annotation(

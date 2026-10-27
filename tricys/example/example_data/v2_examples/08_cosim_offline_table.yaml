@@ -1,0 +1,54 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 08: 协同仿真 —— 离线查表/两阶段子系统替代模式 (Offline Table Co-Simulation)
+# 
+# 算例定位:
+# - 针对同位素分离系统 (I_ISS) 等高维非线性复杂子系统，运用两阶段 Run-Process-Rerun 进行离线替代求解
+# 
+# 核心特征 / 演示重点:
+# - 协同模式: task.type = "cosim", mode = "offline_table"
+# - 核心机理: 阶段一初探获取接口边界流 -> 阶段二调用外部求解器 (Aspen Plus / Python) -> 阶段三重构总系统
+# - 适用场景: 避免在宏观动态仿真中对严密精馏方程进行长时间积分，提高计算吞吐率
+# - 质量闭环: 自动对边界置换数据进行连续性插值与物质平衡校验
+# ==============================================================================
+
+model:
+  fileName: "../example_model/package.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  startTime: 0.0
+  stopTime: 100.0
+  stepSize: 0.5
+  variableFilter: "time|sds.I[1]"
+
+task:
+  type: "cosim"
+  mode: "offline_table"
+  subsystems:
+    - target: "example_model.I_ISS"
+      instance: "i_iss"
+      solver: "aspen_plus"
+      handler_module: "tricys.handlers.i_iss_handler"
+      handler_function: "run_aspen_simulation"
+      params:
+        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+        base: 20
+        retime: 60
+        time_step: 3
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真报告 (离线静态替换模式)"
+    formats: ["markdown", "docx", "pdf"]

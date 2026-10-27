@@ -53,7 +53,7 @@ def _generate_interceptor(
         extra={"ports": [p["name"] for p in output_ports]},
     )
     for port in output_ports:
-        dim_str = f'[{port["dim"]}]' if port["dim"] > 1 else ""
+        dim_str = f"[{port['dim']}]" if port["dim"] > 1 else ""
         port_name = port["name"]
 
         # 1. Generate Input and Output port declarations (no change)

@@ -11,8 +11,6 @@ from typing import Iterable, Sequence
 
 import pandas as pd
 
-from tricys.auditor.offline import parse_auditor_config
-from tricys.auditor.online import OnlineGlobalAuditor
 from tricys.core.modelica import get_om_session, load_modelica_package
 from tricys.online_cosim.oms_runtime import OmsSystemRuntime
 from tricys.online_cosim.processor_base import AbstractTrackProcessor
@@ -30,6 +28,8 @@ from tricys.online_cosim.topology import (
     build_component_type_map,
     extract_model_topology,
 )
+from tricys.plugins.auditor.offline import parse_auditor_config
+from tricys.plugins.auditor.online import OnlineGlobalAuditor
 
 logger = logging.getLogger(__name__)
 

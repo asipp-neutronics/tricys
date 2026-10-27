@@ -1,0 +1,234 @@
+{
+  "source": {
+    "authors": "X. Wang et al.",
+    "title": "Hydrogen isotope inventory evaluation of hydrogen isotopes separation system of CFETR using Aspen Plus simulator",
+    "journal": "Fusion Engineering and Design",
+    "volume": 184,
+    "year": 2022,
+    "doi": "10.1016/j.fusengdes.2022.113078",
+    "tables_used": [
+      "Table 1 (feeds)",
+      "Table 5 (column design)",
+      "Table 8 (heat load/temperature)",
+      "Table 9 (product compositions)",
+      "Table 10 (tritium inventory)"
+    ],
+    "model": "ISS-I (inner fuel cycle)",
+    "software": "Aspen Plus",
+    "thermodynamic_model": "Custom PLXANT parameters for HD/HT/DT/T2"
+  },
+  "feeds": {
+    "TEP": {
+      "description": "Tritium Extraction and Purification exhaust, fed to CD1 at stage 50",
+      "total_flow_mol_h": 22.32,
+      "composition_mole_fraction": {
+        "H2": 0.00014,
+        "HD": 0.01058,
+        "HT": 0.00940,
+        "D2": 0.24778,
+        "DT": 0.48430,
+        "T2": 0.24780
+      },
+      "target_column": "CD1",
+      "feed_stage": 50,
+      "notes": "Table 1: TEP feed 22.32 mol/h. H2=0.014%, HD=1.058%, HT=0.940%, D2=24.778%, DT=48.430%, T2=24.780%."
+    },
+    "NBI": {
+      "description": "Neutral Beam Injection exhaust gas, fed to CD2 at stage 37",
+      "total_flow_mol_h": 80.357,
+      "composition_mole_fraction": {
+        "H2": 0.0,
+        "HD": 0.0,
+        "HT": 0.0,
+        "D2": 0.980,
+        "DT": 0.020,
+        "T2": 0.0
+      },
+      "target_column": "CD2",
+      "feed_stage": 37,
+      "notes": "Table 1: NBI feed 80.357 mol/h. D2=98.000%, DT=2.000%."
+    }
+  },
+  "columns": {
+    "CD1": {
+      "total_stages": 90,
+      "reflux_ratio": 50,
+      "distillate_to_feed_ratio": 0.185,
+      "feed_positions": {
+        "TEP": 50,
+        "equilibrator1": 72
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.05,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD1 receives TEP at stage 50 and equilibrator 1 (E1) recycle at stage 72."
+    },
+    "CD2": {
+      "total_stages": 75,
+      "reflux_ratio": 15,
+      "distillate_to_feed_ratio": 0.979,
+      "feed_positions": {
+        "NBI": 37
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.06,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD2 receives NBI at stage 37."
+    },
+    "CD3": {
+      "total_stages": 100,
+      "reflux_ratio": 60,
+      "distillate_to_feed_ratio": 0.780,
+      "feed_positions": {
+        "CD1_bottom": 45,
+        "CD2_bottom": 15
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.07,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD3 receives CD1 bottoms at stage 45 and CD2 bottoms at stage 15."
+    },
+    "CD4": {
+      "total_stages": 60,
+      "reflux_ratio": 295,
+      "distillate_to_feed_ratio": 0.0328,
+      "feed_positions": {
+        "equilibrator2": 55
+      },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "inside_diameter_m": 0.03,
+      "condenser_volume_m3": 1.0e-3,
+      "reboiler_volume_m3": 2.0e-4,
+      "HETP_m": 0.05,
+      "notes": "Table 5. CD4 receives equilibrator 2 (E2) effluent at stage 55."
+    }
+  },
+  "equilibrators": {
+    "equilibrator1": {
+      "temperature_K": 298.0,
+      "notes": "Catalytic reactor E1 operating at room temperature (298K) for 2DT <=> D2 + T2"
+    },
+    "equilibrator2": {
+      "temperature_K": 298.0,
+      "notes": "Catalytic reactor E2 operating at room temperature (298K) for 2HT <=> H2 + T2, HT + D2 <=> HD + DT"
+    }
+  },
+  "topology": {
+    "description": "ISS-I four-column cascade with two catalytic equilibrators and recycle",
+    "connections": [
+      {"from": "TEP_feed", "to": "CD1", "stage": 50},
+      {"from": "NBI_feed", "to": "CD2", "stage": 37},
+      {"from": "CD1_bottom", "to": "CD3", "stage": 45},
+      {"from": "CD2_bottom", "to": "CD3", "stage": 15},
+      {"from": "CD1_top", "to": "equilibrator2", "stage": null},
+      {"from": "equilibrator2", "to": "CD4", "stage": 55},
+      {"from": "CD3_top", "to": "equilibrator1", "stage": null},
+      {"from": "equilibrator1", "to": "CD1", "stage": 72}
+    ],
+    "products": {
+      "CD2_top": "High-purity D2 product (to NBI/fueling)",
+      "CD3_bottom": "High-purity T2 product (to SDS/fueling)",
+      "CD4_bottom": "High-purity D2 product (to fueling)",
+      "CD4_top": "HD-rich exhaust (to environment)"
+    },
+    "simplification_notes": "Wang 2022 ISS-I configuration: CD1 separates D2/HD/HT (top to E2) from DT/T2 (bottom to CD3); CD2 purifies NBI D2; CD3 produces high-purity T2 bottom while recycling DT top via E1 (2DT -> D2 + T2) back to CD1; CD4 removes HD overhead and recovers D2 bottom."
+  },
+  "expected_results": {
+    "temperatures_K": {
+      "CD1": {"top": 23.3745, "bottom": 24.5114},
+      "CD2": {"top": 23.4102, "bottom": 24.4085},
+      "CD3": {"top": 24.1152, "bottom": 24.6124},
+      "CD4": {"top": 21.8277, "bottom": 23.7856},
+      "notes": "Table 8."
+    },
+    "heat_loads_W": {
+      "CD1": {"condenser": -210.066, "reboiler": 85.7631},
+      "CD2": {"condenser": -432.357, "reboiler": 432.745},
+      "CD3": {"condenser": -941.965, "reboiler": 941.761},
+      "CD4": {"condenser": -35.122, "reboiler": 3.1672},
+      "notes": "Table 8."
+    },
+    "product_compositions": {
+      "CD1": {
+        "top": {
+          "H2": {"flow_mol_h": 3.08e-3, "mole_fraction": 0.000256},
+          "HD": {"flow_mol_h": 0.2361, "mole_fraction": 0.019674},
+          "HT": {"flow_mol_h": 0.2098, "mole_fraction": 0.017480},
+          "D2": {"flow_mol_h": 11.3169, "mole_fraction": 0.942851},
+          "DT": {"flow_mol_h": 0.2278, "mole_fraction": 0.018977},
+          "T2": {"flow_mol_h": 0.00914, "mole_fraction": 0.000762}
+        },
+        "bottom": {
+          "HT": {"flow_mol_h": 2.92e-5, "mole_fraction": 5.53e-7},
+          "D2": {"flow_mol_h": 0.7019, "mole_fraction": 0.013274},
+          "DT": {"flow_mol_h": 30.5551, "mole_fraction": 0.577846},
+          "T2": {"flow_mol_h": 21.6205, "mole_fraction": 0.408879}
+        },
+        "notes": "Table 9."
+      },
+      "CD2": {
+        "top": {
+          "D2": {"flow_mol_h": 78.6487, "mole_fraction": 0.999736},
+          "DT": {"flow_mol_h": 0.0208, "mole_fraction": 0.000264}
+        },
+        "bottom": {
+          "D2": {"flow_mol_h": 0.1011, "mole_fraction": 0.059939},
+          "DT": {"flow_mol_h": 1.5864, "mole_fraction": 0.940061}
+        },
+        "notes": "Table 9."
+      },
+      "CD3": {
+        "top": {
+          "HT": {"flow_mol_h": 2.93e-5, "mole_fraction": 6.87e-7},
+          "D2": {"flow_mol_h": 0.8031, "mole_fraction": 0.018869},
+          "DT": {"flow_mol_h": 31.3439, "mole_fraction": 0.736452},
+          "T2": {"flow_mol_h": 10.4137, "mole_fraction": 0.244680}
+        },
+        "bottom": {
+          "DT": {"flow_mol_h": 0.7975, "mole_fraction": 0.066435},
+          "T2": {"flow_mol_h": 11.2068, "mole_fraction": 0.933565}
+        },
+        "notes": "Table 9."
+      },
+      "CD4": {
+        "top": {
+          "H2": {"flow_mol_h": 2.68e-3, "mole_fraction": 0.006797},
+          "HD": {"flow_mol_h": 0.3910, "mole_fraction": 0.993198},
+          "HT": {"flow_mol_h": 5.09e-8, "mole_fraction": 1.29e-7},
+          "D2": {"flow_mol_h": 1.62e-6, "mole_fraction": 4.13e-6}
+        },
+        "bottom": {
+          "HD": {"flow_mol_h": 0.04787, "mole_fraction": 0.00412},
+          "HT": {"flow_mol_h": 0.0078, "mole_fraction": 0.000672},
+          "D2": {"flow_mol_h": 11.1147, "mole_fraction": 0.957342},
+          "DT": {"flow_mol_h": 0.4308, "mole_fraction": 0.037105},
+          "T2": {"flow_mol_h": 8.77e-3, "mole_fraction": 0.000756}
+        },
+        "notes": "Table 9."
+      }
+    },
+    "tritium_inventory_mol": {
+      "CD1": {"total": 4.8647},
+      "CD2": {"total": 1.4392},
+      "CD3": {"total": 19.9666},
+      "CD4": {"total": 0.0533},
+      "system_total": 26.3239,
+      "notes": "Table 10."
+    }
+  },
+  "tolerances": {
+    "composition_rel": 0.15,
+    "temperature_abs_K": 2.0,
+    "heat_load_rel": 0.30
+  }
+}

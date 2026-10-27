@@ -388,6 +388,7 @@ def build_modelica_parameter_map(parameters: Dict[str, Any]) -> Dict[str, str]:
     return {
         name: format_parameter_override_value(value)
         for name, value in parameters.items()
+        if name not in ("name", "job_id") and not str(name).startswith("_")
     }
 
 

@@ -1,0 +1,54 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 05: FOC 聚变混合工况脉冲调度瞬态仿真 (SC-2)
+# 
+# 模板定位:
+# - 基于工业级 FOC（Fusion Operation Cycle）协议的复杂混合运行脉冲调度动态注入与长周期瞬态仿真原型
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "simulate"，挂载 scenario.pulse 动态调度器
+# - 调度策略: 读取 .foc 配置文件，支持 PULSE / DWELL / REPEAT 周期性复合序列，使用 "table" 策略平滑插值
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${PULSE_COMPONENT}, ${FOC_FILE_PATH}, ${TBR_PARAM}, ${BURNUP_PARAM}
+# - 交付报告: 聚变运行周期 (FOC) 动态脉冲混合工况仿真审查报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "second"
+  stopTime: 1200.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*|${PULSE_COMPONENT}\\.y"
+
+  pulse:
+    foc_file: "${FOC_FILE_PATH}"      # 如: "example_scenario_mix.foc"
+    foc_component: "${PULSE_COMPONENT}" # 如: "pulseSource"
+    strategy: "table"                 # "table" 或 "array"
+
+task:
+  type: "simulate"
+  parameters:
+    ${TBR_PARAM}: 1.15
+    ${BURNUP_PARAM}: 0.05
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+    startup_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "startup_inventory"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变运行周期 (FOC) 动态脉冲混合工况仿真审查报告"
+    formats: ["markdown", "docx", "pdf"]

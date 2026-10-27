@@ -166,6 +166,8 @@ def convert_relative_paths_to_absolute(
                 "temp_dir",
                 "log_dir",
                 "glossary_path",
+                "script",
+                "script_path",
             ]
 
             if (
@@ -176,6 +178,10 @@ def convert_relative_paths_to_absolute(
                 # If it's a relative path, convert to absolute path
                 if not os.path.isabs(value) and value:
                     abs_path = os.path.abspath(os.path.join(base_dir, value))
+                    if not os.path.exists(abs_path):
+                        alt_cand = os.path.abspath(os.path.join(base_dir, "..", value))
+                        if os.path.exists(alt_cand):
+                            abs_path = alt_cand
                     logger.debug(
                         "Converted path",
                         extra={
@@ -340,20 +346,284 @@ def basic_prepare_config(
     try:
         if isinstance(config_or_path, str):
             config_path = os.path.abspath(config_or_path)
-            with open(config_path, "r") as f:
-                base_config = json.load(f)
+            if config_path.endswith((".yaml", ".yml")):
+                import yaml
+
+                with open(config_path, "r", encoding="utf-8") as f:
+                    base_config = yaml.safe_load(f)
+            else:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    base_config = json.load(f)
             original_config_dir = os.path.dirname(config_path)
         else:
             base_config = config_or_path
             original_config_dir = base_dir if base_dir else os.getcwd()
 
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+    except Exception as e:
         # Logger is not set up yet, so print directly to stderr
         print(
             f"ERROR: Failed to load or parse config: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    from tricys.core.schema import TricysV2Config, is_v2_config
+
+    if is_v2_config(base_config):
+        TricysV2Config.model_validate(base_config)
+
+        config = json.loads(json.dumps(base_config))
+        model_cfg = config.get("model", {})
+        if "fileName" in model_cfg and model_cfg["fileName"]:
+            if not os.path.isabs(model_cfg["fileName"]):
+                model_cfg["fileName"] = os.path.abspath(
+                    os.path.join(original_config_dir, model_cfg["fileName"])
+                )
+
+        pulse_cfg = config.get("scenario", {}).get("pulse", {})
+        foc_target = (
+            pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")
+            if pulse_cfg
+            else None
+        )
+        if pulse_cfg and foc_target:
+            if not os.path.isabs(foc_target):
+                foc_target = os.path.abspath(
+                    os.path.join(original_config_dir, foc_target)
+                )
+            pulse_cfg["foc_file"] = foc_target
+            pulse_cfg["foc_path"] = foc_target
+
+        config["run_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_workspace = os.path.abspath(config["run_timestamp"])
+
+        workspace_cfg = config.get("workspace", {})
+        results_dir_name = workspace_cfg.get("results_dir", "results")
+        temp_dir_name = workspace_cfg.get("temp_dir", "temp")
+        log_dir_name = workspace_cfg.get("log_dir", "log")
+
+        if "paths" not in config:
+            config["paths"] = {}
+        config["paths"]["package_path"] = model_cfg.get("fileName", "")
+        config["paths"]["log_dir"] = os.path.join(run_workspace, log_dir_name)
+        config["paths"]["temp_dir"] = os.path.join(run_workspace, temp_dir_name)
+        config["paths"]["results_dir"] = os.path.join(run_workspace, results_dir_name)
+
+        if "simulation" not in config:
+            config["simulation"] = {}
+        scenario_cfg = config.get("scenario", {})
+        config["simulation"]["model_name"] = model_cfg.get("modelName", "")
+        config["simulation"]["cflags"] = model_cfg.get("cflags", "")
+        config["simulation"]["loadModel"] = model_cfg.get("loadModel", [])
+        config["simulation"]["target"] = model_cfg.get("target") or "gcc"
+
+        stop_time = float(scenario_cfg.get("stopTime", 1000.0))
+        num_intervals = scenario_cfg.get("numberOfIntervals")
+        if num_intervals and int(num_intervals) > 0:
+            step_size = stop_time / float(num_intervals)
+        else:
+            step_size = float(scenario_cfg.get("stepSize", 1.0))
+
+        config["simulation"]["stop_time"] = stop_time
+        config["simulation"]["start_time"] = float(scenario_cfg.get("startTime", 0.0))
+        config["simulation"]["step_size"] = step_size
+        config["simulation"]["numberOfIntervals"] = num_intervals
+        vf = scenario_cfg.get("variableFilter", ".*")
+        if "[" in vf and "\\[" not in vf:
+            vf = vf.replace("[", "\\[").replace("]", "\\]")
+        config["simulation"]["variableFilter"] = vf
+        config["simulation"]["method"] = scenario_cfg.get("method", "dassl")
+        config["simulation"]["tolerance"] = float(scenario_cfg.get("tolerance", 1e-6))
+        config["simulation"]["outputFormat"] = scenario_cfg.get("outputFormat", "csv")
+        config["simulation"]["simflags"] = scenario_cfg.get("simflags", "")
+
+        time_base = str(scenario_cfg.get("time_base", "second")).strip().lower()
+        config["simulation"]["time_base"] = time_base
+        if time_base == "second":
+            config["simulation"]["stop_time"] = stop_time * 3600.0
+            config["simulation"]["step_size"] = step_size * 3600.0
+            config["simulation"]["start_time"] = (
+                config["simulation"]["start_time"] * 3600.0
+            )
+        config["simulation"]["_time_unit"] = "second"
+
+        if pulse_cfg and (pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")):
+            foc_target_path = pulse_cfg.get("foc_file") or pulse_cfg.get("foc_path")
+            comp_name = (
+                pulse_cfg.get("foc_component")
+                or pulse_cfg.get("target_component")
+                or ""
+            )
+            config["foc"] = {
+                "foc_path": foc_target_path,
+                "foc_component": comp_name,
+                "component_name": comp_name,
+                "strategy": pulse_cfg.get("strategy", "table"),
+                "variable_mapping": pulse_cfg.get("variable_mapping", {}),
+            }
+
+        task_cfg = config.get("task", {})
+        if isinstance(task_cfg, dict):
+            if task_cfg.get("metrics"):
+                config["metrics_definition"] = task_cfg["metrics"]
+            if task_cfg.get("parallel"):
+                config["simulation"]["concurrent"] = True
+                config["simulation"]["max_workers"] = task_cfg.get("max_workers")
+            if task_cfg.get("auditor"):
+                config["auditor"] = task_cfg["auditor"]
+            elif (config.get("plugins") or {}).get("auditor"):
+                config["auditor"] = config["plugins"]["auditor"]
+            elif config.get("auditor") and not task_cfg.get("auditor"):
+                task_cfg["auditor"] = config["auditor"]
+
+            # Map Schema 2.0 task: cosim to runtime co_simulation configuration
+            if task_cfg.get("type") == "cosim":
+                raw_mode = task_cfg.get("mode", "offline_table")
+                if raw_mode in ("online_step", "fmi_online"):
+                    cosim_mode = raw_mode
+                    engine_type = "online_step"
+                elif raw_mode in ("parameter_injection", "param_inject"):
+                    cosim_mode = raw_mode
+                    engine_type = "param_inject"
+                else:
+                    cosim_mode = raw_mode
+                    engine_type = "offline_table"
+
+                handlers = []
+                for sub in task_cfg.get("subsystems", []):
+                    h_dict = {
+                        "submodel_name": sub.get("target"),
+                        "instance_name": sub.get("instance"),
+                        "solver": sub.get("solver"),
+                        "model_file": sub.get("model_file"),
+                        "params": sub.get("params", {}),
+                        "mode": (
+                            "online"
+                            if cosim_mode in ("online_step", "fmi_online")
+                            else (
+                                "parameter_injection"
+                                if cosim_mode in ("parameter_injection", "param_inject")
+                                else "replacement"
+                            )
+                        ),
+                    }
+                    if sub.get("handler_module"):
+                        h_dict["handler_module"] = sub.get("handler_module")
+                    if sub.get("handler_function"):
+                        h_dict["handler_function"] = sub.get("handler_function")
+                    if sub.get("handler_script_path"):
+                        h_sp = sub.get("handler_script_path")
+                        if not os.path.isabs(h_sp):
+                            h_sp = os.path.abspath(
+                                os.path.join(original_config_dir, h_sp)
+                            )
+                        h_dict["handler_script_path"] = h_sp
+                        sub["handler_script_path"] = h_sp
+                    if sub.get("substitute_model"):
+                        h_dict["substitute_model"] = sub.get("substitute_model")
+                    if sub.get("substitute_file"):
+                        sub_f = sub.get("substitute_file")
+                        if not os.path.isabs(sub_f):
+                            sub_f = os.path.abspath(
+                                os.path.join(original_config_dir, sub_f)
+                            )
+                        h_dict["substitute_file"] = sub_f
+                        sub["substitute_file"] = sub_f
+                    if sub.get("aux_files"):
+                        resolved_aux = []
+                        for af in sub.get("aux_files", []):
+                            if not os.path.isabs(af):
+                                af = os.path.abspath(
+                                    os.path.join(original_config_dir, af)
+                                )
+                            resolved_aux.append(af)
+                        h_dict["aux_files"] = resolved_aux
+                        sub["aux_files"] = resolved_aux
+                    if sub.get("local_mass_control"):
+                        h_dict["local_mass_control"] = sub.get("local_mass_control")
+                    if sub.get("shadow_fmu_fallback"):
+                        h_dict["shadow_fmu_fallback"] = sub.get("shadow_fmu_fallback")
+                    handlers.append(h_dict)
+                co_sim_dict = {
+                    "engine": engine_type,
+                    "mode": cosim_mode,
+                    "handlers": handlers,
+                }
+                if task_cfg.get("exchange_step") is not None:
+                    co_sim_dict["exchange_step"] = task_cfg["exchange_step"]
+
+                # Unified parameter injection configuration (file vs handler)
+                injection_cfg = task_cfg.get("injection") or {}
+                if not isinstance(injection_cfg, dict):
+                    injection_cfg = {}
+
+                injection_type = (
+                    injection_cfg.get("type")
+                    or task_cfg.get("injection_type")
+                    or (
+                        "handler"
+                        if (
+                            task_cfg.get("handler_script")
+                            or injection_cfg.get("handler_script")
+                        )
+                        else "file"
+                    )
+                )
+
+                override_file = injection_cfg.get("override_file") or task_cfg.get(
+                    "override_file"
+                )
+                if override_file:
+                    if not os.path.isabs(override_file):
+                        override_file = os.path.abspath(
+                            os.path.join(original_config_dir, override_file)
+                        )
+                    task_cfg["override_file"] = override_file
+                    injection_cfg["override_file"] = override_file
+                    co_sim_dict["override_file"] = override_file
+                    config["simulation"]["override_file"] = override_file
+
+                handler_script = injection_cfg.get("handler_script") or task_cfg.get(
+                    "handler_script"
+                )
+                if handler_script:
+                    if not os.path.isabs(handler_script):
+                        handler_script = os.path.abspath(
+                            os.path.join(original_config_dir, handler_script)
+                        )
+                    task_cfg["handler_script"] = handler_script
+                    injection_cfg["handler_script"] = handler_script
+                    co_sim_dict["handler_script"] = handler_script
+
+                handler_params = (
+                    injection_cfg.get("params") or task_cfg.get("handler_params") or {}
+                )
+                task_cfg["handler_params"] = handler_params
+                injection_cfg["params"] = handler_params
+                co_sim_dict["handler_params"] = handler_params
+
+                injection_cfg["type"] = injection_type
+                task_cfg["injection_type"] = injection_type
+                task_cfg["injection"] = injection_cfg
+                co_sim_dict["injection_type"] = injection_type
+                co_sim_dict["injection"] = injection_cfg
+
+                config["co_simulation"] = co_sim_dict
+
+        vis_cfg = config.get("visualizer", {})
+        if isinstance(vis_cfg, dict):
+            if vis_cfg.get("report"):
+                config["report"] = vis_cfg["report"]
+            elif config.get("report") and not vis_cfg.get("report"):
+                vis_cfg["report"] = config["report"]
+
+        config = convert_relative_paths_to_absolute(config, original_config_dir)
+
+        os.makedirs(config["paths"]["log_dir"], exist_ok=True)
+        os.makedirs(config["paths"]["temp_dir"], exist_ok=True)
+        os.makedirs(config["paths"]["results_dir"], exist_ok=True)
+
+        return config, base_config
 
     absolute_config = convert_relative_paths_to_absolute(
         base_config, original_config_dir
@@ -374,6 +644,12 @@ def basic_prepare_config(
     config["simulation"]["variableFilter"] = original_string.replace(
         "[", "\\[["
     ).replace("]", "]\\]")
+
+    sim_cfg = config.get("simulation", {})
+    if "time_base" in sim_cfg and sim_cfg.get("_time_unit") != "second":
+        from tricys.simulation.simulation import _sim_time_to_seconds
+
+        _sim_time_to_seconds(sim_cfg)
 
     config["paths"]["log_dir"] = os.path.join(
         run_workspace, base_config["paths"].get("log_dir", "log")
@@ -522,7 +798,6 @@ def analysis_validate_config(
     # 2. Validate variableFilter format
     variable_filter = config.get("simulation", {}).get("variableFilter")
     if variable_filter:
-
         valid_substring_re = re.compile(r"^.+$")
 
         substrings = variable_filter.split("|")
@@ -932,7 +1207,7 @@ def analysis_setup_analysis_cases_workspaces(
             case_configs.append(case_info)
 
             logger.info(
-                f"Workspace for case {i+1} created successfully",
+                f"Workspace for case {i + 1} created successfully",
                 extra={
                     "case_index": i,
                     "case_name": analysis_case.get("name", f"case_{i}"),

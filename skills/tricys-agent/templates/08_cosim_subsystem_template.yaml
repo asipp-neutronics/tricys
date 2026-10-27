@@ -1,0 +1,53 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 08: 协同仿真 —— 离线查表/两阶段子系统替代模式 (Offline Table) (SC-6)
+# 
+# 模板定位:
+# - 针对同位素分离系统 (I_ISS) 等高维非线性复杂子系统，运用两阶段 Run-Process-Rerun 进行离线替代求解原型
+# 
+# 核心特征 / 占位符契约:
+# - 协同模式: task.type = "cosim", mode = "offline_table"
+# - 核心机理: 阶段一初探获取接口边界流 -> 阶段二调用外部求解器 (Aspen Plus / Python) -> 阶段三重构总系统
+# - 自省替换: ${MODEL_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TARGET_SUBMODEL}, ${INSTANCE_NAME}, ${EXTERNAL_SOLVER}, ${HANDLER_MODULE_PATH}, ${HANDLER_FUNCTION_NAME}
+# - 严禁配置: 严禁在配置文件中手工指定 substitute_model: "Modelica.Blocks.Tables.CombiTable1Ds"！
+# - 交付报告: 聚变堆多物理场协同仿真评估报告 (离线查表模式) (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_PATH}"                             # 例如: "../example_model/package.mo"
+  modelName: "${MODEL_NAME}"                             # 例如: "example_model.Cycle"
+
+scenario:
+  startTime: 0.0
+  stopTime: ${STOP_TIME}
+  stepSize: ${STEP_SIZE}
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}"
+
+task:
+  type: "cosim"
+  mode: "offline_table"                                 # 底层对应 offline_table 引擎 (兼容 offline_cosim)
+  subsystems:
+    - target: "${TARGET_SUBMODEL}"                      # 待拦截替换的子系统 (例如: "example_model.I_ISS")
+      instance: "${INSTANCE_NAME}"                     # 在主系统中的实例名 (例如: "i_iss")
+      solver: "${EXTERNAL_SOLVER}"                      # 外部求解器类型 (例如: "aspen_plus", "dwsim", "python")
+      handler_module: "${HANDLER_MODULE_PATH}"         # 处理器所在 Python 模块 (例如: "tricys.handlers.i_iss_handler")
+      handler_function: "${HANDLER_FUNCTION_NAME}"     # 处理器函数名 (例如: "run_aspen_simulation")
+      params:
+        ${HANDLER_CUSTOM_PARAMS}                        # 传给 handler_function 的自定义参数 (如 bkp_path, base, retime 等)
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真评估报告 (离线查表模式)"
+    formats: ["markdown", "docx", "pdf"]

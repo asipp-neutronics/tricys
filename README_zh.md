@@ -125,24 +125,28 @@ Makefile.bat app-stop
 
 这些命令会统一调用 `script/dev/windows/` 或 `script/dev/linux/` 下的现有脚本，和仓库其余生命周期命令保持一致，并支持部署前状态判断、停服务清理等改进逻辑。
 
-### 3. Docker 备选方案
+### 3. Docker 部署方案
 
-如果您不需要与外部 Windows 软件进行协同仿真，为了简化开发环境配置，也可以直接选择当前维护的 Docker 镜像方案：
+TRICYS 现已收敛为**唯一官方 Docker 镜像**：`ghcr.io/asipp-neutronics/tricys:latest`。
+镜像基于 DOLFINx 0.9.0，全面集成了 OpenModelica 1.27 + MSL 固化库、FESTIM 2.0 有限元解算器、CasADi 氢同位素低温精馏解算器、FMPy 多速率协同仿真运行时，以及 FastAPI 后端、Vue3 控制台、GoView 大屏和 Dash/Plotly HDF5 科学交互可视化服务。
 
-1. `ghcr.io/asipp-neutronics/tricys:latest`
-   用于完整平台镜像，覆盖 backend、visual、goview 和 hdf5 等运行入口，对应仓库中的 `docker-compose.yml`。
-2. `ghcr.io/asipp-neutronics/tricys-hdf5:latest`
-   用于 HDF5 单服务镜像，对应仓库中的 `docker-compose.hdf5.yml`，适合 HDF5 可视化或轻量开发场景。
+仓库提供标准编排配置与容器化执行支持：
 
-如果您希望直接通过 Compose 启动：
+1. **单容器全栈运行时（`docker-compose.yml`）**：
+   采用单容器 All-in-One 架构，同时挂载本地 `tricys`、`tricys_backend` 及 `h2iso` 等子仓库源码，一键启动全栈服务（Web Console/网关: 8080, Backend: 8000, GoView: 3020, HDF5: 8050）：
+   ```bash
+   docker compose up -d --build
+   ```
 
-```bash
-# 完整平台
-docker compose up -d --build
+2. **容器内执行测试集与自定义工作流**：
+   无需在宿主机配置复杂底层依赖，直接通过容器执行测试集或仿真任务：
+   ```bash
+   # 执行完整自动化测试集
+   docker compose run --rm tricys pytest
 
-# HDF5 单服务
-docker compose -f docker-compose.hdf5.yml up -d --build
-```
+   # 执行自定义仿真工作流
+   docker compose run --rm tricys run -c path/to/your_config.yaml
+   ```
 
 如果您在 VSCode 中使用 Dev Containers：
 

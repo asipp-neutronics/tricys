@@ -1,0 +1,70 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 10: 协同仿真 —— 稳态参数注入模式 (Steady-State Parameter Injection)
+# 
+# 算例定位:
+# - 基于 Wang (2022) CFETR 聚变堆同位素分离系统 (ISS-I & ISS-O) 真实多塔配置，实现极速长周期协同仿真
+# 
+# 核心特征 / 演示重点:
+# - 协同模式: task.type = "cosim", mode = "parameter_injection"，统一注入方式 injection_type = "handler"
+# - 求解驱动: 外部脚本 (run_h2iso_wang2022.py) 动态调用 h2iso 严密热力学与 MESH 稳态解算器
+# - 参数注入: 通过 OpenModelica 原生 -overrideFile 机制在底层一次性注入复杂塔系分配系数与稳态滞留解
+# - 效率飞跃: 免除多精馏塔严密偏微分方程的长周期积分耗时，大幅缩短全厂长周期运行推演时间
+# ==============================================================================
+
+model:
+  fileName: "./10_cosim_parameter_injection/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "second"
+  stopTime: 5000.0
+  stepSize: 1.0
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|i_iss.to_SDS[1]|o_iss.to_SDS[1]"
+
+task:
+  type: "cosim"
+  mode: "parameter_injection"
+  injection_type: "handler"                                # 统一注入方式: "file" 或 "handler"
+  override_file: "./10_cosim_parameter_injection/override_cycle.txt" # 注入覆盖参数目标文件
+  handler_script: "./10_cosim_parameter_injection/run_h2iso_wang2022.py" # 任务级外部求解脚本
+  handler_params:
+    wang2022_config_issi: "./10_cosim_parameter_injection/wang2022_issi.json"
+    wang2022_config_isso: "./10_cosim_parameter_injection/wang2022_isso.json"
+    solve_mode: "live"
+    method: "wegstein"
+    max_iter: 10
+    tol: 0.01
+    continuation_substeps: 2
+  subsystems:
+    - target: "example_model.I_ISS"
+      instance: "i_iss"
+      solver: "h2iso"
+      substitute_model: "Generic_ISS_Adapters.ISS_I_Adapter"
+      substitute_file: "./10_cosim_parameter_injection/Generic_ISS_Adapters.mo"
+      aux_files:
+        - "./10_cosim_parameter_injection/Generic_ISS.mo"
+    - target: "example_model.O_ISS"
+      instance: "o_iss"
+      solver: "h2iso"
+      substitute_model: "Generic_ISS_Adapters.ISS_O_Adapter"
+      substitute_file: "./10_cosim_parameter_injection/Generic_ISS_Adapters.mo"
+      aux_files:
+        - "./10_cosim_parameter_injection/Generic_ISS.mo"
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆多物理场协同仿真报告 (基于 Wang 2022 真实求解的参数注入)"
+    formats: ["markdown", "docx", "pdf"]

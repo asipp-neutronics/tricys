@@ -1,46 +1,95 @@
-name: HDF5 Image Build Test
+name: TRICYS V2 CI & Validation
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, V2.0 ]
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
-  build-test:
-    name: Build tricys-hdf5 image and run pytest -m build_test
+  core-regression-and-dag:
+    name: 1. Core Unit Tests & V2 Examples DAG Validation
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt pytest
+          pip install -e . --no-deps
+
+      - name: Run 42 Regression & Unit Tests (build_test)
+        run: |
+          pytest -v -m build_test test
+
+      - name: Validate & Compile All 12 V2 Industrial Examples
+        run: |
+          pytest test/test_example_runner.py -v
+
+  container-physics-simulation:
+    name: 2. Container Multi-Physics Environment Validation
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/asipp-neutronics/tricys:latest
+      options: --user root
+    env:
+      PATH: /dolfinx-env/bin:/home/appuser/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      PYTHONPATH: /home/appuser/.local/lib/python3.10/site-packages:/__w/tricys/tricys
+      MODELICAPATH: /home/appuser/.openmodelica/libraries:/usr/lib/omlibrary
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build tricys-hdf5 image
-        run: docker build -f docker/dockerfiles/Dockerfile.hdf5 -t tricys-build-test:hdf5 .
-
-      - name: Run pytest -m build_test inside tricys-hdf5 image
-        shell: bash
+      - name: Ensure environment & workspace permissions
         run: |
-          set -euo pipefail
-          docker run --rm \
-            --user root \
-            -v "$GITHUB_WORKSPACE:/workspace" \
-            -w /workspace \
-            --entrypoint bash \
-            tricys-build-test:hdf5 \
-            -lc '
-              chown -R appuser:appuser /workspace
-              sudo -E -H -u appuser env PYTHONPATH=/workspace python3 -m pip install -r requirements.txt pytest
-              sudo -E -H -u appuser env PYTHONPATH=/workspace python3 -m pytest -v -m build_test test
-            '
+          rm -rf /home/appuser/.local/lib/python*/site-packages/pathlib* 2>/dev/null || true
+          python3 -m pip uninstall -y pathlib 2>/dev/null || true
 
-      - name: Debug with tmate on failure
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
+          if [ -d "/dolfinx-env/bin" ]; then
+            echo "Detected /dolfinx-env multi-physics environment"
+            ln -sf /dolfinx-env/bin/python3 /usr/bin/python3 2>/dev/null || true
+            ln -sf /dolfinx-env/bin/pytest /usr/bin/pytest 2>/dev/null || true
+          fi
+          python3 -m pip install --no-cache-dir pyyaml pydantic python-dotenv -e . --no-deps || pip install --no-cache-dir pyyaml pydantic python-dotenv -e . --no-deps || true
+          mkdir -p /home/appuser/.openmodelica
+          chown -R appuser:appuser /__w/tricys/tricys /home/appuser 2>/dev/null || true
+          chmod -R 777 /tmp /home/appuser/.openmodelica 2>/dev/null || true
+          git config --global --add safe.directory '*' 2>/dev/null || true
 
+      - name: Verify V2 Example Runner Discovery & CLI
+        run: |
+          python3 -m tricys.example.example_runner --list
+
+      - name: Validate & Compile V2 Examples DAG in Container
+        run: |
+          python3 -m tricys.example.example_runner --validate 1
+          python3 -m tricys.example.example_runner --compile 1
+          python3 -m tricys.example.example_runner --validate 2
+          python3 -m tricys.example.example_runner --compile 2
+
+      - name: Verify All 12 V2 Examples in Container
+        run: |
+          python3 -m pytest test/test_example_runner.py -v
+
+      - name: Run Live V2 Example Simulation in Container
+        run: |
+          chown -R appuser:appuser /__w/tricys/tricys /home/appuser 2>/dev/null || true
+          chmod -R 777 /tmp /home/appuser/.openmodelica 2>/dev/null || true
+          CMD="python3 -m tricys.example.example_runner --run 1 --no-vis"
+          if command -v gosu >/dev/null 2>&1; then
+            gosu appuser env HOME=/home/appuser USER=appuser PATH="$PATH" PYTHONPATH="$PYTHONPATH" MODELICAPATH="$MODELICAPATH" $CMD
+          elif command -v sudo >/dev/null 2>&1; then
+            sudo -u appuser -H -E env HOME=/home/appuser USER=appuser PATH="$PATH" PYTHONPATH="$PYTHONPATH" MODELICAPATH="$MODELICAPATH" $CMD
+          else
+            su -s /bin/bash appuser -c "cd /__w/tricys/tricys && env HOME=/home/appuser USER=appuser PATH='$PATH' PYTHONPATH='$PYTHONPATH' MODELICAPATH='$MODELICAPATH' $CMD"
+          fi

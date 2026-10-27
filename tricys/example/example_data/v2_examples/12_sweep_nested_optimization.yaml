@@ -1,0 +1,72 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 12: 参数扫描内嵌双层优化 (Sweep Burnup with Embedded Nested Bisection)
+# 
+# 算例定位:
+# - 复现 Abdou (2021) 经典燃烧分数扫描研究，自动化为各燃烧工况求解最小自持启动装填量与 Required TBR
+# 
+# 核心特征 / 演示重点:
+# - 任务模式: task.type = "sweep"，外层多工况并行扫描，内嵌 task.optimization 双层寻优
+# - 物理工况: 扫描等离子体燃烧分数 (plasma.fb: 3% 保守 / 5% 基准 / 8% 先进)，对应不同燃料循环通量
+# - 优化指标: 对每个扫描工况自动化求解满足谷底储备 (I_min >= 1000g) 与倍增时间 (t_d <= 2500h) 的解对 (I_0*, Required_TBR*)
+# - 汇总呈现: 将各工况优化解直接汇总入横向对比指标表，自动生成完整工程分析报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "second"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|blanket.TBR|wds.I[1]"
+
+task:
+  type: "sweep"
+  parallel: true
+  max_workers: 4
+  parameters:
+    - name: "Burnup_3pct_Conservative"
+      plasma.fb: 0.03
+    - name: "Burnup_5pct_Baseline"
+      plasma.fb: 0.05
+    - name: "Burnup_8pct_Advanced"
+      plasma.fb: 0.08
+
+  # 在参数扫描任务 (sweep) 中内嵌 optimization 块：
+  # 求解器将对每个扫描工况自动化执行双层嵌套寻优，将各工况的优化解作为汇总指标输出
+  optimization:
+    track: "track2_bisection"
+    algorithm: "nested_bisection"
+    outer:
+      parameter: "sds.I_S_0"
+      search_bounds: [1000.0, 5000.0]
+      tolerance: 20.0
+      max_iterations: 10
+      target_metric:
+        source: "sds.I[1]"
+        evaluate: "min_value"
+        threshold: 1000.0
+        comparator: ">="
+    inner:
+      metric_name: "Required_TBR"
+      parameter: "blanket.TBR"
+      search_bounds: [1.05, 1.25]
+      tolerance: 0.005
+      max_iterations: 10
+      target_metric:
+        source: "sds.I[1]"
+        evaluate: "doubling_time"
+        threshold: 2500.0  # 可配置为单值标量 (如 2500.0) 或多值列表 (如 [2200.0, 2500.0])
+        comparator: "<="
+
+visualizer:
+  enabled: true
+  launch_on_finish: true
+  report:
+    enabled: true
+    title: "TRICYS 多工况参数扫描内嵌双层优化工程分析报告 (Sweep with Nested Optimization)"
+    formats: ["markdown", "docx", "pdf"]

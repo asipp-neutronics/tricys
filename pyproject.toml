@@ -21,7 +21,6 @@ dependencies = [
     "numpy",
     "matplotlib",
     "seaborn",
-    "pathlib",
     "OMPython >= 4.0.0",
     "OMSimulator",
     "fmpy",
@@ -34,7 +33,13 @@ dependencies = [
     "dash==3.3.0",
     "dash-bootstrap-components==2.0.4",
     "plotly==6.5.0",
-    "pywin32; sys_platform == 'win32'"
+    "pywin32; sys_platform == 'win32'",
+    "pyyaml",
+    "pydantic",
+    "scipy",
+    "python-docx",
+    "pymupdf",
+    "markdown"
 ]
 
 [project.urls]
@@ -66,7 +71,25 @@ docs = [
 ]
 
 [tool.setuptools]
-packages = ["tricys_backend", "tricys", "tricys.simulation", "tricys.utils", "tricys.core", "tricys.analysis", "tricys.postprocess", "tricys.example", "tricys.example.example_runner", "tricys.visualizer", "tricys.online_cosim"]
+packages = [
+    "tricys_backend",
+    "tricys",
+    "tricys.workflow",
+    "tricys.preprocessing",
+    "tricys.simulation",
+    "tricys.simulation.engines",
+    "tricys.utils",
+    "tricys.core",
+    "tricys.analysis",
+    "tricys.plugins",
+    "tricys.plugins.auditor",
+    "tricys.handlers",
+    "tricys.example",
+    "tricys.example.example_runner",
+    "tricys.visualizer",
+    "tricys.visualizer.report",
+    "tricys.online_cosim",
+]
 
 [tool.setuptools.package-data]
 tricys = ["example/example_data/**/*"]
@@ -87,6 +110,8 @@ ignore = ["E501","E722"]
 known-first-party = ["tricys"]
 
 [tool.pytest.ini_options]
+testpaths = ["test"]
+addopts = "--ignore=test/visualizer/test_web_visualizer_cases.py"
 markers = [
     "build_test: marks tests for github action",
     "slow: marks tests that take longer to run (e.g. real Modelica simulations)",

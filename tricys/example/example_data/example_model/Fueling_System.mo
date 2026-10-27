@@ -1,6 +1,7 @@
 within example_model;
 model Fueling_System
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 输入端口：输出到plasma（5维）
   Modelica.Blocks.Interfaces.RealInput to_Plasma[5] "输出到等离子体的燃料" annotation(
     Placement(transformation(origin = {116, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
@@ -24,10 +25,10 @@ model Fueling_System
 equation
   // 计算每种物质的动态变化和输出
   for i in 1:5 loop
-    der(I[i]) = from_SDS[i] - 1 * I[i] / T  - decay_loss[i] * I[i];
+    der(I[i]) = (from_SDS[i] - 1 * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
     outflow[i] = I[i]/T;
     to_Plasma[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
       leak_rate[i] = 0;
     end for;
 

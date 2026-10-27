@@ -1,0 +1,63 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 07: 自定义插件挂载与物理语义总线扩展流水线 (SC-5)
+# 
+# 模板定位:
+# - 在 Schema 2.0 DSL 中挂载外部用户自定义 Python 插件，并通过物理语义总线扩展业务逻辑原型
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "sweep" 或 "simulate"，外层参数扫描与增量插件扩展
+# - 插件声明: 在 plugins.postprocess 中声明外部脚本与类名，支持显式传参 (Explicit-First)
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TBR_PARAM}, ${BURNUP_PARAM}, ${CUSTOM_PLUGIN_SCRIPT}, ${CUSTOM_PLUGIN_CLASS}
+# - 业务场景: 在役储罐安全谷底红线审计 (baseline: 6100g, safety_valley_redline: 1000g)
+# - 交付报告: 聚变堆自定义插件扩展与在役储罐安全裕度评估报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "second"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*"
+
+task:
+  type: "sweep"
+  parallel: true
+  max_workers: 8
+  parameters:
+    - name: "Conservative_LowBurnup_TBR_1.10"
+      ${TBR_PARAM}: 1.10
+      ${BURNUP_PARAM}: 0.03
+    - name: "High_Breeding_Nominal_TBR_1.18"
+      ${TBR_PARAM}: 1.18
+      ${BURNUP_PARAM}: 0.06
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+
+# 🌟 增量插件挂载: 声明外部插件脚本路径与显式传参
+plugins:
+  postprocess:
+    - name: "tritium_reserve_auditor"
+      script: "${CUSTOM_PLUGIN_SCRIPT}"   # 如: "plugins/tritium_reserve_auditor.py"
+      class: "${CUSTOM_PLUGIN_CLASS}"     # 如: "TritiumReserveAuditorPlugin"
+      params:
+        baseline_loading_g: 6100.0
+        safety_valley_redline_g: 1000.0
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 聚变堆自定义插件扩展与在役储罐安全裕度评估报告"
+    formats: ["markdown", "docx", "pdf"]

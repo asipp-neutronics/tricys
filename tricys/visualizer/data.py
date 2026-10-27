@@ -34,7 +34,15 @@ def load_h5_overview(file_path):
         with pd.HDFStore(file_path, mode="r") as store:
             keys = set(store.keys())
             overview["has_results"] = "/results" in keys
-            overview["has_summary"] = "/summary" in keys
+            overview["has_summary"] = "/summary" in keys or (
+                "/jobs" in keys
+                and any(
+                    str(c).startswith("Required_")
+                    or "_for_" in str(c)
+                    or c in ("Required_TBR", "sds.I_S_0", "I_S_0")
+                    for c in store.select("jobs", stop=0).columns
+                )
+            )
             overview["has_config"] = "/config" in keys
             overview["has_log"] = "/log" in keys
 
@@ -104,9 +112,37 @@ def load_h5_data(file_path):
                         "Failed to load log payload", extra={"file_path": file_path}
                     )
 
-        # Process Options
+        # Process Options: strictly filter out metadata identifiers and non-numerical columns
         v_opts = [col for col in results_cols if col not in ["time", "job_id"]]
-        p_opts = [col for col in jobs_df.columns if col != "job_id"]
+        ignored_p_names = {
+            "id",
+            "job_id",
+            "name",
+            "job_name",
+            "case_name",
+            "job",
+            "title",
+            "description",
+            "comment",
+            "status",
+        }
+        # Identify known metrics to ensure they are not listed as parameters
+        metric_names = set()
+        if c_data:
+            t_m = (
+                c_data.get("task", {}).get("metrics", {})
+                if isinstance(c_data.get("task"), dict)
+                else {}
+            )
+            metric_names |= set(t_m.keys())
+            metric_names |= set(c_data.get("metrics_definition", {}).keys())
+
+        p_opts = []
+        for col in jobs_df.columns:
+            if str(col).strip().lower() in ignored_p_names or col in metric_names:
+                continue
+            if pd.to_numeric(jobs_df[col], errors="coerce").notna().any():
+                p_opts.append(col)
 
         jobs_table = jobs_df.copy()
         if "job_id" in jobs_table.columns:
@@ -187,11 +223,35 @@ def _load_summary_data_cached(h5_path, job_ids_key):
             where_clause = f"job_id in {list(job_ids_key)}"
 
         with pd.HDFStore(h5_path, mode="r") as store:
-            if "/summary" not in store.keys():
-                return []
+            if "/summary" in store.keys():
+                df = load_summary_df(h5_path, where=where_clause)
+                return df.to_dict("records")
 
-            df = load_summary_df(h5_path, where=where_clause)
-            return df.to_dict("records")
+            # Fallback: extract optimization metrics directly from jobs table if available
+            if "/jobs" in store.keys():
+                jobs_df = store.select("jobs")
+                opt_cols = [
+                    c
+                    for c in jobs_df.columns
+                    if str(c).startswith("Required_")
+                    or "_for_" in str(c)
+                    or c in ("Required_TBR", "sds.I_S_0", "I_S_0")
+                ]
+                if opt_cols:
+                    if "job_id" not in jobs_df.columns and "id" in jobs_df.columns:
+                        jobs_df["job_id"] = jobs_df["id"]
+                    if "job_id" in jobs_df.columns:
+                        cols_to_keep = ["job_id"] + [
+                            c for c in opt_cols if c != "job_id"
+                        ]
+                        sub_df = jobs_df[
+                            [c for c in cols_to_keep if c in jobs_df.columns]
+                        ].copy()
+                        if job_ids_key:
+                            sub_df = sub_df[sub_df["job_id"].isin(list(job_ids_key))]
+                        return sub_df.to_dict("records")
+
+            return []
 
     except Exception:
         logger.exception(

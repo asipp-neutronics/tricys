@@ -1,0 +1,76 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 09: 协同仿真 —— 在线步进双向同步模式 (Online Step-by-Step Co-Simulation)
+# 
+# 算例定位:
+# - 基于 SSP/FMI 工业标准协议，实现全厂宏观系统模型与高保真子系统处理器的在线单步双向数据交互
+# 
+# 核心特征 / 演示重点:
+# - 协同模式: task.type = "cosim", mode = "online_step"
+# - 核心机理: Lockstep Dynamic Exchange (双向锁步动态同步)，每步推进前交换进出口流量与组分
+# - 鲁棒控制: 内置局部质量控制 (local_mass_control) 与影子 FMU 降级回退 (shadow_fmu_fallback)
+# - 适用场景: 强非线性瞬态耦合系统 (如深冷分离塔动态工况与包层产氚脉冲波动实时反馈)
+# ==============================================================================
+
+model:
+  fileName: "../example_model_ssp/ssp/example_model.ssp"
+  modelName: "example_model.Cycle"
+
+scenario:
+  startTime: 0.0
+  stopTime: 100.0
+  stepSize: 0.5
+  variableFilter: "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*"
+
+task:
+  type: "cosim"
+  mode: "online_step"
+  subsystems:
+    - target: "CFEDR.I_ISS"
+      instance: "i_iss"
+      solver: "aspen_plus"
+      handler_module: "tricys.example.example_data.v1_examples_legacy.basic.9_online_cosim.i_iss_processor_base"
+      handler_function: "I_ISSProcessorBase"
+      params:
+        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+        base_inventory_mol: 20.0
+        retime_h: 1.0
+      local_mass_control:
+        enabled: true
+        deadband_g: 0.1
+        relaxation_time_h: 1.0
+      shadow_fmu_fallback:
+        enabled: true
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+plugins:
+  auditor:
+    enabled: true
+    warn_threshold_g: 0.0
+    kill_threshold_g: 0.0
+    patterns:
+      inventory:
+        - "*.I?1?"
+      cumulative_sources:
+        - "*blanket.cumulative_breed?1?"
+      leak:
+        - "*.leak_rate?1?"
+      decay:
+        - "*.decay_rate?1?"
+      cumulative_burn:
+        - "*plasma.cumulative_burn?1?"
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 在线步进协同仿真与全局质量守恒审计报告"
+    formats: ["markdown", "docx", "pdf"]

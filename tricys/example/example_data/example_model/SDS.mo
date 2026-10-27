@@ -1,6 +1,7 @@
 within example_model;
 model SDS
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 输入端口：来自I_ISS的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_I_ISS[5] "来自I_ISS 的输入" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {114, -60}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
@@ -18,7 +19,8 @@ model SDS
     Placement(transformation(origin = {120, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-114, 0}, extent = {{10, -10}, {-10, 10}}, rotation = -0)));
 
   // 状态变量：SDS 内部的氚存储量
-  Real I[5](start = {3000, 3000, 0, 0, 0}) "SDS 内的氚存储量";
+  parameter Real I_S_0 = 3000 "Initial tritium storage inventory (g)";
+  Real I[5](start = {I_S_0, 3000, 0, 0, 0}) "SDS 内的氚存储量";
 
   // 参数定义
   // parameter Real T = 0.5 "平均滞留时间 (mean residence time)";
@@ -31,9 +33,9 @@ model SDS
 equation
   for i in 1:5 loop
     // 只对 T, D, H 进行计算
-    der(I[i]) = from_I_ISS[i] + from_O_ISS[i] + from_TEP_FEP[i] - (1 + nonradio_loss[i]) * to_FS[i]  - decay_loss[i] * I[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*to_FS[i];
+    der(I[i]) = (from_I_ISS[i] + from_O_ISS[i] + from_TEP_FEP[i] - (1 + nonradio_loss[i]) * to_FS[i]  - decay_loss[i] * I[i]) / time_scale;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*to_FS[i] / time_scale;
     end for;
 
 annotation(

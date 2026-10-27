@@ -1,0 +1,58 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 02: 单堆瞬态脉冲响应与二分法 TBR 搜索 (Simulate Pulsed Transient & Bisection)
+# 
+# 算例定位:
+# - 演示单堆长周期瞬态脉冲工况仿真，并在指标层内嵌二分法求解临界 Required TBR
+# 
+# 核心特征 / 演示重点:
+# - 任务模式: task.type = "simulate"，高精度时域积分 (DASSL 求解器)
+# - 物理参数: 基准脉冲燃烧工况 (plasma.fb: 0.05, blanket.TBR: 1.12)
+# - 关键指标: 峰值/终态库存，并通过 bisection_search 二分法求解满足 2 年倍增时间的 Required_TBR
+# - 交付报告: 自动生成瞬态动态响应曲线与质量平衡审查报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "second"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|tep_fep.I[1]|i_iss.I[1]"
+
+task:
+  type: "simulate"
+  parallel: true
+  parameters:
+    blanket.TBR: 1.12
+    plasma.fb: 0.05
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+    Required_TBR:
+      evaluate: "bisection_search"
+      parameter: "blanket.TBR"
+      search_bounds: [1.0, 1.4]
+      tolerance: 0.001
+      max_iterations: 15
+      target_metric:
+        source: "sds.I[1]"
+        evaluate: "doubling_time"
+        threshold: 63072000.0  # 2年（秒: 2 * 365 * 86400 s）; 若模型单位为年则填 2.0
+
+visualizer:
+  enabled: true
+  launch_on_finish: true
+  report:
+    enabled: true
+    # template: "simulate"  # 默认不填自动与 task.type ("simulate") 保持一致
+    title: "TRICYS 单堆瞬态脉冲响应与全系统质量平衡审查报告"
+    formats: ["markdown", "docx", "pdf"]
