@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - develop
+      - V2.0
     paths:
       - '.dockerignore'
       - 'docker-compose.yml'
