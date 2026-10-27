@@ -2,7 +2,10 @@ import os
 import time
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+import pytest
+
+pytest.importorskip("playwright", reason="playwright is required for browser E2E tests")
+from playwright.sync_api import sync_playwright  # noqa: E402
 
 from tricys.visualizer.main import (
     DEFAULT_SECRET,

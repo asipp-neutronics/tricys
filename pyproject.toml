@@ -21,7 +21,6 @@ dependencies = [
     "numpy",
     "matplotlib",
     "seaborn",
-    "pathlib",
     "OMPython >= 4.0.0",
     "OMSimulator",
     "fmpy",
@@ -35,7 +34,12 @@ dependencies = [
     "dash-bootstrap-components==2.0.4",
     "plotly==6.5.0",
     "pywin32; sys_platform == 'win32'",
-    "pyyaml"
+    "pyyaml",
+    "pydantic",
+    "scipy",
+    "python-docx",
+    "pymupdf",
+    "markdown"
 ]
 
 [project.urls]
@@ -107,6 +111,7 @@ known-first-party = ["tricys"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+addopts = "--ignore=test/visualizer/test_web_visualizer_cases.py"
 markers = [
     "build_test: marks tests for github action",
     "slow: marks tests that take longer to run (e.g. real Modelica simulations)",

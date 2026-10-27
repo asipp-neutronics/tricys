@@ -1,6 +1,7 @@
 import io
 
 import pandas as pd
+import pytest
 
 from tricys.visualizer.report.exporter import ReportExporter
 from tricys.visualizer.report.templates import TEMPLATES_CATALOG, render_report
@@ -116,7 +117,7 @@ def test_export_markdown():
 
 
 def test_export_docx():
-    import docx
+    docx = pytest.importorskip("docx")
 
     md_text = """# TRICYS Executive Report
 ## 1. Summary
@@ -144,7 +145,10 @@ def test_export_pdf():
     try:
         import pymupdf as fitz
     except ImportError:
-        import fitz
+        try:
+            import fitz
+        except ImportError:
+            pytest.skip("PyMuPDF / fitz is not installed")
 
     md_text = """# TRICYS Engineering PDF Report
 ## 1. General Info
@@ -171,7 +175,10 @@ def test_export_pdf_with_cjk_characters():
     try:
         import pymupdf as fitz
     except ImportError:
-        import fitz
+        try:
+            import fitz
+        except ImportError:
+            pytest.skip("PyMuPDF / fitz is not installed")
 
     cjk_md = """# TRICYS 聚变堆全厂氚循环工程仿真报告
 ## 1. 运行概要
