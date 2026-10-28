@@ -77,6 +77,10 @@ def _init_plot_style() -> None:
     plt.rcParams.update(
         {
             "font.sans-serif": [
+                "WenQuanYi Micro Hei",
+                "WenQuanYi Zen Hei",
+                "Noto Sans CJK SC",
+                "Source Han Sans CN",
                 "Microsoft YaHei",
                 "SimHei",
                 "DejaVu Sans",

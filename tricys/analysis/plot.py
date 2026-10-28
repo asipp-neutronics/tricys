@@ -123,7 +123,13 @@ def set_plot_language(lang: str = "en") -> None:
 
     if _use_chinese_labels:
         # To display Chinese characters correctly, specify a list of fallback fonts.
-        plt.rcParams["font.sans-serif"] = ["SimHei"]  # 替换成你电脑上有的字体
+        plt.rcParams["font.sans-serif"] = [
+            "WenQuanYi Micro Hei",
+            "WenQuanYi Zen Hei",
+            "SimHei",
+            "Microsoft YaHei",
+            "sans-serif",
+        ]
         plt.rcParams["axes.unicode_minus"] = False  # To display minus sign correctly.
         plt.rcParams["font.family"] = "sans-serif"  # 确保字体家族设置生效
     else:

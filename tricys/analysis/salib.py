@@ -16,6 +16,9 @@ from tricys.utils.config_utils import get_llm_env
 
 # Configure Chinese fonts in matplotlib
 plt.rcParams["font.sans-serif"] = [
+    "WenQuanYi Micro Hei",
+    "WenQuanYi Zen Hei",
+    "Noto Sans CJK SC",
     "SimHei",
     "Microsoft YaHei",
     "DejaVu Sans",
@@ -80,8 +83,11 @@ class TricysSALibAnalyzer:
             import matplotlib.font_manager as fm
 
             chinese_fonts = [
-                "SimHei",  # 黑体
-                "Microsoft YaHei",  # 微软雅黑
+                "WenQuanYi Micro Hei",  # 文泉驿微米黑 (Linux 首选)
+                "WenQuanYi Zen Hei",  # 文泉驿正黑
+                "Noto Sans CJK SC",  # 思源黑体
+                "SimHei",  # 黑体 (Windows)
+                "Microsoft YaHei",  # 微软雅黑 (Windows)
                 "KaiTi",  # 楷体
                 "FangSong",  # 仿宋
                 "STSong",  # 华文宋体

@@ -68,6 +68,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     DEBIAN_FRONTEND=noninteractive \
+    QT_X11_NO_MITSHM=1 \
     PATH="/home/appuser/.local/bin:/dolfinx-env/bin:${PATH}" \
     MODELICAPATH="/home/appuser/.openmodelica/libraries:/usr/lib/omlibrary" \
     PYTHONPATH="/workspace/h2iso/src:/workspace/tricys:/workspace/tricys_backend:/workspace/tricys/tricys_backend:${PYTHONPATH:-}" \
@@ -91,8 +92,32 @@ RUN sed -i 's@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g
         gosu \
         omc \
         omsimulator \
+        omedit \
+        libgl1 \
+        libegl1 \
+        libgl1-mesa-dri \
+        libxcb-xinerama0 \
+        libx11-xcb1 \
+        libxcb-icccm4 \
+        libxcb-image0 \
+        libxcb-keysyms1 \
+        libxcb-randr0 \
+        libxcb-render-util0 \
+        libxcb-shape0 \
+        libxcb-xfixes0 \
+        libxkbcommon-x11-0 \
+        libxcb-cursor0 \
         nginx \
+        locales \
+        fonts-wqy-microhei \
+        fonts-wqy-zenhei \
+        qttranslations5-l10n \
+    && locale-gen zh_CN.UTF-8 en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=zh_CN.UTF-8 \
+    LC_ALL=zh_CN.UTF-8 \
+    LANGUAGE=zh_CN:zh
 
 # 2. Standardize non-root appuser (UID 1000) for OpenModelica security compliance
 RUN if id -u appuser >/dev/null 2>&1; then \
@@ -202,9 +227,18 @@ RUN cd /workspace/tricys && (pip install --no-deps -e . || true)
 COPY docker/scripts/tricys_hdf5_cli.sh /usr/local/bin/tricys
 COPY docker/scripts/tricys_backend_entrypoint.sh /usr/local/bin/tricys_backend_entrypoint.sh
 COPY docker/scripts/tricys_entrypoint.sh /usr/local/bin/tricys_entrypoint.sh
+COPY docker/scripts/tricys_omedit.sh /usr/local/bin/omedit
 RUN chmod +x /usr/local/bin/tricys \
              /usr/local/bin/tricys_backend_entrypoint.sh \
-             /usr/local/bin/tricys_entrypoint.sh
+             /usr/local/bin/tricys_entrypoint.sh \
+             /usr/local/bin/omedit && \
+    (ln -sf /usr/local/bin/omedit /usr/local/bin/OMEdit 2>/dev/null || true)
+
+# 8. Chinese Fontconfig and OMEdit defaults
+COPY docker/config/fonts_local.conf /etc/fonts/local.conf
+COPY docker/config/omedit.ini /home/appuser/.config/openmodelica/omedit.ini
+RUN chown -R appuser:appuser /home/appuser/.config && \
+    fc-cache -fv
 
 EXPOSE 80 8000 3020 8050
 
