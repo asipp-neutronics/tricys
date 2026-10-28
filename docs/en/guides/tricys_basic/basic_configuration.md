@@ -103,6 +103,16 @@ This section contains the core parameters required to run the simulation.
   - Smaller step size: higher accuracy, but longer simulation time and larger output files.
   - Larger step size: faster, but may miss fast-changing details.
 
+#### `time_base` (string, optional)
+
+- **Description**: The model's time base — how the model integrates Modelica's built-in `time`.
+- **Default**: `"second"`
+- **Values**:
+  - `"second"` — the model is *seconds-native* (like the CFEDR family, whose equations are divided by `3600`). The framework multiplies the hour-valued `stop_time` / `step_size` by `3600` before handing them to OMC.
+  - `"hour"` — a legacy *hour-native* model reads `time` as hours, so the values are passed through unchanged.
+
+`stop_time` / `step_size` are authored in **hours** in both cases. Use `"hour"` only for older models written before the seconds-native migration. The shipped example model exposes a matching `time_scale` parameter (`1` for hour base, `3600` for second base), so one model source can be driven either way and cross-checked — see `test/core/test_time_base_crosscheck.py`, which drives `tricys/example/example_data/example_model_single/example_model.mo` both ways through OMC and asserts that the two trajectories agree.
+
 ---
 
 ## 3. Default Configuration Items
@@ -174,8 +184,8 @@ This template is suitable for formal, long-duration simulations. It saves only k
     "simulation": {
         "model_name": "YourModel.Name",
         "variableFilter": "time|key_var1|key_var2",
-        "stop_time": 86400.0,
-        "step_size": 10.0,
+        "stop_time": 24.0,
+        "step_size": 0.5,
         "keep_temp_files": false
     },
     "logging": {

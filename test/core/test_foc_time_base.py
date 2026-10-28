@@ -27,6 +27,12 @@ from tricys.core.foc import (
     parse_foc_file_with_unit,
 )
 
+# Selected by the time-base CI gate: the V2 pipeline runs
+# `pytest -v -m build_test test` on ubuntu-latest (.github/workflows/build_test.yml).
+# This module is pure Python (it never calls OpenModelica), so the whole module is
+# safe to select there.
+pytestmark = pytest.mark.build_test
+
 # --------------------------------------------------------------------------- #
 # Effective time-unit resolution
 # --------------------------------------------------------------------------- #

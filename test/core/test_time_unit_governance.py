@@ -25,6 +25,12 @@ from tricys.core.schema import (
 from tricys.simulation.simulation import _sim_time_to_seconds
 from tricys.utils.config_utils import basic_prepare_config
 
+# Selected by the time-base CI gate: the V2 pipeline runs
+# `pytest -v -m build_test test` on ubuntu-latest (.github/workflows/build_test.yml).
+# This module is pure Python (it never calls OpenModelica), so the whole module is
+# safe to select there.
+pytestmark = pytest.mark.build_test
+
 
 def _make_v2_config(scenario_dict: dict) -> TricysV2Config:
     return TricysV2Config.from_dict(

@@ -16,6 +16,12 @@ from tricys.simulation.simulation import (
     _sim_time_to_seconds,
 )
 
+# Selected by the time-base CI gate: the V2 pipeline runs
+# `pytest -v -m build_test test` on ubuntu-latest (.github/workflows/build_test.yml).
+# This module is pure Python (it never calls OpenModelica), so the whole module is
+# safe to select there.
+pytestmark = pytest.mark.build_test
+
 
 def test_hours_to_seconds_factor():
     assert HOURS_TO_SECONDS == 3600.0

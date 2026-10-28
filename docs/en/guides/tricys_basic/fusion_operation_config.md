@@ -62,6 +62,7 @@ Common forms are:
 
 - when neither `TIME_UNIT` nor `TIME_CONVERSION` is declared, the FOC time unit defaults to seconds and no conversion is applied
 - `TIME_UNIT hour`: only declares that durations in the current FOC file are written in hours; it does not trigger conversion by itself
+- the **effective** time base of a FOC (after any `TIME_CONVERSION`) must be **seconds**, because the CFEDR family models advance Modelica's `time` in seconds; a FOC whose effective base is hours/days/years (or a bare numeric factor) triggers a warning and would run at the wrong speed
 - `TIME_CONVERSION NONE`: applies no extra time conversion and uses the written FOC time values directly
 - `TIME_CONVERSION 3600`: multiplies all subsequent durations by `3600`
 - `TIME_CONVERSION second_to_hour`: converts FOC time values written in seconds into hours for a model that uses hours internally; reverse named conversions such as `hour_to_second` are also supported
@@ -82,12 +83,18 @@ TIME_CONVERSION hour_to_second
 PULSE 1500 0.9 0.1 300
 ```
 
-Example 1b: the FOC is written in hours but only declares the unit without converting
+Example 1b: the FOC is written in hours but only declares the unit without converting — **wrong for the seconds-based models**
 
 ```text
 TIME_UNIT hour
 PULSE 1500 0.9 0.1 300
 ```
+
+`TIME_UNIT` declares the unit but does **not** convert. The CFEDR family models advance
+Modelica's built-in `time` in **seconds**, so a schedule left in hours would run roughly
+3600× too fast. TRICYS emits a warning when a FOC's effective time base is not seconds;
+add `TIME_CONVERSION hour_to_second` (Example 1) to fix it. Use bare-`TIME_UNIT` form
+only when the durations you write are already in the model's time base (seconds).
 
 Example 2: the FOC is written in seconds while the model uses hours internally
 
