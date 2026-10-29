@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 # ==============================================================================
 # TRICYS V2.0 Unified All-in-One Multi-Physics & Fullstack Docker Image
 # Multi-fidelity Tritium Fuel Cycle Simulation & Digital Twin Platform:
