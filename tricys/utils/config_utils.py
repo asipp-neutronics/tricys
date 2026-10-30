@@ -543,6 +543,10 @@ def basic_prepare_config(
                         h_dict["local_mass_control"] = sub.get("local_mass_control")
                     if sub.get("shadow_fmu_fallback"):
                         h_dict["shadow_fmu_fallback"] = sub.get("shadow_fmu_fallback")
+                    if sub.get("time_scale_coordination"):
+                        h_dict["time_scale_coordination"] = sub.get(
+                            "time_scale_coordination"
+                        )
                     handlers.append(h_dict)
                 co_sim_dict = {
                     "engine": engine_type,

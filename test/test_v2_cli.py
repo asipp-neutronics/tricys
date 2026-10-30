@@ -356,11 +356,10 @@ def test_v2_example_09_cosim_online_step_config():
     assert len(runtime_cfg["task"]["subsystems"]) == 1
 
     subsystem = runtime_cfg["task"]["subsystems"][0]
-    assert subsystem["target"] == "CFEDR.I_ISS"
-    assert subsystem["instance"] == "i_iss"
-    assert "i_iss_processor_base" in subsystem["handler_module"]
-    assert subsystem["handler_function"] == "I_ISSProcessorBase"
-    assert subsystem["local_mass_control"]["enabled"] is True
+    assert subsystem["target"] == "example_model.DIV"
+    assert subsystem["instance"] == "div"
+    assert "festim_div_processor" in subsystem["handler_script_path"]
+    assert subsystem["handler_function"] == "FESTIMDivertorProcessor"
 
     # Verify co_simulation runtime synthesis
     assert "co_simulation" in runtime_cfg
@@ -368,8 +367,6 @@ def test_v2_example_09_cosim_online_step_config():
     assert runtime_cfg["co_simulation"]["mode"] == "online_step"
     handler = runtime_cfg["co_simulation"]["handlers"][0]
     assert handler["mode"] == "online"
-    assert handler["local_mass_control"]["enabled"] is True
-    assert handler["shadow_fmu_fallback"]["enabled"] is True
 
     # Verify auditor synthesized from plugins
     assert "auditor" in runtime_cfg

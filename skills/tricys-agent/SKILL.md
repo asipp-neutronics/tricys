@@ -239,9 +239,9 @@ task:
   subsystems:
     - target: "CFEDR.I_ISS"
       instance: "i_iss"
-      solver: "aspen_plus"
-      handler_module: "tricys.handlers.online_iss"
-      handler_function: "OnlineISSProcessor"            # 必须指定继承自 AbstractTrackProcessor 的类名
+      solver: "festim"
+      handler_script_path: "./09_cosim_online_step/festim_div_processor.py"
+      handler_function: "FESTIMDivertorProcessor"            # 必须指定继承自 AbstractTrackProcessor 的类名
       params:
         base_inventory_mol: 20.0
       local_mass_control:                               # 可选局部质量修正
