@@ -71,6 +71,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/home/appuser/.local/bin:/dolfinx-env/bin:${PATH}" \
     MODELICAPATH="/home/appuser/.openmodelica/libraries:/usr/lib/omlibrary" \
     PYTHONPATH="/workspace/h2iso/src:/workspace/tricys:/workspace/tricys_backend:/workspace/tricys/tricys_backend:${PYTHONPATH:-}" \
+    DWSIM_PATH=/opt/dwsim \
     HDF5_VISUALIZER_PORT=8050 \
     HDF5_VISUALIZER_BASE_URL=/hdf5/ \
     HDF5_CONTEXTS_DIR=/data/hdf5_contexts
@@ -106,6 +107,7 @@ RUN sed -i 's@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g
         libxcb-xfixes0 \
         libxkbcommon-x11-0 \
         libxcb-cursor0 \
+        libgdiplus \
         nginx \
         locales \
         fonts-wqy-microhei \
@@ -141,6 +143,7 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
         OMSimulator \
         "casadi>=3.6" \
         "fmpy>=0.3.26" \
+        "pythonnet>=3.0.3" \
         "scipy>=1.8" \
         "matplotlib>=3.5" \
         seaborn \
@@ -172,6 +175,13 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
         "dash>=2.14.0" \
         "dash-bootstrap-components>=1.5.0" \
         "plotly>=5.18.0"
+        
+# 3.1. Install DWSIM standalone headless runtime for Linux chemical process simulation
+ARG DWSIM_VERSION=8.8.4
+RUN mkdir -p /opt/dwsim && \
+    (curl -fSL --retry 3 --connect-timeout 20 "https://github.com/DanWBR/dwsim/releases/download/v${DWSIM_VERSION}/dwsim_${DWSIM_VERSION}_amd64.deb" -o /tmp/dwsim.deb && \
+     dpkg -i /tmp/dwsim.deb 2>/dev/null || true && \
+     rm -f /tmp/dwsim.deb) || true
 
 # 4. Solidify Modelica Standard Library (MSL) into container filesystem (Self-healing from upstream repo)
 RUN (curl -fSL --retry 3 --connect-timeout 15 https://build.openmodelica.org/apt/pool/contrib-noble/omlibrary_1.27.1-1_all.deb -o /tmp/omlibrary.deb || \

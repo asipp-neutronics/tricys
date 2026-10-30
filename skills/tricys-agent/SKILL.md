@@ -216,11 +216,11 @@ task:
   subsystems:
     - target: "example_model.I_ISS"                     # 待拦截的原子系统组件路径
       instance: "i_iss"                                 # 系统中的实例名
-      solver: "aspen_plus"                              # 外部求解器类型
-      handler_module: "tricys.handlers.i_iss_handler"   # Handler 函数所在 Python 模块
-      handler_function: "run_aspen_simulation"         # Handler 模块函数名
+      solver: "dwsim"                                   # 外部求解器类型 (推荐 dwsim 或 legacy aspen_plus)
+      handler_script_path: "./08_cosim_offline_table/dwsim_iss_handler.py" # Handler 脚本路径
+      handler_function: "run_dwsim_simulation"         # Handler 函数名
       params:
-        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+        flowsheet_path: "../example_dwsim/T2_Threetowers4.dwxmz"
 ```
 
 #### 模式 2: 在线步进模式 (`online_step`)

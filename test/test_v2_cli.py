@@ -303,9 +303,9 @@ def test_v2_example_08_cosim_offline_table_config():
     subsystem = runtime_cfg["task"]["subsystems"][0]
     assert subsystem["target"] == "example_model.I_ISS"
     assert subsystem["instance"] == "i_iss"
-    assert subsystem["solver"] == "aspen_plus"
-    assert subsystem["handler_module"] == "tricys.handlers.i_iss_handler"
-    assert subsystem["handler_function"] == "run_aspen_simulation"
+    assert subsystem["solver"] == "dwsim"
+    assert "dwsim_iss_handler.py" in subsystem["handler_script_path"]
+    assert subsystem["handler_function"] == "run_dwsim_simulation"
 
     # Verify co_simulation runtime synthesis
     assert "co_simulation" in runtime_cfg
@@ -313,9 +313,10 @@ def test_v2_example_08_cosim_offline_table_config():
     assert runtime_cfg["co_simulation"]["mode"] == "offline_table"
     assert len(runtime_cfg["co_simulation"]["handlers"]) == 1
     handler = runtime_cfg["co_simulation"]["handlers"][0]
-    assert handler["handler_module"] == "tricys.handlers.i_iss_handler"
-    assert handler["handler_function"] == "run_aspen_simulation"
-    assert handler["params"]["base"] == 20
+    assert handler["solver"] == "dwsim"
+    assert "dwsim_iss_handler.py" in handler["handler_script_path"]
+    assert handler["handler_function"] == "run_dwsim_simulation"
+    assert handler["params"]["base"] == 20.0
 
     # Verify pipeline auto-inference
     pipeline = PipelineBuilder.build(runtime_cfg)
