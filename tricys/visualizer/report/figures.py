@@ -25,12 +25,12 @@ import numpy as np
 import pandas as pd
 
 from tricys.analysis.tritium_cycle import (
-    SECONDS_PER_DAY,
-    SECONDS_PER_HOUR,
+    HOURS_PER_DAY,
     detect_sds_column,
     extract_startup_inventory_metrics,
     load_glossary_mapping,
     resolve_subsystem_metadata,
+    resolve_time_factor_to_hours,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,35 +44,13 @@ def resolve_plot_time_scale(
 ) -> Tuple[str, float]:
     """Resolves truthful time unit and scale factor based on config and data span.
 
-    - When scenario.time_base == 'hour', the Modelica model is in hours, so raw time
-      data is already in hours (divisor 1.0).
-    - When scenario.time_base == 'second', the Modelica model is in seconds, so raw time
-      data is in seconds and scaled by 3600.0 to hours (or days if huge).
+    TRICYS schema time fields (stopTime, stepSize, t_dd, etc.) are always in hours.
+    time_base specifies the Modelica model's time unit ('second' or 'hour').
+    The plotted time unit is always hours ('h'), and the divisor scales raw simulation
+    time (seconds or hours) to hours.
     """
-    tb = None
-    if config:
-        tb = (
-            config.get("time_base")
-            or config.get("scenario", {}).get("time_base")
-            or config.get("simulation", {}).get("time_base")
-        )
-        if isinstance(tb, str):
-            tb = tb.strip().lower()
-
-    if tb == "hour":
-        return "h", 1.0
-    elif tb == "second":
-        if t_max > SECONDS_PER_DAY * 7:
-            return "d", SECONDS_PER_DAY
-        return "h", SECONDS_PER_HOUR
-
-    # Fallback adaptive
-    if t_max > SECONDS_PER_DAY * 2:
-        return "d", SECONDS_PER_DAY
-    elif t_max > 7200.0:
-        return "h", SECONDS_PER_HOUR
-    else:
-        return "s", 1.0
+    scale = resolve_time_factor_to_hours(t_max, config)
+    return "h", scale
 
 
 def _init_plot_style() -> None:
@@ -214,7 +192,12 @@ def generate_inventory_trajectories_plot(
         # D-D phase background shading if present
         t_dd = float(info["t_dd"])
         if t_dd > 0:
-            t_dd_scaled = t_dd / time_scale
+            if time_unit == "d":
+                t_dd_scaled = t_dd / HOURS_PER_DAY
+            elif time_unit == "s":
+                t_dd_scaled = t_dd * 3600.0
+            else:  # "h"
+                t_dd_scaled = t_dd
             ax.axvspan(
                 0, t_dd_scaled, color=color, alpha=0.06, label=f"{label} (调试阶段)"
             )
@@ -303,6 +286,7 @@ def generate_valley_comparison_plot(
     # Determine truthful time unit
     t_max = float(results_df["time"].max()) if "time" in results_df.columns else 0.0
     time_unit, time_scale = resolve_plot_time_scale(t_max, config=config)
+    raw_to_hours = 1.0 / time_scale
 
     _init_plot_style()
     fig, ax = plt.subplots(figsize=(9.8, 5.2), facecolor="#ffffff")
@@ -325,13 +309,27 @@ def generate_valley_comparison_plot(
         t_ign = float(info["t_dd"])
         if t_ign > 0:
             has_ignition_offset = True
-        df_dt = subset[subset["time"] >= t_ign].copy()
-        if df_dt.empty:
-            df_dt = subset.copy()
+
+        t_raw = subset["time"].values
+        t_hours = t_raw * raw_to_hours
+
+        # Align time comparison and subtraction in hours
+        mask = t_hours >= t_ign
+        if np.any(mask):
+            t_dt_h = t_hours[mask]
+            y = subset[plot_var].values[mask]
+        else:
+            t_dt_h = t_hours
+            y = subset[plot_var].values
             t_ign = 0.0
 
-        t_rel = (df_dt["time"].values - t_ign) / time_scale
-        y = df_dt[plot_var].values
+        t_rel_h = t_dt_h - t_ign
+        if time_unit == "d":
+            t_rel = t_rel_h / HOURS_PER_DAY
+        elif time_unit == "s":
+            t_rel = t_rel_h * 3600.0
+        else:
+            t_rel = t_rel_h
 
         if i_0_ref is None and len(y) > 0:
             i_0_ref = float(y[0])
@@ -445,19 +443,27 @@ def generate_subsystem_dynamics_plot(
     elif target_job_id is not None:
         case_name = f"工况 {target_job_id}"
 
-    # Filter post ignition
-    sub_post = subset[subset["time"] >= t_ign].copy()
-    if sub_post.empty:
+    t_max_raw = float(subset["time"].max()) if not subset.empty else 0.0
+    time_unit, time_scale = resolve_plot_time_scale(t_max_raw, config=config)
+    raw_to_hours = 1.0 / time_scale
+
+    t_hours = subset["time"].values * raw_to_hours
+    mask = t_hours >= t_ign
+    if np.any(mask):
+        sub_post = subset[mask].copy()
+        t_rel_h = t_hours[mask] - t_ign
+    else:
         sub_post = subset.copy()
+        t_rel_h = t_hours
         t_ign = 0.0
 
-    t_rel = sub_post["time"].values - t_ign
-    t_max_raw = float(t_rel[-1]) if len(t_rel) > 0 else 0.0
+    if time_unit == "d":
+        t_plot = t_rel_h / HOURS_PER_DAY
+    elif time_unit == "s":
+        t_plot = t_rel_h * 3600.0
+    else:
+        t_plot = t_rel_h
 
-    # Determine truthful time unit and scale factor
-    time_unit, time_scale = resolve_plot_time_scale(t_max_raw, config=config)
-
-    t_plot = t_rel / time_scale
     sub_plot = sub_post
 
     _init_plot_style()
@@ -474,8 +480,9 @@ def generate_subsystem_dynamics_plot(
     if config:
         vf = config.get("scenario", {}).get("variableFilter", "")
         if vf:
-            for item in vf.split("|"):
-                v = item.strip()
+            items = vf if isinstance(vf, list) else str(vf).split("|")
+            for item in items:
+                v = str(item).strip()
                 if v and not v.startswith(".*") and v in sub_plot.columns:
                     if v not in ["time", "job_id", sds_col] and v not in target_cols:
                         if np.issubdtype(sub_plot[v].dtype, np.number):
