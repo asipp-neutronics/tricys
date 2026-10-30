@@ -63,7 +63,7 @@ task:
 
 visualizer:
   enabled: true
-  launch_on_finish: false
+  launch_on_finish: true
   report:
     enabled: true
     title: "TRICYS 聚变堆多物理场协同仿真报告 (基于 Wang 2022 真实求解的参数注入)"

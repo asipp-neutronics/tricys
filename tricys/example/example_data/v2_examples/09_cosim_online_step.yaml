@@ -57,7 +57,7 @@ task:
 
 visualizer:
   enabled: true
-  launch_on_finish: false
+  launch_on_finish: true
   report:
     enabled: true
     title: "TRICYS-FESTIM 偏滤器材料输运微观有限元在线步进多速率协同仿真评估报告"

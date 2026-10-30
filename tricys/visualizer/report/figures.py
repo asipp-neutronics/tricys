@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import base64
 import io
+import logging
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -31,6 +32,8 @@ from tricys.analysis.tritium_cycle import (
     load_glossary_mapping,
     resolve_subsystem_metadata,
 )
+
+logger = logging.getLogger(__name__)
 
 # Standard CFEDR Publication Palette
 PALETTE = ["#D9534F", "#F0AD4E", "#2E7D32", "#1F77B4", "#9467BD", "#8C564B", "#17BECF"]
@@ -1113,208 +1116,234 @@ def generate_optimization_report_figures(
 
     # Chart 1: Required TBR Response Curve (Abdou Fig 4-8 Style, Multi-curve for 2D params)
     if tbr_col and primary_param and len(df) > 1:
-        p1 = (
-            os.path.join(output_dir, "fig_opt1_tbr_response.png")
-            if output_dir
-            else None
-        )
-        fig, ax = plt.subplots(figsize=(8.2, 5.2), dpi=200)
-        p_df = df.dropna(subset=[tbr_col, primary_param]).copy()
-        p_df[primary_param] = pd.to_numeric(p_df[primary_param], errors="coerce")
-        p_df[tbr_col] = pd.to_numeric(p_df[tbr_col], errors="coerce")
-
-        markers = ["o", "s", "^", "D", "v", "p", "*", "X"]
-        if secondary_param:
-            # 2D Parameter Group: Draw multiple curves grouped by secondary_param
-            try:
-                p_df[secondary_param] = pd.to_numeric(p_df[secondary_param])
-            except Exception:
-                pass
-            sec_unique = p_df[secondary_param].unique()
-            try:
-                sec_sorted = sorted(sec_unique, key=lambda x: float(x))
-            except Exception:
-                sec_sorted = sorted(sec_unique, key=lambda x: str(x))
-
-            for idx, s_val in enumerate(sec_sorted):
-                sub = p_df[p_df[secondary_param] == s_val].sort_values(by=primary_param)
-                ax.plot(
-                    sub[primary_param],
-                    sub[tbr_col],
-                    color=PALETTE[idx % len(PALETTE)],
-                    marker=markers[idx % len(markers)],
-                    markersize=6.8,
-                    linewidth=2.0,
-                    label=f"{secondary_param} = {s_val}",
+        try:
+            p_df = df.dropna(subset=[tbr_col, primary_param]).copy()
+            p_df[primary_param] = pd.to_numeric(p_df[primary_param], errors="coerce")
+            p_df[tbr_col] = pd.to_numeric(p_df[tbr_col], errors="coerce")
+            p_df = p_df.dropna(subset=[tbr_col, primary_param])
+            if len(p_df) > 1:
+                p1 = (
+                    os.path.join(output_dir, "fig_opt1_tbr_response.png")
+                    if output_dir
+                    else None
                 )
-            ax.set_title(
-                f"临界产氚比响应规律 (Required TBR vs {primary_param} 分组: {secondary_param})",
-                fontsize=12,
-                pad=10,
-                loc="left",
-                fontweight="bold",
-            )
-        else:
-            p_df = p_df.sort_values(by=primary_param)
-            ax.plot(
-                p_df[primary_param],
-                p_df[tbr_col],
-                color=PALETTE[0],
-                marker="o",
-                markersize=6.8,
-                linewidth=2.2,
-                label=f"临界产氚比 ({tbr_col})",
-            )
-            ax.set_title(
-                f"临界产氚比响应规律 (Required TBR vs {primary_param})",
-                fontsize=12,
-                pad=10,
-                loc="left",
-                fontweight="bold",
-            )
+                fig, ax = plt.subplots(figsize=(8.2, 5.2), dpi=200)
 
-        ax.set_xlabel(f"主设计变量: {primary_param}", fontsize=11)
-        ax.set_ylabel(f"临界产氚比 {tbr_col}", fontsize=11)
-        ax.grid(True, linestyle=":", alpha=0.5, color="gray")
-        ax.legend(loc="best", frameon=True, framealpha=0.9)
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        figures.append(
-            _fig_to_result(
-                fig,
-                title=f"临界产氚比响应规律曲线 (Required TBR vs {primary_param})",
-                description="展示不同设计工况下满足自持倍增约束所需的临界产氚比变化趋势；若包含二维参数组则绘制多条参数对比曲线（Abdou 2021 理论曲线风格）。",
-                output_path=p1,
+                markers = ["o", "s", "^", "D", "v", "p", "*", "X"]
+                if secondary_param:
+                    # 2D Parameter Group: Draw multiple curves grouped by secondary_param
+                    try:
+                        p_df[secondary_param] = pd.to_numeric(p_df[secondary_param])
+                    except Exception:
+                        pass
+                    sec_unique = p_df[secondary_param].unique()
+                    try:
+                        sec_sorted = sorted(sec_unique, key=lambda x: float(x))
+                    except Exception:
+                        sec_sorted = sorted(sec_unique, key=lambda x: str(x))
+
+                    for idx, s_val in enumerate(sec_sorted):
+                        sub = p_df[p_df[secondary_param] == s_val].sort_values(
+                            by=primary_param
+                        )
+                        if not sub.empty:
+                            ax.plot(
+                                sub[primary_param],
+                                sub[tbr_col],
+                                color=PALETTE[idx % len(PALETTE)],
+                                marker=markers[idx % len(markers)],
+                                markersize=6.8,
+                                linewidth=2.0,
+                                label=f"{secondary_param} = {s_val}",
+                            )
+                    ax.set_title(
+                        f"临界产氚比响应规律 (Required TBR vs {primary_param} 分组: {secondary_param})",
+                        fontsize=12,
+                        pad=10,
+                        loc="left",
+                        fontweight="bold",
+                    )
+                else:
+                    p_df = p_df.sort_values(by=primary_param)
+                    ax.plot(
+                        p_df[primary_param],
+                        p_df[tbr_col],
+                        color=PALETTE[0],
+                        marker="o",
+                        markersize=6.8,
+                        linewidth=2.2,
+                        label=f"临界产氚比 ({tbr_col})",
+                    )
+                    ax.set_title(
+                        f"临界产氚比响应规律 (Required TBR vs {primary_param})",
+                        fontsize=12,
+                        pad=10,
+                        loc="left",
+                        fontweight="bold",
+                    )
+
+                ax.set_xlabel(f"主设计变量: {primary_param}", fontsize=11)
+                ax.set_ylabel(f"临界产氚比 {tbr_col}", fontsize=11)
+                ax.grid(True, linestyle=":", alpha=0.5, color="gray")
+                ax.legend(loc="best", frameon=True, framealpha=0.9)
+                ax.spines["top"].set_visible(False)
+                ax.spines["right"].set_visible(False)
+                figures.append(
+                    _fig_to_result(
+                        fig,
+                        title=f"临界产氚比响应规律曲线 (Required TBR vs {primary_param})",
+                        description="展示不同设计工况下满足自持倍增约束所需的临界产氚比变化趋势；若包含二维参数组则绘制多条参数对比曲线（Abdou 2021 理论曲线风格）。",
+                        output_path=p1,
+                    )
+                )
+        except Exception as chart1_err:
+            logger.warning(
+                f"Failed to generate optimization chart 1 (TBR response): {chart1_err}"
             )
-        )
 
     # Chart 2: Startup Inventory Response Curve (Abdou Fig 10-13 Style, Multi-curve for 2D params)
     if inv_col and primary_param and len(df) > 1:
-        p2 = (
-            os.path.join(output_dir, "fig_opt2_inventory_response.png")
-            if output_dir
-            else None
-        )
-        fig, ax = plt.subplots(figsize=(8.2, 5.2), dpi=200)
-        p_df = df.dropna(subset=[inv_col, primary_param]).copy()
-        p_df[primary_param] = pd.to_numeric(p_df[primary_param], errors="coerce")
-        p_df[inv_col] = pd.to_numeric(p_df[inv_col], errors="coerce")
-
-        markers = ["s", "o", "D", "^", "v", "p", "*", "X"]
-        if secondary_param:
-            # 2D Parameter Group: Draw multiple curves grouped by secondary_param
-            try:
-                p_df[secondary_param] = pd.to_numeric(p_df[secondary_param])
-            except Exception:
-                pass
-            sec_unique = p_df[secondary_param].unique()
-            try:
-                sec_sorted = sorted(sec_unique, key=lambda x: float(x))
-            except Exception:
-                sec_sorted = sorted(sec_unique, key=lambda x: str(x))
-
-            for idx, s_val in enumerate(sec_sorted):
-                sub = p_df[p_df[secondary_param] == s_val].sort_values(by=primary_param)
-                ax.plot(
-                    sub[primary_param],
-                    sub[inv_col],
-                    color=PALETTE[(idx + 1) % len(PALETTE)],
-                    marker=markers[idx % len(markers)],
-                    markersize=6.8,
-                    linewidth=2.0,
-                    label=f"{secondary_param} = {s_val}",
+        try:
+            p_df = df.dropna(subset=[inv_col, primary_param]).copy()
+            p_df[primary_param] = pd.to_numeric(p_df[primary_param], errors="coerce")
+            p_df[inv_col] = pd.to_numeric(p_df[inv_col], errors="coerce")
+            p_df = p_df.dropna(subset=[inv_col, primary_param])
+            if len(p_df) > 1:
+                p2 = (
+                    os.path.join(output_dir, "fig_opt2_inventory_response.png")
+                    if output_dir
+                    else None
                 )
-            ax.set_title(
-                f"自持初始启动库存响应规律 ({inv_col} vs {primary_param} 分组: {secondary_param})",
-                fontsize=12,
-                pad=10,
-                loc="left",
-                fontweight="bold",
-            )
-        else:
-            p_df = p_df.sort_values(by=primary_param)
-            ax.plot(
-                p_df[primary_param],
-                p_df[inv_col],
-                color=PALETTE[1],
-                marker="s",
-                markersize=6.8,
-                linewidth=2.2,
-                label=f"初始装填量 ({inv_col})",
-            )
-            ax.set_title(
-                f"自持初始启动库存响应规律 ({inv_col} vs {primary_param})",
-                fontsize=12,
-                pad=10,
-                loc="left",
-                fontweight="bold",
-            )
+                fig, ax = plt.subplots(figsize=(8.2, 5.2), dpi=200)
 
-        ax.set_xlabel(f"主设计变量: {primary_param}", fontsize=11)
-        ax.set_ylabel(f"初始装填库存 {inv_col} [g]", fontsize=11)
-        ax.grid(True, linestyle=":", alpha=0.5, color="gray")
-        ax.legend(loc="best", frameon=True, framealpha=0.9)
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        figures.append(
-            _fig_to_result(
-                fig,
-                title=f"最优初始启动库存响应曲线 ({inv_col} vs {primary_param})",
-                description="展示确保系统瞬态最低存量不低于安全储备极限所需的最优初始库存启动量随工况的变化；若包含二维参数组则绘制多条参数对比曲线。",
-                output_path=p2,
+                markers = ["s", "o", "D", "^", "v", "p", "*", "X"]
+                if secondary_param:
+                    # 2D Parameter Group: Draw multiple curves grouped by secondary_param
+                    try:
+                        p_df[secondary_param] = pd.to_numeric(p_df[secondary_param])
+                    except Exception:
+                        pass
+                    sec_unique = p_df[secondary_param].unique()
+                    try:
+                        sec_sorted = sorted(sec_unique, key=lambda x: float(x))
+                    except Exception:
+                        sec_sorted = sorted(sec_unique, key=lambda x: str(x))
+
+                    for idx, s_val in enumerate(sec_sorted):
+                        sub = p_df[p_df[secondary_param] == s_val].sort_values(
+                            by=primary_param
+                        )
+                        if not sub.empty:
+                            ax.plot(
+                                sub[primary_param],
+                                sub[inv_col],
+                                color=PALETTE[(idx + 1) % len(PALETTE)],
+                                marker=markers[idx % len(markers)],
+                                markersize=6.8,
+                                linewidth=2.0,
+                                label=f"{secondary_param} = {s_val}",
+                            )
+                    ax.set_title(
+                        f"自持初始启动库存响应规律 ({inv_col} vs {primary_param} 分组: {secondary_param})",
+                        fontsize=12,
+                        pad=10,
+                        loc="left",
+                        fontweight="bold",
+                    )
+                else:
+                    p_df = p_df.sort_values(by=primary_param)
+                    ax.plot(
+                        p_df[primary_param],
+                        p_df[inv_col],
+                        color=PALETTE[1],
+                        marker="s",
+                        markersize=6.8,
+                        linewidth=2.2,
+                        label=f"初始装填量 ({inv_col})",
+                    )
+                    ax.set_title(
+                        f"自持初始启动库存响应规律 ({inv_col} vs {primary_param})",
+                        fontsize=12,
+                        pad=10,
+                        loc="left",
+                        fontweight="bold",
+                    )
+
+                ax.set_xlabel(f"主设计变量: {primary_param}", fontsize=11)
+                ax.set_ylabel(f"初始装填库存 {inv_col} [g]", fontsize=11)
+                ax.grid(True, linestyle=":", alpha=0.5, color="gray")
+                ax.legend(loc="best", frameon=True, framealpha=0.9)
+                ax.spines["top"].set_visible(False)
+                ax.spines["right"].set_visible(False)
+                figures.append(
+                    _fig_to_result(
+                        fig,
+                        title=f"最优初始启动库存响应曲线 ({inv_col} vs {primary_param})",
+                        description="展示确保系统瞬态最低存量不低于安全储备极限所需的最优初始库存启动量随工况的变化；若包含二维参数组则绘制多条参数对比曲线。",
+                        output_path=p2,
+                    )
+                )
+        except Exception as chart2_err:
+            logger.warning(
+                f"Failed to generate optimization chart 2 (Inventory response): {chart2_err}"
             )
-        )
 
     # Chart 3: Pareto Trade-off Curve (Abdou Fig 14-15 Style)
     if tbr_col and inv_col and len(df) > 1:
-        p_df = df.dropna(subset=[tbr_col, inv_col]).copy()
-        p_df[tbr_col] = pd.to_numeric(p_df[tbr_col], errors="coerce")
-        p_df[inv_col] = pd.to_numeric(p_df[inv_col], errors="coerce")
-        p_df = p_df.sort_values(by=inv_col)
-        if len(p_df[inv_col].unique()) > 1:
-            p3 = (
-                os.path.join(output_dir, "fig_opt3_tradeoff.png")
-                if output_dir
-                else None
-            )
-            fig, ax = plt.subplots(figsize=(8.2, 5.2), dpi=200)
-            ax.plot(
-                p_df[inv_col],
-                p_df[tbr_col],
-                color="#8C564B",
-                marker="D",
-                markersize=7.0,
-                linewidth=2.2,
-                label="帕累托自持前沿 (Pareto Frontier)",
-            )
-            ax.fill_between(
-                p_df[inv_col],
-                p_df[tbr_col],
-                p_df[tbr_col].max() * 1.12,
-                color="#2E7D32",
-                alpha=0.12,
-                label="可行自持设计区 (Feasible Region)",
-            )
-            ax.set_title(
-                "产氚比与启动库存帕累托权衡前沿 (Required TBR vs Startup Inventory)",
-                fontsize=12,
-                pad=10,
-                loc="left",
-                fontweight="bold",
-            )
-            ax.set_xlabel(f"初始装填库存 {inv_col} [g]", fontsize=11)
-            ax.set_ylabel(f"临界产氚比 {tbr_col}", fontsize=11)
-            ax.grid(True, linestyle=":", alpha=0.5, color="gray")
-            ax.legend(loc="best", frameon=True, framealpha=0.9)
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
-            figures.append(
-                _fig_to_result(
-                    fig,
-                    title="产氚比与初始装填库存帕累托权衡前沿 (Pareto Trade-off Curve)",
-                    description="反映聚变堆核心设计权衡：较高的初始装填量能缓冲瞬态下探亏空，降低自持所需的临界产氚比要求。",
-                    output_path=p3,
+        try:
+            p_df = df.dropna(subset=[tbr_col, inv_col]).copy()
+            p_df[tbr_col] = pd.to_numeric(p_df[tbr_col], errors="coerce")
+            p_df[inv_col] = pd.to_numeric(p_df[inv_col], errors="coerce")
+            p_df = p_df.dropna(subset=[tbr_col, inv_col])
+            p_df = p_df.sort_values(by=inv_col)
+            if len(p_df[inv_col].unique()) > 1:
+                p3 = (
+                    os.path.join(output_dir, "fig_opt3_tradeoff.png")
+                    if output_dir
+                    else None
                 )
+                fig, ax = plt.subplots(figsize=(8.2, 5.2), dpi=200)
+                ax.plot(
+                    p_df[inv_col],
+                    p_df[tbr_col],
+                    color="#8C564B",
+                    marker="D",
+                    markersize=7.0,
+                    linewidth=2.2,
+                    label="帕累托自持前沿 (Pareto Frontier)",
+                )
+                ax.fill_between(
+                    p_df[inv_col],
+                    p_df[tbr_col],
+                    p_df[tbr_col].max() * 1.12,
+                    color="#2E7D32",
+                    alpha=0.12,
+                    label="可行自持设计区 (Feasible Region)",
+                )
+                ax.set_title(
+                    "产氚比与启动库存帕累托权衡前沿 (Required TBR vs Startup Inventory)",
+                    fontsize=12,
+                    pad=10,
+                    loc="left",
+                    fontweight="bold",
+                )
+                ax.set_xlabel(f"初始装填库存 {inv_col} [g]", fontsize=11)
+                ax.set_ylabel(f"临界产氚比 {tbr_col}", fontsize=11)
+                ax.grid(True, linestyle=":", alpha=0.5, color="gray")
+                ax.legend(loc="best", frameon=True, framealpha=0.9)
+                ax.spines["top"].set_visible(False)
+                ax.spines["right"].set_visible(False)
+                figures.append(
+                    _fig_to_result(
+                        fig,
+                        title="产氚比与初始装填库存帕累托权衡前沿 (Pareto Trade-off Curve)",
+                        description="反映聚变堆核心设计权衡：较高的初始装填量能缓冲瞬态下探亏空，降低自持所需的临界产氚比要求。",
+                        output_path=p3,
+                    )
+                )
+        except Exception as chart3_err:
+            logger.warning(
+                f"Failed to generate optimization chart 3 (Pareto tradeoff): {chart3_err}"
             )
 
     # Chart 4: Trajectory Verification (Dual Constraints Verification)
@@ -1327,20 +1356,60 @@ def generate_optimization_report_figures(
                 else None
             )
             fig, ax = plt.subplots(figsize=(8.5, 5.0), dpi=200)
-            t_unit, t_factor = resolve_plot_time_scale(
-                float(results_df["time"].iloc[-1]), config
-            )
-            time_axis = results_df["time"] / t_factor
-            inv_series = results_df[target_col]
 
+            # 筛选最具代表性/最优解工况轨迹，防止多工况数据直接拼合导致索引重复或连线折叠错乱
+            sub_df = results_df
+            target_jid = None
+            if "job_id" in results_df.columns:
+                if jobs_df is not None and not jobs_df.empty:
+                    jid_col = (
+                        "job_id"
+                        if "job_id" in jobs_df.columns
+                        else (jobs_df.columns[0] if "id" in jobs_df.columns else None)
+                    )
+                    # 优先选取临界产氚比或自持指标最优的工况
+                    val_col = (
+                        tbr_col if (tbr_col and tbr_col in jobs_df.columns) else None
+                    )
+                    if val_col:
+                        try:
+                            valid_jobs = jobs_df.dropna(subset=[val_col]).sort_values(
+                                by=val_col
+                            )
+                            if not valid_jobs.empty and jid_col in valid_jobs.columns:
+                                target_jid = valid_jobs[jid_col].iloc[0]
+                        except Exception:
+                            pass
+                    if target_jid is None and jid_col and jid_col in jobs_df.columns:
+                        target_jid = jobs_df[jid_col].iloc[0]
+
+                if target_jid is None:
+                    target_jid = results_df["job_id"].iloc[0]
+
+                mask = results_df["job_id"] == target_jid
+                if not mask.any():
+                    mask = results_df["job_id"].astype(str) == str(target_jid)
+                matched_df = results_df[mask]
+                if not matched_df.empty:
+                    sub_df = matched_df
+
+            sub_df = sub_df.sort_values(by="time").reset_index(drop=True)
+
+            t_unit, t_factor = resolve_plot_time_scale(
+                float(sub_df["time"].iloc[-1]), config
+            )
+            time_axis = sub_df["time"] / t_factor
+            inv_series = pd.to_numeric(sub_df[target_col], errors="coerce").fillna(0.0)
+
+            job_label_suffix = f" (工况 {target_jid})" if target_jid is not None else ""
             ax.plot(
                 time_axis,
                 inv_series,
                 color="#1F77B4",
                 linewidth=2.2,
-                label=f"存储罐存量动态 ({target_col})",
+                label=f"存储罐存量动态 ({target_col}){job_label_suffix}",
             )
-            i_0 = float(inv_series.iloc[0])
+            i_0 = float(inv_series.iloc[0]) if len(inv_series) > 0 else 0.0
             i_double = 2.0 * i_0
             ax.axhline(
                 i_0,
@@ -1357,34 +1426,59 @@ def generate_optimization_report_figures(
                 label=f"目标自持倍增阈值 $2I_0$ ({i_double:.1f} g)",
             )
 
-            nadir_idx = inv_series.idxmin()
-            t_nadir = float(time_axis.loc[nadir_idx])
-            i_nadir = float(inv_series.loc[nadir_idx])
-            ax.scatter(
-                [t_nadir],
-                [i_nadir],
-                color="#D9534F",
-                s=70,
-                zorder=5,
-                label=f"最低存储谷底 Nadir ({i_nadir:.1f} g)",
-            )
+            if len(inv_series) > 0:
+                min_loc = int(np.argmin(inv_series.values))
+                t_nadir = float(time_axis.iloc[min_loc])
+                i_nadir = float(inv_series.iloc[min_loc])
+                ax.scatter(
+                    [t_nadir],
+                    [i_nadir],
+                    color="#D9534F",
+                    s=70,
+                    zorder=5,
+                    label=f"最低存储谷底 Nadir ({i_nadir:.1f} g)",
+                )
 
             reserve_th = None
-            if config:
-                outer_th = config.get("task", {}).get("optimization", {}).get(
-                    "outer", {}
-                ).get("target_metric", {}).get("threshold") or config.get(
-                    "task", {}
-                ).get(
-                    "parameters", {}
-                ).get(
-                    "wds.threshold"
+            if isinstance(config, dict):
+                task_sec = (
+                    config.get("task") if isinstance(config.get("task"), dict) else {}
                 )
-                if outer_th is not None:
-                    try:
-                        reserve_th = float(outer_th)
-                    except (ValueError, TypeError):
-                        pass
+                opt_sec = (
+                    task_sec.get("optimization")
+                    or task_sec.get("optimizer")
+                    or config.get("optimization")
+                    or config.get("optimizer")
+                )
+                if isinstance(opt_sec, dict):
+                    outer_sec = opt_sec.get("outer")
+                    if isinstance(outer_sec, dict):
+                        tm = outer_sec.get("target_metric")
+                        if isinstance(tm, dict):
+                            outer_th = tm.get("threshold")
+                            if outer_th is not None:
+                                try:
+                                    reserve_th = float(outer_th)
+                                except (ValueError, TypeError):
+                                    pass
+
+                if reserve_th is None:
+                    params_sec = task_sec.get("parameters")
+                    if isinstance(params_sec, dict):
+                        val = params_sec.get("wds.threshold")
+                        if val is not None:
+                            try:
+                                reserve_th = float(val)
+                            except (ValueError, TypeError):
+                                pass
+                    elif isinstance(params_sec, list):
+                        for p in params_sec:
+                            if isinstance(p, dict) and "wds.threshold" in p:
+                                try:
+                                    reserve_th = float(p["wds.threshold"])
+                                    break
+                                except (ValueError, TypeError):
+                                    pass
             if reserve_th is not None:
                 ax.axhline(
                     reserve_th,
@@ -1582,13 +1676,19 @@ def generate_all_report_figures(
         )
 
     if is_opt_task or has_opt_metrics or has_opt_config:
-        opt_figs = generate_optimization_report_figures(
-            results_df=results_df,
-            jobs_df=merged_data_df,
-            metrics_df=metrics_df,
-            output_dir=fig_dir,
-            config=task_config,
-        )
-        figures.extend(opt_figs)
+        try:
+            opt_figs = generate_optimization_report_figures(
+                results_df=results_df,
+                jobs_df=merged_data_df,
+                metrics_df=metrics_df,
+                output_dir=fig_dir,
+                config=task_config,
+            )
+            figures.extend(opt_figs)
+        except Exception as opt_err:
+            logger.warning(
+                f"Failed to generate optimization figures: {opt_err}",
+                exc_info=True,
+            )
 
     return figures

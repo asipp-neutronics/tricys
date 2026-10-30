@@ -1584,6 +1584,14 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
 
+        # 特殊处理：当 task 为 cosim 时，不套用任何内置报告模板，在报告区域给出明确提示
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            notice_md = "> ℹ️ **提示**：cosim任务不适用内置报告模板"
+            badge_label = "COSIM"
+            title_label = report_cfg.get("title", "协同仿真任务")
+            source_indicator = ""
+            return notice_md, notice_md, badge_label, title_label, source_indicator
+
         # 1. 确定当前 task 专属绑定的模板 ID（默认不填跟 task.type 一致）
         target_template_id = normalize_template_id(
             report_cfg.get("template"), task_type
@@ -1734,6 +1742,10 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
     def _get_export_markdown_content(md_content, viewer_context, config_data):
         if md_content and str(md_content).strip():
             return md_content
+        cfg = config_data or {}
+        task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            return "> ℹ️ **提示**：cosim任务不适用内置报告模板"
         h5_file = _get_h5_file(viewer_context)
         if h5_file and os.path.exists(h5_file):
             try:
@@ -1780,9 +1792,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = report_cfg.get("template") or get_recommended_template_for_task(
-            task_type
-        )
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            template_id = "cosim"
+        else:
+            template_id = report_cfg.get(
+                "template"
+            ) or get_recommended_template_for_task(task_type)
         content = ReportExporter.export_markdown(md)
         return dcc.send_string(
             content,
@@ -1821,9 +1836,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = report_cfg.get("template") or get_recommended_template_for_task(
-            task_type
-        )
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            template_id = "cosim"
+        else:
+            template_id = report_cfg.get(
+                "template"
+            ) or get_recommended_template_for_task(task_type)
         title = report_cfg.get("title", "TRICYS 聚变氚循环工程分析报告")
 
         docx_bytes = ReportExporter.export_docx(md, title=title)
@@ -1864,9 +1882,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = report_cfg.get("template") or get_recommended_template_for_task(
-            task_type
-        )
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            template_id = "cosim"
+        else:
+            template_id = report_cfg.get(
+                "template"
+            ) or get_recommended_template_for_task(task_type)
         title = report_cfg.get("title", "TRICYS 聚变氚循环工程分析报告")
 
         pdf_bytes = ReportExporter.export_pdf(md, title=title)
