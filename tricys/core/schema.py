@@ -1022,7 +1022,7 @@ class SensitivityAnalysisConfig(BaseDTO):
     metrics_definition: Dict[str, Any] = Field(
         default_factory=dict, description="Metric calculation formulas"
     )
-    unit_map: Dict[str, str] = Field(
+    unit_map: Dict[str, Any] = Field(
         default_factory=dict, description="Variable unit labels for plotting"
     )
     glossary_path: str = Field(default="", description="Path to terminology glossary")

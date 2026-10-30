@@ -174,7 +174,11 @@ class TricysV2ExampleRunner:
                         shutil.copytree(item, dest_path)
 
             # 2. Copy V2 auxiliary directories (plugins, cosim models) to test_example/v2_examples
-            aux_dirs = ["plugins", "10_cosim_parameter_injection"]
+            aux_dirs = [
+                d.name
+                for d in self.v2_example_dir.iterdir()
+                if d.is_dir() and not d.name.startswith((".", "_"))
+            ]
             for aux in aux_dirs:
                 src_aux = self.v2_example_dir / aux
                 if src_aux.exists() and src_aux.is_dir():

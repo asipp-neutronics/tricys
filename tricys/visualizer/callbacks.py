@@ -13,6 +13,7 @@ import plotly.graph_objects as go
 from dash import Input, Output, State, ctx, dcc, html, no_update
 
 from tricys.analysis import metric
+from tricys.analysis.tritium_cycle import resolve_time_factor_to_hours
 from tricys.visualizer.context import resolve_context_token
 from tricys.visualizer.data import (
     load_baseline_data,
@@ -260,12 +261,27 @@ def _format_file_size(num_bytes):
     return "--"
 
 
-def _format_time_range(start, end):
+def _format_time_range(start, end, config_data=None):
     if start is None or end is None:
         return "Unavailable", "No /results time axis"
-    if start == end:
-        return f"{start}", "Single sampled timestamp"
-    return f"{start} -> {end}", "Derived from /results"
+
+    try:
+        s_val = float(start)
+        e_val = float(end)
+        factor = resolve_time_factor_to_hours(e_val, config_data)
+        s_h = s_val / factor
+        e_h = e_val / factor
+        if factor == 3600.0:
+            detail = f"Modelica time_base=second ({s_val:g} s -> {e_val:g} s)"
+        else:
+            detail = "Modelica time_base=hour"
+        if s_h == e_h:
+            return f"{s_h:g} h", detail
+        return f"{s_h:g} h -> {e_h:g} h", detail
+    except (ValueError, TypeError):
+        if start == end:
+            return f"{start}", "Single sampled timestamp"
+        return f"{start} -> {end}", "Derived from /results"
 
 
 def _format_modified_at(timestamp):
@@ -438,7 +454,9 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             dataset_flags.append("log")
 
         time_range_value, time_range_detail = _format_time_range(
-            overview.get("time_start"), overview.get("time_end")
+            overview.get("time_start"),
+            overview.get("time_end"),
+            config_data=config_data,
         )
         modified_value, modified_detail = _format_modified_at(
             overview.get("modified_at")
@@ -606,24 +624,39 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
         Input("baseline-job-store", "data"),
         Input("plot-type-radio", "value"),
         State("variable-dropdown", "value"),
+        State("config-store", "data"),
     )
-    def update_results_graph(data, baseline_data, plot_type, selected_variables):
+    def update_results_graph(
+        data, baseline_data, plot_type, selected_variables, config_data=None
+    ):
         if not data:
             return _empty_figure("line")
         df_wide = pd.DataFrame(data)
         if not selected_variables:
             return _empty_figure("line")
 
+        t_max = (
+            float(df_wide["time"].max())
+            if "time" in df_wide.columns and not df_wide.empty
+            else 0.0
+        )
+        time_factor = resolve_time_factor_to_hours(t_max, config_data)
+
         if plot_type == "difference":
             if not baseline_data:
                 return _empty_figure("line")
-            baseline_df = pd.DataFrame(baseline_data).set_index("time")
+            baseline_df = pd.DataFrame(baseline_data)
             if not all(v in baseline_df.columns for v in selected_variables):
                 return _empty_figure("line")
 
+            baseline_df["time"] = baseline_df["time"] / time_factor
+            baseline_df = baseline_df.sort_values("time").set_index("time")
+            df_wide = df_wide.copy()
+            df_wide["time"] = df_wide["time"] / time_factor
+
             diff_dfs = []
             for job_id, group in df_wide.groupby("job_id"):
-                group = group.set_index("time")
+                group = group.sort_values("time").set_index("time")
                 # Align series and compute difference
                 aligned_group, aligned_baseline = group.align(
                     baseline_df, join="outer", axis=0
@@ -645,6 +678,9 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             # Extract baseline job id for title
             y_title = "Difference"
         else:
+            df_wide = df_wide.copy()
+            df_wide["time"] = df_wide["time"] / time_factor
+            df_wide = df_wide.sort_values(["job_id", "time"])
             df_long = pd.melt(
                 df_wide,
                 id_vars=["time", "job_id"],
@@ -1584,6 +1620,14 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
 
+        # 特殊处理：当 task 为 cosim 时，不套用任何内置报告模板，在报告区域给出明确提示
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            notice_md = "> ℹ️ **提示**：cosim任务不适用内置报告模板"
+            badge_label = "COSIM"
+            title_label = report_cfg.get("title", "协同仿真任务")
+            source_indicator = ""
+            return notice_md, notice_md, badge_label, title_label, source_indicator
+
         # 1. 确定当前 task 专属绑定的模板 ID（默认不填跟 task.type 一致）
         target_template_id = normalize_template_id(
             report_cfg.get("template"), task_type
@@ -1734,6 +1778,10 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
     def _get_export_markdown_content(md_content, viewer_context, config_data):
         if md_content and str(md_content).strip():
             return md_content
+        cfg = config_data or {}
+        task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            return "> ℹ️ **提示**：cosim任务不适用内置报告模板"
         h5_file = _get_h5_file(viewer_context)
         if h5_file and os.path.exists(h5_file):
             try:
@@ -1780,9 +1828,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = report_cfg.get("template") or get_recommended_template_for_task(
-            task_type
-        )
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            template_id = "cosim"
+        else:
+            template_id = report_cfg.get(
+                "template"
+            ) or get_recommended_template_for_task(task_type)
         content = ReportExporter.export_markdown(md)
         return dcc.send_string(
             content,
@@ -1821,9 +1872,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = report_cfg.get("template") or get_recommended_template_for_task(
-            task_type
-        )
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            template_id = "cosim"
+        else:
+            template_id = report_cfg.get(
+                "template"
+            ) or get_recommended_template_for_task(task_type)
         title = report_cfg.get("title", "TRICYS 聚变氚循环工程分析报告")
 
         docx_bytes = ReportExporter.export_docx(md, title=title)
@@ -1864,9 +1918,12 @@ def register_callbacks(app, server_mode=False, context_secret=None, context_dir=
             else None
         ) or cfg.get("report", {})
         task_type = (cfg.get("task", {}).get("type") or "sweep").lower()
-        template_id = report_cfg.get("template") or get_recommended_template_for_task(
-            task_type
-        )
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            template_id = "cosim"
+        else:
+            template_id = report_cfg.get(
+                "template"
+            ) or get_recommended_template_for_task(task_type)
         title = report_cfg.get("title", "TRICYS 聚变氚循环工程分析报告")
 
         pdf_bytes = ReportExporter.export_pdf(md, title=title)

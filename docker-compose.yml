@@ -28,6 +28,14 @@ services:
       - "${TRICYS_GOVIEW_PORT:-3020}:3020"   # GoView Digital Twin Screen
       - "${TRICYS_HDF5_PORT:-8050}:8050"     # Dash/Plotly HDF5 Visualizer
     environment:
+      DISPLAY: ":0"
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-wayland-0}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/mnt/wslg/runtime-dir}
+      PULSE_SERVER: ${PULSE_SERVER:-/mnt/wslg/PulseServer}
+      QT_X11_NO_MITSHM: "1"
+      LANG: "zh_CN.UTF-8"
+      LC_ALL: "zh_CN.UTF-8"
+      LANGUAGE: "zh_CN:zh"
       DATABASE_URL: ${TRICYS_DATABASE_URL:-sqlite:////data/tricys.db}
       WORKSPACES_DIR: ${TRICYS_WORKSPACES_DIR:-/data/workspaces}
       ASSETS_DIR: ${TRICYS_ASSETS_DIR:-/data/assets}
@@ -41,7 +49,10 @@ services:
       - .:/workspace/tricys
       - ${TRICYS_BACKEND_PATH:-./tricys_backend}:/workspace/tricys_backend
       - ${H2ISO_PATH:-../h2iso}:/workspace/h2iso:ro
-      - tricys_data:/data
+      # Universal GUI Bridge: automatically detects Linux (/tmp/.X11-unix) or Windows 11 (/run/desktop/mnt/host/wslg)
+      - /tmp/.X11-unix:/tmp/.X11-unix-host:ro
+      - /run/desktop/mnt/host/wslg/.X11-unix:/tmp/.X11-unix-wslg:ro
+      - /run/desktop/mnt/host/wslg:/mnt/wslg:ro
     command: ["all-in-one"]
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/health && curl -fsS http://127.0.0.1:8000/health || exit 1"]

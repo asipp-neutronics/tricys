@@ -140,6 +140,33 @@ def solve_wang2022_flowsheets(
     return issi_data, isso_data
 
 
+def _resolve_config_path(conf_str: str) -> Path:
+    p = Path(conf_str)
+    if p.is_absolute() and p.exists():
+        return p
+    # Candidate 1: relative to current working directory
+    if (Path.cwd() / p).exists():
+        return (Path.cwd() / p).resolve()
+    # Candidate 2: relative to script dir
+    if (SCRIPT_DIR / p).exists():
+        return (SCRIPT_DIR / p).resolve()
+    # Candidate 3: filename directly inside script dir
+    if (SCRIPT_DIR / p.name).exists():
+        return (SCRIPT_DIR / p.name).resolve()
+    # Candidate 4: h2iso fixtures fallback
+    h2iso_fixture = (
+        SCRIPT_DIR.parent.parent.parent.parent.parent
+        / "h2iso"
+        / "tests"
+        / "fixtures"
+        / "wang2022"
+        / p.name
+    )
+    if h2iso_fixture.exists():
+        return h2iso_fixture
+    return (SCRIPT_DIR / p).resolve()
+
+
 def generate_parameter_overrides(
     workspace: Path,
     params: dict[str, Any],
@@ -149,36 +176,8 @@ def generate_parameter_overrides(
     issi_conf = params.get("wang2022_config_issi", "wang2022_issi.json")
     isso_conf = params.get("wang2022_config_isso", "wang2022_isso.json")
 
-    issi_path = Path(issi_conf)
-    if not issi_path.is_absolute():
-        issi_path = (SCRIPT_DIR / issi_path).resolve()
-    if not issi_path.exists():
-        # Fallback to h2iso fixtures if present
-        h2iso_fixture = (
-            SCRIPT_DIR.parent.parent.parent.parent.parent
-            / "h2iso"
-            / "tests"
-            / "fixtures"
-            / "wang2022"
-            / "wang2022_issi.json"
-        )
-        if h2iso_fixture.exists():
-            issi_path = h2iso_fixture
-
-    isso_path = Path(isso_conf)
-    if not isso_path.is_absolute():
-        isso_path = (SCRIPT_DIR / isso_path).resolve()
-    if not isso_path.exists():
-        h2iso_fixture = (
-            SCRIPT_DIR.parent.parent.parent.parent.parent
-            / "h2iso"
-            / "tests"
-            / "fixtures"
-            / "wang2022"
-            / "wang2022_isso.json"
-        )
-        if h2iso_fixture.exists():
-            isso_path = h2iso_fixture
+    issi_path = _resolve_config_path(issi_conf)
+    isso_path = _resolve_config_path(isso_conf)
 
     solve_mode = str(params.get("solve_mode", "live")).lower()
     continuation_substeps = int(params.get("continuation_substeps", 2))

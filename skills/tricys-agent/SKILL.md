@@ -9,7 +9,7 @@ description: "通用模型中心化闭环聚变堆氚燃料循环仿真、插件
 
 本技能将 AI Coding Agent 塑造为**聚变堆氚燃料循环系统主任工程师与平台扩展架构师**。聚变堆燃料回路具有极强非线性、高刚性微分代数方程（DAE）特征、大滞后动态与极度苛刻的安全与物料守恒要求。
 
-为确保仿真 100% 真实可靠、可复现、零幻觉，Agent 必须**严格无条件遵守以下七大最高纪律**：
+为确保仿真 100% 真实可靠、可复现、零幻觉，Agent 必须**严格无条件遵守以下八大最高纪律**：
 
 1. 🎯 **以 Modelica 模型分析为绝对核心，严禁凭空捏造变量 (Model-Centric & Anti-Hallucination)**：
    - 严禁脱离具体的 `.mo` 源码，根据泛化学术文献臆造模型中不存在的变量名、参数或子系统拓扑（例如：严禁将实测的 `sds.I[1]` 臆造为 `sds.inventory`，严禁假设不存在的直接内循环分支）；
@@ -38,6 +38,10 @@ description: "通用模型中心化闭环聚变堆氚燃料循环仿真、插件
    - **参数注入的强拓扑校验契约**：在 `parameter_injection` 模式下，必须通过 [submodel_replacer.py](file:///d:/Administrator/Documents/Github/tricys/tricys/core/submodel_replacer.py) 对 0-D 动态代理模型执行**进出端口因果性、端口命名与连接拓扑的绝对零悬空强校验**，严禁直接盲目修改文本导致编译崩溃；
    - **原子/分子流跨维度升降维桥接**：对于全厂宏观 5 维（或 3 维）同位素原子流（H, D, T 等）与精细化工 6 维同位素分子流（H2, HD, HT, D2, DT, T2），严禁直接混接。升降维桥接既可**在 Handler 程序内部进行化学平衡换算与维度映射**，也可**通过 Modelica 专用适配器组件（如 `Generic_ISS_Adapters.ISS_I_Adapter` 等）在模型拓扑层完成端口升降维桥接**；
    - **零悬空与默认绑定**：替换模型必须保证输入输出端口在语义、名称和因果方向上 100% 对应；替换器必须自动识别并绑定未连接输入端口默认零输入方程，杜绝变量欠定错误（详见 [cosimulation_framework_guide.md](references/cosimulation_framework_guide.md)）。
+8. 🐳 **Docker 统一容器认知与双端热挂载协作红线 (Unified Container Runtime & Dual-Side Live Mount)**：
+   - **一站式一体化认知**: TRICYS 依靠统一容器 `tricys_allinone` 封装 OpenModelica 1.27.1, FESTIM 2.0 / DOLFINx, DWSIM 8.8.4, h2iso 及全栈 Web/可视化服务，严禁在宿主机零碎安装编译器导致环境漂移与动态库断裂；
+   - **双端热挂载开发模型**: 宿主机 IDE 负责源码与配置编辑，容器负责繁重仿真计算。宿主机 `.` 热挂载至容器 `/workspace/tricys`，文件变更秒级生效，严禁无谓重新打包镜像；
+   - **标准权限与自愈规范**: 容器内执行命令推荐使用 `-u appuser`，避免 root 权限污染文件属主；遇到复杂算例执行或联调，统一依托容器内 `tricys` CLI 与 `--diagnose` 自愈屏障。
 
 ---
 
@@ -216,11 +220,11 @@ task:
   subsystems:
     - target: "example_model.I_ISS"                     # 待拦截的原子系统组件路径
       instance: "i_iss"                                 # 系统中的实例名
-      solver: "aspen_plus"                              # 外部求解器类型
-      handler_module: "tricys.handlers.i_iss_handler"   # Handler 函数所在 Python 模块
-      handler_function: "run_aspen_simulation"         # Handler 模块函数名
+      solver: "dwsim"                                   # 外部求解器类型 (推荐 dwsim 或 legacy aspen_plus)
+      handler_script_path: "./08_cosim_offline_table/dwsim_iss_handler.py" # Handler 脚本路径
+      handler_function: "run_dwsim_simulation"         # Handler 函数名
       params:
-        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
+        flowsheet_path: "../example_dwsim/T2_Threetowers4.dwxmz"
 ```
 
 #### 模式 2: 在线步进模式 (`online_step`)
@@ -239,9 +243,9 @@ task:
   subsystems:
     - target: "CFEDR.I_ISS"
       instance: "i_iss"
-      solver: "aspen_plus"
-      handler_module: "tricys.handlers.online_iss"
-      handler_function: "OnlineISSProcessor"            # 必须指定继承自 AbstractTrackProcessor 的类名
+      solver: "festim"
+      handler_script_path: "./09_cosim_online_step/festim_div_processor.py"
+      handler_function: "FESTIMDivertorProcessor"            # 必须指定继承自 AbstractTrackProcessor 的类名
       params:
         base_inventory_mol: 20.0
       local_mass_control:                               # 可选局部质量修正
@@ -355,17 +359,134 @@ def main() -> int:
 
 ---
 
-## 🛠️ 6. 机器可读 CLI 交互协议速查
+## 🐳 6. TRICYS 统一 Docker 容器认知、基准测试与联合开发工作流 (Docker Container Architecture & Co-Development)
 
-| 指令功能 | 完整命令行命令 | 核心输出结构 / 标志 |
-| :--- | :--- | :--- |
-| **模型静态审查** | `python -m tricys.main model review <mo> <model> --json` | 标准 JSON：`status`, `issues`, `remediation_patch` |
-| **模型深度自省** | `python -m tricys.main model inspect <mo> <model> --json` | 标准 JSON：`parameters`, `inventories`, `flow_rates` |
-| **配置语法校验** | `python -m tricys.main validate -c <config.yaml>` | `Config is valid ✅` 或详细错误堆栈 |
-| **DSL 编译降级** | `python -m tricys.main compile -c <config.yaml> [-o <pipe.yaml>]` | 降级输出纯显式 DAG Pipeline YAML/JSON |
-| **生成插件脚手架**| `python -m tricys.main plugin scaffold <name> -o <file.py>` | 自动生成包含物理总线与强类型契约的高质量代码模板 |
-| **插件内存 Mock 测试**| `python -m tricys.main plugin test <file.py> --json` | 纯内存沙箱执行，毫秒级输出验证报告与捕获指标 |
-| **查询已注册插件**| `python -m tricys.main plugin list --json` | 标准 JSON：`preprocess`, `engine`, `postprocess` 清单 |
-| **查询单插件详情**| `python -m tricys.main plugin info <name> --json` | 标准 JSON：参数 Schema、输入输出契约 |
-| **带诊断屏障运行**| `python -m tricys.main run -c <config.yaml> --diagnose` | 发生错误时写入 `results/diagnostics.json` |
+TRICYS 全面推行 **Single-Container Unified All-in-One (`tricys_allinone`)** 容器架构。容器集成了全套微观/宏观多物理场求解引擎、科学计算栈及全栈 Web/数字孪生服务，彻底消除了跨系统、跨语言与跨编译器的环境断裂。
+
+### 6.1 容器架构、服务拓扑与双端热挂载范式 (Live Mount Paradigm)
+
+TRICYS 容器开发严格遵循**“宿主机 IDE 编写代码、容器内执行重载计算、文件秒级热同步”**核心模型：
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 宿主机 (Host Machine - Windows / macOS / Linux)                              │
+│ - 开发者 IDE (VS Code / Cursor / PyCharm) 浏览、编辑代码与配置               │
+│ - Git 分支管理与提交                                                        │
+│ - 浏览器交互 (访问 http://localhost:8080 等前端页面)                        │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ Docker Volume 实时双向热挂载
+                                       ▼ (宿主机代码修改瞬间同步至容器，无需重建镜像)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 统一容器 tricys_allinone (/workspace/tricys)                                 │
+│ - OpenModelica 1.27.1 / OMSimulator / MSL 4.1.0/4.0.0/3.2.3                 │
+│ - FESTIM 2.0 / DOLFINx 0.9.0 (/dolfinx-env)                                 │
+│ - DWSIM 8.8.4 (/opt/dwsim) / pythonnet 3.0.3                                │
+│ - h2iso (/workspace/h2iso)                                                  │
+│ - Nginx (8080:80) + FastAPI (8000) + Dash (8050) + GoView (3020)            │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 关键端口与服务映射拓扑：
+- `8080:80` (Nginx 统一网关)：反向代理 Web 控制台 (`/`)、FastAPI 后端 (`/api/`)、GoView 数字孪生 (`/goview/`) 与 Dash 可视化 (`/hdf5/`)；
+- `8000:8000` (FastAPI 后端)：Swagger API 文档 `http://localhost:8000/docs`；
+- `8050:8050` (Dash/Plotly 可视化)：直连 `http://localhost:8050/hdf5/`；
+- `3020:3020` (GoView 数字孪生)：直连大屏画布。
+
+#### 权限与安全规范：
+容器默认运行用户为 **`appuser`**（UID 1000, 具备免密 sudo）。在宿主机通过终端调用容器时，**推荐使用 `-u appuser` 参数**，杜绝以 root 身份运行产生文件属主冲突。
+
+---
+
+### 6.2 宿主机端到端极速落地与算例验证全流程 (Quickstart & Benchmark Testing)
+
+当用户或 Agent 将本仓库下载到宿主机后，执行以下五步完成全量基准验证：
+
+1. **拉取代码**：
+   ```bash
+   git clone https://github.com/asipp-neutronics/tricys.git && cd tricys && git checkout V2.0
+   ```
+2. **启动一站式容器**：
+   ```bash
+   docker compose up -d
+   docker compose ps     # 验证健康状态 (healthy)
+   ```
+3. **运行全量工业基准算例 (01 ~ 12)**：
+   - 交互/批量运行器：
+     ```bash
+     docker exec -it -u appuser tricys_allinone tricys example --list
+     docker exec -it -u appuser tricys_allinone tricys example --run 1 --no-vis
+     ```
+   - 命令行直接运行 Schema 2.0 工业算例（带 `--diagnose` 自愈屏障）：
+     ```bash
+     docker exec -it -u appuser tricys_allinone python3 -m tricys.main run \
+       -c /workspace/tricys/tricys/example/example_data/v2_examples/01_sweep_startup_self_sufficiency.yaml --diagnose
+     ```
+4. **运行全量回归与单元测试套件**：
+   ```bash
+   docker exec -it -u appuser -w /workspace/tricys tricys_allinone pytest test/ -v
+   ```
+5. **交互式可视化结果验收**：
+   在宿主机浏览器打开 `http://localhost:8080/hdf5/`，加载生成的 `.h5` 结果文件，验证 1D 存量亏空与转折点、相平面曲线、全系统闭环质量守恒审计图，并一键导出三格式报告。
+
+---
+
+### 6.3 插件自主开发与内存沙箱测试调测闭环 (Plugin Co-Development)
+
+1. **生成脚手架**：
+   ```bash
+   docker exec -it -u appuser tricys_allinone python3 -m tricys.main plugin scaffold \
+     custom_auditor --category postprocess -o /workspace/tricys/plugins/custom_auditor.py
+   ```
+2. **宿主机 IDE 编码**：热挂载使得 `plugins/custom_auditor.py` 立即可见。利用物理语义总线 `context.resolve_physics_variable(df, "sds_inventory")` 实现模型列名解耦，严格遵守 AST 安全沙箱（严禁 `subprocess`、`socket`、`eval` 等）；
+3. **毫秒级内存沙箱自检 (Mock Testing)**：
+   ```bash
+   docker exec -it -u appuser tricys_allinone python3 -m tricys.main plugin test \
+     /workspace/tricys/plugins/custom_auditor.py --json
+   ```
+   *无需启动 OMC 仿真内核，纯内存注入 Mock 时序数据，毫秒级快速反馈语法、AST 沙箱与契约校验结果*；
+4. **配置校验与屏障运行**：
+   ```bash
+   docker exec -it -u appuser tricys_allinone python3 -m tricys.main validate -c /workspace/tricys/run_case.yaml
+   docker exec -it -u appuser tricys_allinone python3 -m tricys.main run -c /workspace/tricys/run_case.yaml --diagnose
+   ```
+
+---
+
+### 6.4 容器预置四大物理求解器联合开发与调试规约 (Co-Simulation Solvers)
+
+| 求解器 | 容器内环境与路径 | 联合仿真模式 | 单体调测与联调执行指令 |
+| :--- | :--- | :--- | :--- |
+| **OpenModelica 1.27.1** | `omc`<br>`/home/appuser/.openmodelica` | 主系统宏观 DAE 求解 | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main model review <mo> <model> --json`<br>GUI 桌面透传：`docker exec -it -u appuser -e DISPLAY=$DISPLAY tricys_allinone omedit <mo>` |
+| **FESTIM 2.0 / DOLFINx** | `/dolfinx-env/bin/python3`<br>(FEniCSx 微观有限元) | 模式 2: 在线步进 (`online_step`) | 单体调试：`docker exec -it -u appuser tricys_allinone /dolfinx-env/bin/python3 <processor.py>`<br>联调执行：`docker exec -it -u appuser tricys_allinone python3 -m tricys.main run -c <case_09.yaml> --diagnose` |
+| **DWSIM 8.8.4** | `/opt/dwsim`<br>`pythonnet` 运行时 | 模式 1: 离线查表 (`offline_table`) | 单体调试：`docker exec -it -u appuser tricys_allinone python3 <dwsim_handler.py>`<br>联调执行：`docker exec -it -u appuser tricys_allinone python3 -m tricys.main run -c <case_08.yaml> --diagnose` |
+| **h2iso** | `/workspace/h2iso`<br>`casadi` 严密 MESH | 模式 3: 参数注入 (`parameter_injection`) | 单体调试：`docker exec -it -u appuser tricys_allinone python3 <run_h2iso.py>`<br>联调执行：`docker exec -it -u appuser tricys_allinone python3 -m tricys.main run -c <case_10.yaml> --diagnose` |
+
+### 6.5 服务热重启与故障自愈
+- **热生效机制**：修改 Python 核心库、YAML 配置或 Modelica 模型，由于热挂载，**无需重启容器即可直接生效**；
+- **前端/可视化服务热重启**：若修改了 Dash 可视化或 FastAPI 代码，在宿主机执行：
+  ```bash
+  docker restart tricys_allinone
+  ```
+- **权限自愈 (Linux 宿主机)**：若遇文件权限异常，执行 `docker exec -it tricys_allinone chown -R 1000:1000 /workspace/tricys`。
+
+> 📖 **完整 Docker 容器指南、端口映射与全生命周期开发手册**：详见专论 [docker_container_guide.md](references/docker_container_guide.md)。
+
+---
+
+## 🛠️ 7. 机器可读 CLI 与 Docker 交互协议速查
+
+| 指令功能 | 容器内部直接命令 (`tricys`) | 宿主机 Docker 交互命令 (`docker exec`) | 核心输出结构 / 标志 |
+| :--- | :--- | :--- | :--- |
+| **模型静态审查** | `tricys model review <mo> <model> --json` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main model review <mo> <model> --json` | 标准 JSON：`status`, `issues`, `remediation_patch` |
+| **模型深度自省** | `tricys model inspect <mo> <model> --json` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main model inspect <mo> <model> --json` | 标准 JSON：`parameters`, `inventories`, `flow_rates` |
+| **配置语法校验** | `tricys validate -c <config.yaml>` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main validate -c <config.yaml>` | `Config is valid ✅` 或详细错误堆栈 |
+| **DSL 编译降级** | `tricys compile -c <config.yaml> [-o <pipe.yaml>]` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main compile -c <config.yaml>` | 降级输出纯显式 DAG Pipeline YAML/JSON |
+| **生成插件脚手架**| `tricys plugin scaffold <name> -o <file.py>` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main plugin scaffold <name> -o <file.py>` | 自动生成包含物理总线与强类型契约的高质量代码模板 |
+| **插件内存 Mock 测试**| `tricys plugin test <file.py> --json` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main plugin test <file.py> --json` | 纯内存沙箱执行，毫秒级输出验证报告与捕获指标 |
+| **查询已注册插件**| `tricys plugin list --json` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main plugin list --json` | 标准 JSON：`preprocess`, `engine`, `postprocess` 清单 |
+| **带诊断屏障运行**| `tricys run -c <config.yaml> --diagnose` | `docker exec -it -u appuser tricys_allinone python3 -m tricys.main run -c <config.yaml> --diagnose` | 发生错误时写入 `results/diagnostics.json` |
+| **运行基准算例集**| `tricys example --list` / `--run <id>` | `docker exec -it -u appuser tricys_allinone tricys example --run <id> --no-vis` | 交互式/批处理执行工业基准示例 (01 ~ 12) |
+| **全量回归测试** | `pytest test/ -v` | `docker exec -it -u appuser -w /workspace/tricys tricys_allinone pytest test/ -v` | 100+ 单元测试与端到端回归覆盖 |
+| **打开 OMEdit GUI**| `omedit <path/to/model.mo>` | `docker exec -it -u appuser -e DISPLAY=$DISPLAY tricys_allinone omedit <path/to/model.mo>` | WSLg / X11 桌面图形界面直接透传 |
+| **重启容器微服务**| - | `docker restart tricys_allinone` | 瞬时重载 FastAPI、Dash Visualizer 与 Nginx |
 

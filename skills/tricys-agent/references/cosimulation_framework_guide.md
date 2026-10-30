@@ -83,12 +83,12 @@ task:
   subsystems:
     - target: "example_model.I_ISS"                     # 待拦截替换的子系统组件名
       instance: "i_iss"                                 # 在主系统中的实例名
-      solver: "aspen_plus"                              # 外部求解器类型 (例如: aspen_plus, dwsim, python)
-      handler_module: "tricys.handlers.i_iss_handler"   # 处理器所在 Python 模块
-      handler_function: "run_aspen_simulation"         # 处理器函数名
+      solver: "dwsim"                                   # 外部求解器类型 (例如: dwsim, aspen_plus, python)
+      handler_script_path: "./08_cosim_offline_table/dwsim_iss_handler.py" # 处理器脚本路径 (或 legacy: tricys.example.example_data.v1_examples_legacy.handlers.i_iss_handler)
+      handler_function: "run_dwsim_simulation"         # 处理器函数名
       params:                                           # 传递给 handler_function 的自定义参数
-        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
-        base: 20
+        flowsheet_path: "../example_dwsim/T2_Threetowers4.dwxmz"
+        base: 20.0
         retime: 60
         time_step: 3
 ```
@@ -261,7 +261,7 @@ def handler_function(
     """
 ```
 
-#### 3. 生产级参考实现范例 (参考 `tricys/handlers/i_iss_handler.py`)
+#### 3. 生产级参考实现范例 (参考 `08_cosim_offline_table/dwsim_iss_handler.py` 或 `v1_examples_legacy/handlers/i_iss_handler.py`)
 ```python
 import logging
 import pandas as pd

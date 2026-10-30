@@ -4,8 +4,13 @@ import random  # Added
 import time
 
 import pandas as pd
-import pythoncom  # Added
-import win32com.client as win32
+
+try:
+    import pythoncom  # Added
+    import win32com.client as win32
+except ImportError:
+    pythoncom = None
+    win32 = None
 
 # Standard logger setup
 logging.basicConfig(
@@ -218,7 +223,12 @@ def run_aspen_simulation(
         for min_stable_steps). Input CSV encoding is 'gbk'. Creates cumulative inventory
         tracking columns I_H, I_D, I_T. Output columns use 1-indexed array notation [1], [2], [3].
     """
-    pythoncom.CoInitialize()
+    if pythoncom is not None:
+        pythoncom.CoInitialize()
+    else:
+        logger.warning(
+            "Aspen Plus COM interface is only available on Windows with pywin32 installed."
+        )
     aspen = None
     all_results = []
     output_placeholder = {}
@@ -439,7 +449,8 @@ def run_aspen_simulation(
     finally:
         if aspen:
             aspen.close()
-        pythoncom.CoUninitialize()
+        if pythoncom is not None:
+            pythoncom.CoUninitialize()
 
     return output_placeholder
 

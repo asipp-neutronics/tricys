@@ -39,8 +39,6 @@ task:
       evaluate: "final_value"
   auditor:
     enabled: true
-    warn_threshold_g: 0.5
-    kill_threshold_g: 50.0
     patterns:
       inventory:
         - "*.I?1?"
@@ -55,7 +53,7 @@ task:
 
 visualizer:
   enabled: true
-  launch_on_finish: false
+  launch_on_finish: true
   report:
     enabled: true
     title: "TRICYS 全厂动态物料平衡与闭环质量守恒审计工况报告"

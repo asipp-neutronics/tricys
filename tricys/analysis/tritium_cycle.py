@@ -28,6 +28,74 @@ SECONDS_PER_DAY = 86400.0
 SECONDS_PER_YEAR = 31536000.0
 
 
+def resolve_time_factor_to_hours(
+    t_max: float, config: Optional[Dict[str, Any]] = None
+) -> float:
+    """Determine the scale factor to convert raw simulation time to hours (h).
+
+    TRICYS schema time fields (stopTime, stepSize, t_dd, etc.) are always in hours.
+    time_base specifies the Modelica model's time unit ('second' or 'hour').
+    - If Modelica model runs in seconds, raw time is in seconds -> factor = 3600.0 (t / 3600).
+    - If Modelica model runs in hours, raw time is in hours -> factor = 1.0.
+    - If time_base is not explicitly set (e.g. legacy H5 files), we check config stop_time
+      or t_max magnitude:
+      - If stop_time is provided and t_max matches stop_time -> raw time is already in hours (factor = 1.0).
+      - If stop_time is provided and t_max matches stop_time * 3600 -> raw time is in seconds (factor = 3600.0).
+      - Otherwise, if t_max >= 50000.0 -> raw time is in seconds (factor = 3600.0).
+      - Otherwise -> raw time is already in hours (factor = 1.0).
+    """
+    tb = None
+    stop_time_cfg = None
+
+    if isinstance(config, dict):
+        tb = (
+            config.get("time_base")
+            or config.get("scenario", {}).get("time_base")
+            or config.get("simulation", {}).get("time_base")
+        )
+        if isinstance(tb, str):
+            tb = tb.strip().lower()
+
+        raw_stop = (
+            config.get("stopTime")
+            or config.get("scenario", {}).get("stopTime")
+            or config.get("simulation", {}).get("stop_time")
+            or config.get("stop_time")
+        )
+        try:
+            if raw_stop is not None:
+                stop_time_cfg = float(raw_stop)
+        except (ValueError, TypeError):
+            stop_time_cfg = None
+
+    try:
+        t_val = float(t_max) if t_max is not None else 0.0
+    except (ValueError, TypeError):
+        t_val = 0.0
+
+    # 1. Match against known stop_time in config
+    if stop_time_cfg and stop_time_cfg > 0 and t_val > 0:
+        ratio_h = abs(t_val - stop_time_cfg) / stop_time_cfg
+        ratio_s = abs(t_val - stop_time_cfg * SECONDS_PER_HOUR) / (
+            stop_time_cfg * SECONDS_PER_HOUR
+        )
+        if ratio_h < 0.5:
+            return 1.0
+        if ratio_s < 0.5:
+            return SECONDS_PER_HOUR
+
+    # 2. Check explicit time_base
+    if tb == "second":
+        return SECONDS_PER_HOUR
+    elif tb == "hour":
+        return 1.0
+
+    # 3. Fallback heuristic when time_base is unspecified
+    if t_val >= 50000.0:
+        return SECONDS_PER_HOUR
+    return 1.0
+
+
 # Deprecated subsystem registry preserved only for backward compatibility.
 # Do not use for hardcoded translation: use load_glossary_mapping instead.
 SUBSYSTEM_REGISTRY: Dict[str, Dict[str, Any]] = {
@@ -595,20 +663,27 @@ def extract_startup_inventory_metrics(
         t = subset["time"].values
         sds = subset[sds_col].values
 
+        time_to_hours_factor = resolve_time_factor_to_hours(
+            float(t[-1]) if len(t) > 0 else 0.0, config
+        )
+
+        # Normalise OMC results time to hours
+        t_h = t / time_to_hours_factor
+
         info = job_info_map.get(jid, {"name": f"工况 {jid}", "t_ignition": 0.0})
-        t_ign = float(info["t_ignition"])
-        if t_ign > t[-1]:
+        t_ign = float(info["t_ignition"])  # In hours
+        if t_ign > t_h[-1]:
             t_ign = 0.0
 
         i_0 = float(sds[0])
 
-        # Filter points after ignition
-        ign_mask = t >= t_ign
+        # Filter points after ignition (both t_h and t_ign are in hours)
+        ign_mask = t_h >= t_ign
         if np.any(ign_mask):
-            t_dt = t[ign_mask]
+            t_dt_h = t_h[ign_mask]
             sds_dt = sds[ign_mask]
         else:
-            t_dt = t
+            t_dt_h = t_h
             sds_dt = sds
 
         i_at_dt = float(sds_dt[0])
@@ -616,29 +691,30 @@ def extract_startup_inventory_metrics(
 
         min_idx = int(np.argmin(sds_dt))
         i_min = float(sds_dt[min_idx])
-        t_min_abs = float(t_dt[min_idx])
-        t_min_rel = float(t_min_abs - t_ign)
+        t_min_abs_h = float(t_dt_h[min_idx])
+        t_min_rel_h = float(t_min_abs_h - t_ign)
+        t_min_rel_d = t_min_rel_h / HOURS_PER_DAY
 
         deficit = float(i_0 - i_min)
         dt_drawdown = float(i_at_dt - i_min)
 
         # Time to recover non-negative inventory (>0)
-        idx_zero = np.where((t_dt > t_min_abs) & (sds_dt >= 0.0))[0]
+        idx_zero = np.where((t_dt_h > t_min_abs_h) & (sds_dt >= 0.0))[0]
         if i_min >= 0.0:
-            t_zero_rel = 0.0
+            t_zero_rel_h = 0.0
         elif len(idx_zero) > 0:
-            t_zero_rel = float(t_dt[idx_zero[0]] - t_ign)
+            t_zero_rel_h = float(t_dt_h[idx_zero[0]] - t_ign)
         else:
-            t_zero_rel = float("nan")
+            t_zero_rel_h = float("nan")
 
         # Time to recover initial reserve I_0
-        idx_rec = np.where((t_dt > t_min_abs) & (sds_dt >= i_0))[0]
+        idx_rec = np.where((t_dt_h > t_min_abs_h) & (sds_dt >= i_0))[0]
         if len(idx_rec) > 0:
-            t_rec_abs = float(t_dt[idx_rec[0]])
-            t_rec_rel = float(t_rec_abs - t_ign)
+            t_rec_abs_h = float(t_dt_h[idx_rec[0]])
+            t_rec_rel_h = float(t_rec_abs_h - t_ign)
         else:
-            t_rec_abs = float("nan")
-            t_rec_rel = float("nan")
+            t_rec_abs_h = float("nan")
+            t_rec_rel_h = float("nan")
 
         i_end = float(sds[-1])
         net_change = float(i_end - i_0)
@@ -690,48 +766,22 @@ def extract_startup_inventory_metrics(
             else None
         )
 
-        time_base_cfg = None
-        if config:
-            time_base_cfg = (
-                config.get("time_base")
-                or config.get("scenario", {}).get("time_base")
-                or config.get("simulation", {}).get("time_base")
-            )
-
-        # In TRICYS 2.0, simulation output results_df['time'] is natively in SI seconds.
-        # When time_base is "hour", the simulation engine scales stop_time to seconds (e.g. 7.2e6 s for 2000 h),
-        # so results_df['time'] values are in SI seconds and must be converted to hours via SECONDS_PER_HOUR.
-        if time_base_cfg == "second":
-            is_seconds_native = True
-        elif time_base_cfg == "hour":
-            is_seconds_native = False
-        else:
-            is_seconds_native = float(t[-1]) >= 86400.0
-
-        time_to_days_factor = SECONDS_PER_DAY if is_seconds_native else HOURS_PER_DAY
-        time_to_hours_factor = SECONDS_PER_HOUR if is_seconds_native else 1.0
-
-        t_min_rel_h = t_min_rel / time_to_hours_factor
-        t_min_rel_d = t_min_rel / time_to_days_factor
-
         records.append(
             {
                 "job_id": jid,
                 "工况名称": info["name"],
-                "点火起始时间_h": round(t_ign / time_to_hours_factor, 1),
-                "总仿真时长_h": round(float(t[-1]) / time_to_hours_factor, 1),
+                "点火起始时间_h": round(t_ign, 1),
+                "总仿真时长_h": round(float(t_h[-1]), 1),
                 "初始装填I_0_g": round(i_0, 1),
                 "点火起点存量_g": round(i_at_dt, 1),
                 "前期阶段净增量_g": round(dd_gain, 1),
                 "最低谷底存量I_min_g": round(i_min, 1),
                 "必需首炉外供氚量_g": round(deficit, 1),
                 "点火后最大下探亏空_g": round(dt_drawdown, 1),
-                "自持转折绝对时间_h": round(t_min_abs / time_to_hours_factor, 1),
+                "自持转折绝对时间_h": round(t_min_abs_h, 1),
                 "自持转折相对时滞_h": round(t_min_rel_h, 1),
                 "自持转折相对时滞_d": round(t_min_rel_d, 2),
-                "自持转折相对时滞_s": round(
-                    t_min_rel if is_seconds_native else t_min_rel * SECONDS_PER_HOUR, 1
-                ),
+                "自持转折相对时滞_s": round(t_min_rel_h * SECONDS_PER_HOUR, 1),
                 "必需产氚比_TBR_Required": (
                     round(tbr_req, 4) if tbr_req is not None else None
                 ),
@@ -744,14 +794,10 @@ def extract_startup_inventory_metrics(
                     else None
                 ),
                 "恢复非负相对时间_h": (
-                    round(t_zero_rel / time_to_hours_factor, 1)
-                    if not np.isnan(t_zero_rel)
-                    else None
+                    round(t_zero_rel_h, 1) if not np.isnan(t_zero_rel_h) else None
                 ),
                 "恢复初始储备相对时滞_h": (
-                    round(t_rec_rel / time_to_hours_factor, 1)
-                    if not np.isnan(t_rec_rel)
-                    else None
+                    round(t_rec_rel_h, 1) if not np.isnan(t_rec_rel_h) else None
                 ),
                 "期末储罐存量_g": round(i_end, 1),
                 "全周期净氚增量_g": round(net_change, 1),
@@ -864,19 +910,9 @@ def analyze_subsystem_holdup_dynamics(
 
         total_holdup += ss_mean
 
-        time_base_sub = None
-        if config:
-            time_base_sub = (
-                config.get("time_base")
-                or config.get("scenario", {}).get("time_base")
-                or config.get("simulation", {}).get("time_base")
-            )
-        # In TRICYS 2.0, simulation output results_df['time'] is natively in SI seconds.
-        is_sub_sec = True
-        if len(t_post) > 0 and float(t_post[-1]) <= 7200.0 and time_base_sub == "hour":
-            is_sub_sec = False
-
-        sub_time_h_factor = SECONDS_PER_HOUR if is_sub_sec else 1.0
+        sub_time_h_factor = resolve_time_factor_to_hours(
+            float(t_post[-1]) if len(t_post) > 0 else 0.0, config
+        )
 
         rec_entry = {
             "key": meta["key"],

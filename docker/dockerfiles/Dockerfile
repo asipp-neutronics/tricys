@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 # ==============================================================================
 # TRICYS V2.0 Unified All-in-One Multi-Physics & Fullstack Docker Image
 # Multi-fidelity Tritium Fuel Cycle Simulation & Digital Twin Platform:
@@ -68,9 +67,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     DEBIAN_FRONTEND=noninteractive \
+    QT_X11_NO_MITSHM=1 \
     PATH="/home/appuser/.local/bin:/dolfinx-env/bin:${PATH}" \
     MODELICAPATH="/home/appuser/.openmodelica/libraries:/usr/lib/omlibrary" \
     PYTHONPATH="/workspace/h2iso/src:/workspace/tricys:/workspace/tricys_backend:/workspace/tricys/tricys_backend:${PYTHONPATH:-}" \
+    DWSIM_PATH=/opt/dwsim \
     HDF5_VISUALIZER_PORT=8050 \
     HDF5_VISUALIZER_BASE_URL=/hdf5/ \
     HDF5_CONTEXTS_DIR=/data/hdf5_contexts
@@ -91,8 +92,33 @@ RUN sed -i 's@http://.*archive.ubuntu.com@https://mirrors.tuna.tsinghua.edu.cn@g
         gosu \
         omc \
         omsimulator \
+        omedit \
+        libgl1 \
+        libegl1 \
+        libgl1-mesa-dri \
+        libxcb-xinerama0 \
+        libx11-xcb1 \
+        libxcb-icccm4 \
+        libxcb-image0 \
+        libxcb-keysyms1 \
+        libxcb-randr0 \
+        libxcb-render-util0 \
+        libxcb-shape0 \
+        libxcb-xfixes0 \
+        libxkbcommon-x11-0 \
+        libxcb-cursor0 \
+        libgdiplus \
         nginx \
+        locales \
+        fonts-wqy-microhei \
+        fonts-wqy-zenhei \
+        qttranslations5-l10n \
+    && locale-gen zh_CN.UTF-8 en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=zh_CN.UTF-8 \
+    LC_ALL=zh_CN.UTF-8 \
+    LANGUAGE=zh_CN:zh
 
 # 2. Standardize non-root appuser (UID 1000) for OpenModelica security compliance
 RUN if id -u appuser >/dev/null 2>&1; then \
@@ -117,6 +143,7 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
         OMSimulator \
         "casadi>=3.6" \
         "fmpy>=0.3.26" \
+        "pythonnet>=3.0.3" \
         "scipy>=1.8" \
         "matplotlib>=3.5" \
         seaborn \
@@ -148,6 +175,13 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
         "dash>=2.14.0" \
         "dash-bootstrap-components>=1.5.0" \
         "plotly>=5.18.0"
+        
+# 3.1. Install DWSIM standalone headless runtime for Linux chemical process simulation
+ARG DWSIM_VERSION=8.8.4
+RUN mkdir -p /opt/dwsim && \
+    (curl -fSL --retry 3 --connect-timeout 20 "https://github.com/DanWBR/dwsim/releases/download/v${DWSIM_VERSION}/dwsim_${DWSIM_VERSION}_amd64.deb" -o /tmp/dwsim.deb && \
+     dpkg -i /tmp/dwsim.deb 2>/dev/null || true && \
+     rm -f /tmp/dwsim.deb) || true
 
 # 4. Solidify Modelica Standard Library (MSL) into container filesystem (Self-healing from upstream repo)
 RUN (curl -fSL --retry 3 --connect-timeout 15 https://build.openmodelica.org/apt/pool/contrib-noble/omlibrary_1.27.1-1_all.deb -o /tmp/omlibrary.deb || \
@@ -202,9 +236,18 @@ RUN cd /workspace/tricys && (pip install --no-deps -e . || true)
 COPY docker/scripts/tricys_hdf5_cli.sh /usr/local/bin/tricys
 COPY docker/scripts/tricys_backend_entrypoint.sh /usr/local/bin/tricys_backend_entrypoint.sh
 COPY docker/scripts/tricys_entrypoint.sh /usr/local/bin/tricys_entrypoint.sh
+COPY docker/scripts/tricys_omedit.sh /usr/local/bin/omedit
 RUN chmod +x /usr/local/bin/tricys \
              /usr/local/bin/tricys_backend_entrypoint.sh \
-             /usr/local/bin/tricys_entrypoint.sh
+             /usr/local/bin/tricys_entrypoint.sh \
+             /usr/local/bin/omedit && \
+    (ln -sf /usr/local/bin/omedit /usr/local/bin/OMEdit 2>/dev/null || true)
+
+# 8. Chinese Fontconfig and OMEdit defaults
+COPY docker/config/fonts_local.conf /etc/fonts/local.conf
+COPY docker/config/omedit.ini /home/appuser/.config/openmodelica/omedit.ini
+RUN chown -R appuser:appuser /home/appuser/.config && \
+    fc-cache -fv
 
 EXPOSE 80 8000 3020 8050
 

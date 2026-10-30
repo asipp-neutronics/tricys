@@ -1,6 +1,6 @@
 # 协同仿真模块
 
-协同仿真（Co-Simulation）是 `tricys` 中一项高级且强大的功能，它允许 Modelica 模型与外部程序（如 Aspen Plus, MATLAB, 或自定义的 Python 脚本）进行交互，实现0维系统模型与3维子模块多物理场模型进行系统集成。
+协同仿真（Co-Simulation）是 `tricys` 中一项高级且强大的功能，它允许 Modelica 模型与外部程序（如 Aspen Plus, DWSIM, MATLAB, 或自定义的 Python 脚本）进行交互，实现0维系统模型与3维子模块多物理场模型进行系统集成。
 
 这对于以下场景尤其有用：
 

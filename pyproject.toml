@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tricys"
-version = "1.0.0"
+version = "2.0.0"
 authors = [
   { name="asipp-neutronics", email="guilong@ie.ah.cn" },
 ]
@@ -83,7 +83,6 @@ packages = [
     "tricys.analysis",
     "tricys.plugins",
     "tricys.plugins.auditor",
-    "tricys.handlers",
     "tricys.example",
     "tricys.example.example_runner",
     "tricys.visualizer",
