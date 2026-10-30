@@ -38,9 +38,13 @@ def process_and_store_job_result(
         df = pd.read_csv(res_path)
         df["job_id"] = job_id
         try:
-            store.append("results", df, index=False, data_columns=True)
+            store.append("results", df, index=False, data_columns=["job_id"])
         except Exception as e:
-            logger.debug(f"PyTables append notice: {e}")
+            logger.debug(f"PyTables append with data_columns=['job_id'] notice: {e}")
+            try:
+                store.append("results", df, index=False, data_columns=False)
+            except Exception as e2:
+                logger.warning(f"PyTables append fallback notice: {e2}")
         # Store complete raw dataframe without column name restrictions
         try:
             store.put(f"raw_df_{job_id}", df)
