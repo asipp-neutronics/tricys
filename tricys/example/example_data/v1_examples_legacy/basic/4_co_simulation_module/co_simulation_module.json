@@ -17,7 +17,7 @@
             {
                 "submodel_name": "example_model.I_ISS",
                 "instance_name": "i_iss",
-                "handler_module": "tricys.handlers.i_iss_handler",
+                "handler_module": "tricys.example.example_data.v1_examples_legacy.handlers.i_iss_handler",
                 "handler_function": "run_aspen_simulation",
                 "params": {
                     "bkp_path": "../../example_aspenbkp/T2-Threetowers4.bkp",

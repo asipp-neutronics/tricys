@@ -83,7 +83,6 @@ packages = [
     "tricys.analysis",
     "tricys.plugins",
     "tricys.plugins.auditor",
-    "tricys.handlers",
     "tricys.example",
     "tricys.example.example_runner",
     "tricys.visualizer",

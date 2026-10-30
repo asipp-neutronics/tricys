@@ -165,7 +165,7 @@ nav:
     - 'tricys.utils': 'api/tricys_utils.md'
     - 'tricys.analysis': 'api/tricys_analysis.md'
     - 'tricys.postprocess': 'api/tricys_postprocess.md'
-    - 'tricys.handlers': 'api/tricys_handlers.md'
+    - '协同处理器 (Handlers)': 'api/tricys_handlers.md'
   - '常见问题':
     - '🚀 安装环境': 'questions/installation.md'
     - '⚙️ 配置运行': 'questions/configuration.md'

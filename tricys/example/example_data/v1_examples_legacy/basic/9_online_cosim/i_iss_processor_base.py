@@ -297,6 +297,8 @@ class I_ISSProcessorBase(AbstractTrackProcessor):
 
     @staticmethod
     def _load_default_aspen_factory() -> Callable[[str], Any]:
-        from tricys.handlers.i_iss_handler import AspenEnhanced
+        from tricys.example.example_data.v1_examples_legacy.handlers.i_iss_handler import (
+            AspenEnhanced,
+        )
 
         return AspenEnhanced
