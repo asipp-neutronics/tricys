@@ -39,6 +39,8 @@ task:
       evaluate: "final_value"
   auditor:
     enabled: true
+    warn_threshold_g: 0.5
+    kill_threshold_g: 50.0
     patterns:
       inventory:
         - "*.I?1?"

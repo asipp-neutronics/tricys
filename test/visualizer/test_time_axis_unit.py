@@ -10,6 +10,10 @@ from tricys.visualizer.report.figures import (
     generate_valley_comparison_plot,
 )
 
+# Pure-python plotting/time-axis assertions (no OMC / GUI needed) — keep them in
+# the `build_test` gate so the canonical time-axis contract stays enforced.
+pytestmark = pytest.mark.build_test
+
 
 def test_format_time_range_with_different_time_bases():
     # 1. Modelica time_base == "second": raw seconds scaled to hours

@@ -24,6 +24,10 @@ _spec.loader.exec_module(_module)
 DwsimEnhanced = _module.DwsimEnhanced
 run_dwsim_simulation = _module.run_dwsim_simulation
 
+# These are pure-python unit tests (no DWSIM/pythonnet/OMC needed), so they are
+# safe to run in the lightweight `build_test` CI job.
+pytestmark = pytest.mark.build_test
+
 
 def test_dwsim_enhanced_surrogate_fallback():
     """Verify DwsimEnhanced surrogate model computes reasonable isotopic separation."""
