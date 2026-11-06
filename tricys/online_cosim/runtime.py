@@ -6,6 +6,7 @@ import importlib.util
 import json
 import logging
 import os
+import re
 import sys
 from typing import Iterable, Sequence
 
@@ -352,9 +353,15 @@ def load_handler_symbol(handler_config: dict):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
     else:
+        mod_name = handler_config["handler_module"]
+        if mod_name.startswith("tricys.handlers."):
+            legacy_sub = mod_name.replace("tricys.handlers.", "")
+            mod_name = (
+                f"tricys.example.example_data.v1_examples_legacy.handlers.{legacy_sub}"
+            )
         if os.getcwd() not in sys.path:
             sys.path.insert(0, os.getcwd())
-        module = importlib.import_module(handler_config["handler_module"])
+        module = importlib.import_module(mod_name)
 
     return getattr(module, handler_config["handler_function"])
 
@@ -427,6 +434,15 @@ def build_online_context(
     global_config: dict | None = None,
 ) -> TrackProcessorContext:
     context_config = dict(handler_config.get("params", {}))
+
+    if global_config:
+        paths = global_config.get("paths", {})
+        if "results_dir" in paths:
+            context_config["results_dir"] = paths["results_dir"]
+        elif "output_dir" in paths:
+            context_config["results_dir"] = paths["output_dir"]
+        elif "results_dir" in global_config:
+            context_config["results_dir"] = global_config["results_dir"]
 
     # Inject shadow_fmu_path if enabled
     fmu_fallback = handler_config.get("shadow_fmu_fallback", {})
@@ -549,8 +565,6 @@ def infer_handler_bindings(
         import re
         import xml.etree.ElementTree as ET
         import zipfile
-
-        from tricys.online_cosim.schema import SignalBinding
 
         with zipfile.ZipFile(package_path) as z:
             ssd_content = z.read("SystemStructure.ssd")
@@ -848,18 +862,42 @@ def build_online_oms_runtime(
                 try:
                     runtime.model.delete(runtime.cref(system_name, comp))
                 except Exception as e:
-                    import logging
-
-                    logging.getLogger(__name__).warning(
-                        f"Failed to delete {comp} from SSP: {e}"
-                    )
+                    logger.warning(f"Failed to delete {comp} from SSP: {e}")
         else:
             fmu_dir, fmu_temp_dir = resolve_online_fmu_dirs(config)
             if omc is None:
                 omc = get_om_session()
                 created_omc = True
 
-            if not load_modelica_package(omc, package_path):
+            # Prepare package for standalone FMU compilation:
+            # Standalone FMUs cannot instantiate top-level models with unfulfilled 'outer' elements.
+            actual_package_path = package_path
+            if os.path.isfile(package_path):
+                try:
+                    with open(package_path, "r", encoding="utf-8") as f:
+                        mo_content = f.read()
+                    if "outer parameter Real time_scale" in mo_content:
+                        time_base = str(
+                            config.get("scenario", {}).get("time_base")
+                            or config.get("time_base", "second")
+                        ).lower()
+                        ts_val = 1.0 if "hour" in time_base else 3600.0
+                        sanitized_mo = re.sub(
+                            r"\bouter\s+parameter\s+Real\s+time_scale\b([^;]*)",
+                            rf"parameter Real time_scale = {ts_val}\1",
+                            mo_content,
+                        )
+                        os.makedirs(fmu_temp_dir, exist_ok=True)
+                        sanitized_path = os.path.join(
+                            fmu_temp_dir, os.path.basename(package_path)
+                        )
+                        with open(sanitized_path, "w", encoding="utf-8") as f:
+                            f.write(sanitized_mo)
+                        actual_package_path = sanitized_path
+                except Exception as exc:
+                    logger.warning(f"Failed to sanitize package for FMU export: {exc}")
+
+            if not load_modelica_package(omc, actual_package_path):
                 raise RuntimeError(
                     f"Failed to load package for online OMS assembly: {package_path}"
                 )
@@ -873,13 +911,12 @@ def build_online_oms_runtime(
             os.makedirs(fmu_dir, exist_ok=True)
 
             for component in components:
+                if component.instance_name in track_component_names:
+                    continue
+
                 fmu_path = os.path.join(fmu_dir, f"{component.class_name}.fmu")
                 if not os.path.exists(fmu_path):
-                    import logging
-
-                    logging.getLogger(__name__).info(
-                        f"Auto-building FMU for {component.full_class_name}..."
-                    )
+                    logger.info(f"Auto-building FMU for {component.full_class_name}...")
                     os.makedirs(fmu_temp_dir, exist_ok=True)
                     omc_cwd = omc.sendExpression("cd()")
                     try:

@@ -57,8 +57,9 @@ jobs:
 
           if [ -d "/dolfinx-env/bin" ]; then
             echo "Detected /dolfinx-env multi-physics environment"
-            ln -sf /dolfinx-env/bin/python3 /usr/bin/python3 2>/dev/null || true
-            ln -sf /dolfinx-env/bin/pytest /usr/bin/pytest 2>/dev/null || true
+            # NOTE: /dolfinx-env/bin/python3 is already in PATH and points to /usr/bin/python3.
+            # Do NOT create a symlink /usr/bin/python3 -> /dolfinx-env/bin/python3 to avoid cyclic symlink loop (ELOOP).
+            ln -sf /dolfinx-env/bin/pytest /usr/local/bin/pytest 2>/dev/null || true
           fi
           python3 -m pip install --no-cache-dir pyyaml pydantic python-dotenv -e . --no-deps || pip install --no-cache-dir pyyaml pydantic python-dotenv -e . --no-deps || true
           mkdir -p /home/appuser/.openmodelica

@@ -22,3 +22,5 @@ tricys_goview/node_modules/
 # tricys_goview/dist/
 tricys_goview/.env.local
 docker/omlibrary/
+site/
+site_v2/

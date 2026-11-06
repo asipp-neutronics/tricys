@@ -31,9 +31,9 @@ task:
   subsystems:
     - target: "${TARGET_SUBMODEL}"                      # 待拦截替换的子系统 (例如: "example_model.I_ISS")
       instance: "${INSTANCE_NAME}"                     # 在主系统中的实例名 (例如: "i_iss")
-      solver: "${EXTERNAL_SOLVER}"                      # 外部求解器类型 (例如: "aspen_plus", "dwsim", "python")
-      handler_module: "${HANDLER_MODULE_PATH}"         # 处理器所在 Python 模块 (例如: "tricys.handlers.i_iss_handler")
-      handler_function: "${HANDLER_FUNCTION_NAME}"     # 处理器函数名 (例如: "run_aspen_simulation")
+      solver: "${EXTERNAL_SOLVER}"                      # 外部求解器类型 (例如: "dwsim", "aspen_plus", "python")
+      handler_script_path: "${HANDLER_SCRIPT_PATH}"     # 处理器脚本路径 (例如: "./08_cosim_offline_table/dwsim_iss_handler.py")
+      handler_function: "${HANDLER_FUNCTION_NAME}"     # 处理器函数名 (例如: "run_dwsim_simulation")
       params:
         ${HANDLER_CUSTOM_PARAMS}                        # 传给 handler_function 的自定义参数 (如 bkp_path, base, retime 等)
   metrics:

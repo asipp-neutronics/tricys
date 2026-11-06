@@ -57,7 +57,7 @@ plugins:
 
 visualizer:
   enabled: true
-  launch_on_finish: false
+  launch_on_finish: true
   report:
     enabled: true
     title: "TRICYS 聚变堆自定义插件扩展与在役储罐安全裕度评估报告"

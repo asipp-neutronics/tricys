@@ -357,3 +357,125 @@ def test_generate_optimization_figures_with_2d_parameter_group(tmp_path):
     # Check that output files were generated
     fig_files = list(tmp_path.glob("**/*.png"))
     assert len(fig_files) >= 2
+
+
+def test_visualizer_cosim_report_not_applicable():
+    """Verify visualizer does not apply any built-in template for cosim tasks and displays notice."""
+    import dash
+
+    from tricys.visualizer.callbacks import register_callbacks
+
+    app = dash.Dash(__name__)
+    register_callbacks(app)
+
+    # Find the callback function for report-markdown-preview
+    entry = next(
+        v for k, v in app.callback_map.items() if "report-markdown-preview" in k
+    )
+    callback_fn = getattr(entry["callback"], "__wrapped__", entry["callback"])
+
+    cosim_config = {
+        "task": {"type": "cosim", "mode": "offline_table"},
+        "visualizer": {
+            "report": {
+                "enabled": True,
+                "title": "TRICYS 协同仿真分析报告",
+            }
+        },
+    }
+
+    res = callback_fn(None, [], [], None, cosim_config, None)
+    md_preview, md_store, badge, title, source = res
+
+    assert "cosim任务不适用内置报告模板" in md_preview
+    assert "cosim任务不适用内置报告模板" in md_store
+    assert badge == "COSIM"
+    assert title == "TRICYS 协同仿真分析报告"
+    assert source == ""
+
+
+def test_optimization_report_figures_with_multi_job_results(tmp_path):
+    """Verify generate_optimization_report_figures succeeds when results_df has duplicate index from multiple jobs."""
+    from tricys.visualizer.report.figures import generate_optimization_report_figures
+
+    jobs_df = pd.DataFrame(
+        [
+            {"job_id": 1, "plasma.fb": 0.03, "sds.I_S_0": 1000.0, "Required_TBR": 1.15},
+            {"job_id": 2, "plasma.fb": 0.05, "sds.I_S_0": 2000.0, "Required_TBR": 1.10},
+        ]
+    )
+    # Concatenated results dataframe from multiple jobs having duplicate indices [0, 1]
+    results_df = pd.DataFrame(
+        {
+            "job_id": [1, 1, 2, 2],
+            "time": [0.0, 100.0, 0.0, 100.0],
+            "sds.I[1]": [1000.0, 800.0, 2000.0, 1500.0],
+        },
+        index=[0, 1, 0, 1],  # Duplicate index labels reproducing the bug
+    )
+    config = {
+        "task": {
+            "type": "sweep",
+            "optimization": {
+                "algorithm": "nested_bisection",
+                "outer": {"parameter": "sds.I_S_0"},
+                "inner": {"parameter": "blanket.TBR", "metric_name": "Required_TBR"},
+            },
+        }
+    }
+
+    figs = generate_optimization_report_figures(
+        jobs_df=jobs_df,
+        results_df=results_df,
+        output_dir=str(tmp_path),
+        config=config,
+    )
+    assert len(figs) >= 1
+    trajectory_fig = next((f for f in figs if "双重自持约束核验" in f["title"]), None)
+    assert trajectory_fig is not None
+
+
+def test_optimization_report_figures_with_list_parameters_and_abnormal_metrics(
+    tmp_path,
+):
+    """Verify generate_all_report_figures does not crash when task.parameters is a list and metrics contain NaN/abnormal values."""
+    import numpy as np
+
+    from tricys.visualizer.report.figures import generate_all_report_figures
+
+    # Reproducing task.parameters as a list (e.g., in Example 04 sweep) and abnormal NaN metrics
+    config = {
+        "task": {
+            "type": "sweep",
+            "parameters": [
+                {"name": "Pulse_500", "cycle.pulse_width": 500},
+                {"name": "Pulse_1000", "cycle.pulse_width": 1000},
+            ],
+            "metrics": {
+                "Required_TBR": {"source": "blanket.TBR", "evaluate": "required_tbr"}
+            },
+        }
+    }
+    jobs_df = pd.DataFrame(
+        [
+            {"job_id": 1, "name": "Pulse_500", "Required_TBR": np.nan},
+            {"job_id": 2, "name": "Pulse_1000", "Required_TBR": None},
+        ]
+    )
+    results_df = pd.DataFrame(
+        {
+            "job_id": [1, 1, 2, 2],
+            "time": [0.0, 100.0, 0.0, 100.0],
+            "sds.I[1]": [1000.0, 950.0, 1000.0, 900.0],
+        }
+    )
+
+    # Must complete without AttributeError: 'list' object has no attribute 'get'
+    figs = generate_all_report_figures(
+        results_df=results_df,
+        jobs_df=jobs_df,
+        metrics_df=jobs_df[["job_id", "Required_TBR"]],
+        output_dir=str(tmp_path),
+        task_config=config,
+    )
+    assert isinstance(figs, list)

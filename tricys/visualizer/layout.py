@@ -484,6 +484,7 @@ def create_layout(
                                                 options=variable_options,
                                                 multi=True,
                                                 placeholder="Select variables to plot...",
+                                                className="mb-3",
                                             ),
                                             dbc.Row(
                                                 [

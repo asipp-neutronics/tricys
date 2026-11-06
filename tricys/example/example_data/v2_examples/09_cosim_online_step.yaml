@@ -1,47 +1,52 @@
 version: "2.0"
 
 # ==============================================================================
-# TRICYS V2.0 演示算例 09: 协同仿真 —— 在线步进双向同步模式 (Online Step-by-Step Co-Simulation)
+# TRICYS V2.0 演示算例 09: 协同仿真 —— FESTIM 偏滤器材料微观有限元在线步进双向同步
 # 
 # 算例定位:
-# - 基于 SSP/FMI 工业标准协议，实现全厂宏观系统模型与高保真子系统处理器的在线单步双向数据交互
+# - 基于 SSP/FMI 与动态锁步 (Lockstep) 协议，耦合开源有限元迁移框架 FESTIM 2.0 与全厂宏观模型
 # 
 # 核心特征 / 演示重点:
 # - 协同模式: task.type = "cosim", mode = "online_step"
-# - 核心机理: Lockstep Dynamic Exchange (双向锁步动态同步)，每步推进前交换进出口流量与组分
-# - 鲁棒控制: 内置局部质量控制 (local_mass_control) 与影子 FMU 降级回退 (shadow_fmu_fallback)
-# - 适用场景: 强非线性瞬态耦合系统 (如深冷分离塔动态工况与包层产氚脉冲波动实时反馈)
+# - 时间尺度: scenario.time_base = "hour" (支持 100.0 h 长周期物理平衡与捕获饱和演化)
+# - 多速率协同: time_scale_coordination (mode: "runtime_coordinated", 宏观步长 0.01 h = 36 s, 微观组件步长 0.00555 h ≈ 20 s)
+# - 求解引擎: Tier 1 进程内直接 FEM (MonoblockFEMModel) · DOLFINx 有限元求解 · 零 Socket 损耗 · 高精度
+# - 微观物理: 解析偏滤器多层异质铠装 (W/Cu/CuCrZr) 中单空位缺陷捕获饱和与渗透时滞
+# - 宏观反馈: 材料吸氢“海绵效应”对冷却水回路与全厂储罐 (SDS) 动态供料安全的真实约束
+# - 质量闭环: 挂载 OnlineGlobalAuditor 实时进行微观-宏观跨尺度质量守恒审计
 # ==============================================================================
 
 model:
-  fileName: "../example_model_ssp/ssp/example_model.ssp"
+  fileName: "../example_model_single/example_model.mo"
   modelName: "example_model.Cycle"
 
 scenario:
+  time_base: "hour"
   startTime: 0.0
   stopTime: 100.0
-  stepSize: 0.5
-  variableFilter: "time|.*\\.I.*|.*\\.cumulative_.*|.*_rate.*"
+  stepSize: 0.01
+  variableFilter: "time|sds.I[1]|div.I[1]|coolant_pipe.I[1]|plasma.I[1]|blanket.I[1]"
 
 task:
   type: "cosim"
   mode: "online_step"
+  auditor:
+    enabled: true
+    warn_threshold_g: 50.0
+    kill_threshold_g: 1000.0
   subsystems:
-    - target: "CFEDR.I_ISS"
-      instance: "i_iss"
-      solver: "aspen_plus"
-      handler_module: "tricys.example.example_data.v1_examples_legacy.basic.9_online_cosim.i_iss_processor_base"
-      handler_function: "I_ISSProcessorBase"
+    - target: "example_model.DIV"
+      instance: "div"
+      solver: "festim"
+      handler_script_path: "./09_cosim_online_step/festim_div_processor.py"
+      handler_function: "FESTIMDivertorProcessor"
       params:
-        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
-        base_inventory_mol: 20.0
-        retime_h: 1.0
-      local_mass_control:
-        enabled: true
-        deadband_g: 0.1
-        relaxation_time_h: 1.0
-      shadow_fmu_fallback:
-        enabled: true
+        area_m2: 140.0
+        T_K: 600.0
+        decay_const_per_h: 6.4e-6
+      time_scale_coordination:
+        mode: "runtime_coordinated"
+        component_step_size_h: 0.00555
   metrics:
     peak_inventory:
       source: "sds.I[1]"
@@ -50,27 +55,10 @@ task:
       source: "sds.I[1]"
       evaluate: "final_value"
 
-plugins:
-  auditor:
-    enabled: true
-    warn_threshold_g: 0.0
-    kill_threshold_g: 0.0
-    patterns:
-      inventory:
-        - "*.I?1?"
-      cumulative_sources:
-        - "*blanket.cumulative_breed?1?"
-      leak:
-        - "*.leak_rate?1?"
-      decay:
-        - "*.decay_rate?1?"
-      cumulative_burn:
-        - "*plasma.cumulative_burn?1?"
-
 visualizer:
   enabled: true
-  launch_on_finish: false
+  launch_on_finish: true
   report:
     enabled: true
-    title: "TRICYS 在线步进协同仿真与全局质量守恒审计报告"
+    title: "TRICYS-FESTIM 偏滤器材料输运微观有限元在线步进多速率协同仿真评估报告"
     formats: ["markdown", "docx", "pdf"]

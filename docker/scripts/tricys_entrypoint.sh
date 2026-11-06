@@ -45,6 +45,25 @@ ensure_owned_file_parent() {
   fi
 }
 
+setup_x11_display() {
+  mkdir -p /tmp/.X11-unix
+  chmod 1777 /tmp/.X11-unix 2>/dev/null || true
+
+  if [[ -S /tmp/.X11-unix-wslg/X0 ]]; then
+    # Windows 11 WSLg environment
+    ln -sf /tmp/.X11-unix-wslg/X0 /tmp/.X11-unix/X0 2>/dev/null || true
+    export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+    export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/mnt/wslg/runtime-dir}"
+    export PULSE_SERVER="${PULSE_SERVER:-/mnt/wslg/PulseServer}"
+  elif [[ -S /tmp/.X11-unix-host/X0 ]]; then
+    # Native Linux X11 environment
+    ln -sf /tmp/.X11-unix-host/X0 /tmp/.X11-unix/X0 2>/dev/null || true
+  fi
+  export DISPLAY="${DISPLAY:-:0}"
+}
+setup_x11_display
+
+
 start_nginx_app() {
   local app_name="$1"
   local source_dir="${WEB_BUNDLE_ROOT}/${app_name}"
@@ -64,12 +83,15 @@ start_nginx_app() {
   exec nginx -g 'daemon off;'
 }
 
-# Configure default Python & Modelica library paths
+# Configure default Locale, Python & Modelica library paths
+export LANG="${LANG:-zh_CN.UTF-8}"
+export LC_ALL="${LC_ALL:-zh_CN.UTF-8}"
+export LANGUAGE="${LANGUAGE:-zh_CN:zh}"
 export PYTHONPATH="${H2ISO_DIR}/src:${WORKSPACE}/tricys_backend:${TRICYS_DIR}/tricys_backend:${TRICYS_DIR}:${PYTHONPATH:-}"
 export MODELICAPATH="/home/appuser/.openmodelica/libraries:/usr/lib/omlibrary:${MODELICAPATH:-}"
 
 run_as_appuser() {
-  exec gosu "${APP_USER}" env PYTHONPATH="${PYTHONPATH}" MODELICAPATH="${MODELICAPATH}" PATH="/home/appuser/.local/bin:${PATH}" "$@"
+  exec gosu "${APP_USER}" env LANG="${LANG}" LC_ALL="${LC_ALL}" LANGUAGE="${LANGUAGE}" PYTHONPATH="${PYTHONPATH}" MODELICAPATH="${MODELICAPATH}" PATH="/home/appuser/.local/bin:${PATH}" "$@"
 }
 
 cmd="${1:-backend}"
@@ -230,6 +252,21 @@ case "${cmd}" in
   run|workflow)
     cd "${TRICYS_DIR}"
     run_as_appuser tricys run "$@"
+    ;;
+
+  # --------------------------------------------------------------------------
+  # 3. Modelica Graphical Modeling (OMEdit GUI)
+  # --------------------------------------------------------------------------
+  omedit|OMEdit)
+    echo "================================================================================"
+    echo "  Starting OpenModelica Connection Editor (OMEdit) GUI                          "
+    echo "================================================================================"
+    cd "${TRICYS_DIR}" 2>/dev/null || cd /workspace
+    default_model="${TRICYS_DIR}/tricys/example/example_data/example_model/package.mo"
+    if [[ $# -eq 0 && -f "${default_model}" ]]; then
+      set -- "${default_model}"
+    fi
+    run_as_appuser OMEdit "$@"
     ;;
 
   bash|sh)

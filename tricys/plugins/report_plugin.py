@@ -144,7 +144,13 @@ class AnalysisReportPlugin(PostprocessPlugin):
 
         jobs_list = jobs_df.to_dict(orient="records") if jobs_df is not None else []
 
-        task_type = context.config.get("task", {}).get("type", "sweep")
+        task_type = str(context.config.get("task", {}).get("type", "sweep")).lower()
+        if task_type in ("cosim", "co_sim") or "cosim" in task_type:
+            logger.info(
+                "AnalysisReportPlugin: cosim任务不适用内置报告模板，跳过报告生成。"
+            )
+            return
+
         figures = generate_all_report_figures(
             results_df=results_df,
             jobs_df=jobs_df,

@@ -4,24 +4,28 @@ version: "2.0"
 # TRICYS V2.0 演示算例 08: 协同仿真 —— 离线查表/两阶段子系统替代模式 (Offline Table Co-Simulation)
 # 
 # 算例定位:
-# - 针对同位素分离系统 (I_ISS) 等高维非线性复杂子系统，运用两阶段 Run-Process-Rerun 进行离线替代求解
+# - 针对同位素分离系统 (I_ISS) 等复杂精馏塔系，以开源 CAPE-OPEN 流程软件 DWSIM 替代商业 Aspen Plus
+# - 运用两阶段 Run-Process-Rerun 进行离线替代求解，实现与 OpenModelica 宏观全厂动力学模型在云原生 Linux 容器内的全开源自闭环求解
 # 
 # 核心特征 / 演示重点:
 # - 协同模式: task.type = "cosim", mode = "offline_table"
-# - 核心机理: 阶段一初探获取接口边界流 -> 阶段二调用外部求解器 (Aspen Plus / Python) -> 阶段三重构总系统
-# - 适用场景: 避免在宏观动态仿真中对严密精馏方程进行长时间积分，提高计算吞吐率
-# - 质量闭环: 自动对边界置换数据进行连续性插值与物质平衡校验
+# - 求解引擎: DWSIM 自动化引擎 (DWSIM.Automation / pythonnet)
+# - 流程资产: example_dwsim/T2_Threetowers4.dwxmz
+# - 外部脚本: ./08_cosim_offline_table/dwsim_iss_handler.py
+# - 平台优势: 摆脱对 Windows COM 与商业 Aspen 授权的依赖，支持 All-in-One Linux 容器与跨平台无头运行
+# - 质量闭环: 自动对边界置换数据进行连续性插值与全系统物质守恒校验
 # ==============================================================================
 
 model:
-  fileName: "../example_model/package.mo"
+  fileName: "../example_model_single/example_model.mo"
   modelName: "example_model.Cycle"
 
 scenario:
+  time_base: "second"
   startTime: 0.0
   stopTime: 100.0
   stepSize: 0.5
-  variableFilter: "time|sds.I[1]"
+  variableFilter: "time|sds.I[1]|i_iss.to_SDS[1]|i_iss.to_WDS[1]"
 
 task:
   type: "cosim"
@@ -29,14 +33,16 @@ task:
   subsystems:
     - target: "example_model.I_ISS"
       instance: "i_iss"
-      solver: "aspen_plus"
-      handler_module: "tricys.handlers.i_iss_handler"
-      handler_function: "run_aspen_simulation"
+      solver: "dwsim"
+      handler_script_path: "./08_cosim_offline_table/dwsim_iss_handler.py"
+      handler_function: "run_dwsim_simulation"
       params:
-        bkp_path: "../example_aspenbkp/T2-Threetowers4.bkp"
-        base: 20
+        flowsheet_path: "../example_dwsim/T2_Threetowers4.dwxmz"
+        base: 20.0
         retime: 60
         time_step: 3
+        min_stable_steps: 100
+        stable_threshold: 1.0e-6
   metrics:
     peak_inventory:
       source: "sds.I[1]"
@@ -47,8 +53,8 @@ task:
 
 visualizer:
   enabled: true
-  launch_on_finish: false
+  launch_on_finish: true
   report:
     enabled: true
-    title: "TRICYS 聚变堆多物理场协同仿真报告 (离线静态替换模式)"
+    title: "TRICYS 聚变堆多物理场协同仿真报告 (基于开源 DWSIM 的离线两阶段替代模式)"
     formats: ["markdown", "docx", "pdf"]

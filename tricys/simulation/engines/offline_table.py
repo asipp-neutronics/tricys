@@ -130,10 +130,16 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
         )
 
         # Step 2: Primary baseline simulation to obtain boundary inputs
+        package_build_dir = (
+            Path(isolated_package_path).parent.as_posix()
+            if os.path.isfile(isolated_package_path)
+            else Path(isolated_package_path).as_posix()
+        )
         mod = ModelicaSystem(
             fileName=Path(isolated_package_path).as_posix(),
             modelName=model_name,
             variableFilter=variable_filter,
+            customBuildDirectory=package_build_dir,
         )
         mod.setSimulationOptions(
             {
@@ -180,9 +186,13 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
             elif "handler_module" in handler_config:
+                mod_name = handler_config["handler_module"]
+                if mod_name.startswith("tricys.handlers."):
+                    legacy_sub = mod_name.replace("tricys.handlers.", "")
+                    mod_name = f"tricys.example.example_data.v1_examples_legacy.handlers.{legacy_sub}"
                 if os.getcwd() not in sys.path:
                     sys.path.insert(0, os.getcwd())
-                module = importlib.import_module(handler_config["handler_module"])
+                module = importlib.import_module(mod_name)
 
             if not module:
                 raise ImportError(f"Failed to load handler for {handler_config}")
@@ -240,10 +250,16 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
                 else Path(isolated_package_path).as_posix()
             )
 
+        final_build_dir = (
+            Path(final_model_file).parent.as_posix()
+            if os.path.isfile(final_model_file)
+            else Path(final_model_file).as_posix()
+        )
         verif_mod = ModelicaSystem(
             fileName=final_model_file,
             modelName=final_model_name,
             variableFilter=verif_config,
+            customBuildDirectory=final_build_dir,
         )
         verif_mod.setSimulationOptions(
             {

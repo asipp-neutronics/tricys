@@ -68,11 +68,11 @@
     },
     {
       "id": "9",
-      "name": "09 - 协同仿真: 在线步进双向同步模式 (SSP/FMI)",
+      "name": "09 - 协同仿真: 在线步进双向同步模式 (FESTIM 偏滤器微观有限元)",
       "task_type": "cosim",
       "config": "09_cosim_online_step.yaml",
       "path": ".",
-      "description": "基于 SSP/FMI 协议单步推进（Lockstep Dynamic Exchange），全厂宏观模型与子系统高保真处理器双向数据同步。"
+      "description": "基于 SSP/FMI 协议动态锁步推进，耦合 FESTIM 2.0 进程内有限元求解器 (Tier 1 Direct FEM) 模拟偏滤器钨装甲氚渗透时滞与材料陷阱固化。"
     },
     {
       "id": "10",

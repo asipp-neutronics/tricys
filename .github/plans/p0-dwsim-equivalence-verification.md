@@ -55,7 +55,7 @@
 | DWSIM 精馏塔不收敛           | 氢同位素体系在低温下初值敏感                  | ConvergenceError | Y        | 调整初始温度/压力估计；缩小塔规模先跑 2 组分                 | 测试标记 XFAIL      |
 | Aspen 基准数据获取           | 无 Windows 机器可用                           | 环境缺失         | N        | **CRITICAL GAP** — 必须有 Windows + Aspen 许可证生成基准数据 | 阻塞全部对照测试    |
 
-> **CRITICAL GAP**: Aspen 基准数据的生成依赖 Windows + Aspen 许可证环境。若该环境不可用，P0 无法完成。**降级策略**：使用 `run_dummy_simulation()` 的已有 CSV 数据（`handlers/i_iss_handler.csv`）作为近似基准，但需标注"未经独立验证"。
+> **CRITICAL GAP**: Aspen 基准数据的生成依赖 Windows + Aspen 许可证环境。若该环境不可用，P0 无法完成。**降级策略**：使用 `run_dummy_simulation()` 的已有 CSV 数据（`v1_examples_legacy/handlers/i_iss_handler.csv`）作为近似基准，但需标注"未经独立验证"。
 
 ## 执行计划
 

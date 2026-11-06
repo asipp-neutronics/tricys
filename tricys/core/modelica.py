@@ -107,6 +107,29 @@ class ModelicaSystem(OMPythonModelicaSystem):
 
             self._quantities.append(scalar)
 
+    def set_variable_filter(
+        self,
+        variable_filter: str | None = None,
+        escape: bool = False,
+    ) -> None:
+        """Sets variable filter regex without erroneously escaping regex metacharacters.
+
+        OMPython 4 by default passes escape=True which calls re.escape(), corrupting
+        POSIX ERE expressions such as 'time|sds.I[1]' into 'time\\|sds\\.I\\[1\\]'.
+        """
+        if variable_filter is None:
+            self._variable_filter = None
+            return
+
+        try:
+            re.compile(variable_filter)
+        except re.error as exc:
+            raise RuntimeError(
+                f"Invalid variable_filter regular expression: {variable_filter!r} ({exc})"
+            )
+
+        self._variable_filter = variable_filter
+
 
 def get_om_session() -> OMCSessionZMQ:
     """Initializes and returns a new OMCSessionZMQ session.
