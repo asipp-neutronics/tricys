@@ -2478,7 +2478,7 @@
 </ul>
 <h3 id="33">3.3. 执行模式决策<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
 <p>这是流程的一个关键分支点，<code>tricys</code>会根据配置决定如何执行生成的作业：
-- <strong>标准仿真 vs 协同仿真</strong>: 首先检查是否存在 <code>co_simulation</code> 配置块。如果存在，将进入<a href="../co_simulation_module.md">协同仿真流程</a>；否则，进入标准仿真流程。
+- <strong>标准仿真 vs 协同仿真</strong>: 首先检查是否存在 <code>co_simulation</code> 配置块。如果存在，将进入<a href="co_simulation.html">协同仿真流程</a>；否则，进入标准仿真流程。
 - <strong>并行 vs 顺序</strong>: 接着，检查 <code>simulation.concurrent</code> 标志。如果为 <code>true</code>，<code>tricys</code>会使用<a href="concurrency.html">并发模式</a>（多线程或多进程）同时执行多个作业。如果为 <code>false</code>，则会按顺序逐个执行作业。</p>
 <p>这四个组合（标准/顺序, 标准/并行, 协同/顺序, 协同/并行）分别对应不同的执行函数，以实现最佳性能和隔离性。</p>
 <h3 id="34">3.4. 作业执行<a class="headerlink" href="#34" title="Permanent link">&para;</a></h3>

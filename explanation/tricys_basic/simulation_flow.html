@@ -2476,7 +2476,7 @@
 </ul>
 <h3 id="33-execution-mode-decision">3.3. Execution Mode Decision<a class="headerlink" href="#33-execution-mode-decision" title="Permanent link">&para;</a></h3>
 <p>This is a critical branching point in the flow where <code>tricys</code> decides how to execute the generated jobs based on the configuration:
-- <strong>Standard vs. Co-simulation</strong>: It first checks for the presence of a <code>co_simulation</code> configuration block. If it exists, the <a href="../co_simulation_module.md">co-simulation flow</a> is initiated; otherwise, the standard simulation flow is followed.
+- <strong>Standard vs. Co-simulation</strong>: It first checks for the presence of a <code>co_simulation</code> configuration block. If it exists, the <a href="co_simulation.html">co-simulation flow</a> is initiated; otherwise, the standard simulation flow is followed.
 - <strong>Parallel vs. Sequential</strong>: Next, it checks the <code>simulation.concurrent</code> flag. If <code>true</code>, <code>tricys</code> uses a <a href="concurrency.html">concurrent mode</a> (multi-threading or multi-processing) to execute multiple jobs simultaneously. If <code>false</code>, the jobs are executed sequentially, one after another.</p>
 <p>These four combinations (Standard/Sequential, Standard/Parallel, Co-simulation/Sequential, Co-simulation/Parallel) correspond to different execution functions to achieve optimal performance and isolation.</p>
 <h3 id="34-job-execution">3.4. Job Execution<a class="headerlink" href="#34-job-execution" title="Permanent link">&para;</a></h3>
