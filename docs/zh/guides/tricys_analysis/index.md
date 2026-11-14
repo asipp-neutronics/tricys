@@ -31,7 +31,7 @@
 - **值**: 一个描述如何计算该指标的对象。
     - `source_column`: 用于计算的原始数据来源，即仿真结果 (`.csv`) 中的列名。
     - `method`: `tricys.analysis.metric` 模块中用于计算的函数名。
-- **详解**: `tricys` 内置了多种常用指标计算函数。关于内置核心性能指标（如 `Startup_Inventory`, `Doubling_Time` 等）的详细物理意义和计算方法，请参阅 [核心性能指标详解](../../explanation/performance_metrics.md)。
+- **详解**: `tricys` 内置了多种常用指标计算函数。关于内置核心性能指标（如 `Startup_Inventory`, `Doubling_Time` 等）的详细物理意义和计算方法，请参阅 [核心性能指标详解](../../explanation/tricys_analysis/performance_metrics.md)。
 
 ### 1.3. `glossary_path` (术语表)
 

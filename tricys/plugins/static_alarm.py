@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def check_thresholds(
-    results_file_path: str, output_dir: str, rules: List[Dict[str, Any]], **kwargs
+    results_file_path: str, output_dir: str, rules: List[Dict[str, Any]], **kwargs: Any
 ) -> None:
     """Analyzes HDF5 simulation results to check if specified columns fall within threshold ranges.
 

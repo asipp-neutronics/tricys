@@ -284,7 +284,7 @@ class TricysSALibAnalyzer:
         return self.problem
 
     def generate_samples(
-        self, method: str = "sobol", N: int = 1024, **kwargs
+        self, method: str = "sobol", N: int = 1024, **kwargs: Any
     ) -> np.ndarray:
         """Generate parameter samples.
 
@@ -378,7 +378,6 @@ class TricysSALibAnalyzer:
 
         Args:
             output_metrics: List of output metrics to be extracted (for recording but does not affect CSV generation)
-            max_workers: Number of concurrent worker processes (reserved for compatibility, currently unused)
 
         Returns:
             Path to the generated CSV file
@@ -594,7 +593,6 @@ class TricysSALibAnalyzer:
         Args:
             csv_file_path: Path to the CSV parameter file. If None, the last generated file will be used
             output_metrics: List of output metrics to be calculated
-            config_output_path: Path for the configuration file output. If None, it will be automatically generated
 
         Returns:
             Path to the sensitivity_analysis_summary.csv file
@@ -624,7 +622,7 @@ class TricysSALibAnalyzer:
             logger.error(f"Tricys simulation execution failed: {e}")
             raise
 
-    def analyze_sobol(self, output_index: int = 0, **kwargs) -> Dict[str, Any]:
+    def analyze_sobol(self, output_index: int = 0, **kwargs: Any) -> Dict[str, Any]:
         """
         Perform Sobol Sensitivity Analysis
 
@@ -696,7 +694,7 @@ class TricysSALibAnalyzer:
             else:
                 raise
 
-    def analyze_morris(self, output_index: int = 0, **kwargs) -> Dict[str, Any]:
+    def analyze_morris(self, output_index: int = 0, **kwargs: Any) -> Dict[str, Any]:
         """
         Perform Morris sensitivity analysis
 
@@ -758,7 +756,7 @@ class TricysSALibAnalyzer:
         logger.info(f"Morris sensitivity analysis completed (metric {output_index})")
         return self.sensitivity_results["morris"][metric_name]
 
-    def analyze_fast(self, output_index: int = 0, **kwargs) -> Dict[str, Any]:
+    def analyze_fast(self, output_index: int = 0, **kwargs: Any) -> Dict[str, Any]:
         """
         Perform FAST sensitivity analysis
 
@@ -826,7 +824,7 @@ class TricysSALibAnalyzer:
             else:
                 raise
 
-    def analyze_lhs(self, output_index: int = 0, **kwargs) -> Dict[str, Any]:
+    def analyze_lhs(self, output_index: int = 0, **kwargs: Any) -> Dict[str, Any]:
         """
         Perform LHS (Latin Hypercube Sampling) uncertainty analysis
 

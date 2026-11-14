@@ -30,7 +30,7 @@
     *   `handler_module`：处理器所在的模块。
     *   `handler_script_path`：或者，直接提供处理器脚本的路径。
 
-    详见：[协同仿真模块](guides/tricys_basic/co_simulation_module.md)
+    详见：[协同仿真模块](../guides/tricys_basic/co_simulation_module.md)
 
 ??? question "问：如何创建自定义后处理模块？"
     后处理模块是 Python 函数，接收仿真结果并执行分析：
@@ -101,7 +101,7 @@
 
     评估输入不确定性对输出的影响。
 
-    详见：[敏感性分析教程](guides/tricys_analysis/single_parameter_sensitivity_analysis.md)
+    详见：[敏感性分析教程](../guides/tricys_analysis/single_parameter_sensitivity_analysis.md)
 
 ??? question "问：如何定义自定义性能指标？"
     性能指标（Metrics）在 `sensitivity_analysis.metrics_definition` 中定义：
