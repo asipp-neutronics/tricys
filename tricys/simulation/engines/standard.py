@@ -235,25 +235,32 @@ class StandardSimulationEngine(BaseSimulationEngine):
             .lower()
         )
         sim_cfg["time_base"] = time_base
-        factor = 3600.0 if time_base == "second" else 1.0
 
-        # Explicit-First with Context-Fallback parameter resolution
+        # Explicit-First with Context-Fallback parameter resolution.
+        # Values are resolved in the configuration's native unit (hours) and converted
+        # exactly once, at the single normalisation point shared with the concurrent
+        # path (run_fast_subprocess_job -> _sim_time_to_seconds). Doing the scaling
+        # inline here used to skip V1-style configs, whose time fields live under
+        # ``simulation`` rather than ``scenario``: they reached OpenModelica unscaled
+        # (2000 s instead of 7_200_000 s) while the concurrent path scaled them.
         if self.stop_time is not None:
-            sim_cfg["stop_time"] = float(self.stop_time) * factor
-            sim_cfg["_time_unit"] = "second"
+            sim_cfg["stop_time"] = float(self.stop_time)
         elif "stop_time" not in sim_cfg and "stopTime" in scenario_cfg:
-            sim_cfg["stop_time"] = float(scenario_cfg["stopTime"]) * factor
-            sim_cfg["_time_unit"] = "second"
+            sim_cfg["stop_time"] = float(scenario_cfg["stopTime"])
 
         if self.step_size is not None:
-            sim_cfg["step_size"] = float(self.step_size) * factor
+            sim_cfg["step_size"] = float(self.step_size)
         elif "step_size" not in sim_cfg and "stepSize" in scenario_cfg:
-            sim_cfg["step_size"] = float(scenario_cfg["stepSize"]) * factor
+            sim_cfg["step_size"] = float(scenario_cfg["stepSize"])
 
         if self.start_time is not None and float(self.start_time) > 0:
-            sim_cfg["start_time"] = float(self.start_time) * factor
+            sim_cfg["start_time"] = float(self.start_time)
         elif "start_time" not in sim_cfg and "startTime" in scenario_cfg:
-            sim_cfg["start_time"] = float(scenario_cfg["startTime"]) * factor
+            sim_cfg["start_time"] = float(scenario_cfg["startTime"])
+
+        from tricys.simulation.simulation import _sim_time_to_seconds
+
+        _sim_time_to_seconds(sim_cfg)
 
         if self.solver is not None:
             sim_cfg["method"] = self.solver
