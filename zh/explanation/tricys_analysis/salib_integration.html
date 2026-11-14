@@ -534,6 +534,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../guides/migration_v1_to_v2.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从 1.0 升级到 2.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -548,10 +576,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
             
   
   
@@ -569,8 +597,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -636,10 +664,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
             
   
   
@@ -657,8 +685,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -864,10 +892,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
             
   
   
@@ -885,8 +913,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1939,7 +1967,7 @@
   <span class="md-ellipsis">
     
   
-    tricys.handlers
+    协同处理器 (Handlers)
   
 
     
@@ -2424,7 +2452,7 @@
 <ul>
 <li><strong>类型</strong>：全局敏感性分析，基于轨迹的筛选方法。</li>
 <li><strong>核心指标</strong>：<ul>
-<li><strong>μ* (mu_star)</strong>：衡量参数对输出影响的总体大小，是效应的绝对值的均值。μ* 越高，参数越重要。</li>
+<li><em><em>μ</em> (mu_star)</em><em>：衡量参数对输出影响的总体大小，是效应的绝对值的均值。μ</em> 越高，参数越重要。</li>
 <li><strong>σ (sigma)</strong>：衡量参数效应的标准差。σ 越高，表明参数的影响是非线性的，或与其他参数存在交互。</li>
 </ul>
 </li>
@@ -2485,8 +2513,8 @@
 <p>此阶段由 <code>simulation_analysis.py</code> 中的 <code>run_salib_analysis()</code> 函数调度，它会调用 TRICYS 的核心仿真引擎来执行计算。</p>
 <ol>
 <li><strong>生成特定配置</strong>：<code>salib.py</code> 中的 <code>generate_tricys_config()</code> 会创建一个临时的 TRICYS 配置文件。这个配置文件的关键之处在于，它将 <code>simulation_parameters</code> 指向了上一步生成的 <code>salib_sampling.csv</code> 文件。
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/salib_sampling.csv&quot;</span>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">"simulation_parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/salib_sampling.csv"</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 </code></pre></div></li>
 <li><strong>TRICYS 启动与执行</strong>：当 <code>simulation_analysis.py</code> 使用这个特殊配置启动时，它会识别出这是一个基于文件的任务。TRICYS 会<strong>逐行读取</strong> <code>salib_sampling.csv</code>，并将每一行（即一组完整的参数）作为一个独立的仿真任务来执行。</li>

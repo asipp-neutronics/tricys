@@ -539,6 +539,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../migration_v1_to_v2.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从 1.0 升级到 2.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -556,10 +584,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
             
   
   
@@ -577,8 +605,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -649,10 +677,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
             
   
   
@@ -670,8 +698,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1055,10 +1083,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="">
             
   
   
@@ -1076,8 +1104,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1935,7 +1963,7 @@
   <span class="md-ellipsis">
     
   
-    tricys.handlers
+    协同处理器 (Handlers)
   
 
     
@@ -2394,18 +2422,18 @@
 <h2 id="1">1. 示例配置<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
 <p>当前推荐的文件驱动示例如下：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="nt">&quot;package_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_model_single/example_model.mo&quot;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">"paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="nt">"package_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../../example_model_single/example_model.mo"</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;foc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nt">&quot;foc_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_foc/example_scenario_mix.foc&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="nt">&quot;foc_component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pulseSource&quot;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">"foc"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nt">"foc_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../../example_foc/example_scenario_mix.foc"</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="nt">"foc_component"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pulseSource"</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="nt">&quot;model_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_model.Cycle&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="nt">&quot;stop_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1200.0</span><span class="p">,</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="nt">"model_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"example_model.Cycle"</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="nt">"variableFilter"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time|sds.I[1]"</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="nt">"stop_time"</span><span class="p">:</span><span class="w"> </span><span class="mf">1200.0</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="nt">"step_size"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">}</span>
 </code></pre></div>
@@ -2438,9 +2466,9 @@
 </code></pre></div>
 <p>常见写法如下：</p>
 <ul>
-<li><code>TIME_UNIT hour</code>：仅声明当前 FOC 中的时间按小时书写，本身不触发转换</li>
 <li>当 <code>TIME_UNIT</code> 和 <code>TIME_CONVERSION</code> 都未出现时，默认 FOC 时间单位为秒，且不做转换</li>
 <li><code>TIME_UNIT hour</code>：仅声明当前 FOC 中的时间按小时书写，本身不触发转换</li>
+<li>FOC 的<strong>有效</strong>时间基准（经过 <code>TIME_CONVERSION</code> 之后）必须是<strong>秒</strong>——CFEDR 系列模型的时间轴 <code>time</code> 以秒为单位；若有效基准为小时/天/年（或裸数字因子），程序会发出告警，且调度会以错误速度推进</li>
 <li><code>TIME_CONVERSION NONE</code>：不做额外时间换算，直接使用 FOC 中写入的时间值</li>
 <li><code>TIME_CONVERSION 3600</code>：把后续时间统一乘以 <code>3600</code></li>
 <li><code>TIME_CONVERSION second_to_hour</code>：把以秒写入的 FOC 时间转换为模型所需的小时单位，<code>hour_to_second</code> 等反向命名转换同样支持</li>
@@ -2458,10 +2486,11 @@
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>TIME_CONVERSION hour_to_second
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>PULSE 1500 0.9 0.1 300
 </code></pre></div>
-<p>示例 1b：FOC 按小时编写，但仅声明单位、不做转换</p>
+<p>示例 1b：FOC 按小时编写，但仅声明单位、不做转换 —— 对秒基准模型是<strong>错误用法</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>TIME_UNIT hour
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>PULSE 1500 0.9 0.1 300
 </code></pre></div>
+<p><code>TIME_UNIT</code> 只声明单位，<strong>不触发转换</strong>。CFEDR 系列模型的时间轴 <code>time</code> 以<strong>秒</strong>为单位，因此停留在小时的调度会快约 3600 倍。当 FOC 的有效时间基准不是秒时 TRICYS 会发出告警；按示例 1 加上 <code>TIME_CONVERSION hour_to_second</code> 即可修正。仅当你写入的时间本来就以模型时间基准（秒）为单位时，才使用这种只声明单位的写法。</p>
 <p>示例 2：FOC 按秒编写，但模型内部使用小时</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>TIME_CONVERSION second_to_hour
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>PULSE 1500 7200 3600 1

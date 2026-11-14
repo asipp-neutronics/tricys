@@ -537,6 +537,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../migration_v1_to_v2.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrading from 1.0 to 2.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -554,10 +582,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
             
   
   
@@ -575,8 +603,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -645,10 +673,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
             
   
   
@@ -666,8 +694,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -878,10 +906,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="">
             
   
   
@@ -899,8 +927,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1899,7 +1927,7 @@
   <span class="md-ellipsis">
     
   
-    tricys.handlers
+    协同处理器 (Handlers)
   
 
     
@@ -2320,21 +2348,21 @@
 <p>The core configuration for a single-parameter sensitivity analysis is located in the <code>analysis_cases</code> list. Each object represents an independent analysis case.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="c1">// ... (paths, simulation)</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;sensitivity_analysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nt">&quot;analysis_cases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">"sensitivity_analysis"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nt">"analysis_cases"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TBR_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blanket.TBR&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span><span class="w"> </span><span class="mf">1.15</span><span class="p">,</span><span class="w"> </span><span class="mf">1.2</span><span class="p">],</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"TBR_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blanket.TBR"</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span><span class="w"> </span><span class="mf">1.15</span><span class="p">,</span><span class="w"> </span><span class="mf">1.2</span><span class="p">],</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">        </span><span class="p">],</span>
 <a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="c1">// ... (Common configurations: metrics_definition, glossary_path, unit_map)</span>
@@ -2363,141 +2391,141 @@
 <summary>example/analysis/2_single_parameter_sensitivity_analysis/single_parameter_sensitivity_analysis.json</summary>
 
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="nt">&quot;package_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_model_single/example_model.mo&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nt">"paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="nt">"package_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../../example_model_single/example_model.mo"</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">&quot;model_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_model.Cycle&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="nt">&quot;variableFilter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time|sds.I[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="nt">&quot;stop_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12000.0</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="nt">&quot;step_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">"model_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"example_model.Cycle"</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="nt">"variableFilter"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time|sds.I[1]"</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="nt">"stop_time"</span><span class="p">:</span><span class="w"> </span><span class="mf">12000.0</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="nt">"step_size"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="nt">&quot;sensitivity_analysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="nt">&quot;analysis_cases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="nt">"sensitivity_analysis"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="nt">"analysis_cases"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Width_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pulseSource.width&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">70</span><span class="p">,</span><span class="mi">80</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">99</span><span class="p">],</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Width_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pulseSource.width"</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">70</span><span class="p">,</span><span class="mi">80</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">99</span><span class="p">],</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">            </span><span class="p">},</span>
 <a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fueling_Efficiency_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;plasma.nf&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.9</span><span class="p">],</span>
-<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fueling_Efficiency_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plasma.nf"</span><span class="p">,</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.9</span><span class="p">],</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="w">            </span><span class="p">},</span>
 <a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Burn_Fraction_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;plasma.fb&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.04</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.06</span><span class="p">,</span><span class="mf">0.07</span><span class="p">,</span><span class="mf">0.08</span><span class="p">,</span><span class="mf">0.09</span><span class="p">,</span><span class="mf">0.1</span><span class="p">],</span>
-<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Burn_Fraction_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plasma.fb"</span><span class="p">,</span>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.04</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.06</span><span class="p">,</span><span class="mf">0.07</span><span class="p">,</span><span class="mf">0.08</span><span class="p">,</span><span class="mf">0.09</span><span class="p">,</span><span class="mf">0.1</span><span class="p">],</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a><span class="w">            </span><span class="p">},</span>
 <a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DIR_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tep_fep.to_SDS_Fraction[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.15</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.8</span><span class="p">],</span>
-<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DIR_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tep_fep.to_SDS_Fraction[1]"</span><span class="p">,</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.15</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.8</span><span class="p">],</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a><span class="w">            </span><span class="p">},</span>
 <a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TBR_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blanket.TBR&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="mf">1.1</span><span class="p">,</span><span class="mf">1.15</span><span class="p">,</span><span class="mf">1.2</span><span class="p">],</span>
-<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"TBR_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blanket.TBR"</span><span class="p">,</span>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="mf">1.1</span><span class="p">,</span><span class="mf">1.15</span><span class="p">,</span><span class="mf">1.2</span><span class="p">],</span>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a><span class="w">            </span><span class="p">},</span>
 <a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a><span class="w">            </span><span class="p">{</span>
-<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a><span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;I_ISS_Analysis&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a><span class="w">                </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;i_iss.T&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a><span class="w">                </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">10</span><span class="p">],</span>
-<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a><span class="w">                </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a><span class="w">                    </span><span class="s2">&quot;Startup_Inventory&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a><span class="w">                    </span><span class="s2">&quot;Self_Sufficiency_Time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a><span class="w">                    </span><span class="s2">&quot;Doubling_Time&quot;</span>
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a><span class="w">                </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I_ISS_Analysis"</span><span class="p">,</span>
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a><span class="w">                </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"i_iss.T"</span><span class="p">,</span>
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a><span class="w">                </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">10</span><span class="p">],</span>
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a><span class="w">                </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a><span class="w">                    </span><span class="s2">"Startup_Inventory"</span><span class="p">,</span>
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a><span class="w">                    </span><span class="s2">"Self_Sufficiency_Time"</span><span class="p">,</span>
+<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a><span class="w">                    </span><span class="s2">"Doubling_Time"</span>
 <a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a><span class="w">                </span><span class="p">],</span>
-<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a><span class="w">                </span><span class="nt">&quot;plot_type&quot;</span><span class="p">:</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a><span class="w">                </span><span class="nt">&quot;combine_plots&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a><span class="w">                </span><span class="nt">&quot;sweep_time&quot;</span><span class="p">:[</span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a><span class="w">                </span><span class="nt">"plot_type"</span><span class="p">:</span><span class="s2">"line"</span><span class="p">,</span>
+<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a><span class="w">                </span><span class="nt">"combine_plots"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a><span class="w">                </span><span class="nt">"sweep_time"</span><span class="p">:[</span><span class="s2">"sds.I[1]"</span><span class="p">]</span>
 <a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a><span class="w">        </span><span class="p">],</span>
-<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a><span class="w">        </span><span class="nt">&quot;metrics_definition&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a><span class="w">            </span><span class="nt">&quot;Startup_Inventory&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a><span class="w">                </span><span class="nt">&quot;source_column&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a><span class="w">                </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calculate_startup_inventory&quot;</span>
+<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a><span class="w">        </span><span class="nt">"metrics_definition"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a><span class="w">            </span><span class="nt">"Startup_Inventory"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a><span class="w">                </span><span class="nt">"source_column"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sds.I[1]"</span><span class="p">,</span>
+<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a><span class="w">                </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"calculate_startup_inventory"</span>
 <a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a><span class="w">            </span><span class="nt">&quot;Self_Sufficiency_Time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a><span class="w">                </span><span class="nt">&quot;source_column&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a><span class="w">                </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time_of_turning_point&quot;</span>
+<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a><span class="w">            </span><span class="nt">"Self_Sufficiency_Time"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a><span class="w">                </span><span class="nt">"source_column"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sds.I[1]"</span><span class="p">,</span>
+<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a><span class="w">                </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time_of_turning_point"</span>
 <a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a><span class="w">            </span><span class="nt">&quot;Doubling_Time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a><span class="w">                </span><span class="nt">&quot;source_column&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a><span class="w">                </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calculate_doubling_time&quot;</span>
+<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a><span class="w">            </span><span class="nt">"Doubling_Time"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a><span class="w">                </span><span class="nt">"source_column"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sds.I[1]"</span><span class="p">,</span>
+<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a><span class="w">                </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"calculate_doubling_time"</span>
 <a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a><span class="w">            </span><span class="nt">&quot;Required_TBR&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a><span class="w">                </span><span class="nt">&quot;source_column&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sds.I[1]&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a><span class="w">                </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bisection_search&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a><span class="w">                </span><span class="nt">&quot;parameter_to_optimize&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blanket.TBR&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a><span class="w">                </span><span class="nt">&quot;search_range&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.5</span><span class="p">],</span>
-<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a><span class="w">                </span><span class="nt">&quot;tolerance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.005</span><span class="p">,</span>
-<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a><span class="w">                </span><span class="nt">&quot;max_iterations&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a><span class="w">            </span><span class="nt">"Required_TBR"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a><span class="w">                </span><span class="nt">"source_column"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sds.I[1]"</span><span class="p">,</span>
+<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a><span class="w">                </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bisection_search"</span><span class="p">,</span>
+<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a><span class="w">                </span><span class="nt">"parameter_to_optimize"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blanket.TBR"</span><span class="p">,</span>
+<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a><span class="w">                </span><span class="nt">"search_range"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.5</span><span class="p">],</span>
+<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a><span class="w">                </span><span class="nt">"tolerance"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.005</span><span class="p">,</span>
+<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a><span class="w">                </span><span class="nt">"max_iterations"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a><span class="w">        </span><span class="p">},</span>
-<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a><span class="w">        </span><span class="nt">&quot;glossary_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../../example_glossary/example_glossary.csv&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a><span class="w">        </span><span class="nt">&quot;unit_map&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a><span class="w">            </span><span class="nt">&quot;Doubling_Time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a><span class="w">                </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;days&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a><span class="w">                </span><span class="nt">&quot;conversion_factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span>
+<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a><span class="w">        </span><span class="nt">"glossary_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../../example_glossary/example_glossary.csv"</span><span class="p">,</span>
+<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a><span class="w">        </span><span class="nt">"unit_map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a><span class="w">            </span><span class="nt">"Doubling_Time"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a><span class="w">                </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"days"</span><span class="p">,</span>
+<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a><span class="w">                </span><span class="nt">"conversion_factor"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span>
 <a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a><span class="w">            </span><span class="nt">&quot;Startup_Inventory&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a><span class="w">                </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a><span class="w">                </span><span class="nt">&quot;conversion_factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
+<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a><span class="w">            </span><span class="nt">"Startup_Inventory"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a><span class="w">                </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kg"</span><span class="p">,</span>
+<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a><span class="w">                </span><span class="nt">"conversion_factor"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
 <a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a><span class="w">            </span><span class="nt">&quot;Self_Sufficiency_Time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-126" name="__codelineno-1-126" href="#__codelineno-1-126"></a><span class="w">                </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;days&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-127" name="__codelineno-1-127" href="#__codelineno-1-127"></a><span class="w">                </span><span class="nt">&quot;conversion_factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span>
+<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a><span class="w">            </span><span class="nt">"Self_Sufficiency_Time"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-126" name="__codelineno-1-126" href="#__codelineno-1-126"></a><span class="w">                </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"days"</span><span class="p">,</span>
+<a id="__codelineno-1-127" name="__codelineno-1-127" href="#__codelineno-1-127"></a><span class="w">                </span><span class="nt">"conversion_factor"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span>
 <a id="__codelineno-1-128" name="__codelineno-1-128" href="#__codelineno-1-128"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-129" name="__codelineno-1-129" href="#__codelineno-1-129"></a><span class="w">            </span><span class="nt">&quot;power&quot;</span><span class="p">:{</span>
-<a id="__codelineno-1-130" name="__codelineno-1-130" href="#__codelineno-1-130"></a><span class="w">                </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MW&quot;</span>
+<a id="__codelineno-1-129" name="__codelineno-1-129" href="#__codelineno-1-129"></a><span class="w">            </span><span class="nt">"power"</span><span class="p">:{</span>
+<a id="__codelineno-1-130" name="__codelineno-1-130" href="#__codelineno-1-130"></a><span class="w">                </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MW"</span>
 <a id="__codelineno-1-131" name="__codelineno-1-131" href="#__codelineno-1-131"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-132" name="__codelineno-1-132" href="#__codelineno-1-132"></a><span class="w">            </span><span class="nt">&quot;period&quot;</span><span class="p">:{</span>
-<a id="__codelineno-1-133" name="__codelineno-1-133" href="#__codelineno-1-133"></a><span class="w">                </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hours&quot;</span>
+<a id="__codelineno-1-132" name="__codelineno-1-132" href="#__codelineno-1-132"></a><span class="w">            </span><span class="nt">"period"</span><span class="p">:{</span>
+<a id="__codelineno-1-133" name="__codelineno-1-133" href="#__codelineno-1-133"></a><span class="w">                </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hours"</span>
 <a id="__codelineno-1-134" name="__codelineno-1-134" href="#__codelineno-1-134"></a><span class="w">            </span><span class="p">},</span>
-<a id="__codelineno-1-135" name="__codelineno-1-135" href="#__codelineno-1-135"></a><span class="w">            </span><span class="nt">&quot;width&quot;</span><span class="p">:{</span>
-<a id="__codelineno-1-136" name="__codelineno-1-136" href="#__codelineno-1-136"></a><span class="w">                </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;%&quot;</span>
+<a id="__codelineno-1-135" name="__codelineno-1-135" href="#__codelineno-1-135"></a><span class="w">            </span><span class="nt">"width"</span><span class="p">:{</span>
+<a id="__codelineno-1-136" name="__codelineno-1-136" href="#__codelineno-1-136"></a><span class="w">                </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"%"</span>
 <a id="__codelineno-1-137" name="__codelineno-1-137" href="#__codelineno-1-137"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-1-138" name="__codelineno-1-138" href="#__codelineno-1-138"></a><span class="w">        </span><span class="p">}</span>
 <a id="__codelineno-1-139" name="__codelineno-1-139" href="#__codelineno-1-139"></a><span class="w">    </span><span class="p">}</span>
@@ -2510,22 +2538,22 @@
 <p>All analysis modules in <code>tricys</code> are deeply integrated with Large Language Models (LLMs), capable of automatically converting raw charts and data into structured, academic-style reports.</p>
 <h3 id="51-how-to-enable">5.1. How to Enable<a class="headerlink" href="#51-how-to-enable" title="Permanent link">&para;</a></h3>
 <p>In your analysis case configuration (i.e., within any object in the <code>analysis_cases</code> list or in the <code>params</code> of a <code>post_processing</code> task), add <code>"ai": true</code> to activate the AI analysis feature for that case.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&quot;analysis_cases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">"analysis_cases"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">{</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TBR_Analysis_with_AI_Report&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="nt">&quot;independent_variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blanket.TBR&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="nt">&quot;independent_variable_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span><span class="w"> </span><span class="mf">1.15</span><span class="p">,</span><span class="w"> </span><span class="mf">1.2</span><span class="p">],</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="nt">&quot;dependent_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Doubling_Time&quot;</span><span class="w"> </span><span class="p">],</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="nt">&quot;ai&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"TBR_Analysis_with_AI_Report"</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="nt">"independent_variable"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blanket.TBR"</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="nt">"independent_variable_sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1.05</span><span class="p">,</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span><span class="w"> </span><span class="mf">1.15</span><span class="p">,</span><span class="w"> </span><span class="mf">1.2</span><span class="p">],</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="nt">"dependent_variables"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"Doubling_Time"</span><span class="w"> </span><span class="p">],</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="nt">"ai"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">]</span>
 </code></pre></div>
 <h3 id="52-environment-setup">5.2. Environment Setup<a class="headerlink" href="#52-environment-setup" title="Permanent link">&para;</a></h3>
 <p>Before using this feature, you must create a file named <code>.env</code> in the project's <strong>root directory</strong> and fill in your Large Language Model API credentials. This ensures that your keys are kept secure and are not committed to version control.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># .env file in project root
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>API_KEY=&quot;sk-your_api_key_here&quot;
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>BASE_URL=&quot;https://your_api_base_url/v1&quot;
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>AI_MODEL=&quot;your_model_name_here&quot;
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>API_KEY="sk-your_api_key_here"
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>BASE_URL="https://your_api_base_url/v1"
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>AI_MODEL="your_model_name_here"
 </code></pre></div>
 <h3 id="53-output-reports">5.3. Output Reports<a class="headerlink" href="#53-output-reports" title="Permanent link">&para;</a></h3>
 <p>When enabled, in addition to the standard analysis report (<code>analysis_report_...md</code>), <code>tricys</code> will generate two additional reports in the case's <code>report</code> folder:</p>

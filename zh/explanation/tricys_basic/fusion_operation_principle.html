@@ -534,6 +534,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../guides/migration_v1_to_v2.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从 1.0 升级到 2.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -548,10 +576,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
             
   
   
@@ -569,8 +597,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -636,10 +664,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
             
   
   
@@ -657,8 +685,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -864,10 +892,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
             
   
   
@@ -885,8 +913,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2037,7 +2065,7 @@
   <span class="md-ellipsis">
     
   
-    tricys.handlers
+    协同处理器 (Handlers)
   
 
     
@@ -2690,17 +2718,17 @@
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_foc_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;解析 FOC 配置文件，返回 amplitudes 和 durations 数组&quot;&quot;&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="sd">"""解析 FOC 配置文件，返回 amplitudes 和 durations 数组"""</span>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">amplitudes</span><span class="p">,</span> <span class="n">durations</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">current_power</span> <span class="o">=</span> <span class="mf">0.0</span>
 <a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">in_schedule</span> <span class="o">=</span> <span class="kc">False</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">schedule_amps</span><span class="p">,</span> <span class="n">schedule_durs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
 <a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 <a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>
 <a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'#'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 <a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span> <span class="k">continue</span>
 <a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>        <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
 <a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>        <span class="n">cmd</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
@@ -2713,24 +2741,24 @@
 <a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>                <span class="n">amplitudes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">amp</span><span class="p">)</span>
 <a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>                <span class="n">durations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
 <a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>
-<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;POWER&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'POWER'</span><span class="p">:</span>
 <a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>            <span class="n">current_power</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;BURN&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'BURN'</span><span class="p">:</span>
 <a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>            <span class="n">append_step</span><span class="p">(</span><span class="n">current_power</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;DWELL&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'DWELL'</span><span class="p">:</span>
 <a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>            <span class="n">append_step</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;PULSE&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'PULSE'</span><span class="p">:</span>
 <a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>            <span class="n">p_power</span><span class="p">,</span> <span class="n">p_burn</span><span class="p">,</span> <span class="n">p_dwell</span><span class="p">,</span> <span class="n">p_cycles</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span>
 <a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">p_cycles</span><span class="p">)):</span>
 <a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>                <span class="n">append_step</span><span class="p">(</span><span class="n">p_power</span><span class="p">,</span> <span class="n">p_burn</span><span class="p">)</span>
 <a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>                <span class="n">append_step</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">p_dwell</span><span class="p">)</span>
-<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;BEGIN_SCHEDULE&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'BEGIN_SCHEDULE'</span><span class="p">:</span>
 <a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>            <span class="n">in_schedule</span> <span class="o">=</span> <span class="kc">True</span>
 <a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>            <span class="n">schedule_amps</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 <a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>            <span class="n">schedule_durs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;END_SCHEDULE&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'END_SCHEDULE'</span><span class="p">:</span>
 <a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a>            <span class="n">in_schedule</span> <span class="o">=</span> <span class="kc">False</span>
-<a id="__codelineno-9-45" name="__codelineno-9-45" href="#__codelineno-9-45"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;REPEAT&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-45" name="__codelineno-9-45" href="#__codelineno-9-45"></a>        <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">'REPEAT'</span><span class="p">:</span>
 <a id="__codelineno-9-46" name="__codelineno-9-46" href="#__codelineno-9-46"></a>            <span class="n">repeats</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 <a id="__codelineno-9-47" name="__codelineno-9-47" href="#__codelineno-9-47"></a>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repeats</span><span class="p">):</span>
 <a id="__codelineno-9-48" name="__codelineno-9-48" href="#__codelineno-9-48"></a>                <span class="n">amplitudes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">schedule_amps</span><span class="p">)</span>
@@ -2739,14 +2767,14 @@
 <a id="__codelineno-9-51" name="__codelineno-9-51" href="#__codelineno-9-51"></a>    <span class="k">return</span> <span class="n">amplitudes</span><span class="p">,</span> <span class="n">durations</span>
 <a id="__codelineno-9-52" name="__codelineno-9-52" href="#__codelineno-9-52"></a>
 <a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a><span class="k">def</span><span class="w"> </span><span class="nf">export_for_modelica</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">,</span> <span class="n">durations</span><span class="p">):</span>
-<a id="__codelineno-9-54" name="__codelineno-9-54" href="#__codelineno-9-54"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;输出为 Modelica 数组（对应方案 A）&quot;&quot;&quot;</span>
-<a id="__codelineno-9-55" name="__codelineno-9-55" href="#__codelineno-9-55"></a>    <span class="n">amps_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">amplitudes</span><span class="p">])</span>
-<a id="__codelineno-9-56" name="__codelineno-9-56" href="#__codelineno-9-56"></a>    <span class="n">durs_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">durations</span><span class="p">])</span>
-<a id="__codelineno-9-57" name="__codelineno-9-57" href="#__codelineno-9-57"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;parameter Real amplitudes[:] = </span><span class="se">{{</span><span class="si">{</span><span class="n">amps_str</span><span class="si">}</span><span class="se">}}</span><span class="s2">;&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-58" name="__codelineno-9-58" href="#__codelineno-9-58"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;parameter Real durations[:] = </span><span class="se">{{</span><span class="si">{</span><span class="n">durs_str</span><span class="si">}</span><span class="se">}}</span><span class="s2">;&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-54" name="__codelineno-9-54" href="#__codelineno-9-54"></a><span class="w">    </span><span class="sd">"""输出为 Modelica 数组（对应方案 A）"""</span>
+<a id="__codelineno-9-55" name="__codelineno-9-55" href="#__codelineno-9-55"></a>    <span class="n">amps_str</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">amplitudes</span><span class="p">])</span>
+<a id="__codelineno-9-56" name="__codelineno-9-56" href="#__codelineno-9-56"></a>    <span class="n">durs_str</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">durations</span><span class="p">])</span>
+<a id="__codelineno-9-57" name="__codelineno-9-57" href="#__codelineno-9-57"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"parameter Real amplitudes[:] = </span><span class="se">{{</span><span class="si">{</span><span class="n">amps_str</span><span class="si">}</span><span class="se">}}</span><span class="s2">;"</span><span class="p">)</span>
+<a id="__codelineno-9-58" name="__codelineno-9-58" href="#__codelineno-9-58"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"parameter Real durations[:] = </span><span class="se">{{</span><span class="si">{</span><span class="n">durs_str</span><span class="si">}</span><span class="se">}}</span><span class="s2">;"</span><span class="p">)</span>
 <a id="__codelineno-9-59" name="__codelineno-9-59" href="#__codelineno-9-59"></a>
-<a id="__codelineno-9-60" name="__codelineno-9-60" href="#__codelineno-9-60"></a><span class="k">def</span><span class="w"> </span><span class="nf">export_for_combitimetable</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">,</span> <span class="n">durations</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;foc_table.txt&quot;</span><span class="p">):</span>
-<a id="__codelineno-9-61" name="__codelineno-9-61" href="#__codelineno-9-61"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;输出为 CombiTimeTable 驱动文件（对应方案 B）&quot;&quot;&quot;</span>
+<a id="__codelineno-9-60" name="__codelineno-9-60" href="#__codelineno-9-60"></a><span class="k">def</span><span class="w"> </span><span class="nf">export_for_combitimetable</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">,</span> <span class="n">durations</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">"foc_table.txt"</span><span class="p">):</span>
+<a id="__codelineno-9-61" name="__codelineno-9-61" href="#__codelineno-9-61"></a><span class="w">    </span><span class="sd">"""输出为 CombiTimeTable 驱动文件（对应方案 B）"""</span>
 <a id="__codelineno-9-62" name="__codelineno-9-62" href="#__codelineno-9-62"></a>    <span class="n">time_col</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
 <a id="__codelineno-9-63" name="__codelineno-9-63" href="#__codelineno-9-63"></a>    <span class="n">power_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">amplitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 <a id="__codelineno-9-64" name="__codelineno-9-64" href="#__codelineno-9-64"></a>    <span class="n">current_time</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -2760,10 +2788,10 @@
 <a id="__codelineno-9-72" name="__codelineno-9-72" href="#__codelineno-9-72"></a>            <span class="n">time_col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
 <a id="__codelineno-9-73" name="__codelineno-9-73" href="#__codelineno-9-73"></a>            <span class="n">power_col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
 <a id="__codelineno-9-74" name="__codelineno-9-74" href="#__codelineno-9-74"></a>
-<a id="__codelineno-9-75" name="__codelineno-9-75" href="#__codelineno-9-75"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time_col</span><span class="p">,</span> <span class="s1">&#39;power&#39;</span><span class="p">:</span> <span class="n">power_col</span><span class="p">})</span>
-<a id="__codelineno-9-76" name="__codelineno-9-76" href="#__codelineno-9-76"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-9-77" name="__codelineno-9-77" href="#__codelineno-9-77"></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#1</span><span class="se">\n</span><span class="s2">float FOC_Data(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">time_col</span><span class="p">)</span><span class="si">}</span><span class="s2">, 2)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-78" name="__codelineno-9-78" href="#__codelineno-9-78"></a>        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-9-75" name="__codelineno-9-75" href="#__codelineno-9-75"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'time'</span><span class="p">:</span> <span class="n">time_col</span><span class="p">,</span> <span class="s1">'power'</span><span class="p">:</span> <span class="n">power_col</span><span class="p">})</span>
+<a id="__codelineno-9-76" name="__codelineno-9-76" href="#__codelineno-9-76"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-9-77" name="__codelineno-9-77" href="#__codelineno-9-77"></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"#1</span><span class="se">\n</span><span class="s2">float FOC_Data(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">time_col</span><span class="p">)</span><span class="si">}</span><span class="s2">, 2)</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-9-78" name="__codelineno-9-78" href="#__codelineno-9-78"></a>        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">'</span><span class="se">\t</span><span class="s1">'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="5-modelica">5. Modelica 模型集成方案<a class="headerlink" href="#5-modelica" title="Permanent link">&para;</a></h2>
@@ -2771,8 +2799,8 @@
 <h3 id="a">方案 A：数组写入型（内化配置）<a class="headerlink" href="#a" title="Permanent link">&para;</a></h3>
 <p>利用 Modelica 的数组尺寸自动推导特性（<code>[:]</code>）。适用于工况步数较少的场景，无需外部依赖，直接在代码级更新。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kr">block</span> <span class="nc">FOC_ArrayPulse</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  <span class="s2">&quot;基于 FOC 数组配置的离散脉冲源&quot;</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  <span class="kr">parameter</span> <span class="nb">Real</span> <span class="n">conversion_factor</span> <span class="o">=</span> <span class="mf">6.3935</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="s2">&quot;1MW 对应的氚消耗率(g/h)&quot;</span><span class="p">;</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  <span class="s2">"基于 FOC 数组配置的离散脉冲源"</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  <span class="kr">parameter</span> <span class="nb">Real</span> <span class="n">conversion_factor</span> <span class="o">=</span> <span class="mf">6.3935</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="s2">"1MW 对应的氚消耗率(g/h)"</span><span class="p">;</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  <span class="c1">// 由 Python 注入的数据</span>
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  <span class="kr">parameter</span> <span class="nb">Real</span> <span class="n">amplitudes</span><span class="p">[</span><span class="o">:</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1500</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
@@ -2803,9 +2831,9 @@
 <h3 id="b">方案 B：外部数据表驱动型（推荐方案）<a class="headerlink" href="#b" title="Permanent link">&para;</a></h3>
 <p>利用 <code>CombiTimeTable</code> 组件。该方案在处理上千个周期的脉冲序列时，数值稳定性极高，求解器可直接根据线性插值矩阵进行跨步，是大型环路长期仿真的最佳实践。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kr">block</span> <span class="nc">FOC_TablePulse</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  <span class="s2">&quot;基于外部 FOC 表格驱动的脉冲源&quot;</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  <span class="kr">parameter</span> <span class="nb">Real</span> <span class="n">conversion_factor</span> <span class="o">=</span> <span class="mf">6.3935</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="s2">&quot;1MW 对应的氚消耗率(g/h)&quot;</span><span class="p">;</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  <span class="kr">parameter</span> <span class="nb">String</span> <span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;foc_table.txt&quot;</span> <span class="s2">&quot;Python生成的表格文件路径&quot;</span><span class="p">;</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  <span class="s2">"基于外部 FOC 表格驱动的脉冲源"</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  <span class="kr">parameter</span> <span class="nb">Real</span> <span class="n">conversion_factor</span> <span class="o">=</span> <span class="mf">6.3935</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="s2">"1MW 对应的氚消耗率(g/h)"</span><span class="p">;</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  <span class="kr">parameter</span> <span class="nb">String</span> <span class="n">fileName</span> <span class="o">=</span> <span class="s2">"foc_table.txt"</span> <span class="s2">"Python生成的表格文件路径"</span><span class="p">;</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
 <a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>  <span class="n">Modelica</span><span class="o">.</span><span class="n">Blocks</span><span class="o">.</span><span class="n">Interfaces</span><span class="o">.</span><span class="n">RealOutput</span> <span class="n">y1</span> <span class="kr">annotation</span><span class="p">(</span><span class="n">Placement</span><span class="p">(</span><span class="n">transformation</span><span class="p">(</span><span class="n">origin</span><span class="o">=</span><span class="p">{</span><span class="o">-</span><span class="mi">110</span><span class="p">,</span><span class="mi">0</span><span class="p">},</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">180</span><span class="p">)));</span>
 <a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>  <span class="n">Modelica</span><span class="o">.</span><span class="n">Blocks</span><span class="o">.</span><span class="n">Interfaces</span><span class="o">.</span><span class="n">RealOutput</span> <span class="n">y2</span> <span class="kr">annotation</span><span class="p">(</span><span class="n">Placement</span><span class="p">(</span><span class="n">transformation</span><span class="p">(</span><span class="n">origin</span><span class="o">=</span><span class="p">{</span><span class="mi">110</span><span class="p">,</span><span class="mi">0</span><span class="p">})));</span>
@@ -2813,7 +2841,7 @@
 <a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="kr">protected</span>
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>  <span class="n">Modelica</span><span class="o">.</span><span class="n">Blocks</span><span class="o">.</span><span class="n">Sources</span><span class="o">.</span><span class="n">CombiTimeTable</span> <span class="n">table</span><span class="p">(</span>
 <a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="n">tableOnFile</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="n">tableName</span> <span class="o">=</span> <span class="s2">&quot;FOC_Data&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="n">tableName</span> <span class="o">=</span> <span class="s2">"FOC_Data"</span><span class="p">,</span>
 <a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    <span class="n">fileName</span> <span class="o">=</span> <span class="n">fileName</span><span class="p">,</span>
 <a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="n">extrapolation</span> <span class="o">=</span> <span class="n">Modelica</span><span class="o">.</span><span class="n">Blocks</span><span class="o">.</span><span class="n">Types</span><span class="o">.</span><span class="n">Extrapolation</span><span class="o">.</span><span class="n">HoldLastPoint</span><span class="p">,</span> <span class="c1">// 仿真超时后自动归零(HoldLastPoint保持排空)</span>
 <a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>    <span class="n">smoothness</span> <span class="o">=</span> <span class="n">Modelica</span><span class="o">.</span><span class="n">Blocks</span><span class="o">.</span><span class="n">Types</span><span class="o">.</span><span class="n">Smoothness</span><span class="o">.</span><span class="n">LinearSegments</span>       <span class="c1">// 配合Python的阶梯数据形成完美方波</span>

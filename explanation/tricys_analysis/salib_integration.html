@@ -532,6 +532,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../guides/migration_v1_to_v2.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrading from 1.0 to 2.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -546,10 +574,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
             
   
   
@@ -567,8 +595,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -634,10 +662,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
             
   
   
@@ -655,8 +683,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -862,10 +890,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
             
   
   
@@ -883,8 +911,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1941,7 +1969,7 @@
   <span class="md-ellipsis">
     
   
-    tricys.handlers
+    协同处理器 (Handlers)
   
 
     
@@ -2428,7 +2456,7 @@
 <ul>
 <li><strong>Type</strong>: Global Sensitivity Analysis, a trajectory-based screening method.</li>
 <li><strong>Core Indices</strong>:<ul>
-<li><strong>μ* (mu_star)</strong>: Measures the overall influence of a parameter on the output, representing the mean of the absolute values of the elementary effects. A higher μ* indicates a more important parameter.</li>
+<li><em><em>μ</em> (mu_star)</em><em>: Measures the overall influence of a parameter on the output, representing the mean of the absolute values of the elementary effects. A higher μ</em> indicates a more important parameter.</li>
 <li><strong>σ (sigma)</strong>: Measures the standard deviation of the elementary effects. A higher σ indicates that the parameter's effect is non-linear or has interactions with other parameters.</li>
 </ul>
 </li>
@@ -2489,8 +2517,8 @@
 <p>This stage is orchestrated by the <code>run_salib_analysis()</code> function in <code>simulation_analysis.py</code>, which calls TRICYS's core simulation engine to perform the calculations.</p>
 <ol>
 <li><strong>Generate Specific Configuration</strong>: The <code>generate_tricys_config()</code> function in <code>salib.py</code> creates a temporary TRICYS configuration file. The key aspect of this configuration file is that it points <code>simulation_parameters</code> to the <code>salib_sampling.csv</code> file generated in the previous step.
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/salib_sampling.csv&quot;</span>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">"simulation_parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/salib_sampling.csv"</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 </code></pre></div></li>
 <li><strong>TRICYS Startup and Execution</strong>: When <code>simulation_analysis.py</code> starts with this special configuration, it recognizes it as a file-based task. TRICYS will <strong>read <code>salib_sampling.csv</code> line by line</strong>, treating each row (i.e., a complete set of parameters) as an independent simulation job.</li>
