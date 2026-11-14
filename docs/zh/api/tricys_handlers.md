@@ -10,8 +10,8 @@ hide:
 
 === "DIV Handler"
 
-    ::: tricys.handlers.div_handler
+    ::: tricys.example.example_data.v1_examples_legacy.handlers.div_handler
 
 === "I_ISS Handler"
 
-    ::: tricys.handlers.i_iss_handler
+    ::: tricys.example.example_data.v1_examples_legacy.handlers.i_iss_handler
