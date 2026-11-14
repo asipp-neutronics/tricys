@@ -11,6 +11,14 @@ TRICYS follows [Semantic Versioning](https://semver.org/):
 
 ---
 
+## 2.0.1 ( Unreleased )
+
+### Changed (behaviour)
+
+* **Any failed job now yields a non-zero exit code**: previously a failed job in a sweep or a co-simulation only wrote to the log, the process still exited `0`, and the results file merely had fewer rows — indistinguishable from a successful run. `StandardSimulationEngine` (both sequential and concurrent paths) and `OfflineTableEngine` now raise `JobExecutionError` (carrying the failed job IDs and reasons) when any job fails, and the CLI exits `1`. **Scripts that relied on partial failures returning 0 must be adapted.**
+
+---
+
 ## 2.0.0 ( 2026-11-14 )
 
 TRICYS 2.0.0 is an architectural rebuild: from procedure-oriented script assembly to a pluggable pipeline with a model-centric engineering base.

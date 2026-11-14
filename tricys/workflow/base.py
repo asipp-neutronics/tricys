@@ -35,6 +35,34 @@ class SecurityValidationError(PipelineError):
     """Raised when an external plugin script violates AST security sandboxing rules."""
 
 
+class JobExecutionError(PipelineError):
+    """Raised when one or more simulation jobs fail during a run, sweep or co-simulation.
+
+    Policy: **any** failed job fails the whole invocation, so the CLI exits non-zero
+    instead of reporting a green run with silently missing results. Per-job reasons are
+    carried on the exception so callers and logs can show exactly which jobs died.
+    """
+
+    def __init__(
+        self, engine: str, failures: list[tuple[int, str]], total: int
+    ) -> None:
+        self.engine = engine
+        self.failures = list(failures)
+        self.total = total
+        detail = "; ".join(f"job {job_id}: {reason}" for job_id, reason in self.failures[:5])
+        if len(self.failures) > 5:
+            detail += f"; ... (+{len(self.failures) - 5} more)"
+        super().__init__(
+            f"{engine}: {len(self.failures)}/{total} job(s) failed ({detail})"
+        )
+
+    @property
+    def failed(self) -> int:
+        """Number of failed jobs."""
+        return len(self.failures)
+
+
+
 class BasePlugin(ABC):
     """Abstract root contract for all TRICYS workflow plugins and engines."""
 
