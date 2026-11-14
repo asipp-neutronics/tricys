@@ -8,3 +8,6 @@
 	path = tricys_goview
 	url = https://github.com/couuas/tricys_goview.git
 	branch = main
+[submodule "tricys_abdou_2021"]
+	path = tricys_abdou_2021
+	url = https://github.com/couuas/tricys_abdou_2021.git

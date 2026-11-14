@@ -508,7 +508,7 @@ def generate_prompt_templates(
                 continue
 
             case_workspace = case_info["workspace"]
-            case_name = case_data.get("name", f"Case{case_info['index']+1}")
+            case_name = case_data.get("name", f"Case{case_info['index'] + 1}")
 
             case_results_dir = os.path.join(case_workspace, "results")
             os.makedirs(case_results_dir, exist_ok=True)
@@ -948,7 +948,7 @@ def generate_prompt_templates(
                         base_var_name = reference_col_for_turning_point.split("&")[0]
                         cols_to_rename = [c for c in start_data.columns if c != "time"]
                         rename_map = {
-                            col: f"C{i+1}" for i, col in enumerate(cols_to_rename)
+                            col: f"C{i + 1}" for i, col in enumerate(cols_to_rename)
                         }
                         legend_lines = [
                             "**表格图例说明**：",
@@ -1168,7 +1168,7 @@ def _retry_salib_case(
     )
 
     case_data = case_info["case_data"]
-    case_name = case_data.get("name", f"SALibCase{case_info['index']+1}")
+    case_name = case_data.get("name", f"SALibCase{case_info['index'] + 1}")
 
     results_dir = os.path.join(case_info["workspace"], "results")
 
@@ -1322,7 +1322,7 @@ def _retry_standard_case(
     """Retries AI analysis for a single standard case."""
     case_data = case_info["case_data"]
     case_workspace = case_info["workspace"]
-    case_name = case_data.get("name", f"Case{case_info['index']+1}")
+    case_name = case_data.get("name", f"Case{case_info['index'] + 1}")
 
     if not case_data.get("ai", False):
         logger.debug(f"AI is disabled for case {case_name}, skipping retry.")
@@ -1579,7 +1579,7 @@ def generate_analysis_cases_summary(
             )
 
             summary_entry = {
-                "case_name": case_data.get("name", f"Case{case_info['index']+1}"),
+                "case_name": case_data.get("name", f"Case{case_info['index'] + 1}"),
                 "independent_variable": case_data["independent_variable"],
                 "independent_variable_sampling": case_data[
                     "independent_variable_sampling"

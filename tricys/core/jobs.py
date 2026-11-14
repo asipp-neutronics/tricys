@@ -223,6 +223,7 @@ def _load_jobs_from_csv(file_path: str) -> List[Dict[str, Any]]:
 
 def generate_simulation_jobs(
     simulation_params: Dict[str, Any],
+    auto_name: bool = False,
 ) -> List[Dict[str, Any]]:
     """Generates a list of simulation jobs from parameters, handling sweeps and array expansion.
 
@@ -279,8 +280,12 @@ def generate_simulation_jobs(
     sweep_names = list(sweep_params.keys())
     sweep_values = list(sweep_params.values())
     jobs = []
-    for combo in itertools.product(*sweep_values):
+    for idx, combo in enumerate(itertools.product(*sweep_values), 1):
         job = single_value_params.copy()
-        job.update(dict(zip(sweep_names, combo)))
+        combo_dict = dict(zip(sweep_names, combo))
+        job.update(combo_dict)
+        if auto_name and "name" not in job:
+            parts = [f"{k.split('.')[-1]}_{v}" for k, v in combo_dict.items()]
+            job["name"] = f"case_{idx:03d}_" + "_".join(parts)
         jobs.append(job)
     return jobs

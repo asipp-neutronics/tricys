@@ -1,0 +1,58 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 05: FOC 聚变混合工况脉冲调度瞬态仿真 (Fusion Operation Cycle, FOC)
+# 
+# 算例定位:
+# - 演示基于工业级 FOC（Fusion Operation Config）协议的复杂混合运行脉冲调度动态注入与长周期瞬态仿真
+# 
+# 核心特征 / 演示重点:
+# - 任务模式: task.type = "simulate"，挂载 scenario.pulse 动态调度器
+# - 调度策略: 读取 .foc 配置文件，支持 PULSE / DWELL / REPEAT 周期性复合序列，使用 "table" 策略平滑插值
+# - 物理参数: 基准包层与燃烧参数 (blanket.TBR: 1.15, plasma.fb: 0.05)
+# - 关键指标: 跟踪动态脉冲输入下的储罐谷底波动、峰值库存与全生命周期累积耗氚量
+# - 交付报告: 聚变运行周期 (FOC) 动态脉冲混合工况仿真审查报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  # 仿真时间基准治理：声明以小时 (hour) 为基准
+  # 系统在底层仿真与 OMC 阶段将自动缩放至 SI 秒 (1200 h -> 4,320,000 s)
+  time_base: "second"
+  stopTime: 1200.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|sds.I[1]|blanket.I[1]|wds.I[1]|tep_fep.I[1]|i_iss.I[1]|plasma.I[1]|pulseSource.y"
+
+  # 聚变运行周期 (Fusion Operation Cycle, FOC) 动态脉冲注入配置
+  pulse:
+    foc_file: "../example_foc/example_scenario_mix.foc"
+    foc_component: "pulseSource"
+    strategy: "table"  # 可选 "table" (FOC_TablePulse) 或 "array" (FOC_ArrayPulse)
+
+task:
+  type: "simulate"
+  parameters:
+    blanket.TBR: 1.15
+    plasma.fb: 0.05
+  metrics:
+    peak_inventory:
+      source: "sds.I[1]"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+    startup_inventory:
+      source: "sds.I[1]"
+      evaluate: "startup_inventory"
+
+visualizer:
+  enabled: true
+  launch_on_finish: true
+  report:
+    enabled: true
+    title: "TRICYS 聚变运行周期 (FOC) 动态脉冲混合工况仿真审查报告"
+    formats: ["markdown", "docx", "pdf"]

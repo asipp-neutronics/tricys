@@ -54,8 +54,17 @@ def test_time_of_turning_point_monotonic_decrease():
 def test_calculate_doubling_time(sample_series_data):
     series, time_series = sample_series_data
     # Initial is 100, doubled is 200.
-    # The value 210 (>= 200) occurs at index 9. Time at index 9 is 90.
+    # At t=80, I=180; at t=90, I=210.
+    # Default interpolate=False returns discrete grid point 90:
     assert calculate_doubling_time(series, time_series) == 90
+    # Explicit interpolate=True yields sub-step linear interpolation:
+    # 80 + (200 - 180)/(210 - 180) * 10 = 86.6667
+    assert (
+        pytest.approx(
+            calculate_doubling_time(series, time_series, interpolate=True), 1e-4
+        )
+        == 86.66666666666667
+    )
 
 
 @pytest.mark.build_test

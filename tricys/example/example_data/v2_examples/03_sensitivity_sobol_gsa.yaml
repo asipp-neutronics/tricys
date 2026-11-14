@@ -1,0 +1,49 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示算例 03: 高维参数全局灵敏度分析 (Global Sensitivity Analysis, Sobol GSA)
+# 
+# 算例定位:
+# - 面向全厂氚储量不确定性，运用 Sobol 拟随机采样与方差分解辨识系统核心主导参数
+# 
+# 核心特征 / 演示重点:
+# - 任务模式: task.type = "sensitivity", method = "sobol"，并行采样推进
+# - 物理参数: 对包层产氚比 (blanket.TBR: [1.05, 1.25]) 与等离子体燃烧分数 (plasma.fb: [0.02, 0.08]) 进行联合扰动
+# - 关键指标: 评估最终储存量 (final_storage) 的一阶灵敏度 (S1) 与总阶灵敏度 (ST)
+# - 交付报告: 自动输出参数灵敏度柱状图与方差分解专题报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "../example_model_single/example_model.mo"
+  modelName: "example_model.Cycle"
+
+scenario:
+  time_base: "second"
+  stopTime: 500.0
+  stepSize: 1.0
+  method: "dassl"
+  variableFilter: "time|sds.I[1]"
+
+task:
+  type: "sensitivity"
+  method: "sobol"
+  samples: 8
+  seed: 42
+  parallel: true
+  max_workers: 8
+  parameters:
+    blanket.TBR: [1.05, 1.25]
+    plasma.fb: [0.02, 0.08]
+  metrics:
+    final_storage:
+      source: "sds.I[1]"
+      evaluate: "final_value"
+
+visualizer:
+  enabled: true
+  launch_on_finish: true
+  report:
+    enabled: true
+    # template: "sensitivity"  # 默认不填自动与 task.type ("sensitivity") 保持一致
+    title: "TRICYS 高维参数全局灵敏度与方差分解专题报告"
+    formats: ["markdown", "docx", "pdf"]

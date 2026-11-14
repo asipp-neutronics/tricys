@@ -1,6 +1,7 @@
 within example_model;
 model Pump_System
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 输入端口：来自Plasma的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_Plasma[5] "来自Plasma的输入" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, 114}, extent = {{10, 10}, {-10, -10}}, rotation = 90)));
@@ -32,17 +33,17 @@ equation
   for i in 1:5 loop
     // 根据I的总和是否超过阈值，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_Plasma[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T - decay_loss[i] * I[i];
+      der(I[i]) = (from_Plasma[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T - decay_loss[i] * I[i]) / time_scale;
       outflow[i] = (1 - threshold / I_total) * I[i] / T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
     else
-      der(I[i]) = from_Plasma[i] - nonradio_loss[i] * I[i] / T - decay_loss[i] * I[i];
+      der(I[i]) = (from_Plasma[i] - nonradio_loss[i] * I[i] / T - decay_loss[i] * I[i]) / time_scale;
       outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
     end if;
     // 输出流分配到TEP_FEP
     to_TEP_FEP[i] = outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
 
 annotation(

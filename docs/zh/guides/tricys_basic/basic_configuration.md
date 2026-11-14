@@ -93,15 +93,25 @@ TRICYS 的所有仿真任务都由一个 JSON 配置文件驱动。这个文件�
 
 #### `stop_time` (浮点数, 必填)
 
-- **描述**: 仿真的总时长（单位：秒）。仿真将从 `0` 时刻运行到 `stop_time`。
+- **描述**: 仿真的总时长。仿真将从 `0` 时刻运行到 `stop_time`。
 - **单位**: 小时
 
 #### `step_size` (浮点数, 必填)
 
-- **描述**: 仿真的时间步长（单位：秒）。这也是结果输出的时间间隔。
+- **描述**: 仿真的时间步长。这也是结果输出的时间间隔。
 - **权衡**: 
   - 较小的步长：精度更高，但仿真时间更长，输出文件更大
   - 较大的步长：速度更快，但可能丢失快速变化的细节
+
+#### `time_base` (字符串, 可选)
+
+- **描述**: 模型的时间基准——模型如何对 Modelica 内置变量 `time` 积分。
+- **默认值**: `"second"`
+- **取值**:
+  - `"second"`：模型为**秒基准**（如 CFEDR 系列，方程已除以 `3600`）。框架会把以小时书写的 `stop_time` / `step_size` 乘以 `3600` 后再交给 OMC。
+  - `"hour"`：旧的**小时基准**模型把 `time` 当作小时读取，数值原样传递、不做换算。
+
+两种情况下列 `stop_time` / `step_size` 均以**小时**书写。仅当模型是秒基准迁移之前编写的旧模型时才使用 `"hour"`。自带示例模型提供了配套的 `time_scale` 参数（小时基准为 `1`，秒基准为 `3600`），因此同一份模型源码可用两种基准运行并相互校验——见 `test/core/test_time_base_crosscheck.py`（它通过 OMC 把 `tricys/example/example_data/example_model_single/example_model.mo` 分别按两种基准运行，并断言两条轨迹一致）。
 
 ---
 
@@ -174,8 +184,8 @@ TRICYS 的所有仿真任务都由一个 JSON 配置文件驱动。这个文件�
     "simulation": {
         "model_name": "YourModel.Name",
         "variableFilter": "time|key_var1|key_var2",
-        "stop_time": 86400.0,
-        "step_size": 10.0,
+        "stop_time": 24.0,
+        "step_size": 0.5,
         "keep_temp_files": false
     },
     "logging": {

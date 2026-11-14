@@ -256,7 +256,7 @@ class ShadowFMUFallbackWrapper(AbstractTrackProcessor):
                 for name, value in request_vector.boundary_inputs.items():
                     if isinstance(value, list):
                         for i, v in enumerate(value):
-                            arr_name = f"{name}[{i+1}]"
+                            arr_name = f"{name}[{i + 1}]"
                             if arr_name in self.input_vars:
                                 vrs.append(self.input_vars[arr_name].valueReference)
                                 vals.append(float(v))

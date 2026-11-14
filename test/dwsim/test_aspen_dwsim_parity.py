@@ -9,19 +9,17 @@ When no Aspen baseline is available, tests verify:
 - All 9 output values (3 streams × 3 components) are non-negative
 """
 
-import sys
 import os
+import sys
+
 import pytest
 
 # Set up path before importing run_dwsim_point
-SCRIPT_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "script", "dwsim"
-)
+SCRIPT_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "script", "dwsim")
 sys.path.insert(0, os.path.abspath(SCRIPT_DIR))
 
 from run_dwsim_point import (  # noqa: E402
     TEST_CASES,
-    COMPOUNDS,
     compute_feed_composition,
     extract_stream_hdt,
 )
@@ -61,9 +59,7 @@ def _solve_case(dwsim_interf, sim, objects, case_name):
     all_converged = False
     for _ in range(max_iters):
         dwsim_interf.CalculateFlowsheet2(sim)
-        all_converged = all(
-            col.Calculated for col in objects["columns"].values()
-        )
+        all_converged = all(col.Calculated for col in objects["columns"].values())
         if all_converged:
             break
 
@@ -79,9 +75,7 @@ def _solve_case(dwsim_interf, sim, objects, case_name):
 
     # Mass balance
     in_total = T_flow + D_flow + H_flow
-    out_total = sum(
-        r["H"] + r["D"] + r["T"] for r in results.values()
-    )
+    out_total = sum(r["H"] + r["D"] + r["T"] for r in results.values())
     mb_err = abs(out_total - in_total) / in_total if in_total > 0 else 0.0
 
     return {
@@ -109,20 +103,23 @@ def _format_deviation_table(dwsim_results, aspen_results):
                     rel_dev = abs(dw_val - asp_val) / abs(asp_val)
                 else:
                     rel_dev = abs(dw_val - asp_val)
-                passed = rel_dev < REL_TOLERANCE or abs(
-                    dw_val - asp_val) < ABS_TOLERANCE
+                passed = (
+                    rel_dev < REL_TOLERANCE or abs(dw_val - asp_val) < ABS_TOLERANCE
+                )
             else:
                 asp_val = None
                 rel_dev = None
                 passed = dw_val >= 0  # Just check non-negative
 
-            rows.append({
-                "variable": var_name,
-                "aspen": asp_val,
-                "dwsim": dw_val,
-                "rel_dev": rel_dev,
-                "pass": passed,
-            })
+            rows.append(
+                {
+                    "variable": var_name,
+                    "aspen": asp_val,
+                    "dwsim": dw_val,
+                    "rel_dev": rel_dev,
+                    "pass": passed,
+                }
+            )
     return rows
 
 
@@ -134,14 +131,12 @@ def test_parity(case_name, dwsim_interf, dwsim_flowsheet, aspen_baseline):
     result = _solve_case(dwsim_interf, sim, objects, case_name)
 
     # Check convergence
-    assert result["converged"], (
-        f"{case_name}: Not all columns converged"
-    )
+    assert result["converged"], f"{case_name}: Not all columns converged"
 
     # Check mass balance
-    assert result["mass_balance_err"] < 0.05, (
-        f"{case_name}: Mass balance error {result['mass_balance_err']:.2%} > 5%"
-    )
+    assert (
+        result["mass_balance_err"] < 0.05
+    ), f"{case_name}: Mass balance error {result['mass_balance_err']:.2%} > 5%"
 
     # Get Aspen baseline for this case (may be None)
     aspen = aspen_baseline.get(case_name) if aspen_baseline else None
@@ -151,14 +146,16 @@ def test_parity(case_name, dwsim_interf, dwsim_flowsheet, aspen_baseline):
 
     # Print deviation table
     print(
-        f"\n{'Variable':<15} {'Aspen':>10} {'DWSIM':>10} {'RelDev':>10} {'Status':>6}")
+        f"\n{'Variable':<15} {'Aspen':>10} {'DWSIM':>10} {'RelDev':>10} {'Status':>6}"
+    )
     print("-" * 55)
     for row in table:
         asp_str = f"{row['aspen']:.4f}" if row["aspen"] is not None else "N/A"
         dev_str = f"{row['rel_dev']:.2%}" if row["rel_dev"] is not None else "N/A"
         status = "PASS" if row["pass"] else "FAIL"
         print(
-            f"{row['variable']:<15} {asp_str:>10} {row['dwsim']:>10.4f} {dev_str:>10} {status:>6}")
+            f"{row['variable']:<15} {asp_str:>10} {row['dwsim']:>10.4f} {dev_str:>10} {status:>6}"
+        )
 
     # Check pass rate
     pass_count = sum(1 for r in table if r["pass"])
@@ -173,13 +170,14 @@ def test_parity(case_name, dwsim_interf, dwsim_flowsheet, aspen_baseline):
     else:
         # No baseline: just verify all non-negative
         for row in table:
-            assert row["dwsim"] >= 0, (
-                f"{case_name}: Negative output {row['variable']}={row['dwsim']}"
-            )
+            assert (
+                row["dwsim"] >= 0
+            ), f"{case_name}: Negative output {row['variable']}={row['dwsim']}"
 
     # Check at least some separation is happening
     # (not all outputs identical to feed fractions)
-    main_streams = {k: v for k, v in result["results"].items()
-                    if k in ["WDS", "SDSD2", "SDST2"]}
+    main_streams = {
+        k: v for k, v in result["results"].items() if k in ["WDS", "SDSD2", "SDST2"]
+    }
     total_T = sum(s["T"] for s in main_streams.values())
     assert total_T > 0, f"{case_name}: No tritium flow in output streams"

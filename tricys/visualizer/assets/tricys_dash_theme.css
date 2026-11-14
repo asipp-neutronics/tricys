@@ -7,7 +7,22 @@ body {
   font-family: Inter, "Segoe UI", sans-serif;
 }
 
+:root,
 .tricys-dash-theme {
+  --Dash-Fill-Inverse-Strong: #11141a !important;
+  --Dash-Fill-Interactive-Strong: #00d2ff !important;
+  --Dash-Fill-Interactive-Weak: rgba(0, 210, 255, 0.14) !important;
+  --Dash-Stroke-Strong: #30363d !important;
+  --Dash-Stroke-Weak: rgba(48, 54, 61, 0.5) !important;
+  --Dash-Text-Primary: #e6edf3 !important;
+  --Dash-Text-Strong: #f0f6fc !important;
+  --Dash-Text-Weak: #c9d1d9 !important;
+  --Dash-Text-Disabled: #8b949e !important;
+  --Dash-Fill-Primary-Hover: rgba(0, 210, 255, 0.1) !important;
+  --Dash-Fill-Primary-Active: rgba(0, 210, 255, 0.2) !important;
+  --Dash-Fill-Disabled: #1c2128 !important;
+  --Dash-Shading-Strong: rgba(0, 0, 0, 0.6) !important;
+  --Dash-Shading-Weak: rgba(0, 0, 0, 0.3) !important;
   min-height: 100vh;
   color: #c9d1d9;
 }
@@ -106,13 +121,13 @@ body {
 }
 
 .tricys-dash-theme .selection-stage-panel {
-  padding: 1rem 1rem 0.95rem;
+  padding: 0.35rem 0.75rem;
   border: 1px solid rgba(0, 210, 255, 0.16);
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(5, 7, 10, 0.55);
   display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
+  align-items: center;
+  min-height: 40px;
 }
 
 .tricys-dash-theme .selection-stage-panel--current {
@@ -120,9 +135,36 @@ body {
   box-shadow: inset 0 1px 0 rgba(0, 210, 255, 0.06);
 }
 
+.tricys-dash-theme .selection-stage-panel--current .form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  gap: 0.45rem;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.tricys-dash-theme .selection-stage-panel--current .form-check-input {
+  margin-top: 0;
+  cursor: pointer;
+}
+
+.tricys-dash-theme .selection-stage-panel--current .form-check-label {
+  cursor: pointer;
+  font-size: 0.86rem;
+  color: #e6edf3;
+  margin-bottom: 0;
+  line-height: 1.4;
+  user-select: none;
+}
+
 .tricys-dash-theme .selection-stage-panel--applied {
   border-color: rgba(0, 255, 136, 0.18);
   box-shadow: inset 0 1px 0 rgba(0, 255, 136, 0.04);
+  width: fit-content;
+  margin-left: auto;
+  padding: 0.22rem 0.45rem;
+  min-height: 40px;
 }
 
 .tricys-dash-theme .selection-stage-panel--active {
@@ -215,12 +257,27 @@ body {
 }
 
 .tricys-dash-theme .selection-toolbar-button {
-  min-width: 5.75rem;
-  border-radius: 9px;
+  min-width: 4.8rem;
+  padding: 0.22rem 0.65rem;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  line-height: 1.35;
 }
 
 .tricys-dash-theme .selection-toolbar-button--primary {
-  min-width: 6.5rem;
+  min-width: 5.4rem;
+  padding: 0.22rem 0.75rem;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  line-height: 1.35;
+}
+
+.tricys-dash-theme #btn-apply-selection {
+  padding: 0.22rem 0.75rem;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  line-height: 1.35;
 }
 
 .tricys-dash-theme .selection-alert {
@@ -556,10 +613,6 @@ body {
 }
 
 .tricys-dash-theme .dash-filter input,
-.tricys-dash-theme .Select-control,
-.tricys-dash-theme .Select-menu-outer,
-.tricys-dash-theme .Select-value-label,
-.tricys-dash-theme .Select input,
 .tricys-dash-theme input,
 .tricys-dash-theme textarea,
 .tricys-dash-theme pre {
@@ -590,18 +643,299 @@ body {
   box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.08) !important;
 }
 
-.tricys-dash-theme .Select-placeholder,
-.tricys-dash-theme .Select--single > .Select-control .Select-value,
-.tricys-dash-theme .Select-noresults,
-.tricys-dash-theme .VirtualizedSelectOption {
-  color: #8b949e !important;
-  background: #0b0e14 !important;
+/* ==========================================================================
+   Dash 4+ Dropdown Styles (.dash-dropdown*)
+   ========================================================================== */
+.tricys-dash-theme .dash-dropdown-wrapper {
+  box-sizing: border-box;
 }
 
-.tricys-dash-theme .VirtualizedSelectFocusedOption,
-.tricys-dash-theme .VirtualizedSelectSelectedOption {
+.tricys-dash-theme .dash-dropdown {
+  background: #11141a !important;
+  color: #e6edf3 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 8px !important;
+  min-height: 38px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  font-size: 0.95rem !important;
+  transition: border-color 140ms ease, box-shadow 140ms ease !important;
+}
+
+.tricys-dash-theme .dash-dropdown:hover {
+  border-color: rgba(0, 210, 255, 0.45) !important;
+}
+
+.tricys-dash-theme .dash-dropdown:focus,
+.tricys-dash-theme .dash-dropdown:focus-within {
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.18) !important;
+  outline: none !important;
+}
+
+.tricys-dash-theme .dash-dropdown-trigger {
+  padding: 4px 12px !important;
+  min-height: 36px !important;
+  background: transparent !important;
+  color: #e6edf3 !important;
+  border: none !important;
+}
+
+.tricys-dash-theme .dash-dropdown-placeholder {
+  color: #8b949e !important;
+}
+
+.tricys-dash-theme .dash-dropdown-value {
+  color: #f0f6fc !important;
+}
+
+.tricys-dash-theme .dash-dropdown-value-item {
+  background: rgba(0, 210, 255, 0.12) !important;
+  color: #00d2ff !important;
+  border: 1px solid rgba(0, 210, 255, 0.3) !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  margin: 2px 4px 2px 0 !important;
+  font-size: 0.85rem !important;
+}
+
+.tricys-dash-theme .dash-dropdown-trigger-icon,
+.tricys-dash-theme .dash-dropdown-search-icon,
+.tricys-dash-theme .dash-dropdown-clear {
+  color: #8b949e !important;
+  fill: #8b949e !important;
+}
+
+.tricys-dash-theme .dash-dropdown-clear:hover,
+.tricys-dash-theme .dash-dropdown-trigger-icon:hover {
+  color: #00d2ff !important;
+  fill: #00d2ff !important;
+}
+
+.tricys-dash-theme .dash-dropdown-content {
+  background: #11141a !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6) !important;
+  z-index: 1050 !important;
+  overflow: hidden !important;
+}
+
+.tricys-dash-theme .dash-dropdown-search-container {
+  background: #0b0e14 !important;
+  border-bottom: 1px solid #30363d !important;
+  padding: 6px 10px !important;
+}
+
+.tricys-dash-theme .dash-dropdown-search {
+  background: transparent !important;
+  color: #f0f6fc !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.tricys-dash-theme .dash-dropdown-search::placeholder {
+  color: #8b949e !important;
+}
+
+.tricys-dash-theme .dash-dropdown-options {
+  background: #11141a !important;
+  padding: 4px 0 !important;
+}
+
+.tricys-dash-theme .dash-dropdown-option {
+  background: #11141a !important;
+  color: #c9d1d9 !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+  transition: background 120ms ease, color 120ms ease !important;
+}
+
+.tricys-dash-theme .dash-dropdown-option:hover,
+.tricys-dash-theme .dash-dropdown-option:focus,
+.tricys-dash-theme .dash-dropdown-option[data-focused="true"] {
   background: rgba(0, 210, 255, 0.14) !important;
   color: #f0f6fc !important;
+}
+
+.tricys-dash-theme .dash-dropdown-option[data-selected="true"],
+.tricys-dash-theme .dash-dropdown-option.is-selected {
+  background: rgba(0, 210, 255, 0.22) !important;
+  color: #00d2ff !important;
+  font-weight: 600 !important;
+}
+
+.tricys-dash-theme .dash-dropdown-actions {
+  background: #0b0e14 !important;
+  border-top: 1px solid #30363d !important;
+  padding: 6px 10px !important;
+}
+
+.tricys-dash-theme .dash-dropdown-action-button {
+  background: rgba(48, 54, 61, 0.6) !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 4px !important;
+  padding: 3px 10px !important;
+  font-size: 0.8rem !important;
+}
+
+.tricys-dash-theme .dash-dropdown-action-button:hover {
+  background: rgba(0, 210, 255, 0.2) !important;
+  color: #00d2ff !important;
+  border-color: rgba(0, 210, 255, 0.4) !important;
+}
+
+/* ==========================================================================
+   Dash 2/3 Dropdown Styles (React-Select .Select-*)
+   ========================================================================== */
+.tricys-dash-theme .Select {
+  color: #c9d1d9 !important;
+}
+
+.tricys-dash-theme .Select-control {
+  background: #11141a !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 8px !important;
+  min-height: 38px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  transition: border-color 140ms ease, box-shadow 140ms ease !important;
+}
+
+.tricys-dash-theme .Select-control:hover {
+  border-color: rgba(0, 210, 255, 0.45) !important;
+}
+
+.tricys-dash-theme .is-focused:not(.is-open) > .Select-control,
+.tricys-dash-theme .Select.is-open > .Select-control {
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.18) !important;
+  background: #11141a !important;
+}
+
+.tricys-dash-theme .Select-placeholder {
+  color: #8b949e !important;
+  background: transparent !important;
+  line-height: 36px !important;
+}
+
+.tricys-dash-theme .Select-input {
+  color: #f0f6fc !important;
+}
+
+.tricys-dash-theme .Select-input > input {
+  color: #f0f6fc !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.tricys-dash-theme .Select--single > .Select-control .Select-value,
+.tricys-dash-theme .Select-value {
+  color: #f0f6fc !important;
+  background: transparent !important;
+  line-height: 36px !important;
+}
+
+/* React-Select multi-value tag chips */
+.tricys-dash-theme .Select--multi .Select-value {
+  background: rgba(0, 210, 255, 0.12) !important;
+  color: #00d2ff !important;
+  border: 1px solid rgba(0, 210, 255, 0.3) !important;
+  border-radius: 4px !important;
+  margin: 3px 4px 3px 0 !important;
+  line-height: 1.4 !important;
+}
+
+.tricys-dash-theme .Select--multi .Select-value-icon {
+  color: #00d2ff !important;
+  border-right: 1px solid rgba(0, 210, 255, 0.3) !important;
+  padding: 2px 6px !important;
+  cursor: pointer !important;
+}
+
+.tricys-dash-theme .Select--multi .Select-value-icon:hover {
+  background: rgba(255, 99, 132, 0.25) !important;
+  color: #ff6384 !important;
+}
+
+.tricys-dash-theme .Select--multi .Select-value-label {
+  color: #f0f6fc !important;
+  background: transparent !important;
+  padding: 2px 8px !important;
+}
+
+.tricys-dash-theme .Select-arrow {
+  border-color: #8b949e transparent transparent !important;
+}
+
+.tricys-dash-theme .Select.is-open > .Select-control .Select-arrow {
+  border-color: transparent transparent #00d2ff !important;
+}
+
+.tricys-dash-theme .Select-clear {
+  color: #8b949e !important;
+}
+
+.tricys-dash-theme .Select-clear:hover {
+  color: #00d2ff !important;
+}
+
+/* React-Select Dropdown Menu Popover */
+.tricys-dash-theme .Select-menu-outer {
+  background: #11141a !important;
+  border: 1px solid #30363d !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6) !important;
+  z-index: 1050 !important;
+  overflow: hidden !important;
+  margin-top: 4px !important;
+}
+
+.tricys-dash-theme .Select-menu {
+  background: #11141a !important;
+  color: #c9d1d9 !important;
+  max-height: 280px !important;
+}
+
+.tricys-dash-theme .Select-option {
+  background: #11141a !important;
+  color: #c9d1d9 !important;
+  padding: 8px 12px !important;
+  transition: background 120ms ease, color 120ms ease !important;
+}
+
+.tricys-dash-theme .Select-option.is-focused,
+.tricys-dash-theme .Select-option:hover {
+  background: rgba(0, 210, 255, 0.14) !important;
+  color: #f0f6fc !important;
+}
+
+.tricys-dash-theme .Select-option.is-selected {
+  background: rgba(0, 210, 255, 0.22) !important;
+  color: #00d2ff !important;
+  font-weight: 600 !important;
+}
+
+.tricys-dash-theme .VirtualizedSelectOption {
+  background: #11141a !important;
+  color: #c9d1d9 !important;
+}
+
+.tricys-dash-theme .VirtualizedSelectFocusedOption {
+  background: rgba(0, 210, 255, 0.14) !important;
+  color: #f0f6fc !important;
+}
+
+.tricys-dash-theme .VirtualizedSelectSelectedOption {
+  background: rgba(0, 210, 255, 0.22) !important;
+  color: #00d2ff !important;
+}
+
+.tricys-dash-theme .Select-noresults {
+  background: #11141a !important;
+  color: #8b949e !important;
+  padding: 12px !important;
 }
 
 .tricys-dash-theme .js-plotly-plot,
@@ -734,4 +1068,196 @@ body {
 
 .tricys-dash-theme ::-webkit-scrollbar-track {
   background: #0b0e14;
+}
+
+/* ==========================================================================
+   Engineering Report Hub — Publication-Grade Markdown View Styling
+   ========================================================================== */
+.report-markdown-view {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  font-size: 0.95rem !important;
+  line-height: 1.75 !important;
+  color: #e6edf3 !important;
+  background-color: #0d1117 !important;
+  word-wrap: break-word !important;
+}
+
+.report-markdown-view h1 {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  color: #60a5fa !important;
+  margin-top: 10px !important;
+  margin-bottom: 18px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 2px solid #2563eb !important;
+  letter-spacing: 0.02em !important;
+}
+
+.report-markdown-view h2 {
+  font-size: 1.28rem !important;
+  font-weight: 700 !important;
+  color: #93c5fd !important;
+  margin-top: 28px !important;
+  margin-bottom: 14px !important;
+  padding: 6px 12px !important;
+  background: rgba(37, 99, 235, 0.12) !important;
+  border-left: 4px solid #3b82f6 !important;
+  border-radius: 0 6px 6px 0 !important;
+}
+
+.report-markdown-view h3 {
+  font-size: 1.12rem !important;
+  font-weight: 600 !important;
+  color: #67e8f9 !important;
+  margin-top: 22px !important;
+  margin-bottom: 10px !important;
+}
+
+.report-markdown-view h4 {
+  font-size: 1.02rem !important;
+  font-weight: 600 !important;
+  color: #cbd5e1 !important;
+  margin-top: 16px !important;
+  margin-bottom: 8px !important;
+}
+
+.report-markdown-view p {
+  margin-top: 0 !important;
+  margin-bottom: 14px !important;
+  text-align: justify !important;
+}
+
+.report-markdown-view ul,
+.report-markdown-view ol {
+  padding-left: 22px !important;
+  margin-bottom: 16px !important;
+}
+
+.report-markdown-view li {
+  margin-bottom: 6px !important;
+  line-height: 1.65 !important;
+}
+
+.report-markdown-view hr {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, #334155, transparent) !important;
+  margin: 24px 0 !important;
+}
+
+/* Beautiful Engineering Tables */
+.report-markdown-view table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  margin: 18px 0 22px 0 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  font-size: 0.91rem !important;
+  line-height: 1.5 !important;
+}
+
+.report-markdown-view th {
+  background: #1e3a8a !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  padding: 10px 14px !important;
+  border-bottom: 2px solid #0f172a !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  white-space: nowrap !important;
+}
+
+.report-markdown-view th:last-child {
+  border-right: none !important;
+}
+
+.report-markdown-view td {
+  padding: 9px 14px !important;
+  border-bottom: 1px solid #232d3d !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+  vertical-align: middle !important;
+  color: #e2e8f0 !important;
+}
+
+.report-markdown-view td:last-child {
+  border-right: none !important;
+}
+
+.report-markdown-view tr:nth-child(even) td {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+.report-markdown-view tr:nth-child(odd) td {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+.report-markdown-view tr:hover td {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  transition: background-color 0.15s ease !important;
+}
+
+/* MathJax / LaTeX Formula Integration */
+.report-markdown-view .MathJax,
+.report-markdown-view .MathJax_Display,
+.report-markdown-view .mjx-chtml {
+  color: #93c5fd !important;
+  font-size: 1.05em !important;
+  vertical-align: baseline !important;
+}
+
+.report-markdown-view .MathJax_Display {
+  margin: 14px 0 !important;
+  padding: 8px 0 !important;
+  overflow-x: auto !important;
+}
+
+/* Callout Quote Blocks */
+.report-markdown-view blockquote {
+  margin: 16px 0 !important;
+  padding: 12px 18px !important;
+  background: rgba(37, 99, 235, 0.08) !important;
+  border-left: 4px solid #3b82f6 !important;
+  border-radius: 0 6px 6px 0 !important;
+  color: #bfdbfe !important;
+  font-size: 0.92rem !important;
+}
+
+.report-markdown-view blockquote p {
+  margin-bottom: 0 !important;
+}
+
+/* Images & Figures */
+.report-markdown-view img {
+  max-width: 98% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 12px auto !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Circular Refresh Button Animation */
+#btn-refresh-report {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-color: rgba(0, 210, 255, 0.35) !important;
+  color: #00d2ff !important;
+}
+
+#btn-refresh-report:hover {
+  background: rgba(0, 210, 255, 0.15) !important;
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.4) !important;
+}
+
+#btn-refresh-report i {
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#btn-refresh-report:hover i {
+  transform: rotate(180deg);
 }

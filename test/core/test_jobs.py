@@ -84,19 +84,23 @@ def test_parse_rand_string():
 
 
 @pytest.mark.build_test
-def test_parse_file_string_column(tmpdir):
-    p = tmpdir.mkdir("sub").join("data.csv")
+def test_parse_file_string_column(tmp_path):
+    sub = tmp_path / "sub"
+    sub.mkdir(exist_ok=True)
+    p = sub / "data.csv"
     df = pd.DataFrame({"voltage": [1.1, 2.2, 3.3], "current": [10, 20, 30]})
-    df.to_csv(p, index=False)
+    df.to_csv(str(p), index=False)
     result = parse_parameter_value(f"file:{p}:voltage")
     assert result == [1.1, 2.2, 3.3]
 
 
 @pytest.mark.build_test
-def test_parse_file_string_no_column(tmpdir):
-    p = tmpdir.mkdir("sub").join("sampling.csv")
+def test_parse_file_string_no_column(tmp_path):
+    sub = tmp_path / "sub"
+    sub.mkdir(exist_ok=True)
+    p = sub / "sampling.csv"
     df = pd.DataFrame({"p1": [1, 2], "p2": [3, 4]})
-    df.to_csv(p, index=False)
+    df.to_csv(str(p), index=False)
     result = parse_parameter_value(f"file:{p}")
     assert result == [str(p)]
 
@@ -164,10 +168,12 @@ def test_generate_jobs_empty():
 
 
 @pytest.mark.build_test
-def test_generate_jobs_from_file(tmpdir):
-    p = tmpdir.mkdir("sub").join("data.csv")
+def test_generate_jobs_from_file(tmp_path):
+    sub = tmp_path / "sub"
+    sub.mkdir(exist_ok=True)
+    p = sub / "data.csv"
     df = pd.DataFrame({"p1": [1, 2], "p2": ["a", "b"]})
-    df.to_csv(p, index=False)
+    df.to_csv(str(p), index=False)
     params = {"file": str(p), "p3": 10}
     expected = [{"p1": 1, "p2": "a", "p3": 10}, {"p1": 2, "p2": "b", "p3": 10}]
     jobs = generate_simulation_jobs(params)

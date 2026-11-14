@@ -1,0 +1,131 @@
+// Auto-generated full-cycle override parameters by h2iso
+// Target: example_model.Cycle with Generic_ISS_Adapters
+
+// ==================== O-ISS (ISS-O) Parameters ====================
+// Auto-generated override parameters by h2iso
+// Target: Generic_ISS Modelica Models
+
+// --- o_iss.core.CD1 Parameters ---
+o_iss.core.CD1.T_top=20.0574
+o_iss.core.CD1.T_bottom=21.0763
+o_iss.core.CD1.tau=1.000000
+o_iss.core.CD1.m_top_ref[1]=8.85770765e+02
+o_iss.core.CD1.m_top_ref[2]=9.69810064e-04
+o_iss.core.CD1.m_top_ref[3]=0.00000000e+00
+o_iss.core.CD1.m_top_ref[4]=0.00000000e+00
+o_iss.core.CD1.m_top_ref[5]=0.00000000e+00
+o_iss.core.CD1.m_top_ref[6]=0.00000000e+00
+o_iss.core.CD1.m_bottom_ref[1]=1.82823578e+00
+o_iss.core.CD1.m_bottom_ref[2]=4.09959319e+00
+o_iss.core.CD1.m_bottom_ref[3]=1.34100403e-01
+o_iss.core.CD1.m_bottom_ref[4]=0.00000000e+00
+o_iss.core.CD1.m_bottom_ref[5]=0.00000000e+00
+o_iss.core.CD1.m_bottom_ref[6]=1.28298074e-06
+
+// --- o_iss.core.CD2 Parameters ---
+o_iss.core.CD2.T_top=20.0703
+o_iss.core.CD2.T_bottom=22.6937
+o_iss.core.CD2.tau=1.000000
+o_iss.core.CD2.m_top_ref[1]=3.23087311e+02
+o_iss.core.CD2.m_top_ref[2]=4.09961822e+00
+o_iss.core.CD2.m_top_ref[3]=2.63093961e-01
+o_iss.core.CD2.m_top_ref[4]=0.00000000e+00
+o_iss.core.CD2.m_top_ref[5]=0.00000000e+00
+o_iss.core.CD2.m_top_ref[6]=0.00000000e+00
+o_iss.core.CD2.m_bottom_ref[1]=0.00000000e+00
+o_iss.core.CD2.m_bottom_ref[2]=3.99213489e-05
+o_iss.core.CD2.m_bottom_ref[3]=9.07110896e+00
+o_iss.core.CD2.m_bottom_ref[4]=7.25614142e-06
+o_iss.core.CD2.m_bottom_ref[5]=7.76234923e-06
+o_iss.core.CD2.m_bottom_ref[6]=1.13727022e-05
+
+// --- o_iss.core.CD3 Parameters ---
+o_iss.core.CD3.T_top=21.5792
+o_iss.core.CD3.T_bottom=24.6477
+o_iss.core.CD3.tau=1.000000
+o_iss.core.CD3.m_top_ref[1]=1.13746247e+00
+o_iss.core.CD3.m_top_ref[2]=2.77759405e-05
+o_iss.core.CD3.m_top_ref[3]=4.37179614e+00
+o_iss.core.CD3.m_top_ref[4]=0.00000000e+00
+o_iss.core.CD3.m_top_ref[5]=0.00000000e+00
+o_iss.core.CD3.m_top_ref[6]=0.00000000e+00
+o_iss.core.CD3.m_bottom_ref[1]=0.00000000e+00
+o_iss.core.CD3.m_bottom_ref[2]=0.00000000e+00
+o_iss.core.CD3.m_bottom_ref[3]=1.58247653e-01
+o_iss.core.CD3.m_bottom_ref[4]=0.00000000e+00
+o_iss.core.CD3.m_bottom_ref[5]=4.62499704e-05
+o_iss.core.CD3.m_bottom_ref[6]=3.40359350e+00
+
+
+// ==================== I-ISS (ISS-I) Parameters ====================
+// Auto-generated override parameters by h2iso
+// Target: Generic_ISS Modelica Models
+
+// --- i_iss.core.CD1 Parameters ---
+i_iss.core.CD1.T_top=23.3884
+i_iss.core.CD1.T_bottom=24.2336
+i_iss.core.CD1.tau=1.000000
+i_iss.core.CD1.m_top_ref[1]=6.29922183e-03
+i_iss.core.CD1.m_top_ref[2]=7.13641449e-01
+i_iss.core.CD1.m_top_ref[3]=8.44263125e-01
+i_iss.core.CD1.m_top_ref[4]=4.65411326e+01
+i_iss.core.CD1.m_top_ref[5]=6.48610571e-04
+i_iss.core.CD1.m_top_ref[6]=0.00000000e+00
+i_iss.core.CD1.m_bottom_ref[1]=0.00000000e+00
+i_iss.core.CD1.m_bottom_ref[2]=0.00000000e+00
+i_iss.core.CD1.m_bottom_ref[3]=7.91931688e-06
+i_iss.core.CD1.m_bottom_ref[4]=2.55757258e+01
+i_iss.core.CD1.m_bottom_ref[5]=1.60041482e+02
+i_iss.core.CD1.m_bottom_ref[6]=8.87480090e+01
+
+// --- i_iss.core.CD2 Parameters ---
+i_iss.core.CD2.T_top=23.4388
+i_iss.core.CD2.T_bottom=24.1175
+i_iss.core.CD2.tau=1.000000
+i_iss.core.CD2.m_top_ref[1]=0.00000000e+00
+i_iss.core.CD2.m_top_ref[2]=0.00000000e+00
+i_iss.core.CD2.m_top_ref[3]=0.00000000e+00
+i_iss.core.CD2.m_top_ref[4]=3.16881522e+02
+i_iss.core.CD2.m_top_ref[5]=1.87069595e-02
+i_iss.core.CD2.m_top_ref[6]=0.00000000e+00
+i_iss.core.CD2.m_bottom_ref[1]=0.00000000e+00
+i_iss.core.CD2.m_bottom_ref[2]=0.00000000e+00
+i_iss.core.CD2.m_bottom_ref[3]=0.00000000e+00
+i_iss.core.CD2.m_bottom_ref[4]=3.38671754e-01
+i_iss.core.CD2.m_bottom_ref[5]=8.06545246e+00
+i_iss.core.CD2.m_bottom_ref[6]=0.00000000e+00
+
+// --- i_iss.core.CD3 Parameters ---
+i_iss.core.CD3.T_top=24.0778
+i_iss.core.CD3.T_bottom=24.8162
+i_iss.core.CD3.tau=1.000000
+i_iss.core.CD3.m_top_ref[1]=0.00000000e+00
+i_iss.core.CD3.m_top_ref[2]=0.00000000e+00
+i_iss.core.CD3.m_top_ref[3]=7.85141422e-06
+i_iss.core.CD3.m_top_ref[4]=2.59143976e+01
+i_iss.core.CD3.m_top_ref[5]=1.68106688e+02
+i_iss.core.CD3.m_top_ref[6]=1.63361920e+01
+i_iss.core.CD3.m_bottom_ref[1]=0.00000000e+00
+i_iss.core.CD3.m_bottom_ref[2]=0.00000000e+00
+i_iss.core.CD3.m_bottom_ref[3]=0.00000000e+00
+i_iss.core.CD3.m_bottom_ref[4]=0.00000000e+00
+i_iss.core.CD3.m_bottom_ref[5]=2.46449485e-04
+i_iss.core.CD3.m_bottom_ref[6]=7.24118169e+01
+
+// --- i_iss.core.CD4 Parameters ---
+i_iss.core.CD4.T_top=21.8823
+i_iss.core.CD4.T_bottom=23.4423
+i_iss.core.CD4.tau=1.000000
+i_iss.core.CD4.m_top_ref[1]=8.61667778e-03
+i_iss.core.CD4.m_top_ref[2]=1.17685821e+00
+i_iss.core.CD4.m_top_ref[3]=0.00000000e+00
+i_iss.core.CD4.m_top_ref[4]=0.00000000e+00
+i_iss.core.CD4.m_top_ref[5]=0.00000000e+00
+i_iss.core.CD4.m_top_ref[6]=0.00000000e+00
+i_iss.core.CD4.m_bottom_ref[1]=0.00000000e+00
+i_iss.core.CD4.m_bottom_ref[2]=1.51924867e-01
+i_iss.core.CD4.m_bottom_ref[3]=1.59166596e-02
+i_iss.core.CD4.m_bottom_ref[4]=4.57202562e+01
+i_iss.core.CD4.m_bottom_ref[5]=1.02686474e+00
+i_iss.core.CD4.m_bottom_ref[6]=5.54645214e-03
+

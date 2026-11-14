@@ -1,6 +1,7 @@
 within example_model;
 model Blanket
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 定义输入端口
   Modelica.Blocks.Interfaces.RealInput pulseInput "等离子体脉冲控制信号" annotation(
     Placement(transformation(origin = {-122, 90}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, -114}, extent = {{10, 10}, {-10, -10}}, rotation = -90)));
@@ -90,16 +91,16 @@ equation
   // --- 逐同位素质量平衡 ---
   for i in 1:5 loop
     outflow[i] = rate_scale * outflow_nominal[i];
-    der(I[i]) = admit_scale * inflow_total[i]
+    der(I[i]) = (admit_scale * inflow_total[i]
               - (1 + nonradio_loss[i]) * outflow[i]
-              - decay_loss[i] * I[i];
+              - decay_loss[i] * I[i]) / time_scale;
     to_TES[i] = to_TES_Fraction * outflow[i];
     to_CL[i] = to_CL_Fraction * outflow[i];
     overflow_out[i] = (1.0 - admit_scale) * inflow_total[i];
     rate_clip_out[i] = (1.0 - rate_scale) * outflow_nominal[i];
-      decay_rate[i] = decay_loss[i]*I[i];
-      leak_rate[i] = nonradio_loss[i]*I[i]/T;
-      der(cumulative_breed[i]) = if i == 1 then pulseInput*TBR else 0;
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
+      leak_rate[i] = nonradio_loss[i]*I[i]/T / time_scale;
+      der(cumulative_breed[i]) = (if i == 1 then pulseInput*TBR else 0) / time_scale;
     end for;
 
 annotation(

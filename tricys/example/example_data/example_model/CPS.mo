@@ -1,6 +1,7 @@
 within example_model;
 model CPS
 
+  outer parameter Real time_scale "Time-base factor: 1 = hour-based axis, 3600 = second-based axis";
   // 输入端口：来自Coolant_Loop的输入（5维）
   Modelica.Blocks.Interfaces.RealInput from_CL[5] "来自Coolant_Loop的输入" annotation(
     Placement(transformation(origin = {-120, 40}, extent = {{-10, -10}, {10, 10}}),
@@ -46,20 +47,20 @@ equation
   for i in 1:5 loop
     // 根据储存量是否超过铺底量，分为两种情况
     if I_total > threshold then
-      der(I[i]) = from_CL[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i];
+      der(I[i]) = (from_CL[i] - (1 + nonradio_loss[i]) * (1 - threshold / I_total) * I[i] / T  - decay_loss[i] * I[i]) / time_scale;
       outflow[i] = (1 - threshold / I_total) * I[i] / T;
-        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T;
+        leak_rate[i] = nonradio_loss[i] * (1 - threshold / I_total) * I[i] / T / time_scale;
     else
-      der(I[i]) = from_CL[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i];
+      der(I[i]) = (from_CL[i] - nonradio_loss[i] * I[i]/T  - decay_loss[i] * I[i]) / time_scale;
       outflow[i] = 0;
-        leak_rate[i] = nonradio_loss[i] * I[i]/T;
+        leak_rate[i] = nonradio_loss[i] * I[i]/T / time_scale;
     end if;
 
     // 输出流分配到ISS_O、FW、DIV
     to_ISS_O[i] = to_ISS_O_Fraction * outflow[i];
     to_FW[i] = to_FW_Fraction * (1 - to_ISS_O_Fraction) * outflow[i];
     to_DIV[i] = (1 - to_FW_Fraction) * (1 - to_ISS_O_Fraction) * outflow[i];
-      decay_rate[i] = decay_loss[i]*I[i];
+      decay_rate[i] = decay_loss[i]*I[i] / time_scale;
     end for;
 
 annotation(

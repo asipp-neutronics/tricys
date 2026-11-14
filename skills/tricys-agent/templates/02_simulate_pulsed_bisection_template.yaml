@@ -1,0 +1,57 @@
+version: "2.0"
+
+# ==============================================================================
+# TRICYS V2.0 演示模板 02: 单堆瞬态脉冲响应与二分法 TBR 搜索 (SC-2)
+# 
+# 模板定位:
+# - 单堆长周期瞬态脉冲工况仿真原型，并在指标层内嵌二分法求解临界 Required TBR
+# 
+# 核心特征 / 占位符契约:
+# - 任务模式: task.type = "simulate"，高精度时域积分 (DASSL 求解器)
+# - 自省替换: ${MODEL_FILE_PATH}, ${MODEL_NAME}, ${STORAGE_NODE}, ${TBR_PARAM}, ${BURNUP_PARAM}
+# - 关键指标: 峰值/终态库存，并通过 bisection_search 二分法求解满足自持倍增时间的 Required_TBR
+# - 交付报告: 自动生成瞬态动态响应曲线与质量平衡审查报告 (Markdown / DOCX / PDF)
+# ==============================================================================
+
+model:
+  fileName: "${MODEL_FILE_PATH}"
+  modelName: "${MODEL_NAME}"
+
+scenario:
+  time_base: "second"
+  stopTime: 2000.0
+  stepSize: 0.5
+  method: "dassl"
+  variableFilter: "time|${STORAGE_NODE}|.*\\.I.*"
+
+task:
+  type: "simulate"
+  parallel: true
+  parameters:
+    ${TBR_PARAM}: 1.12
+    ${BURNUP_PARAM}: 0.05
+  metrics:
+    peak_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "peak_value"
+    final_inventory:
+      source: "${STORAGE_NODE}"
+      evaluate: "final_value"
+    Required_TBR:
+      evaluate: "bisection_search"
+      parameter: "${TBR_PARAM}"
+      search_bounds: [1.0, 1.4]
+      tolerance: 0.001
+      max_iterations: 15
+      target_metric:
+        source: "${STORAGE_NODE}"
+        evaluate: "doubling_time"
+        threshold: 63072000.0  # 2 年倍增时间约束 (秒: 2 * 365 * 86400 s；若模型时基为小时则填相应小时数如 17520.0)
+
+visualizer:
+  enabled: true
+  launch_on_finish: false
+  report:
+    enabled: true
+    title: "TRICYS 单堆瞬态脉冲响应与全系统质量平衡审查报告"
+    formats: ["markdown", "docx", "pdf"]
