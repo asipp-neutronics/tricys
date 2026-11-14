@@ -2,20 +2,15 @@
 hide:
   - toc
 ---
-# API Reference - Post-processing Modules
+# API Reference - Post-processing
 
-!!! tip "Post-processing Modules"
-    The Post-processing modules provide analysis and reporting functions that are automatically executed after a simulation run.
-    Please select a specific module of interest from the tabs below.
+!!! tip "Post-processing"
+    The post-processing modules provide analysis, alerting and reporting that run automatically after a simulation.
 
-=== "Baseline Analysis"
+## Baseline Analysis
 
-    ::: tricys.postprocess.baseline_analysis
+::: tricys.analysis.baseline_analysis
 
-=== "Rise Analysis"
+## Static Alarm
 
-    ::: tricys.postprocess.rise_analysis
-
-=== "Static Alarm"
-
-    ::: tricys.postprocess.static_alarm
+::: tricys.plugins.static_alarm

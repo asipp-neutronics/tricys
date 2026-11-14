@@ -2,16 +2,11 @@
 hide:
   - toc
 ---
-# API Reference - Main Simulation Entrypoints
+# API Reference - Simulation
 
-!!! tip "Main Simulation Entrypoints"
-    The Main Simulation Entrypoints contain the main execution scripts for TRICYS, responsible for launching standard simulation and analysis workflows.
-    Please select a specific module of interest from the tabs below.
+!!! tip "Simulation"
+    The simulation entry point is the main TRICYS execution path for standard simulation and analysis pipelines.
 
-=== "Standard Simulation"
+## Standard Simulation
 
-    ::: tricys.simulation.simulation
-
-=== "Simulation Analysis"
-
-    ::: tricys.simulation.simulation_analysis
+::: tricys.simulation.simulation
