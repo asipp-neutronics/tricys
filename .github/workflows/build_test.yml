@@ -2,7 +2,7 @@ name: TRICYS V2 CI & Validation
 
 on:
   push:
-    branches: [ main, develop, V2.0 ]
+    branches: [ main, develop, v2.0 ]
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
