@@ -138,7 +138,7 @@ See also: [API Reference - Utilities](../api/tricys_utils.md)
 ## 3. Design Principles
 
 1. **Modularity**: Each functional module has a single responsibility and is independent.
-2. **Extensibility**: Easy to add new [post-processing modules](../guides/tricys_basic/post_processing_module.md), [performance metrics](tricys_analysis/performance_metrics.md), and [co-simulation handlers](../guides/tricys_basic/co_simulation_module.md#3-writing-your-own-handler).
+2. **Extensibility**: Easy to add new [post-processing modules](../guides/tricys_basic/post_processing_module.md), [performance metrics](tricys_analysis/performance_metrics.md), and [co-simulation handlers](../guides/tricys_basic/co_simulation_module.md#5-custom-handlers).
 3. **Configuration-Driven**: All simulation tasks are defined through [JSON configuration files](../guides/tricys_basic/basic_configuration.md).
 4. **Automation**: Fully automated workflow from simulation to [analysis report generation](tricys_analysis/analysis_report.md).
 5. **Openness**: Open-source design that encourages community contributions.

@@ -217,4 +217,4 @@ def run_div_simulation(temp_input_csv: str, temp_output_csv: str, **params) -> d
 
 ## 6. 高级：原理解说
 
-- **[协同仿真](../../explanation/co_simulation.md)**：协同仿真中两种将外部数据注入 Modelica 模型的方法。
+- **[协同仿真](../../explanation/tricys_basic/co_simulation.md)**：协同仿真中两种将外部数据注入 Modelica 模型的方法。

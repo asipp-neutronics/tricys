@@ -2,7 +2,7 @@
 
 Baseline Condition Analysis is a core feature of the `tricys` analysis toolset. It is used for a comprehensive evaluation of the system's behavior under a single, fixed parameter configuration (the "baseline condition") and automatically generates a standardized Markdown analysis report.
 
-This function is essentially a post-processing module of `tricys`. For general configurations of the post-processing module, please refer to the [Post-Processing Module](../../tricys_basic/post_processing_module.md). For common configurations such as metric definitions, glossaries, and unit maps, please refer to the [General Introduction](./index.md).
+This function is essentially a post-processing module of `tricys`. For general configurations of the post-processing module, please refer to the [Post-Processing Module](../tricys_basic/post_processing_module.md). For common configurations such as metric definitions, glossaries, and unit maps, please refer to the [General Introduction](./index.md).
 
 ## 1. Configuration File Example
 

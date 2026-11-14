@@ -37,7 +37,7 @@
 - **计算方法**: `bisection_search` (在 `tricys.simulation.simulation_analysis` 中实现)
 - **物理意义**: 在许多设计研究中，我们关心的不是在固定的氚增殖比（Tritium Breeding Ratio, TBR）下系统的性能如何，而是反过来：**为了达到某个特定的工程目标（例如，倍增时间小于10年），我们所需要的最低TBR是多少？**
 - **约束求解任务**。
-    -   当您在 `dependent_variables` 中包含它时，`tricys` 会启用一个优化算法（如[二分查找](../../guides/tricys_analysis/multi_parameter_sensitivity_analysis.md#2-高级用法目标寻求分析) `bisection_search`）。
+    -   当您在 `dependent_variables` 中包含它时，`tricys` 会启用一个优化算法（如[二分查找](../../guides/tricys_analysis/multi_parameter_sensitivity_analysis.md#2) `bisection_search`）。
     -   该算法会以 `parameter_to_optimize`（通常是模型中的 `TBR` 参数）为变量，在给定的 `search_range` 内反复迭代运行仿真。
     -   在每次迭代中，它会检查关键性能指标（例如 `Doubling_Time`）是否满足预设的约束条件（例如小于某个 `metric_max_value`）。
     -   最终，算法会收敛并输出满足约束条件的**最小TBR值**。

@@ -2,7 +2,7 @@
 
 基准工况分析（Baseline Condition Analysis）是 `tricys` 分析工具集中的一项核心功能。它用于对单一、确定的参数配置（即“基准工况”）下的系统行为进行全面评估，并自动生成一份标准化的 Markdown 分析报告。
 
-该功能本质上是 `tricys` 的后处理模块，关于后处理模块的通用配置，请参考[后处理模块](../../tricys_basic/post_processing_module.md)。关于性能指标的定义、术语表和单位映射等通用配置，请参考[通用介绍](./index.md)。
+该功能本质上是 `tricys` 的后处理模块，关于后处理模块的通用配置，请参考[后处理模块](../tricys_basic/post_processing_module.md)。关于性能指标的定义、术语表和单位映射等通用配置，请参考[通用介绍](./index.md)。
 
 ## 1. 配置文件示例
 

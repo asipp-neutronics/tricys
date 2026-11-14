@@ -42,7 +42,7 @@ TRICYS 采用分层架构设计，主要包含以下几层：
 
 **职责**：
 
-- 提供[命令行接口（CLI）和图形用户界面（GUI）](../guides/quickstart.md#5-tricys-相关命令)两种交互方式
+- 提供[命令行接口（CLI）和图形用户界面（GUI）](../guides/quickstart.md#5-tricys)两种交互方式
 - 解析用户输入的命令行参数和子命令（`basic`, `analysis`, `gui`, `example`, `archive`, `unarchive`）
 - 路由请求到相应的仿真执行层模块
 - 管理用户会话和配置文件加载
@@ -138,7 +138,7 @@ TRICYS 采用分层架构设计，主要包含以下几层：
 ## 3. 设计原则
 
 1. **模块化**：每个功能模块职责单一，相互独立
-2. **可扩展**：易于添加新的[后处理模块](../guides/tricys_basic/post_processing_module.md)、[性能指标](tricys_analysis/performance_metrics.md)和[协同仿真处理器](../guides/tricys_basic/co_simulation_module.md#3-编写您自己的处理器)
+2. **可扩展**：易于添加新的[后处理模块](../guides/tricys_basic/post_processing_module.md)、[性能指标](tricys_analysis/performance_metrics.md)和[协同仿真处理器](../guides/tricys_basic/co_simulation_module.md#5)
 3. **配置驱动**：所有仿真任务通过 [JSON 配置文件](../guides/tricys_basic/basic_configuration.md)定义
 4. **自动化**：从仿真到[分析报告生成](tricys_analysis/analysis_report.md)的全流程自动化
 5. **开放性**：开源设计，支持社区贡献

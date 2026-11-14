@@ -217,4 +217,4 @@ You can also explicitly specify the co-simulation `mode`.
 
 ## 6. Advanced: How It Works
 
-- **[Co-Simulation Explanation](../../explanation/co_simulation.md)**: Learn about the two methods for injecting external data into a Modelica model during co-simulation.
+- **[Co-Simulation Explanation](../../explanation/tricys_basic/co_simulation.md)**: Learn about the two methods for injecting external data into a Modelica model during co-simulation.

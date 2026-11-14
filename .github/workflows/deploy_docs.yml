@@ -40,4 +40,4 @@ jobs:
                       pymdown-extensions==10.16.1
 
       - name: Deploy
-        run: mkdocs gh-deploy --force --clean
+        run: mkdocs gh-deploy --force --clean --strict

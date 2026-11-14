@@ -1,9 +1,10 @@
 import os
+from typing import Any
 
 import pandas as pd
 
 
-def run_div_simulation(temp_input_csv: str, temp_output_csv: str, **kwargs) -> dict:
+def run_div_simulation(temp_input_csv: str, temp_output_csv: str, **kwargs: Any) -> dict:
     """Runs a simulation based on fake divertor data.
 
     Reads data from a source CSV, selects specific columns, and writes them

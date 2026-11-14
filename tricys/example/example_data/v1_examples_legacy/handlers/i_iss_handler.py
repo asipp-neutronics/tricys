@@ -2,6 +2,7 @@ import logging
 import os
 import random  # Added
 import time
+from typing import Any
 
 import pandas as pd
 
@@ -455,7 +456,7 @@ def run_aspen_simulation(
     return output_placeholder
 
 
-def run_dummy_simulation(temp_input_csv: str, temp_output_csv: str, **kwargs) -> dict:
+def run_dummy_simulation(temp_input_csv: str, temp_output_csv: str, **kwargs: Any) -> dict:
     """Runs a simulation based on fake i_ISS data.
 
     Reads data from a source CSV, selects specific columns, and writes them

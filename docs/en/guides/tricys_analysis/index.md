@@ -31,7 +31,7 @@ This is the most critical part, used to define the Key Performance Indicators (K
 - **Value**: An object describing how to calculate that metric.
     - `source_column`: The source of the raw data for the calculation, i.e., the column name in the simulation results (`.csv`).
     - `method`: The name of the function in the `tricys.analysis.metric` module used for the calculation.
-- **Details**: `tricys` has several built-in functions for common metric calculations. For a detailed explanation of the physical meaning and calculation methods of core performance metrics (like `Startup_Inventory`, `Doubling_Time`, etc.), please refer to [Core Performance Metrics Explained](../../explanation/performance_metrics.md).
+- **Details**: `tricys` has several built-in functions for common metric calculations. For a detailed explanation of the physical meaning and calculation methods of core performance metrics (like `Startup_Inventory`, `Doubling_Time`, etc.), please refer to [Core Performance Metrics Explained](../../explanation/tricys_analysis/performance_metrics.md).
 
 ### 1.3. `glossary_path` (Glossary)
 

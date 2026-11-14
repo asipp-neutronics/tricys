@@ -102,7 +102,7 @@ graph TD
 
 ### 3.3. Execution Mode Decision
 This is a critical branching point in the flow where `tricys` decides how to execute the generated jobs based on the configuration:
-- **Standard vs. Co-simulation**: It first checks for the presence of a `co_simulation` configuration block. If it exists, the [co-simulation flow](../co_simulation_module.md) is initiated; otherwise, the standard simulation flow is followed.
+- **Standard vs. Co-simulation**: It first checks for the presence of a `co_simulation` configuration block. If it exists, the [co-simulation flow](co_simulation.md) is initiated; otherwise, the standard simulation flow is followed.
 - **Parallel vs. Sequential**: Next, it checks the `simulation.concurrent` flag. If `true`, `tricys` uses a [concurrent mode](concurrency.md) (multi-threading or multi-processing) to execute multiple jobs simultaneously. If `false`, the jobs are executed sequentially, one after another.
 
 These four combinations (Standard/Sequential, Standard/Parallel, Co-simulation/Sequential, Co-simulation/Parallel) correspond to different execution functions to achieve optimal performance and isolation.
