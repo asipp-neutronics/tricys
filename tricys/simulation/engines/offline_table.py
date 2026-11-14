@@ -22,7 +22,7 @@ from tricys.core.modelica import (
 )
 from tricys.utils.concurrency_utils import get_safe_max_workers
 from tricys.utils.file_utils import get_unique_filename
-from tricys.workflow.base import BaseSimulationEngine
+from tricys.workflow.base import BaseSimulationEngine, JobExecutionError
 from tricys.workflow.context import PipelineContext
 from tricys.workflow.registry import register_simulation_engine
 
@@ -349,6 +349,7 @@ class OfflineTableEngine(BaseSimulationEngine):
         )
 
         raw_results = []
+        failures: list[tuple[int, str]] = []
         if use_concurrent and len(jobs) > 1:
             pool_args = [
                 (context.config, job_params, i) for i, job_params in enumerate(jobs, 1)
@@ -359,6 +360,7 @@ class OfflineTableEngine(BaseSimulationEngine):
                 ):
                     if err:
                         logger.error(f"CoSim Job {job_id} failed: {err}")
+                        failures.append((job_id, str(err)))
                     else:
                         raw_results.append(
                             {"job_id": job_id, "params": job_p, "result_path": res_path}
@@ -371,8 +373,20 @@ class OfflineTableEngine(BaseSimulationEngine):
                     raw_results.append(
                         {"job_id": i, "params": job_params, "result_path": res_path}
                     )
+                else:
+                    failures.append(
+                        (i, "co-simulation produced no result (see error log)")
+                    )
 
         context.raw_results = raw_results
+        if failures:
+            # Any failed job fails the invocation (see
+            # test/core/test_job_failure_propagation.py).
+            logger.error(
+                f"OfflineTableEngine: {len(failures)}/{len(jobs)} jobs failed "
+                f"({len(raw_results)}/{len(jobs)} succeeded)"
+            )
+            raise JobExecutionError(self.name, failures, len(jobs))
         logger.info(
             f"OfflineTableEngine: Completed {len(raw_results)}/{len(jobs)} jobs successfully"
         )

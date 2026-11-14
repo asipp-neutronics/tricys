@@ -15,7 +15,7 @@ from tricys.core.modelica import (
     load_modelica_package,
 )
 from tricys.utils.concurrency_utils import get_safe_max_workers
-from tricys.workflow.base import BaseSimulationEngine
+from tricys.workflow.base import BaseSimulationEngine, JobExecutionError
 from tricys.workflow.context import PipelineContext
 from tricys.workflow.registry import register_simulation_engine
 
@@ -315,6 +315,7 @@ class StandardSimulationEngine(BaseSimulationEngine):
         )
 
         raw_results = []
+        failures: list[tuple[int, str]] = []
 
         if use_concurrent:
             # Ensure compilation artifacts exist
@@ -363,6 +364,7 @@ class StandardSimulationEngine(BaseSimulationEngine):
                     logger.info(f"Job {completed_count} of {total_jobs}")
                     if error:
                         logger.error(f"Job {job_id} failed: {error}")
+                        failures.append((job_id, str(error)))
                     else:
                         df_res = None
                         if result_path and os.path.exists(result_path):
@@ -469,11 +471,21 @@ class StandardSimulationEngine(BaseSimulationEngine):
                         )
                     except Exception as exc:
                         logger.error(f"Sequential job {i} failed: {exc}")
+                        failures.append((i, str(exc)))
             finally:
                 omc.sendExpression("quit()")
 
         context.raw_results = raw_results
         context.sync_typed_results()
+        if failures:
+            # Any failed job fails the invocation: a sweep with silently missing rows
+            # must not look like a successful run (see
+            # test/core/test_job_failure_propagation.py).
+            logger.error(
+                f"StandardSimulationEngine: {len(failures)}/{len(jobs)} jobs failed "
+                f"({len(raw_results)}/{len(jobs)} succeeded)"
+            )
+            raise JobExecutionError(self.name, failures, len(jobs))
         logger.info(
             f"StandardSimulationEngine: Completed {len(raw_results)}/{len(jobs)} jobs successfully"
         )
