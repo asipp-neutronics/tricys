@@ -11,6 +11,40 @@ TRICYS follows [Semantic Versioning](https://semver.org/):
 
 ---
 
+## 2.0.0 ( 2026-11-14 )
+
+TRICYS 2.0.0 is an architectural rebuild: from procedure-oriented script assembly to a pluggable pipeline with a model-centric engineering base.
+
+### Added
+
+* **Pluggable workflow engine**: a three-stage pipeline (preprocess → simulation engine → postprocess) where stages exchange data only through a strongly typed `PipelineContext`; plugins can be registered and extended.
+* **Schema 2.0 with two configuration tracks**: a research DSL (`simulate` / `sweep` / `sensitivity` / `cosim` / `optimize`) alongside explicit pipelines; 1.0 JSON configurations are still accepted.
+* **Time-base governance**: new `time_base` (`second` / `hour`). Configuration time fields are always hours and the framework converts them to the model's base unit, eradicating the 3600× dimensional mismatch of Issue #99.
+* **Three co-simulation paradigms**: offline table (`offline_table`), online step (`online_step`), and steady-state parameter injection (`param_inject`); DWSIM (CAPE-OPEN) and FESTIM 2.0 divertor FEM online-step integration.
+* **Nested bisection optimisation engine**: outer search for the minimum start-up tritium inventory and inner approach to the critical TBR, constrained simultaneously by the in-service reserve trough and the target doubling time.
+* **Model introspection and review**: `tricys model inspect` / `tricys model review` audit time scale, conservation streams and initial values, and can emit a remediation patch; `tricys run --diagnose` provides structured failure interception.
+* **Visualisation and reporting**: HDF5 result dashboard; reports export to Markdown / DOCX / PDF.
+* **Cloud-native container base**: a single All-in-One image bundling OpenModelica, FESTIM, CasADi/H2ISO, the FastAPI backend, the Vue3 console, the GoView wall display, the Dash dashboard and an Nginx gateway.
+* **Examples**: 12 v2 industrial benchmark cases (01–12); 1.0 examples are archived under `v1_examples_legacy/`.
+
+### Changed (breaking)
+
+* New `time_base`, defaulting to `second`. **Models authored in hours during the 1.0 era must set `time_base: hour` explicitly**, otherwise results are off by 3600×. See "Upgrading from TRICYS 1.0 to 2.0".
+* `tricys.handlers` archived to `tricys.example.example_data.v1_examples_legacy.handlers`, with only a `sys.modules` compatibility shim retained.
+* Prebuilt FMU / SSP assets removed (`example_model_ssp/` is no longer shipped).
+* `tricys.handlers` dropped from the package list.
+
+### Fixed
+
+* **Inconsistent time-base conversion between the sequential and concurrent paths**: 1.0-style configurations (time fields under `simulation`) bypassed the hour → second conversion in sequential mode, so the same configuration reached OpenModelica with stopTime values 3600× apart while both reported success. Both paths now share a single conversion entry point. **Results produced in sequential mode from 1.0-style configurations before this fix are invalid and must be re-run.**
+
+### Known issues
+
+* Job failures do not reach the exit code: partial failures in a sweep or co-simulation still return `0`. Scheduled for 2.0.1.
+* The online mass auditor takes its initial reading as the baseline without sanity checks; abnormal readings (0 / NaN / negative) are accepted. Scheduled for 2.0.1.
+
+---
+
 ## 1.0.0 ( 2025-11-15 )
 
 TRICYS 1.0.0 is the first official stable release of the project, marking the completion of core functionalities and readiness for production environments.
