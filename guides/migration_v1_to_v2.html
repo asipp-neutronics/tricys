@@ -2315,6 +2315,9 @@ New models authored in SI seconds keep the default <code>second</code>, and the 
 <li><code>time_base: second</code> → OMC receives <code>7 200 000</code> (seconds)</li>
 <li><code>time_base: hour</code> → OMC receives <code>2 000</code> (hours, identical to 1.0)</li>
 </ul>
+<blockquote>
+<p><strong>Since 2.0.1</strong>: a configuration with neither <code>time_base</code> nor a <code>scenario</code> block (the 1.0 shape) triggers a WARNING about the 3600x risk. It is a warning only — the default stays <code>second</code>; the framework will not guess for you.</p>
+</blockquote>
 <p><strong>Where to put it:</strong></p>
 <ul>
 <li>2.0 YAML configurations (<code>scenario</code> block): <code>scenario.time_base</code></li>

@@ -2317,6 +2317,9 @@
 <li><code>time_base: second</code> → OMC 收到 <code>7 200 000</code>（秒）</li>
 <li><code>time_base: hour</code> → OMC 收到 <code>2 000</code>（小时，与 1.0 一致）</li>
 </ul>
+<blockquote>
+<p><strong>2.0.1 起</strong>：如果配置里既没有 <code>time_base</code> 也没有 <code>scenario</code> 段（即 1.0 形状），框架会打一条 WARNING 提示 3600 倍风险。它只是提示，不会替你改默认值——默认仍是 <code>second</code>。</p>
+</blockquote>
 <p><strong>放在哪：</strong></p>
 <ul>
 <li>2.0 配置（YAML，<code>scenario</code> 块）：<code>scenario.time_base</code></li>
