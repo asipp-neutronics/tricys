@@ -19,6 +19,8 @@
 - `time_base: second` → OMC 收到 `7 200 000`（秒）
 - `time_base: hour` → OMC 收到 `2 000`（小时，与 1.0 一致）
 
+> **2.0.1 起**：如果配置里既没有 `time_base` 也没有 `scenario` 段（即 1.0 形状），框架会打一条 WARNING 提示 3600 倍风险。它只是提示，不会替你改默认值——默认仍是 `second`。
+
 **放在哪：**
 
 - 2.0 配置（YAML，`scenario` 块）：`scenario.time_base`

@@ -74,8 +74,13 @@ B 与 A 相差 3600 倍，退出码 0、无任何告警。C 证明**唯一原因
 
 `analysis/2`（单参数敏感性）、`analysis/4`（Sobol）、`analysis/5`（Latin）在 240 s 上限内未跑完（样本数多，属正常耗时），没有观察到失败，但也**不能记为通过**。
 
-## 建议的处置（待裁决）
+## 处置结论（2026-11-15 裁决）
 
-1. **时间基准**：对"无 `time_base` 且时间字段在 `simulation` 段"的 v1 形状，是否默认按 `hour` 处理？这会改变现有 v2 行为（v2 配置都用 `scenario`，不受影响），能直接兑现 AC2 的"无需修改"。
-2. **资产缺失**：`9_online_cosim` 要么重新提供 SSP 生成步骤，要么显式标注为"2.0 不支持的遗留算例"并移出 AC2 统计口径。
-3. **多文件包**：绕开 `ModelicaSystemOMC` 的复制行为（`load_modelica_package` 已经能正确加载），或在依赖层钉回可用版本；这属于独立缺陷，建议单开一项。
+1. **时基默认值保持 `second`（SI），不改为 `hour`。**
+   理由：v2 的 12 个算例全部是秒基准模型（`time_scale = 3600`），把默认改回 `hour` 会让它们在默认路径上反向错 3600 倍——等于用一个 bug 换另一个；而且默认值描述的是"模型时基"，不是"配置时间单位"（配置恒为小时）。
+   **改为显式告警**：`StandardSimulationEngine` 检测到 v1 形状（有 `simulation` 段、无 `time_base`、无 `scenario`）时打一条 WARNING，指名 3600 倍风险与修复方式；默认值不变。
+   **因此 AC2 的措辞应调整为**"v1.0 配置可被解析并运行，缺省时基会给出明确的 3600 倍风险提示"，而不是"无需修改即准确计算"。
+2. **`9_online_cosim` 移出 AC2 统计口径。** 该算例的 SSP 拓扑来自仓库外的 CFEDR 模型（配置引用 `CFEDR.I_ISS`，本仓库没有 `package CFEDR`），用仓内 `example_model` 重建只能得到 2 个 FMU（原 SSP 为 18 个组件）；运行还需要 OMSimulator 与 Aspen。标注为"需外部模型与外部运行时"的遗留算例，2.0 的替代算例是 `v2_examples/09_cosim_online_step.yaml`。
+3. **多文件包加载缺陷单独立项**：`ModelicaSystemOMC` 把 `package.mo` 复制到 `/tmp/<uuid>/` 导致包名不匹配；用同一套依赖跑 v1.1.0 同样复现，不是 2.0 独有。修法是绕开该复制行为（`load_modelica_package` 已能正确加载）。
+
+按调整后的口径，AC2 仍未达成：剩余缺口是上述第 3 条（多文件包）与第 3 节的时基偏差。

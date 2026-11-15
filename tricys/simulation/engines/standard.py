@@ -223,18 +223,32 @@ class StandardSimulationEngine(BaseSimulationEngine):
         task_cfg = context.config.get("task", {})
         jobs = context.jobs or [{}]
 
+        explicit_time_base = (
+            self.time_base
+            or sim_cfg.get("time_base")
+            or scenario_cfg.get("time_base")
+        )
+        if explicit_time_base is None:
+            inherited = getattr(context, "time_base", None)
+            if inherited not in (None, "", "second"):
+                explicit_time_base = inherited
         time_base = (
-            str(
-                self.time_base
-                or sim_cfg.get("time_base")
-                or scenario_cfg.get("time_base")
-                or getattr(context, "time_base", "second")
-                or "second"
-            )
+            str(explicit_time_base or getattr(context, "time_base", "second") or "second")
             .strip()
             .lower()
         )
         sim_cfg["time_base"] = time_base
+
+        # A 1.0-era configuration carries no ``time_base`` at all. Falling back to the
+        # SI default is correct for models authored in seconds, but silently produces a
+        # 3600x wrong time span for hour-authored legacy models (AC2 of the v2 acceptance
+        # criteria). Keep the SI default and say so loudly instead of guessing.
+        if explicit_time_base is None and "scenario" not in context.config:
+            logger.warning(
+                "simulation.time_base 未声明：按默认 'second' 处理。若模型按小时书写"
+                "（1.0 时代模型），请显式设置 simulation.time_base='hour'；否则下发到 "
+                "OpenModelica 的时间跨度会相差 3600 倍。"
+            )
 
         # Explicit-First with Context-Fallback parameter resolution.
         # Values are resolved in the configuration's native unit (hours) and converted

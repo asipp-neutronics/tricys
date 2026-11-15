@@ -23,6 +23,7 @@ This module is pure Python (OpenModelica is faked), so it is selected by the CI 
 from __future__ import annotations
 
 import copy
+import logging
 
 import pandas as pd
 import pytest
@@ -185,3 +186,44 @@ def test_v2_scenario_time_fields_are_converted_exactly_once(monkeypatch, tmp_pat
     options = captured["sequential_options"]
     assert options["stopTime"] == pytest.approx(10.0 * HOURS_TO_SECONDS)
     assert options["stepSize"] == pytest.approx(0.1 * HOURS_TO_SECONDS)
+
+
+# ------------------------------------------------------- legacy-shape warning (AC2)
+
+
+def test_legacy_config_without_time_base_warns(monkeypatch, tmp_path, caplog):
+    """A 1.0-era config must not silently inherit the SI default."""
+    with caplog.at_level(
+        logging.WARNING, logger="tricys.simulation.engines.standard"
+    ):
+        _execute_engine(monkeypatch, tmp_path, concurrent=False)
+
+    messages = [r.getMessage() for r in caplog.records]
+    assert any("time_base" in m and "3600" in m for m in messages), messages
+
+
+def test_v2_config_without_time_base_does_not_warn(monkeypatch, tmp_path, caplog):
+    """A ``scenario`` block is the 2.0 shape: it may legitimately rely on the default."""
+    with caplog.at_level(
+        logging.WARNING, logger="tricys.simulation.engines.standard"
+    ):
+        _execute_engine(
+            monkeypatch, tmp_path, concurrent=False, config=V2_SCENARIO_CONFIG
+        )
+
+    messages = [r.getMessage() for r in caplog.records]
+    assert not any("time_base" in m and "3600" in m for m in messages), messages
+
+
+def test_explicit_time_base_does_not_warn(monkeypatch, tmp_path, caplog):
+    """An explicit declaration is the answer, so there is nothing to warn about."""
+    config = copy.deepcopy(LEGACY_V1_CONFIG)
+    config["simulation"]["time_base"] = "hour"
+
+    with caplog.at_level(
+        logging.WARNING, logger="tricys.simulation.engines.standard"
+    ):
+        _execute_engine(monkeypatch, tmp_path, concurrent=False, config=config)
+
+    messages = [r.getMessage() for r in caplog.records]
+    assert not any("time_base" in m and "3600" in m for m in messages), messages
