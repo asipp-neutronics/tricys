@@ -78,4 +78,15 @@ v1_examples_legacy/
 | - | `10_cosim_parameter_injection.yaml` | CFETR ISS-I/ISS-O 稳态求解参数快速注入 |
 
 ---
+
+## ⚠️ 需要外部资产 / 运行时的算例
+
+### `basic/9_online_cosim`（在线协同仿真）
+
+- **缺什么**：`example_model_ssp/ssp/example_model.ssp` 与其 18 个组件 FMU 已在 2.0.0 移除，仓库不再携带二进制资产。
+- **为什么无法在本仓库重建**：该 SSP 的拓扑来自仓库外的 CFEDR 模型（配置里 `submodel_name` 是 `CFEDR.I_ISS`，本仓库没有 `package CFEDR`）。用仓内的 `example_model` 重跑 `script/cosim/build_pipeline.py`，步骤 1–3 能过，但只产出 2 个 FMU（`Cycle` / `Cycle_Constrained`），与原 SSP 的 18 个组件对不上。
+- **运行前提**：OMSimulator Python bindings（`4_export_ssp.py` 导出 SSP 与 `online_oms` 引擎都需要）＋ Aspen Plus（`example_aspenbkp/T2-Threetowers4.bkp`）。
+- **替代**：2.0 的对应算例是 `v2_examples/09_cosim_online_step.yaml`。
+
+---
 *TRICYS 开发组归档于 2026 年*

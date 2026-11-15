@@ -19,6 +19,8 @@ Same `stop_time: 2000`:
 - `time_base: second` → OMC receives `7 200 000` (seconds)
 - `time_base: hour` → OMC receives `2 000` (hours, identical to 1.0)
 
+> **Since 2.0.1**: a configuration with neither `time_base` nor a `scenario` block (the 1.0 shape) triggers a WARNING about the 3600x risk. It is a warning only — the default stays `second`; the framework will not guess for you.
+
 **Where to put it:**
 
 - 2.0 YAML configurations (`scenario` block): `scenario.time_base`
