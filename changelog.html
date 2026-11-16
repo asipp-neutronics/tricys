@@ -2349,7 +2349,12 @@
 <h2 id="201-unreleased">2.0.1 ( Unreleased )<a class="headerlink" href="#201-unreleased" title="Permanent link">&para;</a></h2>
 <h3 id="changed-behaviour">Changed (behaviour)<a class="headerlink" href="#changed-behaviour" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Any failed job now yields a non-zero exit code</strong>: previously a failed job in a sweep or a co-simulation only wrote to the log, the process still exited <code>0</code>, and the results file merely had fewer rows — indistinguishable from a successful run. <code>StandardSimulationEngine</code> (both sequential and concurrent paths) and <code>OfflineTableEngine</code> now raise <code>JobExecutionError</code> (carrying the failed job IDs and reasons) when any job fails, and the CLI exits <code>1</code>. <strong>Scripts that relied on partial failures returning 0 must be adapted.</strong></li>
+<li>
+<p><strong>Any failed job now yields a non-zero exit code</strong>: previously a failed job in a sweep or a co-simulation only wrote to the log, the process still exited <code>0</code>, and the results file merely had fewer rows — indistinguishable from a successful run. <code>StandardSimulationEngine</code> (both sequential and concurrent paths) and <code>OfflineTableEngine</code> now raise <code>JobExecutionError</code> (carrying the failed job IDs and reasons) when any job fails, and the CLI exits <code>1</code>. <strong>Scripts that relied on partial failures returning 0 must be adapted.</strong></p>
+</li>
+<li>
+<p><strong>Fixed: multi-file Modelica packages (<code>package.mo</code>) could not run.</strong> OMPython 4 copies the <code>.mo</code> into its own work directory before loading it, which separates <code>package.mo</code> from its sibling <code>.mo</code> files and makes the package name disagree with the temporary directory name (6 legacy configurations failed because of it). The whole package directory is now staged under a directory named after the package before loading.</p>
+</li>
 </ul>
 <hr />
 <h2 id="200-2026-11-14">2.0.0 ( 2026-11-14 )<a class="headerlink" href="#200-2026-11-14" title="Permanent link">&para;</a></h2>
