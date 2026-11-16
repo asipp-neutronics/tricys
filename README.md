@@ -1,6 +1,6 @@
 # TRICYS: Fusion Reactor Plant-Wide Tritium Fuel Cycle Integrated Simulation Platform
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](./pyproject.toml)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](./pyproject.toml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-All--in--One-2496ED.svg?logo=docker&logoColor=white)](https://github.com/asipp-neutronics/tricys/pkgs/container/tricys)

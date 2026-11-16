@@ -11,9 +11,11 @@ TRICYS 遵循[语义化版本规范（Semantic Versioning）](https://semver.org
 
 ---
 
-## 2.0.1 ( 未发布 )
+## 2.0.1 ( 2026-11-16 )
 
 ### 变更（行为）
+
+* **v1 形状配置缺省时基会告警**：配置里既没有 `time_base` 也没有 `scenario` 段（1.0 形状）时，现在打一条 WARNING 指明 3600 倍风险与修法。默认值仍是 `second`（SI），不改变行为。
 
 * **任一作业失败即返回非零退出码**：此前批量扫描与协同仿真中作业失败只写日志，进程仍返回 `0`，结果文件里只是少了对应的行，与"跑成功"无法区分。现在 `StandardSimulationEngine`（顺序与并发两条路径）与 `OfflineTableEngine` 在任意作业失败时抛出 `JobExecutionError`（携带失败作业 ID 与原因），CLI 退出码为 `1`。**依赖"部分作业失败也返回 0"的脚本需要适配。**
 
