@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#201-unreleased" class="md-skip">
+        <a href="#201-2026-11-16" class="md-skip">
           Skip to content
         </a>
       
@@ -2055,15 +2055,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#201-unreleased" class="md-nav__link">
+  <a href="#201-2026-11-16" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.0.1 ( Unreleased )
+        2.0.1 ( 2026-11-16 )
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.0.1 ( Unreleased )">
+    <nav class="md-nav" aria-label="2.0.1 ( 2026-11-16 )">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2216,15 +2216,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#201-unreleased" class="md-nav__link">
+  <a href="#201-2026-11-16" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.0.1 ( Unreleased )
+        2.0.1 ( 2026-11-16 )
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.0.1 ( Unreleased )">
+    <nav class="md-nav" aria-label="2.0.1 ( 2026-11-16 )">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2346,9 +2346,12 @@
 <li><strong>Patch</strong>: Incremented for backward-compatible bug fixes</li>
 </ul>
 <hr />
-<h2 id="201-unreleased">2.0.1 ( Unreleased )<a class="headerlink" href="#201-unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="201-2026-11-16">2.0.1 ( 2026-11-16 )<a class="headerlink" href="#201-2026-11-16" title="Permanent link">&para;</a></h2>
 <h3 id="changed-behaviour">Changed (behaviour)<a class="headerlink" href="#changed-behaviour" title="Permanent link">&para;</a></h3>
 <ul>
+<li>
+<p><strong>A 1.0-shaped configuration now warns about its time base</strong>: when neither <code>time_base</code> nor a <code>scenario</code> block is present, the engine logs a WARNING naming the 3600x risk and the fix. The default stays <code>second</code> (SI); behaviour is unchanged.</p>
+</li>
 <li>
 <p><strong>Any failed job now yields a non-zero exit code</strong>: previously a failed job in a sweep or a co-simulation only wrote to the log, the process still exited <code>0</code>, and the results file merely had fewer rows — indistinguishable from a successful run. <code>StandardSimulationEngine</code> (both sequential and concurrent paths) and <code>OfflineTableEngine</code> now raise <code>JobExecutionError</code> (carrying the failed job IDs and reasons) when any job fails, and the CLI exits <code>1</code>. <strong>Scripts that relied on partial failures returning 0 must be adapted.</strong></p>
 </li>

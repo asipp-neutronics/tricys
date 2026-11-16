@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#201" class="md-skip">
+        <a href="#201-2026-11-16" class="md-skip">
           跳转至
         </a>
       
@@ -2057,15 +2057,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#201" class="md-nav__link">
+  <a href="#201-2026-11-16" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.0.1 ( 未发布 )
+        2.0.1 ( 2026-11-16 )
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.0.1 ( 未发布 )">
+    <nav class="md-nav" aria-label="2.0.1 ( 2026-11-16 )">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2218,15 +2218,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#201" class="md-nav__link">
+  <a href="#201-2026-11-16" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.0.1 ( 未发布 )
+        2.0.1 ( 2026-11-16 )
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.0.1 ( 未发布 )">
+    <nav class="md-nav" aria-label="2.0.1 ( 2026-11-16 )">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2348,9 +2348,12 @@
 <li><strong>修订号（Patch）</strong>：进行向后兼容的问题修正时递增</li>
 </ul>
 <hr />
-<h2 id="201">2.0.1 ( 未发布 )<a class="headerlink" href="#201" title="Permanent link">&para;</a></h2>
+<h2 id="201-2026-11-16">2.0.1 ( 2026-11-16 )<a class="headerlink" href="#201-2026-11-16" title="Permanent link">&para;</a></h2>
 <h3 id="_1">变更（行为）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
 <ul>
+<li>
+<p><strong>v1 形状配置缺省时基会告警</strong>：配置里既没有 <code>time_base</code> 也没有 <code>scenario</code> 段（1.0 形状）时，现在打一条 WARNING 指明 3600 倍风险与修法。默认值仍是 <code>second</code>（SI），不改变行为。</p>
+</li>
 <li>
 <p><strong>任一作业失败即返回非零退出码</strong>：此前批量扫描与协同仿真中作业失败只写日志，进程仍返回 <code>0</code>，结果文件里只是少了对应的行，与"跑成功"无法区分。现在 <code>StandardSimulationEngine</code>（顺序与并发两条路径）与 <code>OfflineTableEngine</code> 在任意作业失败时抛出 <code>JobExecutionError</code>（携带失败作业 ID 与原因），CLI 退出码为 <code>1</code>。<strong>依赖"部分作业失败也返回 0"的脚本需要适配。</strong></p>
 </li>
