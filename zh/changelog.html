@@ -2357,6 +2357,9 @@
 <li>
 <p><strong>修复多文件 Modelica 包（<code>package.mo</code>）无法运行</strong>：OMPython 4 会把 <code>.mo</code> 复制到自己的临时工作目录再加载，导致 <code>package.mo</code> 与同目录其它 <code>.mo</code> 分离、包名与临时目录名不匹配而加载失败（6 个 v1 存量配置因此跑不出结果）。现在改为先把整个包目录暂存到以包名命名的目录再加载。</p>
 </li>
+<li>
+<p><strong>修复在线质量审计的初始基线未校验</strong>：初始存量读数为 NaN / 无穷 / 负值、全部库存变量读取失败、或审计模式未匹配到任何库存变量时，现在直接抛出 <code>AuditorInitializationError</code> 而不是照单全收；初始总量恰为 0 时给出警告。此前这类错误会被静默当成基准，之后所有质量衡算都建立在错误的起点上。</p>
+</li>
 </ul>
 <hr />
 <h2 id="200-2026-11-14">2.0.0 ( 2026-11-14 )<a class="headerlink" href="#200-2026-11-14" title="Permanent link">&para;</a></h2>

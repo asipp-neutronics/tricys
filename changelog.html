@@ -2355,6 +2355,9 @@
 <li>
 <p><strong>Fixed: multi-file Modelica packages (<code>package.mo</code>) could not run.</strong> OMPython 4 copies the <code>.mo</code> into its own work directory before loading it, which separates <code>package.mo</code> from its sibling <code>.mo</code> files and makes the package name disagree with the temporary directory name (6 legacy configurations failed because of it). The whole package directory is now staged under a directory named after the package before loading.</p>
 </li>
+<li>
+<p><strong>Fixed: the online mass auditor did not validate its initial baseline.</strong> A NaN / infinite / negative initial inventory, a completely unreadable inventory set, or inventory patterns that matched no variable now raise <code>AuditorInitializationError</code> instead of being accepted; an exactly-zero initial total raises a warning. Previously such values silently became the baseline and every later mass balance was computed against a wrong origin.</p>
+</li>
 </ul>
 <hr />
 <h2 id="200-2026-11-14">2.0.0 ( 2026-11-14 )<a class="headerlink" href="#200-2026-11-14" title="Permanent link">&para;</a></h2>
