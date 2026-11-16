@@ -17,6 +17,8 @@ TRICYS 遵循[语义化版本规范（Semantic Versioning）](https://semver.org
 
 * **任一作业失败即返回非零退出码**：此前批量扫描与协同仿真中作业失败只写日志，进程仍返回 `0`，结果文件里只是少了对应的行，与"跑成功"无法区分。现在 `StandardSimulationEngine`（顺序与并发两条路径）与 `OfflineTableEngine` 在任意作业失败时抛出 `JobExecutionError`（携带失败作业 ID 与原因），CLI 退出码为 `1`。**依赖"部分作业失败也返回 0"的脚本需要适配。**
 
+* **修复多文件 Modelica 包（`package.mo`）无法运行**：OMPython 4 会把 `.mo` 复制到自己的临时工作目录再加载，导致 `package.mo` 与同目录其它 `.mo` 分离、包名与临时目录名不匹配而加载失败（6 个 v1 存量配置因此跑不出结果）。现在改为先把整个包目录暂存到以包名命名的目录再加载。
+
 ---
 
 ## 2.0.0 ( 2026-11-14 )

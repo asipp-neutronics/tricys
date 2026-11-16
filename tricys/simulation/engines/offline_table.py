@@ -19,6 +19,7 @@ from tricys.core.modelica import (
     build_modelica_parameter_map,
     get_om_session,
     load_modelica_package,
+    prepare_modelica_source,
 )
 from tricys.utils.concurrency_utils import get_safe_max_workers
 from tricys.utils.file_utils import get_unique_filename
@@ -135,11 +136,14 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
             if os.path.isfile(isolated_package_path)
             else Path(isolated_package_path).as_posix()
         )
+        staged_file, staged_build_dir = prepare_modelica_source(
+            isolated_package_path, job_workspace
+        )
         mod = ModelicaSystem(
-            fileName=Path(isolated_package_path).as_posix(),
+            fileName=staged_file,
             modelName=model_name,
             variableFilter=variable_filter,
-            customBuildDirectory=package_build_dir,
+            customBuildDirectory=staged_build_dir or package_build_dir,
         )
         mod.setSimulationOptions(
             {
@@ -255,11 +259,14 @@ def run_co_simulation_job(config: dict, job_params: dict, job_id: int = 0) -> st
             if os.path.isfile(final_model_file)
             else Path(final_model_file).as_posix()
         )
+        staged_verif_file, staged_verif_dir = prepare_modelica_source(
+            final_model_file, job_workspace
+        )
         verif_mod = ModelicaSystem(
-            fileName=final_model_file,
+            fileName=staged_verif_file,
             modelName=final_model_name,
             variableFilter=verif_config,
-            customBuildDirectory=final_build_dir,
+            customBuildDirectory=staged_verif_dir or final_build_dir,
         )
         verif_mod.setSimulationOptions(
             {

@@ -13,6 +13,7 @@ from tricys.core.modelica import (
     build_modelica_parameter_map,
     get_om_session,
     load_modelica_package,
+    prepare_modelica_source,
 )
 from tricys.utils.concurrency_utils import get_safe_max_workers
 from tricys.workflow.base import BaseSimulationEngine, JobExecutionError
@@ -428,9 +429,13 @@ class StandardSimulationEngine(BaseSimulationEngine):
                         f"Failed to load Modelica package at {context.package_path}"
                     )
 
+                model_file, model_build_dir = prepare_modelica_source(
+                    context.package_path, context.temp_dir
+                )
                 mod = ModelicaSystem(
-                    fileName=Path(context.package_path).as_posix(),
+                    fileName=model_file,
                     modelName=context.model_name,
+                    customBuildDirectory=model_build_dir,
                 )
 
                 sim_options = {

@@ -17,6 +17,8 @@ TRICYS follows [Semantic Versioning](https://semver.org/):
 
 * **Any failed job now yields a non-zero exit code**: previously a failed job in a sweep or a co-simulation only wrote to the log, the process still exited `0`, and the results file merely had fewer rows — indistinguishable from a successful run. `StandardSimulationEngine` (both sequential and concurrent paths) and `OfflineTableEngine` now raise `JobExecutionError` (carrying the failed job IDs and reasons) when any job fails, and the CLI exits `1`. **Scripts that relied on partial failures returning 0 must be adapted.**
 
+* **Fixed: multi-file Modelica packages (`package.mo`) could not run.** OMPython 4 copies the `.mo` into its own work directory before loading it, which separates `package.mo` from its sibling `.mo` files and makes the package name disagree with the temporary directory name (6 legacy configurations failed because of it). The whole package directory is now staged under a directory named after the package before loading.
+
 ---
 
 ## 2.0.0 ( 2026-11-14 )

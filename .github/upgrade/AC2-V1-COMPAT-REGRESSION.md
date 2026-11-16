@@ -84,3 +84,22 @@ B 与 A 相差 3600 倍，退出码 0、无任何告警。C 证明**唯一原因
 3. **多文件包加载缺陷单独立项**：`ModelicaSystemOMC` 把 `package.mo` 复制到 `/tmp/<uuid>/` 导致包名不匹配；用同一套依赖跑 v1.1.0 同样复现，不是 2.0 独有。修法是绕开该复制行为（`load_modelica_package` 已能正确加载）。
 
 按调整后的口径，AC2 仍未达成：剩余缺口是上述第 3 条（多文件包）与第 3 节的时基偏差。
+
+## 5. 2.0.1 修复与复验（2026-11-16）
+
+§2 的多文件包缺陷已修：加载前先把整个包目录暂存到「以包名命名的目录」下，OMPython 计算出的路径与传入路径一致，于是原地加载、同目录的其它 `.mo` 也都在。改动覆盖顺序引擎、顺序扫描与协同仿真三处 `ModelicaSystem` 构造点。
+
+复跑同一批配置（未做任何修改）：
+
+| 配置 | 修复前 | 修复后 |
+|---|---|---|
+| `basic/6_constrained_buffer` | exit 1 | **exit 0**（35 s） |
+| `basic/6_constrained_buffer_sweep` | exit 1 | **exit 0**（358 s） |
+| `basic/7_blanket_constraints` | exit 1 | **exit 0**（27 s） |
+| `basic/7_blanket_constraints_sweep` | exit 1 | **exit 0**（378 s） |
+| `basic/8_offline_auditor` | exit 1 | **exit 0**（28 s） |
+| `basic/4_co_simulation_module` | exit 1 | exit 1（Aspen 处理器，与本缺陷无关） |
+
+`7_blanket_constraints` 的输出时间轴 `time_max = 1.8e7 s = 5000 h × 3600`，与配置的 `stop_time=5000`（小时）自洽。
+
+按此更新口径：16 个配置中 **11 绿 / 1 红（Aspen）/ 3 未结论 / 1 解析失败（9 号）**。AC2 仍未达成，剩余缺口是 Aspen 依赖与 9 号算例的外部资产；原"多文件包"缺口已关闭。
