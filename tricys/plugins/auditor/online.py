@@ -1,5 +1,6 @@
 import fnmatch
 import logging
+import math
 import os
 import xml.etree.ElementTree as ET
 import zipfile
@@ -23,6 +24,15 @@ class AuditorState:
 
 
 logger = logging.getLogger(__name__)
+
+
+class AuditorInitializationError(RuntimeError):
+    """Raised when the online mass auditor cannot establish a trustworthy baseline.
+
+    A mass auditor that silently starts from a wrong number (NaN, negative, or an
+    unreadable variable set) reports every later balance as if it were valid, so the
+    baseline is validated at initialization instead of being trusted.
+    """
 
 
 class OnlineGlobalAuditor:
@@ -175,19 +185,64 @@ class OnlineGlobalAuditor:
     def _finalize_initialization(
         self, oms_runtime, system_name: str, initial_processor_inventory: float
     ) -> None:
-        # Capture initial mass
+        if not self.inv_bindings:
+            raise AuditorInitializationError(
+                "auditor is enabled but no inventory variables matched its patterns; "
+                "check auditor.patterns.inventory against the model's variable names"
+            )
+
+        # Capture initial mass. Every value that enters the baseline is validated:
+        # a NaN or negative inventory would silently poison every later balance.
         masses = []
         total_fmu = 0.0
+        unreadable = []
         for comp_name, var_name in self.inv_bindings:
             try:
                 val = float(oms_runtime.get_value(system_name, comp_name, var_name))
-                total_fmu += val
-                if val > 0:
-                    masses.append(f"{comp_name}.{var_name}={val:.4f}")
             except Exception as e:
                 logger.warning(f"Failed to read init {comp_name}.{var_name}: {e}")
-        self.state.current_mass = total_fmu + initial_processor_inventory
-        self.state.initial_mass = self.state.current_mass
+                unreadable.append(f"{comp_name}.{var_name}")
+                continue
+            if not math.isfinite(val):
+                raise AuditorInitializationError(
+                    f"initial inventory {comp_name}.{var_name} is not finite ({val!r}); "
+                    "refusing to audit against a non-numeric baseline"
+                )
+            if val < 0:
+                raise AuditorInitializationError(
+                    f"initial inventory {comp_name}.{var_name} is negative ({val!r}); "
+                    "a mass inventory cannot be below zero"
+                )
+            total_fmu += val
+            if val > 0:
+                masses.append(f"{comp_name}.{var_name}={val:.4f}")
+
+        if len(unreadable) == len(self.inv_bindings):
+            raise AuditorInitializationError(
+                "none of the "
+                f"{len(self.inv_bindings)} inventory variable(s) could be read "
+                f"({', '.join(unreadable[:5])}); no baseline to audit against"
+            )
+
+        processor_inventory = float(initial_processor_inventory)
+        if not math.isfinite(processor_inventory) or processor_inventory < 0:
+            raise AuditorInitializationError(
+                f"initial processor inventory is invalid ({initial_processor_inventory!r})"
+            )
+
+        current_mass = total_fmu + processor_inventory
+        if not math.isfinite(current_mass) or current_mass < 0:
+            raise AuditorInitializationError(
+                f"initial total inventory is invalid ({current_mass!r})"
+            )
+        if current_mass == 0:
+            logger.warning(
+                "Initial total inventory is exactly 0; the audit will measure absolute "
+                "changes only. Verify the inventory patterns if this is unexpected."
+            )
+
+        self.state.current_mass = current_mass
+        self.state.initial_mass = current_mass
         self.state.time = 0.0
         self._initialized = True
         logger.info(
