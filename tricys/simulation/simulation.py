@@ -180,6 +180,7 @@ def run_sequential_sweep(
         build_modelica_parameter_map,
         get_om_session,
         load_modelica_package,
+        prepare_modelica_source,
     )
 
     paths_config = config["paths"]
@@ -194,10 +195,14 @@ def run_sequential_sweep(
         if not load_modelica_package(omc, Path(package_path).as_posix()):
             raise RuntimeError("Failed to load Modelica package for sequential sweep.")
 
+        model_file, model_build_dir = prepare_modelica_source(
+            package_path, base_temp_dir
+        )
         mod = ModelicaSystem(
-            fileName=Path(package_path).as_posix(),
+            fileName=model_file,
             modelName=sim_config["model_name"],
             variableFilter=sim_config.get("variableFilter", ".*"),
+            customBuildDirectory=model_build_dir,
         )
         mod.setSimulationOptions(
             {

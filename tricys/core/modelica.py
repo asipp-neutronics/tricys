@@ -9,8 +9,10 @@ import logging
 import os
 import pathlib
 import re
+import shutil
+import tempfile
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 from OMPython import ModelicaSystem as OMPythonModelicaSystem
 from OMPython import OMCSessionZMQ
@@ -168,6 +170,51 @@ def load_modelica_package(omc: OMCSessionZMQ, package_path: str) -> bool:
         logger.error("Failed to load package", extra={"package_path": package_path})
         return False
     return True
+
+
+def prepare_modelica_source(
+    package_path: str, workspace: Optional[str] = None
+) -> Tuple[str, Optional[str]]:
+    """Stage a multi-file Modelica package so OMPython 4 can actually load it.
+
+    OMPython 4 (``ModelicaSystemOMC``) copies the given ``.mo`` file into its own work
+    directory and loads *that* copy. For a single-file model this is harmless, but for a
+    multi-file package (``package.mo`` plus sibling ``.mo`` files) OMC then sees
+    ``package.mo`` alone inside ``/tmp/<uuid>/`` and rejects it with::
+
+        Expected the package to have name <uuid>, but got <package name>
+
+    Copying the whole package directory into ``<workspace>/_pkg_stage/<package>/`` and
+    using that copy as both the model file and the build directory makes the path OMPython
+    computes identical to the file it was handed, so it loads in place instead of copying.
+
+    Args:
+        package_path: Path to the ``.mo`` file (``package.mo`` or a single-file model).
+        workspace: Directory that owns the staged copy; a temp dir is used when omitted.
+
+    Returns:
+        ``(model_file, build_directory)``. ``build_directory`` is ``None`` for single-file
+        models, meaning the caller should leave OMPython's default alone.
+    """
+    path = pathlib.Path(package_path)
+    if path.name != "package.mo" or not path.is_file():
+        return str(path), None
+
+    package_dir = path.parent
+    base = pathlib.Path(workspace) if workspace else pathlib.Path(
+        tempfile.mkdtemp(prefix="tricys-pkg-")
+    )
+    staged = base / "_pkg_stage" / package_dir.name
+    if not staged.is_dir():
+        shutil.copytree(
+            package_dir,
+            staged,
+            ignore=shutil.ignore_patterns(
+                "__pycache__", "*.pyc", "*.o", "*.c", "*.h", "*.so", "*.dll",
+                "*.exe", "*.log", "*.makefile", "*.libs",
+            ),
+        )
+    return str(staged / "package.mo"), str(staged)
 
 
 def get_model_parameter_names(omc: OMCSessionZMQ, model_name: str) -> List[str]:
