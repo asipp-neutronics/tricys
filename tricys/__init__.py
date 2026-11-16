@@ -6,7 +6,7 @@ if sys.platform == "win32":
     os.environ.setdefault("PYTHONUTF8", "1")
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 
 # Backward compatibility alias for legacy handlers moved to v1_examples_legacy

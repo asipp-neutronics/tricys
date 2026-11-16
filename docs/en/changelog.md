@@ -11,9 +11,11 @@ TRICYS follows [Semantic Versioning](https://semver.org/):
 
 ---
 
-## 2.0.1 ( Unreleased )
+## 2.0.1 ( 2026-11-16 )
 
 ### Changed (behaviour)
+
+* **A 1.0-shaped configuration now warns about its time base**: when neither `time_base` nor a `scenario` block is present, the engine logs a WARNING naming the 3600x risk and the fix. The default stays `second` (SI); behaviour is unchanged.
 
 * **Any failed job now yields a non-zero exit code**: previously a failed job in a sweep or a co-simulation only wrote to the log, the process still exited `0`, and the results file merely had fewer rows — indistinguishable from a successful run. `StandardSimulationEngine` (both sequential and concurrent paths) and `OfflineTableEngine` now raise `JobExecutionError` (carrying the failed job IDs and reasons) when any job fails, and the CLI exits `1`. **Scripts that relied on partial failures returning 0 must be adapted.**
 
