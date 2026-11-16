@@ -19,6 +19,8 @@ TRICYS follows [Semantic Versioning](https://semver.org/):
 
 * **Fixed: multi-file Modelica packages (`package.mo`) could not run.** OMPython 4 copies the `.mo` into its own work directory before loading it, which separates `package.mo` from its sibling `.mo` files and makes the package name disagree with the temporary directory name (6 legacy configurations failed because of it). The whole package directory is now staged under a directory named after the package before loading.
 
+* **Fixed: the online mass auditor did not validate its initial baseline.** A NaN / infinite / negative initial inventory, a completely unreadable inventory set, or inventory patterns that matched no variable now raise `AuditorInitializationError` instead of being accepted; an exactly-zero initial total raises a warning. Previously such values silently became the baseline and every later mass balance was computed against a wrong origin.
+
 ---
 
 ## 2.0.0 ( 2026-11-14 )
