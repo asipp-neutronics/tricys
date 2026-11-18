@@ -36,8 +36,12 @@ class _FakeRuntime:
         return self.values[key]
 
 
-def _auditor(bindings: list[tuple[str, str]]) -> OnlineGlobalAuditor:
-    auditor = OnlineGlobalAuditor(AuditorConfig(enabled=True))
+def _auditor(
+    bindings: list[tuple[str, str]], patterns: list[str] | None = None
+) -> OnlineGlobalAuditor:
+    auditor = OnlineGlobalAuditor(
+        AuditorConfig(enabled=True, inventory_patterns=list(patterns or []))
+    )
     auditor.inv_bindings = list(bindings)
     return auditor
 
@@ -97,10 +101,24 @@ def test_partially_readable_inventory_set_is_accepted():
     assert auditor.state.initial_mass == pytest.approx(4.0)
 
 
-def test_no_matching_inventory_pattern_is_rejected():
-    auditor = _auditor([])
+def test_enabled_without_patterns_warns_and_stays_inert(caplog):
+    """Enabling the auditor without patterns is unconfigured, not corrupt: warn, do not fail."""
+    auditor = _auditor([], patterns=[])
 
-    with pytest.raises(AuditorInitializationError, match="no inventory variables matched"):
+    with caplog.at_level(logging.WARNING, logger="tricys.plugins.auditor.online"):
+        auditor._finalize_initialization(_FakeRuntime({}), "default", 1.0)
+
+    assert auditor.state.initial_mass == pytest.approx(1.0)
+    assert any("inert" in r.getMessage() for r in caplog.records), [
+        r.getMessage() for r in caplog.records
+    ]
+
+
+def test_configured_patterns_matching_nothing_are_rejected():
+    """Patterns were configured but matched nothing: the user asked for an audit and got none."""
+    auditor = _auditor([], patterns=["*.I?1?"])
+
+    with pytest.raises(AuditorInitializationError, match="matched no variable"):
         auditor._finalize_initialization(_FakeRuntime({}), "default", 0.0)
 
 

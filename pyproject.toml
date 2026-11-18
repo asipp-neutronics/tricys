@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tricys"
-version = "2.0.1"
+version = "2.0.2"
 authors = [
   { name="asipp-neutronics", email="guilong@ie.ah.cn" },
 ]
