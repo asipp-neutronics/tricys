@@ -34,6 +34,9 @@ task:
     enabled: true
     warn_threshold_g: 50.0
     kill_threshold_g: 1000.0
+    patterns:
+      # fnmatch: '[' is a character class, so I[1] is matched as I?1?
+      inventory: ["*.I?1?"]
   subsystems:
     - target: "example_model.DIV"
       instance: "div"

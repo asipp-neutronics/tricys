@@ -186,9 +186,19 @@ class OnlineGlobalAuditor:
         self, oms_runtime, system_name: str, initial_processor_inventory: float
     ) -> None:
         if not self.inv_bindings:
-            raise AuditorInitializationError(
-                "auditor is enabled but no inventory variables matched its patterns; "
-                "check auditor.patterns.inventory against the model's variable names"
+            if self.config.inventory_patterns:
+                # Patterns were given but nothing matched: the user asked for an audit and
+                # silently got none, which is the dangerous case.
+                raise AuditorInitializationError(
+                    "auditor.patterns.inventory was configured but matched no variable; "
+                    "check the patterns against the model's variable names "
+                    f"(configured: {self.config.inventory_patterns!r})"
+                )
+            # Enabled without any pattern is an unconfigured auditor: say so loudly, but do
+            # not fail a run that never asked for an audit (preserves 2.0.0 behaviour).
+            logger.warning(
+                "auditor is enabled but no inventory patterns are configured; the mass "
+                "audit is inert for this run. Set auditor.patterns.inventory to enable it."
             )
 
         # Capture initial mass. Every value that enters the baseline is validated:
@@ -217,7 +227,7 @@ class OnlineGlobalAuditor:
             if val > 0:
                 masses.append(f"{comp_name}.{var_name}={val:.4f}")
 
-        if len(unreadable) == len(self.inv_bindings):
+        if self.inv_bindings and len(unreadable) == len(self.inv_bindings):
             raise AuditorInitializationError(
                 "none of the "
                 f"{len(self.inv_bindings)} inventory variable(s) could be read "

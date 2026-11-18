@@ -11,6 +11,19 @@ TRICYS follows [Semantic Versioning](https://semver.org/):
 
 ---
 
+## 2.0.2 ( 2026-11-18 )
+
+### Fixed
+
+* **Example 9 (`09_cosim_online_step`) could not run on 2.0.1**: the example enabled `auditor` without configuring `patterns`, so the initialization check introduced in 2.0.1 aborted the run. `patterns.inventory: ["*.I?1?"]` was added (`[` is a character class in fnmatch, hence `I[1]` is written `I?1?`), matching 14 inventory variables. A full 100 h run now completes locally: initial inventory 3000 g, final 2999.69 g, **mass balance error −0.31 g** (warn 50 g / kill 1000 g).
+
+### Changed (behaviour)
+
+* **"Auditor enabled without `patterns`" is now a warning instead of an error**: that is an unconfigured auditor, not a corrupt one, so it no longer aborts the run (restores 2.0.0 behaviour). **Patterns configured but matching no variable** still raises — that is the dangerous "asked for an audit, silently got none" case.
+* Fixed the false "0 of 0 variables unreadable" edge case when no inventory bindings exist.
+
+---
+
 ## 2.0.1 ( 2026-11-16 )
 
 ### Changed (behaviour)
