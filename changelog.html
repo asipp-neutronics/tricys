@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#201-2026-11-16" class="md-skip">
+        <a href="#202-2026-11-18" class="md-skip">
           Skip to content
         </a>
       
@@ -2055,6 +2055,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#202-2026-11-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.0.2 ( 2026-11-18 )
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.0.2 ( 2026-11-18 )">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed (behaviour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#201-2026-11-16" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2067,7 +2106,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changed-behaviour" class="md-nav__link">
+  <a href="#changed-behaviour_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed (behaviour)
@@ -2117,7 +2156,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -2216,6 +2255,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#202-2026-11-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.0.2 ( 2026-11-18 )
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.0.2 ( 2026-11-18 )">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed (behaviour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#201-2026-11-16" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2228,7 +2306,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changed-behaviour" class="md-nav__link">
+  <a href="#changed-behaviour_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed (behaviour)
@@ -2278,7 +2356,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -2346,8 +2424,19 @@
 <li><strong>Patch</strong>: Incremented for backward-compatible bug fixes</li>
 </ul>
 <hr />
-<h2 id="201-2026-11-16">2.0.1 ( 2026-11-16 )<a class="headerlink" href="#201-2026-11-16" title="Permanent link">&para;</a></h2>
+<h2 id="202-2026-11-18">2.0.2 ( 2026-11-18 )<a class="headerlink" href="#202-2026-11-18" title="Permanent link">&para;</a></h2>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Example 9 (<code>09_cosim_online_step</code>) could not run on 2.0.1</strong>: the example enabled <code>auditor</code> without configuring <code>patterns</code>, so the initialization check introduced in 2.0.1 aborted the run. <code>patterns.inventory: ["*.I?1?"]</code> was added (<code>[</code> is a character class in fnmatch, hence <code>I[1]</code> is written <code>I?1?</code>), matching 14 inventory variables. A full 100 h run now completes locally: initial inventory 3000 g, final 2999.69 g, <strong>mass balance error −0.31 g</strong> (warn 50 g / kill 1000 g).</li>
+</ul>
 <h3 id="changed-behaviour">Changed (behaviour)<a class="headerlink" href="#changed-behaviour" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>"Auditor enabled without <code>patterns</code>" is now a warning instead of an error</strong>: that is an unconfigured auditor, not a corrupt one, so it no longer aborts the run (restores 2.0.0 behaviour). <strong>Patterns configured but matching no variable</strong> still raises — that is the dangerous "asked for an audit, silently got none" case.</li>
+<li>Fixed the false "0 of 0 variables unreadable" edge case when no inventory bindings exist.</li>
+</ul>
+<hr />
+<h2 id="201-2026-11-16">2.0.1 ( 2026-11-16 )<a class="headerlink" href="#201-2026-11-16" title="Permanent link">&para;</a></h2>
+<h3 id="changed-behaviour_1">Changed (behaviour)<a class="headerlink" href="#changed-behaviour_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
 <p><strong>A 1.0-shaped configuration now warns about its time base</strong>: when neither <code>time_base</code> nor a <code>scenario</code> block is present, the engine logs a WARNING naming the 3600x risk and the fix. The default stays <code>second</code> (SI); behaviour is unchanged.</p>
@@ -2384,7 +2473,7 @@
 <li>Prebuilt FMU / SSP assets removed (<code>example_model_ssp/</code> is no longer shipped).</li>
 <li><code>tricys.handlers</code> dropped from the package list.</li>
 </ul>
-<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Inconsistent time-base conversion between the sequential and concurrent paths</strong>: 1.0-style configurations (time fields under <code>simulation</code>) bypassed the hour → second conversion in sequential mode, so the same configuration reached OpenModelica with stopTime values 3600× apart while both reported success. Both paths now share a single conversion entry point. <strong>Results produced in sequential mode from 1.0-style configurations before this fix are invalid and must be re-run.</strong></li>
 </ul>
